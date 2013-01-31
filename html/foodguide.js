@@ -928,10 +928,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			navtab;
 		for (i = 0; i < navtabs.length; i++) {
 			navtab = navtabs[i];
-			tabs[navtab.dataset.tab] = navtab;
-			elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
-			elements[navtab.dataset.tab].style.display = 'none';
-			navtab.addEventListener('click', showTab, false);
+			if (navtab.dataset.tab) {
+				tabs[navtab.dataset.tab] = navtab;
+				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
+				elements[navtab.dataset.tab].style.display = 'none';
+				navtab.addEventListener('click', showTab, false);
+			}
 		}
 		activeTab = tabs['simulator'];
 		activePage = elements['simulator'];

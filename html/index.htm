@@ -3,6 +3,7 @@
 	<title>Don't Starve Food Guide</title>
 	<style type="text/css">
 		body { background: #ccc; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; }
+		a { color: #333; }
 		#navbar { position: relative; left: 0px; top: 0px; display: block; z-index: 1; }
 		#navbar li { display: inline-block; list-style-type: none; padding-left: 0px; margin-left: 0px; border: 1px solid black; background: #ddd; cursor: pointer; margin-bottom: 8px; vertical-align: top; padding: 4px; }
 		#navbar li.selected { font-weight: bold; background: #fff; padding-top: 8px; margin-bottom: 0px; border-radius: 0px 0px 6px 6px; }
@@ -28,16 +29,19 @@
 		<li data-tab="simulator">Simulator</li>
 		<li data-tab="discovery">Discovery</li>
 		<li data-tab="foodlist">Food List</li>
-		<li data-tab="crockpot">Crock Pot</li>
+		<li data-tab="crockpot">Recipe List</li>
+		<li data-tab="help">Help</li>
 		<li><a href="http://dont-starve-game.wikia.com/" target="_blank">Wikia</a></li>
 		<li><a href="http://www.dontstarvegame.com/" target="_blank">Don't Starve</a></li>
 	</ul>
 	<div id="main">
 		<div id="simulator">
+			Add ingredients to see what they make.
 			<div id="ingredients"><input type="text" class="ingredientpicker" data-type="food" style="display: block"></input><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
 			<div id="results"></div>
 		</div>
 		<div id="discovery">
+			Add items in your inventory to see your options.
 			<div id="inventory"><input type="text" class="ingredientpicker" style="display: block"></input></div>
 			<div id="discover"></div>
 		</div>
@@ -47,9 +51,29 @@
 		<div id="crockpot">
 			<table id="recipes"></table>
 		</div>
+		<div id="help">
+			<h2>General</h2>
+			<p>This is a tool to aide in not starving in <a href="http://www.dontstarvegame.com/">Don't Starve</a>, an uncompromising wilderness survival game full of science and magic, by <a href="http://kleientertainment.com/">Klei Entertainment</a>, available on the <a href="https://chrome.google.com/webstore/detail/dont-starve/hiledapehlkhdehbhppgmekfalnlfajc">Chrome Web Store</a> and <a href="http://store.steampowered.com/app/219740/">Steam</a>.</p>
+			<p>
+				Perish time is the time before a food item becomes Rot. Halfway through this period, it will go stale, and give 50% health and 75% hunger.
+				Food spoils at three quarters of the way to Rot, giving only 50% hunger and no longer giving any health.
+			</p>
+			<p>Recipe priority determines which recipe a food combination will make; only the highest-priority possible recipes can be produced by a batch of ingredients.</p>
+			<p>In recipe requirements, cooked/uncooked doesn't make a difference unless an asterisk is presented next to an item, in which case it must be the exact item listed.</p>
+			<h2>Simulator</h2>
+			<p>
+				The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. Note that only the highest-priority recipes will be candidates.
+				The combined totals at the top reflect the ingredients added, where perish time is the shortest.
+				The suggestions below the real results show what recipes could be made by adding different items to those already in the Crock Pot.
+			</p>
+			<h2>Discovery</h2>
+			<p>
+				The Discovery tab is finds what recipes can be prepared using a collection of ingredients. It doesn't take item quantity into account.
+			</p>
+		</div>
 	</div>
 	<div id="footer">
-		<a href="http://www.dontstarvegame.com/">Don't Starve</a> &copy; <a href="http://kleientertainment.com/">Klei Entertainment</a>. Source code made available under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.
+		<a href="http://www.dontstarvegame.com/">Don't Starve</a> &copy; <a href="http://kleientertainment.com/">Klei Entertainment</a>. Food guide source code made available under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.
 	</div>
 	<script type="text/javascript" src="foodguide.js"></script>
 </body>

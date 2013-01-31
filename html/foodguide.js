@@ -619,7 +619,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.drumstick && names.drumstick > 1 && tags.meat && 1 < tags.meat && (tags.veggie || tags.fruit);
 				},
-				requirements: [NAME('drumstick', '>1'), TAG('meat', '>1'), OR(TAG('veggie'), TAG('fruit'))],
+				requirements: [SPECIFIC('drumstick', '>1'), TAG('meat', '>1'), OR(TAG('veggie'), TAG('fruit'))],
 				priority: 10,
 				foodtype: "meat",
 				health: healing_med,
@@ -909,7 +909,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	recipes.filter = Array.prototype.filter;
 	recipes.sort = Array.prototype.sort;
 	
-	output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Perish\n|');
+	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Perish\n|');
 
 	(function () {
 		var navtabs = navbar.getElementsByTagName('li'),
@@ -968,16 +968,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Perish', 'Info'));
 	food.forEach(function (item) {
 		fragment.appendChild(makeFoodRow(item));
-		output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
+		//output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
 	});
 	foodElement.appendChild(fragment);
-	output.push('}');
-	var a = document.createElement('textarea');
-	a.value = output.join('');
+	//output.push('}');
+	//var a = document.createElement('textarea');
+	//a.value = output.join('');
 	//document.body.appendChild(a);
 
-	output = [];
-	output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Cook time\n! width=60px |Perish\n|');
+	//output = [];
+	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Cook time\n! width=60px |Perish\n|');
 	var makeRecipeRow = function (item, health, hunger) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + (health && item.health !== health ? ' (' + ((item.health / health * 1000 | 0) / 10) + '%)' : ''), sign(item.hunger) + (hunger && item.hunger !== hunger ? ' (' + ((item.hunger / hunger * 1000 | 0) / 10) + '%)' : ''), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.priority || '0', item.requires || '');
 	};
@@ -985,18 +985,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
 	recipes.forEach(function (item) {
 		fragment.appendChild(makeRecipeRow(item));
-		output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
+		//output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
 	});
 	recipesElement.appendChild(fragment);
-	output.push('}');
-	a = document.createElement('textarea');
-	a.value = output.join('');
+	//output.push('}');
+	//a = document.createElement('textarea');
+	//a.value = output.join('');
 	//document.body.appendChild(a);
 	window.food = food;
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;
-	var nullItem = {id: 0, offsetX: 0, offsetY: 0, name: ''},
-		slotItemCSS = '\') center center / 64px 64px, ',
+	var slotItemCSS = '\') center center / 64px 64px, ',
 		slotBackgroundCSS = 'url(\'img/background.png\') 0px 0px / 100% 100%',
 		setSlot = function (slotElement, item) {
 			var end = false;
@@ -1009,14 +1008,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					end = true;
 				} else {
 					slotElement.dataset.id = null;
-					//item = nullItem;
 				}
 			}
 			if (!end) {
-				/*if (!slotElement.firstChild) { //later, change this to image and modify hover text
-					slotElement.appendChild(document.createTextNode(''));
-				}
-				slotElement.firstChild.textContent = item.name;*/
 				if (item !== null) {
 					slotElement.style.background = 'url(\'' + item.img + slotItemCSS + slotBackgroundCSS;
 				} else {
@@ -1065,9 +1059,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 					},
 					pickItem = function (e) {
-						/*dropdown.removeChild(ul);
-						ul = document.createElement('ul');
-						dropdown.appendChild(ul);*/
 						var names,
 							result = appendSlot(e.target.dataset.id);
 						if (result !== -1) {
@@ -1078,8 +1069,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							dropdown.appendChild(ul);
 							picker.value = '';
 							if (result < slots.length - 1 || !limited) {
-								setTimeout(function () {picker.focus();}, 30);
+								picker.focus();
+							} else {
+								picker.blur();
 							}
+							e.preventDefault();
 						}
 					},
 					liIntoPicker = function (item) {
@@ -1100,7 +1094,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							parent.removeChild(e.target);
 							updateRecipes();
 						}
-						//picker.focus();
 					};
 				if (parent.id === 'ingredients') {
 					updateRecipes = function () {
@@ -1131,8 +1124,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							if (recipes.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
 								table = document.createElement('table')
-								health = recipes[0].health;
-								hunger = recipes[0].hunger;
 								table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
 								recipes.forEach(function (item) {
 									table.appendChild(makeRecipeRow(item, health, hunger));
@@ -1217,18 +1208,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				picker.addEventListener('keyup', function (e) {
 					var movement = [16, 17, 37, 38, 39, 40, 13];
 					if (movement.indexOf(e.keyCode) === -1) {
-						//if (picker.value.length > 0) {
-							var li = document.createElement('li'),
-								names = matchingNames(from, picker.value);
-							dropdown.removeChild(ul);
-							ul = document.createElement('ul');
-							names.forEach(liIntoPicker, ul);
-							dropdown.appendChild(ul);
-						//} else if (ul.childNodes.length > 0) {
-						//	dropdown.removeChild(ul);
-						//	ul = document.createElement('ul');
-						//	dropdown.appendChild(ul);
-						//}
+						var li = document.createElement('li'),
+							names = matchingNames(from, picker.value);
+						dropdown.removeChild(ul);
+						ul = document.createElement('ul');
+						names.forEach(liIntoPicker, ul);
+						dropdown.appendChild(ul);
 					}
 				}, false);
 				picker.addEventListener('focus', function () {
@@ -1245,6 +1230,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						parent.removeChild(dropdown);
 					}
 				}, false);
+				updateRecipes();
 			}());
 		}
 	}())

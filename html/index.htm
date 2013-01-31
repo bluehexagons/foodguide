@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>Don't Starve Food Guide</title>
+	<style type="text/css">
+		body { background: #ccc; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; }
+		#navbar { position: relative; left: 0px; top: 0px; display: block; z-index: 1; }
+		#navbar li { display: inline-block; list-style-type: none; padding-left: 0px; margin-left: 0px; border: 1px solid black; background: #ddd; cursor: pointer; margin-bottom: 8px; vertical-align: top; padding: 4px; }
+		#navbar li.selected { font-weight: bold; background: #fff; padding-top: 8px; margin-bottom: 0px; border-radius: 0px 0px 6px 6px; }
+		#main { background: #eee; position: relative; top: -40px; padding: 10px; padding-top: 40px; border: 1px solid #999; }
+		span.ingredient { width: 68px; height: 68px; display: inline-block; margin: 0px; margin-right: 10px; overflow: hidden; background: url('img/background.png') 0px 0px / 100% 100%; cursor: pointer; }
+		.ingredientdropdown { position: absolute; left: 0px; top: 0px; display: block; background: rgba(150, 150, 150, 0.7); }
+		.ingredientdropdown ul { margin: 0px; padding: 0px; }
+		.ingredientdropdown li { padding-left: 0px; margin: 1px; list-style-type: none; cursor: pointer; border-radius: 4px; background: #ddd linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%); }
+		.ingredientdropdown li img { padding-left: 4px; padding-right: 4px; width: 14px; height: 14px; }
+		.ingredientdropdown li:hover { background: #eee linear-gradient(to bottom, #ffffff 0%,#eeeeee 8%,#eeeeee 60%,#bbbbbb 85%); }
+		.ingredientdropdown li.selected { list-style-type: circle; background: #eee linear-gradient(to bottom, #ffffff 0%,#eeeeee 8%,#eeeeee 60%,#bbbbbb 85%); }
+		table { }
+		table td { border-left: 1px solid white; border-top: 1px solid white; border-bottom: 1px solid #aaa; border-right: 1px solid #aaa; background: #ddd; }
+		table tr { border: 1px solid black; }
+		table th { border-bottom: 2px solid black; }
+		#footer { padding-left: 10px; padding-right: 10px; color: #888; text-align: center; }
+		#footer a { color: #555; }
+	</style>
+</head>
+<body>
+	<ul id="navbar">
+		<li data-tab="simulator">Simulator</li>
+		<li data-tab="discovery">Discovery</li>
+		<li data-tab="foodlist">Food List</li>
+		<li data-tab="crockpot">Crock Pot</li>
+	</ul>
+	<div id="main">
+		<div id="simulator">
+			<div id="ingredients"><input type="text" class="ingredientpicker" data-type="food" style="display: block"></input><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
+			<div id="results"></div>
+		</div>
+		<div id="discovery">
+			<div id="inventory"><input type="text" class="ingredientpicker" style="display: block"></input></div>
+			<div id="discover"></div>
+		</div>
+		<div id="foodlist">
+			<table id="food"></table>
+		</div>
+		<div id="crockpot">
+			<table id="recipes"></table>
+		</div>
+	</div>
+	<div id="footer">
+		<a href="http://www.dontstarvegame.com/">Don't Starve</a> &copy; <a href="http://kleientertainment.com/">Klei Entertainment</a>. Source code made available under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.
+	</div>
+	<script type="text/javascript" src="foodguide.js"></script>
+</body>
+</html>

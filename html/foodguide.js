@@ -1,4 +1,6 @@
 /*
+Makes use of no third-party code (for better or worse)
+
 Copyright (c) 2013
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -845,6 +847,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			};
 		}()),
 		index = 0,
+		mainElement = document.getElementById('main'),
 		foodElement = document.getElementById('food'),
 		recipesElement = document.getElementById('recipes'),
 		fragment, navbar = document.getElementById('navbar');
@@ -897,7 +900,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			recipes[i].weight = recipes[i].weight || 1;
 			recipes[i].priority = recipes[i].priority || 0;
 			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').toLowerCase() + '.png';
-			console.log(recipes[i].requirements, recipes[i].requirements && recipes[i].requirements.join('; '));
 			if (recipes[i].requirements) {
 				recipes[i].requires = recipes[i].requirements.join('; ');
 			}
@@ -915,6 +917,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var navtabs = navbar.getElementsByTagName('li'),
 			tabs = {},
 			elements = {},
+			activeIndex = 0,
 			activePage,
 			activeTab,
 			showTab = function (e) {
@@ -939,6 +942,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		activePage = elements['simulator'];
 		activeTab.className = 'selected';
 		activePage.style.display = 'block';
+		/*
+		//maybe add using the tab key to go between tabs some day
+		document.body.addEventListener('keydown', function (e) {
+			var tabKey = 9;
+			if (e.keyCode === tabKey) {
+				if (e.shiftKey) {
+
+				} else {
+
+				}
+			}
+		});
+		*/
 	}());
 
 	var imgSize = '40px',
@@ -960,17 +976,85 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			return tr;
 		};
+	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary) {
+		var table, header, sorting = defaultSort, invertSort = false,
+			create = function (e) {
+				var tr, th, oldTable, sortBy, summary;
+				if (e && e.target.dataset.sort !== '') {
+					sortBy = e.target.dataset.sort;
+					if (hasSummary) {
+						summary = dataset.shift();
+					}
+					if (sortBy === 'name') {
+						dataset.sort(function (a, b) {
+							return b[sortBy] < a[sortBy] ? 1 : b[sortBy] > a[sortBy] ? -1 : 0;
+						});
+					} else {
+						dataset.sort(function (a, b) {
+							var sa = a[sortBy], sb = b[sortBy];
+							return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
+						});
+					}
+					if (sorting === sortBy) {
+						invertSort = !invertSort;
+					} else {
+						sorting = sortBy;
+						invertSort = false;
+					}
+					if (invertSort) {
+						dataset.reverse();
+					}
+					if (hasSummary) {
+						dataset.unshift(summary);
+					}
+				}
+				tr = document.createElement('tr');
+				for (header in headers) {
+					th = document.createElement('th');
+					th.appendChild(document.createTextNode(header));
+					if (headers[header]) {
+						if (headers[header] === sorting) {
+							th.style.background = invertSort ? '#555' : '#ccc';
+							th.style.color = invertSort ? '#ccc' : '#555';
+							th.style.borderRadius = '4px';
+						}
+						th.style.cursor = 'pointer';
+						th.dataset.sort = headers[header];
+						th.addEventListener('click', create, false);
+					}
+					tr.appendChild(th);
+				}
+				oldTable = table;
+				table = document.createElement('table');
+				table.appendChild(tr);
+				dataset.forEach(rowGenerator, table);
+				if (oldTable) {
+					oldTable.parentNode.replaceChild(table, oldTable);
+				}
+			};
+		create();
+		return table;
+	};
+
 	var sign = function (n) { return isNaN(n) ? '' : n > 0 ? '+' + n : n };
 	var makeFoodRow = function (item) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
 	};
-	fragment = document.createDocumentFragment();
+	foodElement.appendChild(makeSortableTable(
+		{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Perish': 'perish', 'Info': ''},
+		Array.prototype.slice.call(food),
+		function (item) {
+			this.appendChild(makeFoodRow(item));
+		},
+		null
+	));
+	/*fragment = document.createDocumentFragment();
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Perish', 'Info'));
 	food.forEach(function (item) {
 		fragment.appendChild(makeFoodRow(item));
 		//output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
 	});
-	foodElement.appendChild(fragment);
+	foodElement.appendChild(fragment);*/
 	//output.push('}');
 	//var a = document.createElement('textarea');
 	//a.value = output.join('');
@@ -981,13 +1065,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var makeRecipeRow = function (item, health, hunger) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + (health && item.health !== health ? ' (' + ((item.health / health * 1000 | 0) / 10) + '%)' : ''), sign(item.hunger) + (hunger && item.hunger !== hunger ? ' (' + ((item.hunger / hunger * 1000 | 0) / 10) + '%)' : ''), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.priority || '0', item.requires || '');
 	};
-	fragment = document.createDocumentFragment();
+	recipesElement.appendChild(makeSortableTable(
+		{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+		Array.prototype.slice.call(recipes),
+		function (item) {
+			this.appendChild(makeRecipeRow(item));
+		},
+		null
+	));
+	/*fragment = document.createDocumentFragment();
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
 	recipes.forEach(function (item) {
 		fragment.appendChild(makeRecipeRow(item));
 		//output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
 	});
-	recipesElement.appendChild(fragment);
+	recipesElement.appendChild(fragment);*/
 	//output.push('}');
 	//a = document.createElement('textarea');
 	//a.value = output.join('');
@@ -1029,6 +1121,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				var dropdown = document.createElement('div'),
 					ul = document.createElement('ul'),
 					picker = pickers[i],
+					index = i,
+					state,
 					from = picker.dataset.type === 'recipes' ? recipes : food,
 					parent = picker.parentNode,
 					slots = parent.getElementsByClassName('ingredient'),
@@ -1049,12 +1143,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							}
 							return -1;
 						} else {
-							i = document.createElement('span');
-							i.className = 'ingredient';
-							setSlot(i, item);
-							i.addEventListener('click', removeSlot, false);
-							parent.appendChild(i);
-							updateRecipes();
+							if (slots.indexOf(id) === -1) {
+								slots.push(id);
+								i = document.createElement('span');
+								i.className = 'ingredient';
+								setSlot(i, item);
+								i.addEventListener('click', removeSlot, false);
+								parent.appendChild(i);
+								updateRecipes();
+								return 1;
+							}
 							return 1;
 						}
 					},
@@ -1073,7 +1171,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							} else {
 								picker.blur();
 							}
-							e.preventDefault();
+							e && e.preventDefault && e.preventDefault();
+							refreshLocation();
 						}
 					},
 					liIntoPicker = function (item) {
@@ -1088,11 +1187,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					},
 					removeSlot = function (e) {
 						if (limited) {
-							setSlot(e.target, null);
-							updateRecipes();
+							if (getSlot(e.target) !== null) {
+								setSlot(e.target, null);
+								updateRecipes();
+							} else {
+								picker.focus();
+							}
 						} else {
+							slots.splice(slots.indexOf(e.target.dataset.id), 1);
 							parent.removeChild(e.target);
 							updateRecipes();
+						}
+					},
+					refreshLocation = function () {
+						if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
+							dropdown.style.left = -dropdown.offsetWidth + 'px';
+							dropdown.style.top = picker.offsetTop + 'px';
+						} else {
+							dropdown.style.left = picker.offsetLeft + picker.offsetWidth + 'px';
+							dropdown.style.top = picker.offsetTop + 'px';
 						}
 					};
 				if (parent.id === 'ingredients') {
@@ -1100,17 +1213,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						var ingredients,
 							recipes,
 							health, hunger,
-							table = document.createElement('table');
+							table;
 						ingredients = Array.prototype.map.call(slots, function (slot) {
 							return getSlot(slot);
 						});
 						recipes = getRecipes(ingredients);
 						health = recipes[0].health;
 						hunger = recipes[0].hunger;
-						table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
-						recipes.forEach(function (item) {
-							table.appendChild(makeRecipeRow(item, health, hunger));
-						});
+						//table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
+						//recipes.forEach(function (item) {
+						//	table.appendChild(makeRecipeRow(item, health, hunger));
+						//});
+						table = makeSortableTable(
+							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+							recipes,
+							function (item) {
+								this.appendChild(makeRecipeRow(item, health, hunger));
+							},
+							'priority',
+							true
+						);
 						if (results.firstChild) {
 							results.removeChild(results.firstChild);
 						}
@@ -1123,11 +1245,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							recipes = getSuggestions(ingredients, recipes);
 							if (recipes.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
-								table = document.createElement('table')
+								/*table = document.createElement('table')
 								table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
 								recipes.forEach(function (item) {
 									table.appendChild(makeRecipeRow(item, health, hunger));
-								});
+								});*/
+								table = makeSortableTable(
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+									recipes,
+									function (item) {
+										this.appendChild(makeRecipeRow(item, health, hunger));
+									},
+									'priority'
+								);
 								results.appendChild(table);
 							}
 						}
@@ -1146,18 +1276,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						if (ingredients.length > 0) {
 							recipes = getSuggestions(ingredients, null, true);
 							if (recipes.length > 0) {
-								table = document.createElement('table')
+								/*table = document.createElement('table');
 								table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
 								recipes.forEach(function (item) {
 									table.appendChild(makeRecipeRow(item));
-								});
+								});*/
+								table = makeSortableTable(
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+									recipes,
+									function (item) {
+										this.appendChild(makeRecipeRow(item));
+									},
+									'priority'
+								)
 								discover.appendChild(table);
 							}
 						}
 					};
 				} else {
-					console.log(parent.id);
-					alert('error: item picker not hooked up correctly, no update set for ' + parent.id);
+					console.log('error: no update function implemented for ' + parent.id);
+					//alert('error: no update function implemented for ' + parent.id);
 				}
 				if (slots.length !== 0) {
 					limited = true;
@@ -1166,7 +1304,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						slot.addEventListener('click', removeSlot, false);
 					});
 				} else {
+					slots = [];
 					limited = false;
+				}
+				if (window.localStorage && localStorage.foodGuideState) {
+					state = JSON.parse(localStorage.foodGuideState);
+					if (state[index]) {
+						state[index].forEach(function (id) {
+							appendSlot(id);
+						});
+					}
 				}
 				dropdown.className = 'ingredientdropdown';
 				dropdown.appendChild(ul);
@@ -1191,6 +1338,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								items[(i + 1) % items.length].className = 'selected';
 							} else if (e.keyCode === enter && current) {
 								pickItem({target: current});
+								refreshLocation();
 							}
 							break;
 						}
@@ -1214,14 +1362,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						ul = document.createElement('ul');
 						names.forEach(liIntoPicker, ul);
 						dropdown.appendChild(ul);
+						refreshLocation();
 					}
 				}, false);
 				picker.addEventListener('focus', function () {
 					if (!displaying) {
 						displaying = true;
-						dropdown.style.left = picker.offsetLeft + 'px';
-						dropdown.style.top = picker.offsetTop + picker.offsetHeight + 'px';
 						parent.appendChild(dropdown);
+						refreshLocation();
 					}
 				}, false);
 				picker.addEventListener('blur', function () {
@@ -1231,6 +1379,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 				}, false);
 				updateRecipes();
+				window.addEventListener('beforeunload', function () {
+					var obj, serialized;
+					if (window.localStorage) {
+						if (!localStorage.foodGuideState) {
+							localStorage.foodGuideState = '[]';
+						}
+						obj = JSON.parse(localStorage.foodGuideState);
+						if (limited) {
+							serialized = [];
+							serialized = Array.prototype.map.call(slots, function (slot) {
+								var item = getSlot(slot);
+								return item ? item.id : null;
+							});
+							obj[index] = serialized;
+						} else {
+							obj[index] = slots;
+						}
+						localStorage.foodGuideState = JSON.stringify(obj);
+					}
+				});
 			}());
 		}
 	}())

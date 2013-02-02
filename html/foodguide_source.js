@@ -795,16 +795,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							break;
 						}
 					}
-					//valid && recipeList.push(recipes[i]);
 					valid && (!exclude || exclude.indexOf(recipes[i]) === -1) && recipeList.push(recipes[i]);
-					//recipes[i].test(null, names, tags) && recipeList.push(recipes[i]);
 				}
-				recipeList.sort(function (a, b) {
-					return b.priority - a.priority;
-				});
 				tags.img = '';
 				tags.name = 'Combined';
-				//recipeList.unshift(tags);
 				return recipeList;
 			};
 		}()),
@@ -932,6 +926,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var navtabs = navbar.getElementsByTagName('li'),
 			tabs = {},
 			elements = {},
+			storage,
 			activeIndex = 0,
 			activePage,
 			activeTab,
@@ -955,21 +950,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		}
 		activeTab = tabs['simulator'];
 		activePage = elements['simulator'];
+		if (window.localStorage && localStorage.foodGuideState) {
+			storage = JSON.parse(localStorage.foodGuideState);
+			if (storage.activeTab && tabs[storage.activeTab]) {
+				activeTab = tabs[storage.activeTab];
+				activePage = elements[storage.activeTab];
+			}
+		}
 		activeTab.className = 'selected';
 		activePage.style.display = 'block';
-		/*
-		//maybe add using the tab key to go between tabs some day
-		document.body.addEventListener('keydown', function (e) {
-			var tabKey = 9;
-			if (e.keyCode === tabKey) {
-				if (e.shiftKey) {
-
-				} else {
-
+		window.addEventListener('beforeunload', function () {
+			var obj, serialized;
+			if (window.localStorage) {
+				if (!localStorage.foodGuideState) {
+					localStorage.foodGuideState = '{}';
 				}
+				obj = JSON.parse(localStorage.foodGuideState);
+				obj.activeTab = activeTab.dataset.tab;
+				localStorage.foodGuideState = JSON.stringify(obj);
 			}
 		});
-		*/
 	}());
 
 	var imgSize = '40px',
@@ -992,17 +992,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return tr;
 		};
 	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary) {
-		var table, header, sorting = defaultSort, invertSort = false,
-			create = function (e) {
+		var table, header, sorting, invertSort = false,
+			create = function (e, sort) {
 				var tr, th, oldTable, sortBy, summary;
-				if (e && e.target.dataset.sort !== '') {
-					sortBy = e.target.dataset.sort;
+				if (sort || (e && e.target.dataset.sort !== '')) {
+					sortBy = sort || e.target.dataset.sort;
 					if (hasSummary) {
 						summary = dataset.shift();
 					}
 					if (sortBy === 'name') {
 						dataset.sort(function (a, b) {
-							return b[sortBy] < a[sortBy] ? 1 : b[sortBy] > a[sortBy] ? -1 : 0;
+							var aname = a.raw ? a.raw.name : a.name,
+								bname = b.raw ? b.raw.name : b.name;
+							if (aname !== bname) {
+								return aname > bname ? 1 : aname < bname ? -1 : 0;
+							}
+							return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
 						});
 					} else {
 						dataset.sort(function (a, b) {
@@ -1047,7 +1052,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					oldTable.parentNode.replaceChild(table, oldTable);
 				}
 			};
-		create();
+		if (defaultSort) {
+			create(null, defaultSort);
+		} else {
+			create();
+		}
 		return table;
 	};
 
@@ -1061,8 +1070,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		function (item) {
 			this.appendChild(makeFoodRow(item));
 		},
-		null
+		'name'
 	));
+	//this was used to generate a Wiki table, might be re-purposed later
 	/*fragment = document.createDocumentFragment();
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Perish', 'Info'));
 	food.forEach(function (item) {
@@ -1086,7 +1096,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		function (item) {
 			this.appendChild(makeRecipeRow(item));
 		},
-		null
+		'name'
 	));
 	/*fragment = document.createDocumentFragment();
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
@@ -1139,12 +1149,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					index = i,
 					state,
 					from = picker.dataset.type === 'recipes' ? recipes : food,
-					parent = picker.parentNode,
+					parent = picker.nextSibling,
 					slots = parent.getElementsByClassName('ingredient'),
 					limited,
 					updateRecipes,
 					results = document.getElementById('results'),
 					discover = document.getElementById('discover'),
+					clear = document.createElement('span'),
 					displaying = false,
 					appendSlot = function (id) {
 						var i, item = food[id] || recipes[id] || null;
@@ -1201,17 +1212,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						this.appendChild(li);
 					},
 					removeSlot = function (e) {
+						var i;
 						if (limited) {
 							if (getSlot(e.target) !== null) {
 								setSlot(e.target, null);
 								updateRecipes();
+								return e.target.dataset.id;
 							} else {
 								picker.focus();
 							}
 						} else {
-							slots.splice(slots.indexOf(e.target.dataset.id), 1);
+							i = slots.indexOf(e.target.dataset.id);
+							slots.splice(i, 1);
 							parent.removeChild(e.target);
 							updateRecipes();
+							return slots[i] || null;
 						}
 					},
 					refreshLocation = function () {
@@ -1241,10 +1256,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						recipes = getRecipes(ingredients);
 						health = recipes[0].health;
 						hunger = recipes[0].hunger;
-						//table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
-						//recipes.forEach(function (item) {
-						//	table.appendChild(makeRecipeRow(item, health, hunger));
-						//});
 						table = makeSortableTable(
 							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
 							recipes,
@@ -1266,11 +1277,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							recipes = getSuggestions(ingredients, recipes);
 							if (recipes.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
-								/*table = document.createElement('table')
-								table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
-								recipes.forEach(function (item) {
-									table.appendChild(makeRecipeRow(item, health, hunger));
-								});*/
 								table = makeSortableTable(
 									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
 									recipes,
@@ -1297,11 +1303,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						if (ingredients.length > 0) {
 							recipes = getSuggestions(ingredients, null, true);
 							if (recipes.length > 0) {
-								/*table = document.createElement('table');
-								table.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
-								recipes.forEach(function (item) {
-									table.appendChild(makeRecipeRow(item));
-								});*/
 								table = makeSortableTable(
 									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
 									recipes,
@@ -1314,9 +1315,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							}
 						}
 					};
-				} else {
-					console.log('error: no update function implemented for ' + parent.id);
-					//alert('error: no update function implemented for ' + parent.id);
 				}
 				if (slots.length !== 0) {
 					limited = true;
@@ -1329,8 +1327,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					limited = false;
 				}
 				if (window.localStorage && localStorage.foodGuideState) {
-					state = JSON.parse(localStorage.foodGuideState);
-					if (state[index]) {
+					state = JSON.parse(localStorage.foodGuideState).pickers;
+					if (state && state[index]) {
 						state[index].forEach(function (id) {
 							appendSlot(id);
 						});
@@ -1338,6 +1336,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 				dropdown.className = 'ingredientdropdown';
 				dropdown.appendChild(ul);
+				dropdown.addEventListener('mousedown', function (e) { e.preventDefault(); }, false);
 				(function () {
 					var li = document.createElement('li'),
 						names = matchingNames(from, picker.value);
@@ -1346,6 +1345,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					names.forEach(liIntoPicker, ul);
 					dropdown.appendChild(ul);
 				}());
+				clear.className = 'clearingredients';
+				clear.appendChild(document.createTextNode('clear'));
+				clear.addEventListener('click', function () {
+					while (getSlot(parent.firstChild)) {
+						removeSlot({ target: parent.firstChild });
+					}
+				}, false);
+				parent.parentNode.insertBefore(clear, parent);
 				picker.addEventListener('keydown', function (e) {
 					var up = 38, down = 40, enter = 13, current, items, i;
 					items = ul.getElementsByTagName('li');
@@ -1382,6 +1389,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						dropdown.removeChild(ul);
 						ul = document.createElement('ul');
 						names.forEach(liIntoPicker, ul);
+						if (ul.firstChild) {
+							ul.firstChild.className = 'selected';
+						}
 						dropdown.appendChild(ul);
 						refreshLocation();
 					}
@@ -1404,18 +1414,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					var obj, serialized;
 					if (window.localStorage) {
 						if (!localStorage.foodGuideState) {
-							localStorage.foodGuideState = '[]';
+							localStorage.foodGuideState = '{}';
 						}
 						obj = JSON.parse(localStorage.foodGuideState);
+						if (!obj.pickers) {
+							obj.pickers = [];
+						}
 						if (limited) {
 							serialized = [];
 							serialized = Array.prototype.map.call(slots, function (slot) {
 								var item = getSlot(slot);
 								return item ? item.id : null;
 							});
-							obj[index] = serialized;
+							obj.pickers[index] = serialized;
 						} else {
-							obj[index] = slots;
+							obj.pickers[index] = slots;
 						}
 						localStorage.foodGuideState = JSON.stringify(obj);
 					}

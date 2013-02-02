@@ -1102,8 +1102,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	window.food = food;
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;
-	var slotItemCSS = '\') center center / 64px 64px, ',
-		slotBackgroundCSS = 'url(\'img/background.png\') 0px 0px / 100% 100%',
+	var slotItemCSS = '\') center center, ',
+		slotBackgroundCSS = 'url(\'img/background.png\') top left',
 		setSlot = function (slotElement, item) {
 			var end = false;
 			if (item !== null) {
@@ -1216,9 +1216,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					},
 					refreshLocation = function () {
 						if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
+							//to the left
 							dropdown.style.left = -dropdown.offsetWidth + 'px';
 							dropdown.style.top = picker.offsetTop + 'px';
+						} else if (mainElement.offsetLeft + picker.offsetLeft + picker.offsetWidth + dropdown.offsetWidth > window.innerWidth) {
+							//below
+							dropdown.style.left = picker.offsetLeft + 'px';
+							dropdown.style.top = picker.offsetTop + picker.offsetHeight + 'px';
 						} else {
+							//to the right
 							dropdown.style.left = picker.offsetLeft + picker.offsetWidth + 'px';
 							dropdown.style.top = picker.offsetTop + 'px';
 						}

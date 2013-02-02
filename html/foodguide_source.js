@@ -852,6 +852,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		recipesElement = document.getElementById('recipes'),
 		fragment, navbar = document.getElementById('navbar');
 
+	if (!document.documentElement.dataset) {
+		Object.defineProperty(Element.prototype, 'dataset', {
+			get: function () {
+				if (!this.ds) {
+					this.ds = {};
+					Array.prototype.forEach.call(this.attributes, function (item) {
+						if (item.name.indexOf('data-') === 0) {
+							this.ds[item.name.substring(5)] = item.value;
+						}
+					}, this);
+				}
+				return this.ds;
+			}
+		});
+	}
 	var info = [];
 	for (i in food) {
 		if (food.hasOwnProperty(i)) {

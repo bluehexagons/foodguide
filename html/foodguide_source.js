@@ -951,7 +951,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		activeTab = tabs['simulator'];
 		activePage = elements['simulator'];
 		if (window.localStorage && localStorage.foodGuideState) {
-			storage = JSON.parse(localStorage.foodGuideState);
+			if (localStorage.foodGuideState[0] === '[') {
+				//converts from old format which causes errors
+				storage = {};
+				storage.pickers = JSON.parse(localStorage.foodGuideState);
+				localStorage.foodGuideState = JSON.stringify(storage);
+			} else {
+				storage = JSON.parse(localStorage.foodGuideState);
+			}
 			if (storage.activeTab && tabs[storage.activeTab]) {
 				activeTab = tabs[storage.activeTab];
 				activePage = elements[storage.activeTab];

@@ -226,7 +226,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Fried Tallbird Egg',
 				egg: 4,
 				health: 0,
-				hunger: calories_large
+				hunger: calories_large,
+				perish: perish_fast
 			},
 			carrot: {
 				name: 'Carrot',

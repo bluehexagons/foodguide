@@ -55,9 +55,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		calories_superhuge = calories_per_day * 2,
 		spoiled_health = -1,
 		spoiled_hunger = -10,
+		Strings = {
+			'butter': 'Butter',
+			'butterflywings': 'Butterfly Wings',
+			'fish': 'Fish'
+		},
 		food = {
 			butter: {
-				name: 'Butter',
+				name: Strings.butter,
 				fat: 1,
 				dairy: 1,
 				health: healing_large,
@@ -66,7 +71,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem
 			},
 			butterflywings: {
-				name: 'Butterfly Wings',
+				name: Strings.butterflywings,
 				isveggie: true,
 				decoration: 2,
 				health: healing_med,
@@ -75,7 +80,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem
 			},
 			fish: {
-				name: 'Fish',
+				name: Strings.fish,
 				ismeat: true,
 				meat: 0.5,
 				fish: 1,
@@ -720,7 +725,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 0.25
 			}
 		},
-		output = [], i, index,
 		matchingNames = (function () {
 			var name,
 				anywhere,
@@ -840,6 +844,56 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				return recipeList;
 			};
 		}()),
+		makeImage = (function () {
+			var canvas = document.createElement('canvas'),
+				ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d'),
+				images = {},
+				canvasSupported = !!ctx,
+				requests = [],
+				cacheImage = function (url) {
+					var renderToCache = function (url, imageElement) {
+						canvas.width = imageElement.width;
+						canvas.height = imageElement.height;
+						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						ctx.drawImage(imageElement, 0, 0);
+						try {
+							images[url] = canvas.toDataURL();
+						} catch (ex) {
+							canvasSupported = false;
+						}
+						requests.filter(function (request) { return request.url === url; }).forEach(function (request) {
+							if (request.url === url) {
+								request.img.src = images[url] || url;
+							}
+						});
+					};
+					return function (e) {
+						renderToCache(url, e.target);
+					}
+				};
+			return function (url) {
+				var img = new Image();
+				if (canvasSupported) {
+					if (images[url]) {
+						//image is cached
+						img.src = images[url];
+					} else if (images[url] === null) {
+						//image is waiting to be loaded
+						requests.push({url: url, img: img});
+					} else {
+						//image has not been cached
+						images[url] = null;
+						img.addEventListener('load', cacheImage(url), false);
+						img.src = url;
+					}
+				} else {
+					//if we can't cache the images with canvas, just do it normally
+					img.src = url;
+				}
+				return img;
+			};
+		}()),
+		i,
 		index = 0,
 		mainElement = document.getElementById('main'),
 		foodElement = document.getElementById('food'),
@@ -986,8 +1040,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				td = document.createElement(cellType);
 				cell = arguments[i] && arguments[i].indexOf ? arguments[i] : arguments[i].toString();
 				if (cell.indexOf('img/') === 0) {
-					image = new Image();
-					image.src = cell;
+					image = makeImage(cell);
+					//image.src = cell;
 					image.style.width = imgSize;
 					image.style.height = imgSize;
 					td.appendChild(image);
@@ -1136,10 +1190,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			if (!end) {
 				if (item !== null) {
-					slotElement.style.background = 'url(\'' + item.img + slotItemCSS + slotBackgroundCSS;
+					//slotElement.style.background = 'url(\'' + item.img + slotItemCSS + slotBackgroundCSS;
+					if (slotElement.firstChild) {
+						slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
+					} else {
+						slotElement.appendChild(makeImage(item.img));
+					}
 				} else {
-					slotElement.style.background = slotBackgroundCSS;
+					if (slotElement.firstChild) {
+						slotElement.removeChild(slotElement.firstChild);
+					}
+					//slotElement.style.background = slotBackgroundCSS;
 				}
+				slotElement.title = item ? item.name : '';
 			}
 		},
 		getSlot = function (slotElement) {
@@ -1191,7 +1254,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					},
 					pickItem = function (e) {
 						var names,
-							result = appendSlot(e.target.dataset.id);
+							target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target,
+							result = appendSlot(target.dataset.id);
 						if (result !== -1) {
 							dropdown.removeChild(ul);
 							ul = document.createElement('ul');
@@ -1209,9 +1273,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 					},
 					liIntoPicker = function (item) {
-						var img = new Image(),
+						var img = makeImage(item.img),
 							li = document.createElement('li');
-						img.src = item.img;
 						li.appendChild(img);
 						li.appendChild(document.createTextNode(item.name));
 						li.dataset.id = item.id;
@@ -1219,19 +1282,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						this.appendChild(li);
 					},
 					removeSlot = function (e) {
-						var i;
+						var i, target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
 						if (limited) {
-							if (getSlot(e.target) !== null) {
-								setSlot(e.target, null);
+							if (getSlot(target) !== null) {
+								setSlot(target, null);
 								updateRecipes();
-								return e.target.dataset.id;
+								return target.dataset.id;
 							} else {
 								picker.focus();
 							}
 						} else {
-							i = slots.indexOf(e.target.dataset.id);
+							i = slots.indexOf(target.dataset.id);
 							slots.splice(i, 1);
-							parent.removeChild(e.target);
+							parent.removeChild(target);
 							updateRecipes();
 							return slots[i] || null;
 						}

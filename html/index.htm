@@ -11,6 +11,7 @@
 		#navbar li.selected { font-weight: bold; background: #fff; padding-top: 8px; margin-bottom: 0px; border-radius: 0px 0px 6px 6px; border-bottom: 2px solid black; }
 		#navbar a { color: inherit; text-decoration: none; }
 		#main { background: #eee; position: relative; top: -40px; padding: 10px; padding-top: 40px; border: 1px solid #999; }
+		.ingredientlist { display: table-row; }
 		span.ingredient { width: 68px; height: 68px; display: inline-block; margin: 0px; margin-right: 10px; overflow: hidden; cursor: pointer; background: url('img/background.png') top left no-repeat; display: table-cell; vertical-align: middle; border: none; border-right: 5px solid rgba(0, 0, 0, 0); }
 		span.ingredient img { display: block; margin-left: auto; margin-right: auto; }
 		.ingredientpicker { border: 1px solid #888; padding: 3px; border-radius: 4px; margin-bottom: 4px; }
@@ -47,12 +48,12 @@
 	<div id="main">
 		<div id="simulator">
 			<div style="margin-bottom: 6pt">Add ingredients to see what they make.</div>
-			<input type="text" class="ingredientpicker" data-type="food" style="width: 25%" placeholder="Choose an ingredient"></input><div id="ingredients"><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
+			<input type="text" class="ingredientpicker" data-type="food" style="width: 25%" placeholder="Choose an ingredient"></input><div id="ingredients" class="ingredientlist"><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
 			<div id="results"></div>
 		</div>
 		<div id="discovery">
 			<div style="margin-bottom: 6pt">Add items in your inventory to see your options.</div>
-			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Choose an ingredient"></input><div id="inventory"></div>
+			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Choose an ingredient"></input><div id="inventory" class="ingredientlist"></div>
 			<div id="discover"></div>
 		</div>
 		<div id="foodlist">

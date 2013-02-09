@@ -433,23 +433,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_meditem
 			}
 		},
-		testRequirement = function (requirement) { return requirement.test; },
 		//note: qty not used yet, this is for rapid summation
+		COMPAREString = function () { return this.op + this.qty; },
+		COMPARISONS = {
+			'=': function (qty) { return qty === this.qty; },
+			'>': function (qty) { return qty > this.qty; },
+			'<': function (qty) { return qty < this.qty; },
+			'>=': function (qty) { return qty >= this.qty; },
+			'<=': function (qty) { return qty <= this.qty; }
+		},
+		NOQTY = {test: function (qty) { return !!qty; }, toString: function () { return ''; }},
+		COMPARE = function (op, qty) { return {op: op, qty: qty, test: COMPARISONS[op], toString: COMPAREString}; },
 		ORTest = function (cooker, names, tags) { return this.item1.test(cooker, names, tags) || this.item2.test(cooker, names, tags); },
 		ORString = function () { return this.item1 + ' or ' + this.item2; },
 		OR = function (item1, item2) { return {item1: item1, item2: item2, test: ORTest, toString: ORString, cancel: item1.cancel || item2.cancel}; },
 		NOTTest = function (cooker, names, tags) { return !this.item.test(cooker, names, tags); },
 		NOTString = function () { return 'not ' + this.item; },
 		NOT = function (item) { return {item: item, test: NOTTest, toString: NOTString, cancel: true}; },
-		NAMETest = function (cooker, names, tags) { return names[this.name] || names[this.name + '_cooked']; },
+		NAMETest = function (cooker, names, tags) { return (names[this.name] || 0) + (names[this.name + '_cooked'] || 0); },
 		NAMEString = function () { return food[this.name].name + (this.qty ? this.qty : ''); },
-		NAME = function (name, qty) { return {name: name, qty: qty || null, test: NAMETest, toString: NAMEString}; }, //permits cooked variant
+		NAME = function (name, qty) { return {name: name, qty: qty || NOQTY, test: NAMETest, toString: NAMEString}; }, //permits cooked variant
 		SPECIFICTest = function (cooker, names, tags) { return names[this.name]; },
 		SPECIFICString = function () { return '*' + food[this.name].name + (this.qty ? this.qty : ''); },
-		SPECIFIC = function (name, qty) { return {name: name, qty: qty || null, test: SPECIFICTest, toString: SPECIFICString}; }, //disallows cooked/uncooked variant
+		SPECIFIC = function (name, qty) { return {name: name, qty: qty || NOQTY, test: SPECIFICTest, toString: SPECIFICString}; }, //disallows cooked/uncooked variant
 		TAGTest = function (cooker, names, tags) { return tags[this.tag]; },
 		TAGString = function () { return this.tag + (this.qty ? this.qty : ''); },
-		TAG = function (tag, qty) { return {tag: tag, qty: qty || null, test: TAGTest, toString: TAGString}; },
+		TAG = function (tag, qty) { return {tag: tag, qty: qty || NOQTY, test: TAGTest, toString: TAGString}; },
 		recipes = {
 			butterflymuffin: {
 				name: 'Butter Muffin',
@@ -484,7 +493,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.eggplant && tags.veggie && tags.veggie > 1;
 				},
-				requirements: [NAME('eggplant'), TAG('veggie', '>1')],
+				requirements: [NAME('eggplant'), TAG('veggie', COMPARE('>', 1))],
 				priority: 1,
 				foodtype: "veggie",
 				health: healing_small,
@@ -510,7 +519,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.honey && tags.meat && tags.meat <= 1.5;
 				},
-				requirements: [NAME('honey'), TAG('meat', '<=1.5')],
+				requirements: [NAME('honey'), TAG('meat', COMPARE('<=', 1.5))],
 				priority: 2,
 				foodtype: "meat",
 				health: healing_med,
@@ -523,7 +532,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.honey && tags.meat && tags.meat > 1.5;
 				},
-				requirements: [NAME('honey'), TAG('meat', '>1.5')],
+				requirements: [NAME('honey'), TAG('meat', COMPARE('>', 1.5))],
 				priority: 2,
 				foodtype: "meat",
 				health: healing_huge,
@@ -575,7 +584,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return tags.egg && tags.egg > 1 && tags.meat && 1 < tags.meat && !tags.veggie;
 				},
-				requirements: [TAG('egg', '>1'), TAG('meat', '>1'), NOT(TAG('veggie'))],
+				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
 				priority: 10,
 				foodtype: "meat",
 				health: healing_huge,
@@ -601,7 +610,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return tags.meat && tags.meat >= 3;
 				},
-				requirements: [TAG('meat', '>=3')],
+				requirements: [TAG('meat', COMPARE('>=', 3))],
 				priority: 0,
 				foodtype: "meat",
 				health: healing_med,
@@ -627,7 +636,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.drumstick && names.drumstick > 1 && tags.meat && 1 < tags.meat && (tags.veggie || tags.fruit);
 				},
-				requirements: [SPECIFIC('drumstick', '>1'), TAG('meat', '>1'), OR(TAG('veggie'), TAG('fruit'))],
+				requirements: [SPECIFIC('drumstick', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), OR(TAG('veggie'), TAG('fruit'))],
 				priority: 10,
 				foodtype: "meat",
 				health: healing_med,
@@ -705,7 +714,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return tags.monster && tags.monster >= 2;
 				},
-				requirements: [TAG('monster', '>=2')],
+				requirements: [TAG('monster', COMPARE('>=', 2))],
 				priority: 10,
 				foodtype: "meat",
 				health: -healing_tiny,
@@ -760,8 +769,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			};
 		}()),
 		getSuggestions = (function () {
-			var recipeList = [],
-				names,
+			var names,
 				tags,
 				setIngredientValues = function (items) {
 					var i, k, item;
@@ -781,7 +789,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 					}
 				};
-			return function (items, exclude, itemComplete) {
+			return function (recipeList, items, exclude, itemComplete) {
 				var i, ii, valid;
 				recipeList.length = 0;
 				setIngredientValues(items);
@@ -1224,6 +1232,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					slots = parent.getElementsByClassName('ingredient'),
 					limited,
 					updateRecipes,
+					suggestions = [],
+					inventoryrecipes = [],
 					results = document.getElementById('results'),
 					discover = document.getElementById('discover'),
 					clear = document.createElement('span'),
@@ -1318,18 +1328,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				if (parent.id === 'ingredients') {
 					updateRecipes = function () {
 						var ingredients,
-							recipes,
+							cooking,
 							health, hunger,
 							table;
 						ingredients = Array.prototype.map.call(slots, function (slot) {
 							return getSlot(slot);
 						});
-						recipes = getRecipes(ingredients);
-						health = recipes[0].health;
-						hunger = recipes[0].hunger;
+						cooking = getRecipes(ingredients);
+						health = cooking[0].health;
+						hunger = cooking[0].hunger;
 						table = makeSortableTable(
 							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
-							recipes,
+							cooking,
 							function (item) {
 								this.appendChild(makeRecipeRow(item, health, hunger));
 							},
@@ -1345,12 +1355,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 						results.appendChild(table);
 						if (ingredients[0] !== null) {
-							recipes = getSuggestions(ingredients, recipes);
-							if (recipes.length > 0) {
+							getSuggestions(suggestions, ingredients, cooking);
+							if (suggestions.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
 								table = makeSortableTable(
 									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
-									recipes,
+									suggestions,
 									function (item) {
 										this.appendChild(makeRecipeRow(item, health, hunger));
 									},
@@ -1363,7 +1373,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				} else if (parent.id === 'inventory') {
 					updateRecipes = function () {
 						var ingredients,
-							recipes,
 							table;
 						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), function (slot) {
 							return getSlot(slot);
@@ -1372,11 +1381,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							discover.removeChild(discover.firstChild);
 						}
 						if (ingredients.length > 0) {
-							recipes = getSuggestions(ingredients, null, true);
-							if (recipes.length > 0) {
+							getSuggestions(inventoryrecipes, ingredients, null, true);
+							if (inventoryrecipes.length > 0) {
 								table = makeSortableTable(
 									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
-									recipes,
+									inventoryrecipes,
 									function (item) {
 										this.appendChild(makeRecipeRow(item));
 									},

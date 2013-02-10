@@ -120,6 +120,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			honey: {
 				name: 'Honey',
 				sweetener: true,
+				inedible: true,
 				health: healing_medsmall,
 				hunger: calories_small,
 				perish: perish_superslow,
@@ -451,13 +452,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		NOTString = function () { return 'not ' + this.item; },
 		NOT = function (item) { return {item: item, test: NOTTest, toString: NOTString, cancel: true}; },
 		NAMETest = function (cooker, names, tags) { return (names[this.name] || 0) + (names[this.name + '_cooked'] || 0); },
-		NAMEString = function () { return food[this.name].name + (this.qty ? this.qty : ''); },
+		NAMEString = function () { return '[*' + food[this.name].name + '|' + food[this.name].img + ' ' + food[this.name].name + ']' + (food[this.name].cook ? '[*' + food[this.name].cook.name + '|' + food[this.name].cook.img + ']' : '') + (food[this.name].raw ? '[*' + food[this.name].raw.name + '|' + food[this.name].raw.img + ']' : '') + (this.qty ? this.qty : ''); },
 		NAME = function (name, qty) { return {name: name, qty: qty || NOQTY, test: NAMETest, toString: NAMEString}; }, //permits cooked variant
 		SPECIFICTest = function (cooker, names, tags) { return names[this.name]; },
-		SPECIFICString = function () { return '*' + food[this.name].name + (this.qty ? this.qty : ''); },
+		SPECIFICString = function () { return '[*' + food[this.name].name + '|' + food[this.name].img + ' ' + food[this.name].name + ']' + (this.qty ? this.qty : ''); },
 		SPECIFIC = function (name, qty) { return {name: name, qty: qty || NOQTY, test: SPECIFICTest, toString: SPECIFICString}; }, //disallows cooked/uncooked variant
 		TAGTest = function (cooker, names, tags) { return tags[this.tag]; },
-		TAGString = function () { return this.tag + (this.qty ? this.qty : ''); },
+		TAGString = function () { return '[tag:' + this.tag + '|' + this.tag + ']' + (this.qty ? this.qty : ''); },
 		TAG = function (tag, qty) { return {tag: tag, qty: qty || NOQTY, test: TAGTest, toString: TAGString}; },
 		recipes = {
 			butterflymuffin: {
@@ -506,7 +507,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return tags.fish && names.twigs;
 				},
-				requirements: [TAG('fish'), NAME('twigs')],
+				requirements: [TAG('fish'), SPECIFIC('twigs')],
 				priority: 10,
 				foodtype: "meat",
 				health: healing_large,
@@ -519,7 +520,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.honey && tags.meat && tags.meat <= 1.5;
 				},
-				requirements: [NAME('honey'), TAG('meat', COMPARE('<=', 1.5))],
+				requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('<=', 1.5))],
 				priority: 2,
 				foodtype: "meat",
 				health: healing_med,
@@ -532,7 +533,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.honey && tags.meat && tags.meat > 1.5;
 				},
-				requirements: [NAME('honey'), TAG('meat', COMPARE('>', 1.5))],
+				requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('>', 1.5))],
 				priority: 2,
 				foodtype: "meat",
 				health: healing_huge,
@@ -558,7 +559,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return tags.meat && names.twigs;
 				},
-				requirements: [TAG('meat'), NAME('twigs')],
+				requirements: [TAG('meat'), SPECIFIC('twigs')],
 				priority: 5,
 				foodtype: "meat",
 				health: healing_small,
@@ -701,7 +702,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return names.butter && (names.berries || names.berries_cooked) && tags.egg;
 				},
-				requirements: [NAME('butter'), NAME('berries'), TAG('egg')],
+				requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
 				priority: 10,
 				foodtype: "veggie",
 				health: healing_huge,
@@ -737,18 +738,54 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		},
 		matchingNames = (function () {
 			var name,
+				tag,
+				tagsearch = /^tag[: ]/,
+				tagsplit = /^tag:? */,
+				recipe,
+				recipesearch = /^recipe[: ]/,
+				recipesplit = /^recipe:? */,
 				anywhere,
+				wordstarts,
 				filter = function (element) {
 					if (element.uncookable) {
 						element.match = 0;
-					} else if (element.lowerName.indexOf(name) === 0) {
-						element.match = 1;
-					} else if (anywhere.test(element.lowerName)) {
+					} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
+						element.match = 3;
+					} else if (wordstarts.test(element.lowerName) === 0) {
 						element.match = 2;
+					} else if (anywhere.test(element.lowerName)) {
+						element.match = 1;
 					} else {
 						element.match = 0;
 					}
 					return element.match;
+				},
+				tagFilter = function (element) {
+					return element.match = element[tag] + 0 || 0;
+				},
+				recipeFilter = function (element) {
+					var i = 0, result, failed = true;
+					while (i < recipe.length) {
+						result = recipe[i].test(null, element.nameObject, element);
+						if (recipe[i].cancel) {
+							if (!result) {
+								failed = true;
+								break;
+							}
+						} else {
+							if (result) {
+								failed = false;
+							}
+						}
+						i++;
+					}
+					return element.match = failed ? 0 : 1;
+				},
+				exact = function (element) {
+					return element.match = (element.lowerName === name) ? 1 : 0;
+				},
+				like = function (element) {
+					return element.match = (element.lowerName === name || (element.raw && element.raw.lowerName === name) || (element.cook && element.cook.lowerName === name)) ? 1 : 0;
 				},
 				byMatch = function (a, b) {
 					var aname, bname;
@@ -760,12 +797,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 						return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
 					}
-					return a.match - b.match;
+					return b.match - a.match;
 				};
 			return function (arr, search) {
 				name = search.toLowerCase();
-				anywhere = new RegExp('\\b' + name.split('').join('.*') + '.*');
-				return arr.filter(filter).sort(byMatch);
+				if (tagsearch.test(name)) {
+					tag = name.split(tagsplit)[1];
+					return arr.filter(tagFilter).sort(byMatch);
+				} else if (recipesearch.test(name)) {
+					recipe = name.replace(' ', '').split(recipesplit)[1];
+					if (recipes[recipe]) {
+						recipe = recipes[recipe].requirements;
+						return arr.filter(recipeFilter).sort(byMatch);
+					} else {
+						return [];
+					}
+				} else if (name.indexOf('*') === 0) {
+					name = name.substring(1);
+					return arr.filter(exact).sort(byMatch);
+				} else if (name.indexOf('~') === 0) {
+					name = name.substring(1);
+					return arr.filter(like).sort(byMatch);
+				} else {
+					wordstarts = new RegExp('\\b' + name + '.*');
+					anywhere = new RegExp('\\b' + name.split('').join('.*') + '.*');
+					return arr.filter(filter).sort(byMatch);
+				}
 			};
 		}()),
 		getSuggestions = (function () {
@@ -861,8 +918,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requests = [],
 				cacheImage = function (url) {
 					var renderToCache = function (url, imageElement) {
-						canvas.width = imageElement.width;
-						canvas.height = imageElement.height;
 						ctx.clearRect(0, 0, canvas.width, canvas.height);
 						ctx.drawImage(imageElement, 0, 0);
 						try {
@@ -872,34 +927,80 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 						requests.filter(function (request) { return request.url === url; }).forEach(function (request) {
 							if (request.url === url) {
+								delete request.img.dataset.pending;
+								if (noDataset) {
+									request.img.removeAttribute('data-pending');
+								}
 								request.img.src = images[url] || url;
 							}
 						});
+						requests = requests.filter(function (request) { return request.url !== url; });
 					};
 					return function (e) {
 						renderToCache(url, e.target);
 					}
-				};
-			return function (url) {
-				var img = new Image();
-				if (canvasSupported) {
-					if (images[url]) {
-						//image is cached
-						img.src = images[url];
-					} else if (images[url] === null) {
-						//image is waiting to be loaded
-						requests.push({url: url, img: img});
+				},
+				queue = function (img, url) {
+					img.dataset.pending = url;
+					if (noDataset) {
+						img.setAttribute('data-pending', url);
+					}
+					requests.push({url: url, img: img});
+				},
+				makeImage = function (url) {
+					var img = new Image();
+					if (canvasSupported) {
+						if (images[url]) {
+							//image is cached
+							img.src = images[url];
+						} else if (images[url] === null) {
+							//image is waiting to be loaded
+							queue(img, url);
+						} else {
+							//image has not been cached
+							images[url] = null;
+							img.addEventListener('load', cacheImage(url), false);
+							img.src = url;
+						}
 					} else {
-						//image has not been cached
-						images[url] = null;
-						img.addEventListener('load', cacheImage(url), false);
+						//if we can't cache the images with canvas, just do it normally
 						img.src = url;
 					}
+					return img;
+				};
+			canvas.width = 64;
+			canvas.height = 64;
+			makeImage.queue = queue;
+			return makeImage;
+		}()),
+		makeLinkable = (function () {
+			var linkSearch = /\[([^\|]*)\|([^\|]*)\]/;
+			return function (str) {
+				var results = str && str.split(linkSearch),
+					fragment, i, span, image;
+				if (!results || results.length === 1) {
+					return str;
 				} else {
-					//if we can't cache the images with canvas, just do it normally
-					img.src = url;
+					fragment = document.createDocumentFragment();
+					fragment.appendChild(document.createTextNode(results[0]));
+					for (i = 1; i < results.length; i += 3) {
+						span = document.createElement('span');
+						span.className = 'link';
+						span.dataset.link = results[i];
+						if (noDataset) {
+							span.setAttribute('data-link', results[i]);
+						}
+						if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
+							span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
+							span.appendChild(makeImage(results[i + 1].split(' ')[0]));
+						} else {
+							span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
+						}
+						fragment.appendChild(span);
+						fragment.appendChild(document.createTextNode(results[i + 2]));
+					}
+					return fragment;
 				}
-				return img;
 			};
 		}()),
 		i,
@@ -907,9 +1008,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		mainElement = document.getElementById('main'),
 		foodElement = document.getElementById('food'),
 		recipesElement = document.getElementById('recipes'),
-		fragment, navbar = document.getElementById('navbar');
+		fragment, navbar = document.getElementById('navbar'),
+		noDataset = false;
 
 	if (!document.documentElement.dataset) {
+		noDataset = true;
 		Object.defineProperty(Element.prototype, 'dataset', {
 			get: function () {
 				if (!this.ds) {
@@ -924,14 +1027,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		});
 	}
-	var info = [];
+	//var info = [];
+	var info,
+		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 	for (i in food) {
 		if (food.hasOwnProperty(i)) {
 			food[i].match = 0;
 			food[i].lowerName = food[i].name.toLowerCase();
 			food[i].id = i;
+			food[i].nameObject = {};
+			food[i].nameObject[i] = 1;
 			food[i].img = 'img/' + food[i].name.replace(/ /g, '_').toLowerCase() + '.png';
-			info.length = 0;
 			if (i.indexOf('_cooked') !== -1) {
 				food[i].cooked = true;
 			}
@@ -939,23 +1045,30 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				food[i].cook = food[i + '_cooked'];
 				food[i + '_cooked'].raw = food[i];
 			}
-			food[i].fruit && info.push('fruit' + (food[i].fruit === 1 ? '' : ' (' + food[i].fruit + ')'));
-			food[i].veggie && info.push('vegetable' + (food[i].veggie === 1 ? '' : ' (' + food[i].veggie + ')'));
-			food[i].meat && info.push('meat' + (food[i].meat === 1 ? '' : ' (' + food[i].meat + ')'));
-			food[i].egg && info.push('egg' + (food[i].egg === 1 ? '' : ' (' + food[i].egg + ')'));
-			food[i].fish && info.push('fish');
-			food[i].magic && info.push('magic');
-			food[i].decoration && info.push('decoration');
-			food[i].inedible && info.push('inedible');
-			food[i].monster && info.push('monster food');
-			food[i].sweetener && info.push('sweetener');
-			food[i].fat && info.push('fat');
-			food[i].dairy && info.push('dairy');
-			food[i].cooked && info.push('cooked ' + food[i].raw.name);
-			food[i].cook && info.push('cook into ' + food[i].cook.name);
-			food[i].uncookable && info.push('cannot be added to crock pot');
-			food[i].info = info.join('; ');
+			food[i].info = [];
+			info = food[i].info;
+			food[i].fruit && info.push(taggify('fruit') + (food[i].fruit === 1 ? '' : '\xd7' + food[i].fruit));
+			food[i].veggie && info.push(taggify('veggie', 'vegetable') + (food[i].veggie === 1 ? '' : '\xd7' + food[i].veggie));
+			food[i].meat && info.push(taggify('meat') + (food[i].meat === 1 ? '' : '\xd7' + food[i].meat));
+			food[i].egg && info.push(taggify('egg') + (food[i].egg === 1 ? '' : '\xd7' + food[i].egg));
+			food[i].fish && info.push(taggify('fish'));
+			food[i].magic && info.push(taggify('magic'));
+			food[i].decoration && info.push(taggify('decoration'));
+			food[i].inedible && info.push(taggify('inedible'));
+			food[i].monster && info.push(taggify('monster', 'monster food'));
+			food[i].sweetener && info.push(taggify('sweetener'));
+			food[i].fat && info.push(taggify('fat'));
+			food[i].dairy && info.push(taggify('dairy'));
 			food[index++] = food[i];
+		}
+	}
+	for (i in food) {
+		if (food.hasOwnProperty(i) && isNaN(i)) {
+			info = food[i].info;
+			food[i].cooked && info.push('cooked [*' + food[i].raw.name + '|' + food[i].raw.img + ' ' + food[i].raw.name + ']');
+			food[i].cook && info.push('cook into [*' + food[i].cook.name + '|' + food[i].cook.img + ' ' + food[i].cook.name + ']');
+			food[i].uncookable && info.push('cannot be added to crock pot');
+			food[i].info = makeLinkable(info.join('; '));
 		}
 	}
 	food.length = index;
@@ -973,7 +1086,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			recipes[i].priority = recipes[i].priority || 0;
 			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').toLowerCase() + '.png';
 			if (recipes[i].requirements) {
-				recipes[i].requires = recipes[i].requirements.join('; ');
+				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; '));
 			}
 			recipes[index++] = recipes[i];
 		}
@@ -1042,29 +1155,41 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		});
 	}());
 
-	var imgSize = '40px',
+	var queue = function (img) {
+			if (img.dataset.pending) {
+				makeImage.queue(img, img.dataset.pending);
+			}
+		},
 		cells = function (cellType) {
-			var i, td, image, tr = document.createElement('tr'), cell;
+			var i, td, image, tr = document.createElement('tr'), cell, celltext;
 			for (i = 1; i < arguments.length; i++) {
 				td = document.createElement(cellType);
-				cell = arguments[i] && arguments[i].indexOf ? arguments[i] : arguments[i].toString();
-				if (cell.indexOf('img/') === 0) {
-					image = makeImage(cell);
-					//image.src = cell;
-					image.style.width = imgSize;
-					image.style.height = imgSize;
+				cell = arguments[i],
+				celltext = cell && cell.indexOf ? cell : cell.toString();
+				if (cell instanceof DocumentFragment) {
+					td.appendChild(cell.cloneNode(true));
+					Array.prototype.forEach.call(td.getElementsByTagName('img'), queue);
+				} else if (celltext.indexOf('img/') === 0) {
+					image = makeImage(celltext);
 					td.appendChild(image);
 				} else {
-					td.appendChild(document.createTextNode(cell));
+					td.appendChild(document.createTextNode(celltext));
 				}
 				tr.appendChild(td);
 			}
 			return tr;
 		};
-	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary) {
+	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback) {
 		var table, header, sorting, invertSort = false,
+			generateAndHighlight = function (item) {
+				var row = rowGenerator(item);
+				if (highlightCallback && highlightCallback(item)) {
+					row.className = 'highlighted';
+				}
+				table.appendChild(row);
+			},
 			create = function (e, sort) {
-				var tr, th, oldTable, sortBy, summary;
+				var tr, th, oldTable, sortBy, summary, links, i;
 				if (sort || (e && e.target.dataset.sort !== '')) {
 					sortBy = sort || e.target.dataset.sort;
 					if (hasSummary) {
@@ -1117,7 +1242,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				oldTable = table;
 				table = document.createElement('table');
 				table.appendChild(tr);
-				dataset.forEach(rowGenerator, table);
+				dataset.forEach(generateAndHighlight);
+				if (linkCallback) {
+					table.className = 'links';
+					Array.prototype.forEach.call(table.getElementsByClassName('link'), function (element) {
+						element.addEventListener('click', linkCallback, false);
+					});
+				}
 				if (oldTable) {
 					oldTable.parentNode.replaceChild(table, oldTable);
 				}
@@ -1127,6 +1258,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		} else {
 			create();
 		}
+		table.update = create;
 		return table;
 	};
 
@@ -1134,14 +1266,34 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var makeFoodRow = function (item) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
 	};
-	foodElement.appendChild(makeSortableTable(
-		{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Perish': 'perish', 'Info': ''},
-		Array.prototype.slice.call(food),
-		function (item) {
-			this.appendChild(makeFoodRow(item));
-		},
-		'name'
-	));
+	(function () {
+		var highlight,
+			highlighted = [],
+			setHighlight = function (e) {
+				var name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				if (highlight !== name) {
+					highlight = name;
+					highlighted = matchingNames(food, name);
+				} else {
+					highlight = '';
+					highlighted.length = 0;
+				}
+				table.update();
+			},
+			testHighlight = function (item) {
+				return highlighted.indexOf(item) !== -1;
+			},
+			table = makeSortableTable(
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Perish': 'perish', 'Info': ''},
+				Array.prototype.slice.call(food),
+				makeFoodRow,
+				'name',
+				false,
+				setHighlight,
+				testHighlight
+			);
+		foodElement.appendChild(table);
+	}());
 	//this was used to generate a Wiki table, might be re-purposed later
 	/*fragment = document.createDocumentFragment();
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Perish', 'Info'));
@@ -1163,9 +1315,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	recipesElement.appendChild(makeSortableTable(
 		{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
 		Array.prototype.slice.call(recipes),
-		function (item) {
-			this.appendChild(makeRecipeRow(item));
-		},
+		makeRecipeRow,
 		'name'
 	));
 	/*fragment = document.createDocumentFragment();
@@ -1273,6 +1423,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							names = matchingNames(from, '');
 							names.forEach(liIntoPicker, ul);
 							dropdown.appendChild(ul);
+							if (ul.firstChild) {
+								ul.firstChild.className = 'selected';
+							}
 							picker.value = '';
 							if (result < slots.length - 1 || !limited) {
 								picker.focus();
@@ -1324,6 +1477,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							dropdown.style.left = picker.offsetLeft + picker.offsetWidth + 'px';
 							dropdown.style.top = picker.offsetTop + 'px';
 						}
+					},
+					refreshPicker = function () {
+						var li = document.createElement('li'),
+							names = matchingNames(from, picker.value);
+						dropdown.removeChild(ul);
+						ul = document.createElement('ul');
+						names.forEach(liIntoPicker, ul);
+						if (ul.firstChild) {
+							ul.firstChild.className = 'selected';
+						}
+						dropdown.appendChild(ul);
+						refreshLocation();
+					},
+					searchFor = function (e) {
+						var name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link,
+							matches = matchingNames(from, name);
+						if (matches.length === 1) {
+							appendSlot(matches[0].id);
+						} else {
+							picker.value = name;
+							refreshPicker();
+							picker.focus();
+						}
 					};
 				if (parent.id === 'ingredients') {
 					updateRecipes = function () {
@@ -1341,10 +1517,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
 							cooking,
 							function (item) {
-								this.appendChild(makeRecipeRow(item, health, hunger));
+								return makeRecipeRow(item, health, hunger);
 							},
 							'priority',
-							true
+							true,
+							searchFor
 						);
 						if (results.firstChild) {
 							results.removeChild(results.firstChild);
@@ -1362,9 +1539,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
 									suggestions,
 									function (item) {
-										this.appendChild(makeRecipeRow(item, health, hunger));
+										return makeRecipeRow(item, health, hunger);
 									},
-									'priority'
+									'priority',
+									false,
+									searchFor
 								);
 								results.appendChild(table);
 							}
@@ -1386,9 +1565,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								table = makeSortableTable(
 									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
 									inventoryrecipes,
-									function (item) {
-										this.appendChild(makeRecipeRow(item));
-									},
+									makeRecipeRow,
 									'priority'
 								)
 								discover.appendChild(table);
@@ -1424,6 +1601,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					ul = document.createElement('ul');
 					names.forEach(liIntoPicker, ul);
 					dropdown.appendChild(ul);
+					if (ul.firstChild) {
+						ul.firstChild.className = 'selected';
+					}
 				}());
 				clear.className = 'clearingredients';
 				clear.appendChild(document.createTextNode('clear'));
@@ -1434,46 +1614,42 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}, false);
 				parent.parentNode.insertBefore(clear, parent);
 				picker.addEventListener('keydown', function (e) {
-					var up = 38, down = 40, enter = 13, current, items, i;
-					items = ul.getElementsByTagName('li');
-					for (i = 0; i < items.length; i++) {
-						if (items[i].className === 'selected') {
-							current = items[i];
-							items[i].className = '';
-							if (e.keyCode === up) {
-								items[i - 1 < 0 ? items.length - 1 : i - 1].className = 'selected';
-							} else if (e.keyCode === down) {
-								items[(i + 1) % items.length].className = 'selected';
-							} else if (e.keyCode === enter && current) {
-								pickItem({target: current});
-								refreshLocation();
-							}
-							break;
-						}
-					}
-					if (!current && items.length > 0) {
-						if (e.keyCode === up) {
-							items[items.length - 1].className = 'selected';
-						} else if (e.keyCode === down) {
-							items[0].className = 'selected';
-						} else if (e.keyCode === enter) {
-							pickItem({target: items[0]});
-						}
-					}
+					
 				}, false);
 				picker.addEventListener('keyup', function (e) {
-					var movement = [16, 17, 37, 38, 39, 40, 13];
+					var movement = [16, 17, 37, 38, 39, 40, 13],
+						up = 38, down = 40, enter = 13, current, items, i;
+
 					if (movement.indexOf(e.keyCode) === -1) {
-						var li = document.createElement('li'),
-							names = matchingNames(from, picker.value);
-						dropdown.removeChild(ul);
-						ul = document.createElement('ul');
-						names.forEach(liIntoPicker, ul);
-						if (ul.firstChild) {
-							ul.firstChild.className = 'selected';
+						refreshPicker();
+					} else {
+						items = ul.getElementsByTagName('li');
+						for (i = 0; i < items.length; i++) {
+							if (items[i].className === 'selected') {
+								current = items[i];
+								if (e.keyCode === up || e.keyCode === down) {
+									items[i].className = '';
+								}
+								if (e.keyCode === up) {
+									items[i - 1 < 0 ? items.length - 1 : i - 1].className = 'selected';
+								} else if (e.keyCode === down) {
+									items[(i + 1) % items.length].className = 'selected';
+								} else if (e.keyCode === enter && current) {
+									pickItem({target: current});
+									refreshLocation();
+								}
+								break;
+							}
 						}
-						dropdown.appendChild(ul);
-						refreshLocation();
+						if (!current && items.length > 0) {
+							if (e.keyCode === up) {
+								items[items.length - 1].className = 'selected';
+							} else if (e.keyCode === down) {
+								items[0].className = 'selected';
+							} else if (e.keyCode === enter) {
+								pickItem({target: items[0]});
+							}
+						}
 					}
 				}, false);
 				picker.addEventListener('focus', function () {

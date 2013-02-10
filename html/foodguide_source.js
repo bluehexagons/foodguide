@@ -919,12 +919,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cacheImage = function (url) {
 					var renderToCache = function (url, imageElement) {
 						ctx.clearRect(0, 0, canvas.width, canvas.height);
-						ctx.drawImage(imageElement, 0, 0);
+						ctx.drawImage(imageElement, 0, 0, 64, 64);
 						try {
 							images[url] = canvas.toDataURL();
 						} catch (ex) {
 							canvasSupported = false;
 						}
+						imageElement.src = images[url] || url;
 						requests.filter(function (request) { return request.url === url; }).forEach(function (request) {
 							if (request.url === url) {
 								delete request.img.dataset.pending;

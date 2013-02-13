@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 (function () {
 	'use strict';
 	var calories_per_day = 75,
-		total_day_time = 480,
+		total_day_time = 60 * 8,
 		seg_time = total_day_time / 16,
 		day_time = 10 * total_day_time / 16,
 		dusk_time = 2 * total_day_time / 16,
@@ -33,6 +33,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		stack_size_largeitem = 10,
 		stack_size_meditem = 20,
 		stack_size_smallitem = 40,
+
 		healing_tiny = 1,
 		healing_small = 5,
 		healing_medsmall = 10,
@@ -41,18 +42,28 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		healing_large = 50,
 		healing_huge = 75,
 		healing_superhuge = 100,
-		perish_superfast = 3 * total_day_time * perish_warp,
-		perish_fast = 6 * total_day_time * perish_warp,
-		perish_med = 12 * total_day_time * perish_warp,
-		perish_slow = 18 * total_day_time * perish_warp,
-		perish_preserved = 24 * total_day_time * perish_warp,
-		perish_superslow = 40 * total_day_time * perish_warp,
-		calories_tiny = calories_per_day / 8,
-		calories_small = calories_per_day / 6,
-		calories_med = calories_per_day / 3,
-		calories_large = calories_per_day / 2,
-		calories_huge = calories_per_day,
-		calories_superhuge = calories_per_day * 2,
+		
+		sanity_tiny = 5,
+		sanity_small = 10,
+		sanity_med = 15,
+		sanity_medlarge = 20,
+		sanity_large = 33,
+		sanity_huge = 50,
+		
+		perish_superfast = 3*total_day_time*perish_warp,
+		perish_fast = 6*total_day_time*perish_warp,
+		perish_med = 12*total_day_time*perish_warp,
+		perish_slow = 18*total_day_time*perish_warp,
+		perish_preserved = 24*total_day_time*perish_warp,
+		perish_superslow = 40*total_day_time*perish_warp,
+
+		calories_tiny = calories_per_day/8, //berries
+		calories_small = calories_per_day/6, //veggies
+		calories_med = calories_per_day/3, //meat
+		calories_large = calories_per_day/2, //cooked meat
+		calories_huge = calories_per_day, //crockpot foods?
+		calories_superhuge = calories_per_day*2, //crockpot foods?
+
 		spoiled_health = -1,
 		spoiled_hunger = -10,
 		Strings = {
@@ -106,6 +117,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_tiny,
 				hunger: calories_small,
 				perish: perish_fast,
+				sanity: -sanity_small,
 				stack: stack_size_smallitem
 			},
 			froglegs_cooked: {
@@ -115,16 +127,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_small,
 				perish: perish_med,
+				sanity: -sanity_small,
 				stack: stack_size_smallitem
 			},
 			honey: {
 				name: 'Honey',
 				sweetener: true,
-				inedible: true,
 				health: healing_medsmall,
 				hunger: calories_small,
 				perish: perish_superslow,
 				stack: stack_size_smallitem
+			},
+			honeycomb: {
+				name: 'Honeycomb',
+				inedible: true,
+				sweetener: true
 			},
 			mandrake: {
 				name: 'Mandrake',
@@ -150,6 +167,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				monster: true,
 				health: -healing_med,
 				hunger: calories_med,
+				sanity: -sanity_med,
 				perish: perish_med,
 				stack: stack_size_meditem
 			},
@@ -160,6 +178,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				monster: true,
 				health: -healing_small,
 				hunger: calories_med,
+				sanity: -sanity_med,
 				perish: perish_slow,
 				stack: stack_size_meditem
 			},
@@ -169,6 +188,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 1,
 				health: healing_med,
 				hunger: calories_med,
+				sanity: -sanity_small,
 				perish: perish_fast,
 				stack: stack_size_meditem
 			},
@@ -178,6 +198,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 1,
 				health: healing_medlarge,
 				hunger: calories_large,
+				sanity: sanity_tiny,
 				perish: perish_med,
 				stack: stack_size_meditem
 			},
@@ -187,6 +208,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				health: healing_small,
 				hunger: calories_small,
+				sanity: -sanity_small,
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
@@ -197,6 +219,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_med,
 				hunger: calories_small,
 				perish: perish_med,
+				sanity: sanity_tiny,
 				stack: stack_size_smallitem
 			},
 			drumstick: {
@@ -205,6 +228,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				health: healing_tiny,
 				hunger: calories_small,
+				sanity: -sanity_small,
 				perish: perish_fast,
 				stack: stack_size_meditem
 			},
@@ -217,18 +241,72 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_meditem
 			},
-			egg: {
+			petals: {
+				name: 'Petals',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: 0,
+				sanity: -sanity_tiny / 2,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			seeds: {
+				name: 'Seeds',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: calories_tiny / 2,
+				perish: perish_superslow,
+				stack: stack_size_smallitem
+			},
+			seeds_cooked: {
+				name: 'Toasted Seeds',
+				uncookable: true,
+				health: healing_small,
+				hunger: calories_tiny / 2,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			spoiled_food: {
+				name: 'Rot',
+				uncookable: true,
+				health: spoiled_health,
+				hunger: spoiled_hunger,
+				stack: stack_size_smallitem
+			},
+			tallbirdegg: {
 				name: 'Tallbird Egg',
 				egg: 4,
 				health: healing_small,
 				hunger: calories_med
 			},
-			egg_cooked: {
+			tallbirdegg_cooked: {
 				name: 'Fried Tallbird Egg',
 				egg: 4,
 				health: 0,
 				hunger: calories_large,
 				perish: perish_fast
+			},
+			trunk_summer: {
+				name: 'Koalefant Trunk',
+				uncookable: true,
+				ismeat: true,
+				health: healing_medlarge,
+				hunger: calories_large,
+				perish: perish_fast,
+				stack: stack_size_meditem
+			},
+			trunk_summer_cooked: {
+				name: 'Koalefant Trunk Steak',
+				uncookable: true,
+				ismeat: true,
+				health: healing_large,
+				hunger: calories_huge,
+				perish: perish_slow,
+				stack: stack_size_meditem
+			},
+			twigs: {
+				name: 'Twigs',
+				inedible: 1
 			},
 			carrot: {
 				name: 'Carrot',
@@ -375,63 +453,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				perish: perish_superfast,
 				stack: stack_size_smallitem
-			},
-			goop: {
-				name: 'Rot',
-				uncookable: true,
-				health: spoiled_health,
-				hunger: spoiled_hunger,
-				stack: stack_size_smallitem
-			},
-			seeds: {
-				name: 'Seeds',
-				uncookable: true,
-				health: healing_tiny,
-				hunger: calories_tiny,
-				perish: perish_superslow,
-				stack: stack_size_smallitem
-			},
-			seeds_cooked: {
-				name: 'Toasted Seeds',
-				uncookable: true,
-				health: healing_small,
-				hunger: calories_small,
-				perish: perish_med,
-				stack: stack_size_smallitem
-			},
-			honeycomb: {
-				name: 'Honeycomb',
-				sweetener: true
-			},
-			twigs: {
-				name: 'Twigs',
-				inedible: 1
-			},
-			petals: {
-				name: 'Petals',
-				uncookable: true,
-				health: healing_tiny,
-				hunger: 0,
-				perish: perish_fast,
-				stack: stack_size_smallitem
-			},
-			trunk_summer: {
-				name: 'Koalefant Trunk',
-				uncookable: true,
-				ismeat: true,
-				health: healing_medlarge,
-				hunger: calories_large,
-				perish: perish_fast,
-				stack: stack_size_meditem
-			},
-			trunk_summer_cooked: {
-				name: 'Koalefant Trunk Steak',
-				uncookable: true,
-				ismeat: true,
-				health: healing_large,
-				hunger: calories_huge,
-				perish: perish_slow,
-				stack: stack_size_meditem
 			}
 		},
 		//note: qty not used yet, this is for rapid summation
@@ -464,35 +485,65 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			butterflymuffin: {
 				name: 'Butter Muffin',
 				test: function(cooker, names, tags) {
-					return names.butterflywings && tags.veggie;
+					return names.butterflywings && !tags.meat && tags.veggie;
 				},
 				requires: 'Butterfly Wings, veggie',
-				requirements: [NAME('butterflywings'), TAG('veggie')],
+				requirements: [NAME('butterflywings'), NOT(TAG('meat')), TAG('veggie')],
 				priority: 1,
 				weight: 1,
 				foodtype: "veggie",
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			frogglebunwich: {
 				name: 'Froggle Bunwich',
 				test: function(cooker, names, tags) {
-					return names.froglegs && !names.froglegs_cooked && tags.veggie;
+					return (names.froglegs || names.froglegs_cooked) && tags.veggie;
 				},
-				requirements: [SPECIFIC('froglegs'), TAG('veggie')],
+				requirements: [NAME('froglegs'), TAG('veggie')],
 				priority: 1,
 				foodtype: "meat",
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_slow,
+				sanity: sanity_med,
+				cooktime: 2
+			},
+			taffy: {
+				name: "Taffy",
+				test: function(cooker, names, tags) {
+					return tags.sweetener && tags.sweetener >= 3 && !tags.meat;
+				},
+				requirements: [TAG('sweetener', COMPARE('>=', 3), NOT(TAG('meat')))],
+				priority: 10,
+				foodtype: "veggie",
+				health: -healing_small,
+				hunger: calories_small * 2,
+				perishtime: perish_slow,
+				sanity: sanity_large,
+				cooktime: 2
+			},
+			pumpkincookie: {
+				name: "Pumpkin Cookie",
+				test: function(cooker, names, tags) {
+					return (names.pumpkin || names.pumpkin_cooked) && tags.sweetener && tags.sweetener >= 2;
+				},
+				requirements: [NAME('pumpkin'), TAG('sweetener', COMPARE('>=', 2))],
+				priority: 10,
+				foodtype: "veggie",
+				health: 0,
+				hunger: calories_large,
+				perishtime: perish_med,
+				sanity: sanity_large,
 				cooktime: 2
 			},
 			stuffedeggplant: {
 				name: 'Stuffed Eggplant',
 				test: function(cooker, names, tags) {
-					return names.eggplant && tags.veggie && tags.veggie > 1;
+					return (names.eggplant || names.eggplant_cooked) && tags.veggie && tags.veggie > 1;
 				},
 				requirements: [NAME('eggplant'), TAG('veggie', COMPARE('>', 1))],
 				priority: 1,
@@ -500,6 +551,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_large,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			fishsticks: {
@@ -513,6 +565,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_large,
 				hunger: calories_large,
 				perish: perish_med,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			honeynuggets: {
@@ -524,8 +577,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				priority: 2,
 				foodtype: "meat",
 				health: healing_med,
-				hunger: calories_huge,
+				hunger: calories_large,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			honeyham: {
@@ -539,6 +593,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_huge,
 				hunger: calories_huge,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			dragonpie: {
@@ -552,6 +607,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_huge,
 				hunger: calories_huge,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			kabobs: {
@@ -565,6 +621,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_large,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			mandrakesoup: {
@@ -578,12 +635,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_superhuge,
 				hunger: calories_superhuge,
 				perish: perish_fast,
+				sanity: sanity_med,
 				cooktime: 3
 			},
 			baconeggs: {
 				name: 'Bacon and Eggs',
 				test: function(cooker, names, tags) {
-					return tags.egg && tags.egg > 1 && tags.meat && 1 < tags.meat && !tags.veggie;
+					return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
 				},
 				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
 				priority: 10,
@@ -591,6 +649,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_huge,
 				hunger: calories_huge,
 				perish: perish_preserved,
+				sanity: sanity_med,
 				cooktime: 2
 			},
 			meatballs: {
@@ -604,6 +663,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small * 5,
 				hunger: calories_small * 5,
 				perish: perish_med,
+				sanity: sanity_med,
 				cooktime: 0.75
 			},
 			bonestew: {
@@ -617,6 +677,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_med,
 				hunger: calories_large * 4,
 				perish: perish_med,
+				sanity: sanity_med,
 				cooktime: 0.75
 			},
 			perogies: {
@@ -630,12 +691,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_large,
 				hunger: calories_large,
 				perish: perish_preserved,
+				sanity: sanity_med,
 				cooktime: 1
 			},
 			turkeydinner: {
 				name: 'Turkey Dinner',
 				test: function(cooker, names, tags) {
-					return names.drumstick && names.drumstick > 1 && tags.meat && 1 < tags.meat && (tags.veggie || tags.fruit);
+					return names.drumstick && names.drumstick > 1 && tags.meat && tags.meat > 1 && (tags.veggie || tags.fruit);
 				},
 				requirements: [SPECIFIC('drumstick', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), OR(TAG('veggie'), TAG('fruit'))],
 				priority: 10,
@@ -643,45 +705,49 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_med,
 				hunger: calories_huge,
 				perish: perish_fast,
+				sanity: sanity_med,
 				cooktime: 3
 			},
 			ratatouille: {
 				name: 'Ratatouille',
 				test: function(cooker, names, tags) {
-					return tags.veggie;
+					return !tags.meat && tags.veggie;
 				},
-				requirements: [TAG('veggie')],
+				requirements: [NOT(TAG('meat')), TAG('veggie')],
 				priority: 0,
 				foodtype: "veggie",
 				health: healing_med,
 				hunger: calories_med,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 1
 			},
 			jammypreserves: {
 				name: 'Fist Full of Jam',
 				test: function(cooker, names, tags) {
-					return tags.fruit && !tags.veggie;
+					return tags.fruit && !tags.meat && !tags.veggie;
 				},
-				requirements: [TAG('fruit'), NOT(TAG('veggie'))],
+				requirements: [TAG('fruit'), NOT(TAG('meat')), NOT(TAG('veggie'))],
 				priority: 0,
 				foodtype: "veggie",
 				health: healing_med,
 				hunger: calories_small * 3,
 				perish: perish_slow,
+				sanity: sanity_med,
 				cooktime: 0.5
 			},
 			fruitmedley: {
 				name: 'Fruit Medley',
 				test: function(cooker, names, tags) {
-					return tags.fruit && !tags.veggie;
+					return tags.fruit && tags.fruit >= 3 && !tags.meat && !tags.veggie;
 				},
-				requirements: [TAG('fruit'), NOT(TAG('veggie'))],
+				requirements: [TAG('fruit', COMPARE('>=', 3)), NOT(TAG('meat')), NOT(TAG('veggie'))],
 				priority: 0,
 				foodtype: "veggie",
 				health: healing_huge,
 				hunger: calories_med,
 				perish: perish_fast,
+				sanity: sanity_med,
 				cooktime: 0.5
 			},
 			fishtacos: {
@@ -695,6 +761,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_huge,
 				hunger: calories_large,
 				perish: perish_fast,
+				sanity: sanity_med,
 				cooktime: 0.5
 			},
 			waffles: {
@@ -708,6 +775,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_huge,
 				hunger: calories_large,
 				perish: perish_fast,
+				sanity: sanity_med,
 				cooktime: 0.5
 			},
 			monsterlasagna: {
@@ -721,6 +789,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: -healing_tiny,
 				hunger: calories_large,
 				perish: perish_med,
+				sanity: -sanity_medlarge,
 				cooktime: 0.5
 			},
 			wetgoop: {
@@ -733,6 +802,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: 0,
 				hunger: 0,
 				perish: perish_fast,
+				sanity: sanity_med,
 				cooktime: 0.25
 			}
 		},
@@ -1265,7 +1335,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	var sign = function (n) { return isNaN(n) ? '' : n > 0 ? '+' + n : n };
 	var makeFoodRow = function (item) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
 	};
 	(function () {
 		var highlight,
@@ -1285,7 +1355,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				return highlighted.indexOf(item) !== -1;
 			},
 			table = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Perish': 'perish', 'Info': ''},
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Info': ''},
 				Array.prototype.slice.call(food),
 				makeFoodRow,
 				'name',
@@ -1311,10 +1381,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	//output = [];
 	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Cook time\n! width=60px |Perish\n|');
 	var makeRecipeRow = function (item, health, hunger) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + (health && item.health !== health ? ' (' + ((item.health / health * 1000 | 0) / 10) + '%)' : ''), sign(item.hunger) + (hunger && item.hunger !== hunger ? ' (' + ((item.hunger / hunger * 1000 | 0) / 10) + '%)' : ''), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.priority || '0', item.requires || '');
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + (health && item.health !== health ? ' (' + ((item.health / health * 1000 | 0) / 10) + '%)' : ''), sign(item.hunger) + (hunger && item.hunger !== hunger ? ' (' + ((item.hunger / hunger * 1000 | 0) / 10) + '%)' : ''), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
 	};
 	recipesElement.appendChild(makeSortableTable(
-		{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+		{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
 		Array.prototype.slice.call(recipes),
 		makeRecipeRow,
 		'name'
@@ -1515,7 +1585,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						health = cooking[0].health;
 						hunger = cooking[0].hunger;
 						table = makeSortableTable(
-							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
 							cooking,
 							function (item) {
 								return makeRecipeRow(item, health, hunger);
@@ -1537,7 +1607,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							if (suggestions.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
 									suggestions,
 									function (item) {
 										return makeRecipeRow(item, health, hunger);
@@ -1564,7 +1634,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							getSuggestions(inventoryrecipes, ingredients, null, true);
 							if (inventoryrecipes.length > 0) {
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Cook Time': 'cooktime', 'Perish': 'perish', 'Priority': 'priority', 'Requires': ''},
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
 									inventoryrecipes,
 									makeRecipeRow,
 									'priority'

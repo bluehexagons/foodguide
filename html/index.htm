@@ -36,7 +36,7 @@
 		table th { border-bottom: 2px solid black; }
 		table.links span.link { padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
 		table.links span.link:hover { opacity: 0.8; }
-		span.link img { width: 16pt; height: 16pt; vertical-align: text-bottom; }
+		span.link img { width: 20px; height: 20px; vertical-align: text-bottom; }
 		#footer { padding-left: 10px; padding-right: 10px; color: #777; text-align: center; }
 		#footer a { color: #585858; }
 		#footer a:hover { color: #777; }
@@ -61,6 +61,7 @@
 		<div id="discovery">
 			<div style="margin-bottom: 6pt">Add items in your inventory to see your options.</div>
 			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Choose an ingredient" /><div id="inventory" class="ingredientlist"></div>
+			<div id="discoverfood"></div>
 			<div id="discover"></div>
 		</div>
 		<div id="foodlist">
@@ -78,6 +79,7 @@
 				available on the <a href="https://chrome.google.com/webstore/detail/dont-starve/hiledapehlkhdehbhppgmekfalnlfajc">Chrome Web Store</a>
 				and <a href="http://store.steampowered.com/app/219740/">Steam</a>.
 			</p>
+			<p>This tool requires a modern web browser and is officially supported in recent versions of: Chrome/Chromium (and mobile), Firefox, Safari (and mobile), and Internet Explorer 9+</p>
 			<p>The food and recipe database should be current as of the Insanity update, February 12th.</p>
 			<h2>About Don't Starve Food</h2>
 			<p>
@@ -85,7 +87,7 @@
 				Food spoils at three quarters of the way to Rot, giving only 50% hunger and no longer giving any health.
 			</p>
 			<p>Recipe priority determines which recipe a food combination will make; only the highest-priority possible recipes can be produced by a batch of ingredients.</p>
-			<p>In recipe requirements, cooked/uncooked doesn't make a difference unless an asterisk is presented next to an item, in which case it must be the exact item listed.</p>
+			<p>In recipe requirements, cooked/uncooked usually doesn't make a difference. If it does, then only the valid form will be listed.</p>
 			<h2>Simulator</h2>
 			<p>
 				The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. Note that only the highest-priority recipes will be candidates.

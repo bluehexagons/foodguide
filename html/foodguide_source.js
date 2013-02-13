@@ -814,6 +814,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				recipe,
 				recipesearch = /^recipe[: ]/,
 				recipesplit = /^recipe:? */,
+				ingredient,
+				ingredientsearch = /^ingredient[: ]/,
+				ingredientsplit = /^ingredient:? */,
 				anywhere,
 				wordstarts,
 				filter = function (element) {
@@ -851,6 +854,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 					return element.match = failed ? 0 : 1;
 				},
+				ingredientFilter = function (recipe) {
+					var i = 0, result, failed = true;
+					while (i < recipe.requirements.length) {
+						result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
+						if (recipe.requirements[i].cancel) {
+							if (!result) {
+								failed = true;
+								break;
+							}
+						} else {
+							if (result) {
+								failed = false;
+							}
+						}
+						i++;
+					}
+					return recipe.match = failed ? 0 : 1;
+				},
 				exact = function (element) {
 					return element.match = (element.lowerName === name) ? 1 : 0;
 				},
@@ -875,10 +896,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					tag = name.split(tagsplit)[1];
 					return arr.filter(tagFilter).sort(byMatch);
 				} else if (recipesearch.test(name)) {
-					recipe = name.replace(' ', '').split(recipesplit)[1];
-					if (recipes[recipe]) {
-						recipe = recipes[recipe].requirements;
+					recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
+					if (recipe) {
+						recipe = recipe.requirements;
 						return arr.filter(recipeFilter).sort(byMatch);
+					} else {
+						return [];
+					}
+				} else if (ingredientsearch.test(name)) {
+					ingredient = food.byName(name.split(ingredientsplit)[1].toLowerCase());
+					if (ingredient) {
+						return arr.filter(ingredientFilter).sort(byMatch);
 					} else {
 						return [];
 					}
@@ -983,26 +1011,35 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		makeImage = (function () {
 			var canvas = document.createElement('canvas'),
 				ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d'),
+				canvas32 = document.createElement('canvas'),
+				ctx32 = canvas32.getContext && canvas32.getContext('2d'),
 				images = {},
+				images32 = {},
 				canvasSupported = !!ctx,
 				requests = [],
 				cacheImage = function (url) {
 					var renderToCache = function (url, imageElement) {
-						ctx.clearRect(0, 0, canvas.width, canvas.height);
+						ctx.clearRect(0, 0, 64, 64);
 						ctx.drawImage(imageElement, 0, 0, 64, 64);
+						ctx32.clearRect(0, 0, 32, 32);
+						ctx32.drawImage(imageElement, 0, 0, 32, 32);
 						try {
 							images[url] = canvas.toDataURL();
+							images32[url] = canvas32.toDataURL();
 						} catch (ex) {
 							canvasSupported = false;
 						}
-						imageElement.src = images[url] || url;
 						requests.filter(function (request) { return request.url === url; }).forEach(function (request) {
 							if (request.url === url) {
 								delete request.img.dataset.pending;
 								if (noDataset) {
 									request.img.removeAttribute('data-pending');
 								}
-								request.img.src = images[url] || url;
+								if (request.d === 32) {
+									request.img.src = images32[url] || url;
+								} else {
+									request.img.src = images[url] || url;
+								}
 							}
 						});
 						requests = requests.filter(function (request) { return request.url !== url; });
@@ -1011,27 +1048,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						renderToCache(url, e.target);
 					}
 				},
-				queue = function (img, url) {
+				queue = function (img, url, d) {
 					img.dataset.pending = url;
 					if (noDataset) {
 						img.setAttribute('data-pending', url);
 					}
-					requests.push({url: url, img: img});
+					requests.push({url: url, img: img, d: d});
 				},
-				makeImage = function (url) {
-					var img = new Image();
+				makeImage = function (url, d) {
+					var img = new Image(), dummy, listener;
 					if (canvasSupported) {
 						if (images[url]) {
 							//image is cached
-							img.src = images[url];
+							if (d === 32) {
+								img.src = images32[url];
+							} else {
+								img.src = images[url];
+							}
 						} else if (images[url] === null) {
 							//image is waiting to be loaded
-							queue(img, url);
+							queue(img, url, d);
 						} else {
 							//image has not been cached
 							images[url] = null;
-							img.addEventListener('load', cacheImage(url), false);
-							img.src = url;
+							dummy = new Image();
+							dummy.addEventListener('load', cacheImage(url), false);
+							dummy.src = url;
+							queue(img, url, d);
 						}
 					} else {
 						//if we can't cache the images with canvas, just do it normally
@@ -1041,6 +1084,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				};
 			canvas.width = 64;
 			canvas.height = 64;
+			canvas32.width = 32;
+			canvas32.height = 32;
 			makeImage.queue = queue;
 			return makeImage;
 		}()),
@@ -1055,19 +1100,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					fragment = document.createDocumentFragment();
 					fragment.appendChild(document.createTextNode(results[0]));
 					for (i = 1; i < results.length; i += 3) {
-						span = document.createElement('span');
-						span.className = 'link';
-						span.dataset.link = results[i];
-						if (noDataset) {
-							span.setAttribute('data-link', results[i]);
-						}
-						if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
-							span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
-							span.appendChild(makeImage(results[i + 1].split(' ')[0]));
+						if (results[i] === '' && results[i + 1] === '') {
+							fragment.appendChild(document.createElement('br'));
 						} else {
-							span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
+							span = document.createElement('span');
+							span.className = 'link';
+							span.dataset.link = results[i];
+							if (noDataset) {
+								span.setAttribute('data-link', results[i]);
+							}
+							if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
+								span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
+								span.appendChild(makeImage(results[i + 1].split(' ')[0], 32));
+							} else {
+								span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
+							}
+							fragment.appendChild(span);
 						}
-						fragment.appendChild(span);
 						fragment.appendChild(document.createTextNode(results[i + 2]));
 					}
 					return fragment;
@@ -1103,49 +1152,38 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 	for (i in food) {
 		if (food.hasOwnProperty(i)) {
-			food[i].match = 0;
-			food[i].lowerName = food[i].name.toLowerCase();
-			food[i].id = i;
-			food[i].nameObject = {};
-			food[i].nameObject[i] = 1;
-			food[i].img = 'img/' + food[i].name.replace(/ /g, '_').toLowerCase() + '.png';
+			var f = food[i];
+			f.match = 0;
+			f.lowerName = f.name.toLowerCase();
+			f.id = i;
+			f.nameObject = {};
+			f.nameObject[i] = 1;
+			f.img = 'img/' + f.name.replace(/ /g, '_').toLowerCase() + '.png';
 			if (i.indexOf('_cooked') !== -1) {
-				food[i].cooked = true;
+				f.cooked = true;
 			}
 			if (food[i + '_cooked']) {
-				food[i].cook = food[i + '_cooked'];
-				food[i + '_cooked'].raw = food[i];
+				f.cook = food[i + '_cooked'];
+				food[i + '_cooked'].raw = f;
 			}
-			food[i].info = [];
-			info = food[i].info;
-			food[i].fruit && info.push(taggify('fruit') + (food[i].fruit === 1 ? '' : '\xd7' + food[i].fruit));
-			food[i].veggie && info.push(taggify('veggie', 'vegetable') + (food[i].veggie === 1 ? '' : '\xd7' + food[i].veggie));
-			food[i].meat && info.push(taggify('meat') + (food[i].meat === 1 ? '' : '\xd7' + food[i].meat));
-			food[i].egg && info.push(taggify('egg') + (food[i].egg === 1 ? '' : '\xd7' + food[i].egg));
-			food[i].fish && info.push(taggify('fish'));
-			food[i].magic && info.push(taggify('magic'));
-			food[i].decoration && info.push(taggify('decoration'));
-			food[i].inedible && info.push(taggify('inedible'));
-			food[i].monster && info.push(taggify('monster', 'monster food'));
-			food[i].sweetener && info.push(taggify('sweetener'));
-			food[i].fat && info.push(taggify('fat'));
-			food[i].dairy && info.push(taggify('dairy'));
-			food[index++] = food[i];
-		}
-	}
-	for (i in food) {
-		if (food.hasOwnProperty(i) && isNaN(i)) {
-			info = food[i].info;
-			food[i].cooked && info.push('cooked [*' + food[i].raw.name + '|' + food[i].raw.img + ' ' + food[i].raw.name + ']');
-			food[i].cook && info.push('cook into [*' + food[i].cook.name + '|' + food[i].cook.img + ' ' + food[i].cook.name + ']');
-			food[i].uncookable && info.push('cannot be added to crock pot');
-			food[i].info = makeLinkable(info.join('; '));
+			f.info = [];
+			info = f.info;
+			f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
+			f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
+			f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : '\xd7' + f.meat));
+			f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : '\xd7' + f.egg));
+			f.fish && info.push(taggify('fish'));
+			f.magic && info.push(taggify('magic'));
+			f.decoration && info.push(taggify('decoration'));
+			f.inedible && info.push(taggify('inedible'));
+			f.monster && info.push(taggify('monster', 'monster food'));
+			f.sweetener && info.push(taggify('sweetener'));
+			f.fat && info.push(taggify('fat'));
+			f.dairy && info.push(taggify('dairy'));
+			food[index++] = f;
 		}
 	}
 	food.length = index;
-	food.forEach = Array.prototype.forEach;
-	food.filter = Array.prototype.filter;
-	food.sort = Array.prototype.forEach;
 	index = 0;
 	for (i in recipes) {
 		if (recipes.hasOwnProperty(i)) {
@@ -1166,9 +1204,68 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	recipes.forEach = Array.prototype.forEach;
 	recipes.filter = Array.prototype.filter;
 	recipes.sort = Array.prototype.sort;
-	
-	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Perish\n|');
+	recipes.byName = function (name) {
+		var i = this.length;
+		while (i--) {
+			if (this[i].lowerName === name) {
+				return this[i];
+			}
+		}
+	};
+	var reduceRecipeButton = function (a, b) {
+		return a + '[recipe:' + b.name + '|' + b.img + ']';
+	};
 
+	for (i in food) {
+		if (food.hasOwnProperty(i) && isNaN(i) && isNaN(food[i])) {
+			var f = food[i];
+			info = f.info;
+			f.cooked && info.push('cooked [*' + f.raw.name + '|' + f.raw.img + ']');
+			f.cook && info.push('cook into [*' + f.cook.name + '|' + f.cook.img + ']');
+			f.info = info.join('; ');
+			if (!f.uncookable) {
+				f.recipes = [];
+				recipes.forEach(function (recipe) {
+					var qualifies = false, r = recipe.requirements, i = r.length;
+					while (i--) {
+						if (r[i].test(null, f.nameObject, f)) {
+							if (!r[i].cancel && !qualifies) {
+								qualifies = true;
+							}
+						} else {
+							if (r[i].cancel) {
+								qualifies = false;
+								break;
+							}
+						}
+					}
+					if (qualifies) {
+						f.recipes.push(recipe);
+					}
+				});
+				if (f.recipes.length > 0) {
+					f.ingredient = true;
+					f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
+				}
+			} else {
+				f.info += ('[|]cannot be added to crock pot');
+			}
+			f.info = makeLinkable(f.info);
+		}
+	}
+	food.forEach = Array.prototype.forEach;
+	food.filter = Array.prototype.filter;
+	food.sort = Array.prototype.forEach;
+	food.byName = function (name) {
+		var i = this.length;
+		while (i--) {
+			if (this[i].lowerName === name) {
+				return this[i];
+			}
+		}
+	};
+	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Perish\n|');
+	var setTab;
 	(function () {
 		var navtabs = navbar.getElementsByTagName('li'),
 			tabs = {},
@@ -1178,14 +1275,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			activePage,
 			activeTab,
 			showTab = function (e) {
-				activeTab.className = '';
-				activeTab = tabs[e.target.dataset.tab];
-				activePage.style.display = 'none';
-				activePage = elements[e.target.dataset.tab];
-				activeTab.className = 'selected';
-				activePage.style.display = 'block';
+				setTab(e.target.dataset.tab);
 			},
 			navtab;
+		setTab = function (tabID) {
+			activeTab.className = '';
+			activeTab = tabs[tabID];
+			activePage.style.display = 'none';
+			activePage = elements[tabID];
+			activeTab.className = 'selected';
+			activePage.style.display = 'block';
+		};
 		for (i = 0; i < navtabs.length; i++) {
 			navtab = navtabs[i];
 			if (navtab.dataset.tab) {
@@ -1228,7 +1328,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	var queue = function (img) {
 			if (img.dataset.pending) {
-				makeImage.queue(img, img.dataset.pending);
+				makeImage.queue(img, img.dataset.pending, 32);
 			}
 		},
 		cells = function (cellType) {
@@ -1251,15 +1351,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return tr;
 		};
 	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback) {
-		var table, header, sorting, invertSort = false,
+		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight,
 			generateAndHighlight = function (item) {
 				var row = rowGenerator(item);
 				if (highlightCallback && highlightCallback(item)) {
 					row.className = 'highlighted';
+					if (!firstHighlight) {
+						firstHighlight = row;
+					}
+					lastHighlight = row;
 				}
 				table.appendChild(row);
 			},
-			create = function (e, sort) {
+			create = function (e, sort, scrollHighlight) {
 				var tr, th, oldTable, sortBy, summary, links, i;
 				if (sort || (e && e.target.dataset.sort !== '')) {
 					sortBy = sort || e.target.dataset.sort;
@@ -1313,6 +1417,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				oldTable = table;
 				table = document.createElement('table');
 				table.appendChild(tr);
+				firstHighlight = null;
+				lastHighlight = null;
 				dataset.forEach(generateAndHighlight);
 				if (linkCallback) {
 					table.className = 'links';
@@ -1323,13 +1429,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				if (oldTable) {
 					oldTable.parentNode.replaceChild(table, oldTable);
 				}
+				if (scrollHighlight) {
+					if (firstHighlight && firstHighlight.offsetTop + table.offsetTop + mainElement.offsetTop + firstHighlight.offsetHeight > window.scrollY + window.innerHeight) {
+						firstHighlight.scrollIntoView(true);
+					} else if (lastHighlight && lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop < window.scrollY) {
+						lastHighlight.scrollIntoView(false);
+					}
+				}
 			};
 		if (defaultSort) {
 			create(null, defaultSort);
 		} else {
 			create();
 		}
-		table.update = create;
+		table.update = function (scrollHighlight) {
+			create(null, null, scrollHighlight);
+		};
 		return table;
 	};
 
@@ -1337,33 +1452,66 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var makeFoodRow = function (item) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
 	};
+	var makeRecipeRow = function (item, health, hunger) {
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + (health && item.health !== health ? ' (' + ((item.health / health * 1000 | 0) / 10) + '%)' : ''), sign(item.hunger) + (hunger && item.hunger !== hunger ? ' (' + ((item.hunger / hunger * 1000 | 0) / 10) + '%)' : ''), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
+	};
 	(function () {
-		var highlight,
-			highlighted = [],
-			setHighlight = function (e) {
-				var name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
-				if (highlight !== name) {
-					highlight = name;
-					highlighted = matchingNames(food, name);
+		var foodHighlight,
+			foodHighlighted = [],
+			recipeHighlighted = [],
+			setFoodHighlight = function (e) {
+				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
+					setTab('crockpot');
+					if (name.substring(0, 7) === 'recipe:') {
+						name = '*' + name.substring(7);
+					}
+					recipeHighlighted = matchingNames(recipes, name);
+					recipeTable.update(true);
 				} else {
-					highlight = '';
-					highlighted.length = 0;
+					if (foodHighlight !== name) {
+						foodHighlight = name;
+						foodHighlighted = matchingNames(food, name);
+					} else {
+						foodHighlight = '';
+						foodHighlighted.length = 0;
+					}
+					foodTable.update(true);
 				}
-				table.update();
 			},
-			testHighlight = function (item) {
-				return highlighted.indexOf(item) !== -1;
+			setRecipeHighlight = function (e) {
+				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				setTab('foodlist');
+				foodHighlight = name;
+				foodHighlighted = matchingNames(food, name);
+				foodTable.update(true);
 			},
-			table = makeSortableTable(
+			testFoodHighlight = function (item) {
+				return foodHighlighted.indexOf(item) !== -1;
+			},
+			testRecipeHighlight = function (item) {
+				return recipeHighlighted.indexOf(item) !== -1;
+			},
+			foodTable = makeSortableTable(
 				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Info': ''},
 				Array.prototype.slice.call(food),
 				makeFoodRow,
 				'name',
 				false,
-				setHighlight,
-				testHighlight
+				setFoodHighlight,
+				testFoodHighlight
+			),
+			recipeTable = makeSortableTable(
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
+				Array.prototype.slice.call(recipes),
+				makeRecipeRow,
+				'name',
+				false,
+				setRecipeHighlight,
+				testRecipeHighlight
 			);
-		foodElement.appendChild(table);
+		foodElement.appendChild(foodTable);
+		recipesElement.appendChild(recipeTable);
 	}());
 	//this was used to generate a Wiki table, might be re-purposed later
 	/*fragment = document.createDocumentFragment();
@@ -1380,15 +1528,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	//output = [];
 	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Cook time\n! width=60px |Perish\n|');
-	var makeRecipeRow = function (item, health, hunger) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + (health && item.health !== health ? ' (' + ((item.health / health * 1000 | 0) / 10) + '%)' : ''), sign(item.hunger) + (hunger && item.hunger !== hunger ? ' (' + ((item.hunger / hunger * 1000 | 0) / 10) + '%)' : ''), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
-	};
-	recipesElement.appendChild(makeSortableTable(
-		{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
-		Array.prototype.slice.call(recipes),
-		makeRecipeRow,
-		'name'
-	));
+	
 	/*fragment = document.createDocumentFragment();
 	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
 	recipes.forEach(function (item) {
@@ -1403,9 +1543,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	window.food = food;
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;
-	var slotItemCSS = '\') center center, ',
-		slotBackgroundCSS = 'url(\'img/background.png\') top left',
-		setSlot = function (slotElement, item) {
+	var setSlot = function (slotElement, item) {
 			var end = false;
 			if (item !== null) {
 				slotElement.dataset.id = item.id;
@@ -1420,7 +1558,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			if (!end) {
 				if (item !== null) {
-					//slotElement.style.background = 'url(\'' + item.img + slotItemCSS + slotBackgroundCSS;
 					if (slotElement.firstChild) {
 						slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
 					} else {
@@ -1430,7 +1567,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					if (slotElement.firstChild) {
 						slotElement.removeChild(slotElement.firstChild);
 					}
-					//slotElement.style.background = slotBackgroundCSS;
 				}
 				slotElement.title = item ? item.name : '';
 			}
@@ -1456,6 +1592,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					suggestions = [],
 					inventoryrecipes = [],
 					results = document.getElementById('results'),
+					discoverfood = document.getElementById('discoverfood'),
 					discover = document.getElementById('discover'),
 					clear = document.createElement('span'),
 					displaying = false,
@@ -1508,7 +1645,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 					},
 					liIntoPicker = function (item) {
-						var img = makeImage(item.img),
+						var img = makeImage(item.img, 32),
 							li = document.createElement('li');
 						li.appendChild(img);
 						li.appendChild(document.createTextNode(item.name));
@@ -1623,21 +1760,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				} else if (parent.id === 'inventory') {
 					updateRecipes = function () {
 						var ingredients,
+							foodTable,
 							table;
 						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), function (slot) {
 							return getSlot(slot);
 						});
+						if (discoverfood.firstChild) {
+							discoverfood.removeChild(discoverfood.firstChild);
+						}
 						if (discover.firstChild) {
 							discover.removeChild(discover.firstChild);
 						}
 						if (ingredients.length > 0) {
+							foodTable = makeSortableTable(
+								{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Info': ''},
+								ingredients,
+								makeFoodRow,
+								'name'
+							);
+							discoverfood.appendChild(foodTable);
 							getSuggestions(inventoryrecipes, ingredients, null, true);
 							if (inventoryrecipes.length > 0) {
 								table = makeSortableTable(
 									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
 									inventoryrecipes,
 									makeRecipeRow,
-									'priority'
+									'name'
 								)
 								discover.appendChild(table);
 							}
@@ -1658,7 +1806,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					state = JSON.parse(localStorage.foodGuideState).pickers;
 					if (state && state[index]) {
 						state[index].forEach(function (id) {
-							appendSlot(id);
+							if (food[id]) {
+								appendSlot(id);
+							}
 						});
 					}
 				}
@@ -1679,8 +1829,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				clear.className = 'clearingredients';
 				clear.appendChild(document.createTextNode('clear'));
 				clear.addEventListener('click', function () {
-					while (getSlot(parent.firstChild)) {
-						removeSlot({ target: parent.firstChild });
+					if (picker.value === '') {
+						while (getSlot(parent.firstChild)) {
+							removeSlot({ target: parent.firstChild });
+						}
+					} else {
+						picker.value = '';
+						refreshPicker();
 					}
 				}, false);
 				parent.parentNode.insertBefore(clear, parent);

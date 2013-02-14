@@ -43,8 +43,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		healing_huge = 75,
 		healing_superhuge = 100,
 		
+		sanity_supertiny = 1,
 		sanity_tiny = 5,
 		sanity_small = 10,
+		sanity_medsmall = null,
 		sanity_med = 15,
 		sanity_medlarge = 20,
 		sanity_large = 33,
@@ -315,6 +317,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_tiny,
 				hunger: calories_small,
 				perish: perish_med,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			carrot_cooked: {
@@ -324,6 +327,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_med,
 				perish: perish_fast,
+				sanity: sanity_supertiny,
 				stack: stack_size_smallitem
 			},
 			corn: {
@@ -333,6 +337,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_med,
 				perish: perish_med,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			corn_cooked: {
@@ -342,6 +347,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_small,
 				perish: perish_slow,
+				sanity: sanity_tiny,
 				stack: stack_size_smallitem
 			},
 			pumpkin: {
@@ -351,6 +357,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_large,
 				perish: perish_med,
+				sanity: 0,
 				stack: stack_size_meditem
 			},
 			pumpkin_cooked: {
@@ -360,6 +367,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_fast,
+				sanity: sanity_tiny,
 				stack: stack_size_meditem
 			},
 			eggplant: {
@@ -369,6 +377,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_med,
 				hunger: calories_med,
 				perish: perish_med,
+				sanity: 0,
 				stack: stack_size_meditem
 			},
 			eggplant_cooked: {
@@ -378,6 +387,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_large,
 				hunger: calories_med,
 				perish: perish_fast,
+				sanity: sanity_tiny,
 				stack: stack_size_meditem
 			},
 			durian: {
@@ -388,6 +398,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: -healing_small,
 				hunger: calories_med,
 				perish: perish_med,
+				sanity: -sanity_tiny,
 				stack: stack_size_meditem
 			},
 			durian_cooked: {
@@ -398,6 +409,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: 0,
 				hunger: calories_med,
 				perish: perish_fast,
+				sanity: 0,
 				stack: stack_size_meditem
 			},
 			pomegranate: {
@@ -407,6 +419,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_med,
 				hunger: calories_tiny,
 				perish: perish_fast,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			pomegranate_cooked: {
@@ -416,6 +429,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_huge,
 				hunger: calories_small,
 				perish: perish_superfast,
+				sanity: sanity_tiny,
 				stack: stack_size_smallitem
 			},
 			dragonfruit: {
@@ -425,6 +439,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_med,
 				hunger: calories_tiny,
 				perish: perish_fast,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			dragonfruit_cooked: {
@@ -434,6 +449,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_huge,
 				hunger: calories_small,
 				perish: perish_superfast,
+				sanity: sanity_tiny,
 				stack: stack_size_smallitem
 			},
 			berries: {
@@ -443,6 +459,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_tiny,
 				hunger: calories_tiny,
 				perish: perish_fast,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			berries_cooked: {
@@ -452,6 +469,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_small,
 				perish: perish_superfast,
+				sanity: sanity_supertiny,
 				stack: stack_size_smallitem
 			}
 		},
@@ -522,8 +540,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				foodtype: "veggie",
 				health: -healing_small,
 				hunger: calories_small * 2,
-				perishtime: perish_slow,
-				sanity: sanity_large,
+				perish: perish_slow,
+				sanity: sanity_medlarge,
 				cooktime: 2
 			},
 			pumpkincookie: {
@@ -536,8 +554,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				foodtype: "veggie",
 				health: 0,
 				hunger: calories_large,
-				perishtime: perish_med,
-				sanity: sanity_large,
+				perish: perish_med,
+				sanity: sanity_medlarge,
 				cooktime: 2
 			},
 			stuffedeggplant: {
@@ -1148,6 +1166,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		});
 	}
 	//var info = [];
+	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_medsmall));
 	var info,
 		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 	for (i in food) {

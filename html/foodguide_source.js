@@ -46,7 +46,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		sanity_supertiny = 1,
 		sanity_tiny = 5,
 		sanity_small = 10,
-		sanity_medsmall = null,
 		sanity_med = 15,
 		sanity_medlarge = 20,
 		sanity_large = 33,
@@ -131,6 +130,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: -sanity_small,
 				stack: stack_size_smallitem
+			},
+			flowerhat: {
+				name: 'Garland',
+				health: healing_small,
+				hunger: 0,
+				sanity: sanity_small,
+				perish: perish_fast,
+				uncookable: true
 			},
 			honey: {
 				name: 'Honey',
@@ -820,7 +827,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: 0,
 				hunger: 0,
 				perish: perish_fast,
-				sanity: sanity_med,
+				sanity: 0,
 				cooktime: 0.25
 			}
 		},
@@ -1166,7 +1173,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		});
 	}
 	//var info = [];
-	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_medsmall));
+	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_small));
 	var info,
 		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 	for (i in food) {

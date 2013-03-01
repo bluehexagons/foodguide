@@ -108,6 +108,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
+			deerclopseyeball: {
+				name: 'Deerclops Eyeball',
+				uncookable: true,
+				health: healing_huge,
+				hunger: calories_huge,
+				sanity: -sanity_med
+			},
 			fish: {
 				name: Strings.fish,
 				ismeat: true,
@@ -166,7 +173,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			honeycomb: {
 				name: 'Honeycomb',
-				inedible: true,
 				sweetener: true
 			},
 			mandrake: {

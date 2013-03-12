@@ -61,6 +61,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		perish_preserved = 20*total_day_time*perish_warp,
 		perish_superslow = 40*total_day_time*perish_warp,
 
+		dry_fast = total_day_time,
+		dry_med = 2*total_day_time,
+
 		calories_tiny = calories_per_day/8, // berries
 		calories_small = calories_per_day/6, // veggies
 		calories_medsmall = calories_per_day/4,
@@ -115,6 +118,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_huge,
 				sanity: -sanity_med
 			},
+			bird_egg: {
+				name: 'Egg',
+				egg: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				rot: 'rottenegg'
+			},
+			bird_egg_cooked: {
+				name: 'Cooked Egg',
+				egg: 1,
+				precook: 1,
+				health: 0,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			rottenegg: {
+				name: 'Rotten Egg',
+				uncookable: true,
+				health: spoiled_health,
+				hunger: spoiled_hunger,
+				stack: stack_size_smallitem
+			},
 			fish: {
 				name: Strings.fish,
 				ismeat: true,
@@ -130,6 +160,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				ismeat: true,
 				meat: 0.5,
 				fish: 1,
+				precook: 1,
 				health: healing_large,
 				hunger: calories_small,
 				perish: perish_fast,
@@ -149,6 +180,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Cooked Frog Legs',
 				ismeat: true,
 				meat: 0.5,
+				precook: 1,
 				health: healing_small,
 				hunger: calories_small,
 				perish: perish_med,
@@ -161,6 +193,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: 0,
 				sanity: sanity_small,
 				perish: perish_fast,
+				stack: 1,
+				uncookable: true
+			},
+			hambat: {
+				name: 'Ham Bat',
+				health: -healing_medsmall,
+				hunger: calories_med,
+				sanity: -sanity_med,
+				perish: perish_med,
+				stack: 1,
 				uncookable: true
 			},
 			honey: {
@@ -188,6 +230,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				uncookable: true,
 				veggie: 1,
 				magic: 1,
+				precook: 1,
 				health: healing_superhuge,
 				hunger: calories_superhuge,
 				stack: stack_size_smallitem
@@ -200,78 +243,151 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: -healing_med,
 				hunger: calories_medsmall,
 				sanity: -sanity_med,
-				perish: perish_med,
-				stack: stack_size_meditem
+				perish: perish_fast,
+				stack: stack_size_meditem,
+				dry: 'monstermeat_dried',
+				drytime: dry_fast
 			},
 			monstermeat_cooked: {
 				name: 'Cooked Monster Meat',
 				ismeat: true,
 				meat: 1,
 				monster: true,
+				precook: 1,
 				health: -healing_small,
 				hunger: calories_medsmall,
 				sanity: -sanity_small,
 				perish: perish_slow,
 				stack: stack_size_meditem
 			},
+			monstermeat_dried: {
+				name: 'Monster Jerky',
+				ismeat: true,
+				meat: 1,
+				monster: true,
+				dried: 1,
+				health: -healing_small,
+				hunger: calories_medsmall,
+				sanity: -sanity_tiny,
+				perish: perish_preserved,
+				stack: stack_size_meditem
+			},
 			meat: {
 				name: 'Meat',
 				ismeat: true,
 				meat: 1,
-				health: healing_medsmall,
+				health: healing_tiny,
 				hunger: calories_med,
 				sanity: -sanity_small,
 				perish: perish_fast,
-				stack: stack_size_meditem
+				stack: stack_size_meditem,
+				dry: 'meat_dried',
+				drytime: dry_med
 			},
 			meat_cooked: {
 				name: 'Cooked Meat',
 				ismeat: true,
 				meat: 1,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_meditem
+			},
+			meat_dried: {
+				name: 'Jerky',
+				ismeat: true,
+				meat: 1,
+				dried: 1,
 				health: healing_med,
 				hunger: calories_med,
-				sanity: sanity_tiny,
-				perish: perish_med,
+				sanity: sanity_med,
+				perish: perish_preserved,
 				stack: stack_size_meditem
 			},
 			morsel: {
 				name: 'Morsel',
 				ismeat: true,
 				meat: 0.5,
-				health: healing_small,
+				health: 0,
 				hunger: calories_small,
 				sanity: -sanity_small,
 				perish: perish_fast,
-				stack: stack_size_smallitem
+				stack: stack_size_smallitem,
+				drytime: dry_fast,
+				dry: 'smallmeat_dried'
 			},
 			morsel_cooked: {
 				name: 'Cooked Morsel',
 				ismeat: true,
 				meat: 0.5,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			smallmeat_dried: {
+				name: 'Small Jerky',
+				ismeat: true,
+				meat: 0.5,
+				dried: 1,
 				health: healing_medsmall,
 				hunger: calories_small,
-				perish: perish_med,
-				sanity: sanity_tiny,
+				sanity: sanity_small,
+				perish: perish_preserved,
 				stack: stack_size_smallitem
 			},
 			drumstick: {
 				name: 'Drumstick',
 				ismeat: true,
 				meat: 0.5,
-				health: healing_tiny,
+				health: 0,
 				hunger: calories_small,
 				sanity: -sanity_small,
 				perish: perish_fast,
-				stack: stack_size_meditem
+				stack: stack_size_meditem,
+				drytime: dry_fast,
+				dry: 'smallmeat_dried'
 			},
 			drumstick_cooked: {
 				name: 'Fried Drumstick',
 				ismeat: true,
 				meat: 0.5,
-				health: healing_small,
+				precook: 1,
+				health: healing_tiny,
 				hunger: calories_small,
 				perish: perish_med,
 				stack: stack_size_meditem
+			},
+			red_mushroom: {
+				name: 'Red Mushroom',
+				veggie: 0.5,
+				health: -healing_med,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			green_mushroom: {
+				name: 'Green Mushroom',
+				veggie: 0.5,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_huge,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			blue_mushroom: {
+				name: 'Blue Mushroom',
+				veggie: 0.5,
+				health: healing_med,
+				hunger: calories_small,
+				sanity: -sanity_med,
+				perish: perish_med,
+				stack: stack_size_smallitem
 			},
 			petals: {
 				name: 'Petals',
@@ -282,10 +398,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
+			petals_evil: {
+				name: 'Evil Petals',
+				uncookable: true,
+				health: 0,
+				hunger: 0,
+				sanity: -sanity_tiny,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
 			seeds: {
 				name: 'Seeds',
 				uncookable: true,
-				health: healing_tiny,
+				health: 0,
 				hunger: calories_tiny / 2,
 				perish: perish_superslow,
 				stack: stack_size_smallitem
@@ -293,7 +418,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			seeds_cooked: {
 				name: 'Toasted Seeds',
 				uncookable: true,
-				health: healing_small,
+				health: healing_tiny,
 				hunger: calories_tiny / 2,
 				perish: perish_med,
 				stack: stack_size_smallitem
@@ -314,6 +439,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			tallbirdegg_cooked: {
 				name: 'Fried Tallbird Egg',
 				egg: 4,
+				precook: 1,
 				health: 0,
 				hunger: calories_large,
 				perish: perish_fast
@@ -354,10 +480,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Roasted Carrot',
 				isveggie: true,
 				veggie: 1,
+				precook: 1,
 				health: healing_small,
-				hunger: calories_med,
+				hunger: calories_small,
 				perish: perish_fast,
-				sanity: sanity_supertiny,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			corn: {
@@ -374,10 +501,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Popcorn',
 				isveggie: true,
 				veggie: 1,
+				precook: 1,
 				health: healing_small,
 				hunger: calories_small,
 				perish: perish_slow,
-				sanity: sanity_supertiny,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			pumpkin: {
@@ -394,17 +522,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Hot Pumpkin',
 				isveggie: true,
 				veggie: 1,
-				health: healing_med,
+				precook: 1,
+				health: healing_medsmall,
 				hunger: calories_large,
 				perish: perish_fast,
-				sanity: sanity_supertiny,
+				sanity: 0,
 				stack: stack_size_meditem
 			},
 			eggplant: {
 				name: 'Eggplant',
 				isveggie: true,
 				veggie: 1,
-				health: healing_med,
+				health: healing_medsmall,
 				hunger: calories_med,
 				perish: perish_med,
 				sanity: 0,
@@ -414,10 +543,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Braised Eggplant',
 				isveggie: true,
 				veggie: 1,
-				health: healing_large,
+				precook: 1,
+				health: healing_med,
 				hunger: calories_med,
 				perish: perish_fast,
-				sanity: sanity_supertiny,
+				sanity: 0,
 				stack: stack_size_meditem
 			},
 			durian: {
@@ -436,17 +566,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				isfruit: true,
 				monster: 1,
 				fruit: 1,
+				precook: 1,
 				health: 0,
 				hunger: calories_med,
 				perish: perish_fast,
-				sanity: 0,
+				sanity: -sanity_tiny,
 				stack: stack_size_meditem
 			},
 			pomegranate: {
 				name: 'Pomegranate',
 				isfruit: true,
 				fruit: 1,
-				health: healing_med,
+				health: healing_small,
 				hunger: calories_tiny,
 				perish: perish_fast,
 				sanity: 0,
@@ -456,17 +587,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Sliced Pomegranate',
 				isfruit: true,
 				fruit: 1,
-				health: healing_huge,
+				precook: 1,
+				health: healing_med,
 				hunger: calories_small,
 				perish: perish_superfast,
-				sanity: sanity_supertiny,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			dragonfruit: {
 				name: 'Dragon Fruit',
 				isfruit: true,
 				fruit: 1,
-				health: healing_med,
+				health: healing_small,
 				hunger: calories_tiny,
 				perish: perish_fast,
 				sanity: 0,
@@ -476,17 +608,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Prepared Dragon Fruit',
 				isfruit: true,
 				fruit: 1,
-				health: healing_huge,
+				precook: 1,
+				health: healing_med,
 				hunger: calories_small,
 				perish: perish_superfast,
-				sanity: sanity_supertiny,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			berries: {
 				name: 'Berries',
 				isfruit: true,
 				fruit: 0.5,
-				health: healing_tiny,
+				health: 0,
 				hunger: calories_tiny,
 				perish: perish_fast,
 				sanity: 0,
@@ -496,10 +629,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Roasted Berries',
 				isfruit: true,
 				fruit: 0.5,
-				health: healing_small,
+				precook: 1,
+				health: healing_tiny,
 				hunger: calories_small,
 				perish: perish_superfast,
-				sanity: sanity_supertiny,
+				sanity: 0,
 				stack: stack_size_smallitem
 			}
 		},
@@ -638,7 +772,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
 				priority: 2,
 				foodtype: "meat",
-				health: healing_large,
+				health: healing_medlarge,
 				hunger: calories_huge,
 				perish: perish_slow,
 				sanity: sanity_tiny,
@@ -652,7 +786,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [NAME('dragonfruit'), NOT(TAG('meat'))],
 				priority: 1,
 				foodtype: "veggie",
-				health: healing_huge,
+				health: healing_large,
 				hunger: calories_huge,
 				perish: perish_slow,
 				sanity: sanity_tiny,
@@ -694,7 +828,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
 				priority: 10,
 				foodtype: "meat",
-				health: healing_huge,
+				health: healing_med,
 				hunger: calories_huge,
 				perish: perish_preserved,
 				sanity: sanity_tiny,
@@ -708,7 +842,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [TAG('meat'), NOT(TAG('inedible'))],
 				priority: -1,
 				foodtype: "meat",
-				health: healing_small * 5,
+				health: healing_small,
 				hunger: calories_small * 5,
 				perish: perish_med,
 				sanity: sanity_tiny,
@@ -722,7 +856,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [TAG('meat', COMPARE('>=', 3)), NOT(TAG('inedible'))],
 				priority: 0,
 				foodtype: "meat",
-				health: healing_med,
+				health: healing_small * 4,
 				hunger: calories_large * 4,
 				perish: perish_med,
 				sanity: sanity_tiny,
@@ -731,9 +865,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			perogies: {
 				name: 'Pierogi',
 				test: function(cooker, names, tags) {
-					return tags.egg && tags.meat && tags.veggie;
+					return tags.egg && tags.meat && tags.veggie && !tags.inedible;
 				},
-				requirements: [TAG('egg'), TAG('meat'), TAG('veggie')],
+				requirements: [TAG('egg'), TAG('meat'), TAG('veggie'), NOT(TAG('inedible'))],
 				priority: 5,
 				foodtype: "meat",
 				health: healing_large,
@@ -764,7 +898,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [NOT(TAG('meat')), TAG('veggie'), NOT(TAG('inedible'))],
 				priority: 0,
 				foodtype: "veggie",
-				health: healing_med,
+				health: healing_small,
 				hunger: calories_med,
 				perish: perish_slow,
 				sanity: sanity_tiny,
@@ -778,7 +912,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [TAG('fruit'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible'))],
 				priority: 0,
 				foodtype: "veggie",
-				health: healing_med,
+				health: healing_small,
 				hunger: calories_small * 3,
 				perish: perish_slow,
 				sanity: sanity_tiny,
@@ -792,7 +926,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [TAG('fruit', COMPARE('>=', 3)), NOT(TAG('meat')), NOT(TAG('veggie'))],
 				priority: 0,
 				foodtype: "veggie",
-				health: healing_huge,
+				health: healing_med,
 				hunger: calories_med,
 				perish: perish_fast,
 				sanity: sanity_tiny,
@@ -806,7 +940,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [TAG('fish'), NAME('corn')],
 				priority: 10,
 				foodtype: "meat",
-				health: healing_huge,
+				health: healing_med,
 				hunger: calories_large,
 				perish: perish_fast,
 				sanity: sanity_tiny,
@@ -834,9 +968,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [TAG('monster', COMPARE('>=', 2)), NOT(TAG('inedible'))],
 				priority: 10,
 				foodtype: "meat",
-				health: -healing_tiny,
+				health: -healing_med,
 				hunger: calories_large,
-				perish: perish_med,
+				perish: perish_fast,
 				sanity: -sanity_medlarge,
 				cooktime: 0.5
 			},
@@ -854,6 +988,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 0.25
 			}
 		},
+		recipeCrunchData = [],
+		recipeCrunchString,
 		matchingNames = (function () {
 			var name,
 				tag,
@@ -1247,8 +1383,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; '));
 			}
 			recipes[index++] = recipes[i];
+			recipeCrunchData[index] = recipes[i].test.toString();
 		}
 	}
+	recipeCrunchString = JSON.stringify(recipeCrunchData);
 	recipes.length = index;
 	recipes.forEach = Array.prototype.forEach;
 	recipes.filter = Array.prototype.filter;
@@ -1269,8 +1407,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		if (food.hasOwnProperty(i) && isNaN(i) && isNaN(food[i])) {
 			var f = food[i];
 			info = f.info;
-			f.cooked && info.push('cooked [*' + f.raw.name + '|' + f.raw.img + ']');
-			f.cook && info.push('cook into [*' + f.cook.name + '|' + f.cook.img + ']');
+			f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
+			f.cook && info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
+			if (f.dry) {
+				if (!(f.dry instanceof Object)) {
+					f.dry = food[f.dry];
+				}
+				info.push('dry: [*' + f.dry.name + '|' + f.dry.img + ']');
+			}
 			f.info = info.join('; ');
 			if (!f.uncookable) {
 				f.recipes = [];
@@ -1497,12 +1641,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		return table;
 	};
 
-	var sign = function (n) { return isNaN(n) ? '' : n > 0 ? '+' + n : n };
+	var sign = function (n) { return isNaN(n) ? '' : n > 0 ? '+' + n : n },
+		pct = function (base, val) {
+			return !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / base : base > val ? -(base - val) / base : 0)*100).toFixed(0)) + '%)' : '';
+		};
 	var makeFoodRow = function (item) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
 	};
 	var makeRecipeRow = function (item, health, hunger) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + (health && item.health !== health ? ' (' + ((item.health / health * 1000 | 0) / 10) + '%)' : ''), sign(item.hunger) + (hunger && item.hunger !== hunger ? ' (' + ((item.hunger / hunger * 1000 | 0) / 10) + '%)' : ''), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
 	};
 	(function () {
 		var foodHighlight,

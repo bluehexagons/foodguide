@@ -489,6 +489,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			corn: {
 				name: 'Corn',
+				ideal: true,
 				isveggie: true,
 				veggie: 1,
 				health: healing_small,
@@ -980,6 +981,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					return true;
 				},
 				requirements: [],
+				trash: true,
 				priority: -2,
 				health: 0,
 				hunger: 0,
@@ -988,7 +990,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 0.25
 			}
 		},
-		recipeCrunchData = [],
+		recipeCrunchData,
 		recipeCrunchString,
 		matchingNames = (function () {
 			var name,
@@ -1107,31 +1109,31 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 			};
 		}()),
-		getSuggestions = (function () {
-			var names,
-				tags,
-				setIngredientValues = function (items) {
-					var i, k, item;
-					names = {};
-					tags = {};
-					for (i = 0; i < items.length; i++) {
-						item = items[i];
-						if (item !== null) {
-							names[item.id] = 1 + (names[item.id] || 0);
-							for (k in item) {
-								if (item.hasOwnProperty(k) && k !== 'perish') {
-									tags[k] = item[k] + (tags[k] || 0);
-								} else if (k === 'perish') {
-									tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
-								}
-							}
+		setIngredientValues = function (items, names, tags) {
+			var i, k, item;
+			for (i = 0; i < items.length; i++) {
+				item = items[i];
+				if (item !== null) {
+					names[item.id] = 1 + (names[item.id] || 0);
+					for (k in item) {
+						if (item.hasOwnProperty(k) && k !== 'perish') {
+							tags[k] = item[k] + (tags[k] || 0);
+						} else if (k === 'perish') {
+							tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
 						}
 					}
-				};
+				}
+			}
+		},
+		getSuggestions = (function () {
+			var names,
+				tags;
 			return function (recipeList, items, exclude, itemComplete) {
 				var i, ii, valid;
 				recipeList.length = 0;
-				setIngredientValues(items);
+				names = {};
+				tags = {};
+				setIngredientValues(items, names, tags);
 				for (i = 0; i < recipes.length; i++) {
 					valid = false;
 					for (ii = 0; ii < recipes[i].requirements.length; ii++) {
@@ -1157,29 +1159,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		getRecipes = (function () {
 			var recipeList = [],
 				names,
-				tags,
-				setIngredientValues = function (items) {
-					var i, k, item;
-					names = {};
-					tags = {};
-					for (i = 0; i < items.length; i++) {
-						item = items[i];
-						if (item !== null) {
-							names[item.id] = 1 + (names[item.id] || 0);
-							for (k in item) {
-								if (item.hasOwnProperty(k) && k !== 'perish') {
-									tags[k] = item[k] + (tags[k] || 0);
-								} else if (k === 'perish') {
-									tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
-								}
-							}
-						}
-					}
-				};
+				tags;
 			return function (items) {
 				var i;
 				recipeList.length = 0;
-				setIngredientValues(items);
+				names = {};
+				tags = {};
+				setIngredientValues(items, names, tags);
 				for (i = 0; i < recipes.length; i++) {
 					recipes[i].test(null, names, tags) && recipeList.push(recipes[i]);
 				}
@@ -1365,6 +1351,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.sweetener && info.push(taggify('sweetener'));
 			f.fat && info.push(taggify('fat'));
 			f.dairy && info.push(taggify('dairy'));
+			f.comment && info.push(comment);
 			food[index++] = f;
 		}
 	}
@@ -1383,14 +1370,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; '));
 			}
 			recipes[index++] = recipes[i];
-			recipeCrunchData[index] = recipes[i].test.toString();
 		}
 	}
-	recipeCrunchString = JSON.stringify(recipeCrunchData);
 	recipes.length = index;
 	recipes.forEach = Array.prototype.forEach;
 	recipes.filter = Array.prototype.filter;
 	recipes.sort = Array.prototype.sort;
+
 	recipes.byName = function (name) {
 		var i = this.length;
 		while (i--) {
@@ -1457,6 +1443,105 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		}
 	};
+
+	var usefulTags = ['id', 'health', 'hunger', 'fruit', 'veggie', 'meat', 'egg', 'fish', 'magic', 'decoration', 'inedible', 'monster', 'sweetener', 'fat', 'dairy'],
+		combinationGenerator = function (length, callback, startPos) {
+			var size = 4, index = 1, current = startPos || [0, 0, 0, 0], check, max = 0, iter = 0;
+			return function (batch) {
+				var overflow;
+				while (batch-- && index < length && iter < 200000) {
+					callback(current);
+					//console.log(current.slice(), iter);
+					current[0]++;
+					overflow = 0;
+					while (current[overflow] >= length) {
+						overflow++;
+						current[overflow]++;
+					}
+					check = size;
+					max = 0;
+					while (check--) {
+						if (current[check] >= length) {
+							current[check] = max;
+						} else if (current[check] > max) {
+							max = current[check];
+						}
+					}
+					if (overflow === size) {
+						return false;
+						break; //in case I copy and paste this for some reason and forget I need to get out of the loop
+					}
+					iter++;
+				}
+				return true;
+				//console.log(iter);
+			};
+		};
+	recipeCrunchData = {};
+	recipeCrunchData.food = food.filter(function (item) {
+			return !item.uncookable && !item.skip && (item.ideal || (!item.cook && (!item.raw || !item.raw.ideal)));
+		}).map(function (item) {
+			var f = {}, t = usefulTags.length;
+			while (t--) {
+				if (item.hasOwnProperty(usefulTags[t])) {
+					f[usefulTags[t]] = item[usefulTags[t]];
+				}
+			}
+			return f;
+		});
+	recipeCrunchData.recipes = recipes.filter(function (item) {
+			return !item.trash;
+		}).sort(function (a, b) {
+			return b.priority - a.priority;
+		});
+	recipeCrunchData.test = recipeCrunchData.recipes.map(function (a) { return a.test; })
+	recipeCrunchData.tests = recipeCrunchData.recipes.map(function (a) { return a.test.toString(); })
+	recipeCrunchData.priority = recipeCrunchData.recipes.map(function (a) { return a.priority; });
+	var getRealRecipesFromCollection = function (items, mainCallback, chunkCallback, endCallback) {
+			var l = recipeCrunchData.test.length,
+				built = [],
+				renderedTo = 0,
+				lastTime,
+				block = 3,
+				desiredTime = 38,
+				foodFromIndex = function (index) {
+					return items[index];
+				},
+				callback = function (combination) {
+					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {};
+					setIngredientValues(ingredients, names, tags);
+					for (var i = 0; i < l && !(recipeCrunchData.recipes[i].priority < priority); i++) {
+						if (recipeCrunchData.test[i](null, names, tags)) {
+							built.push({ recipe: recipeCrunchData.recipes[i], combination: combination, ingredients: ingredients, tags: tags });
+							priority = recipeCrunchData.recipes[i].priority;
+						}
+					}
+				},
+				getCombinations = combinationGenerator(items.length, callback),
+				computeNextBlock = function () {
+					var end = false,
+						start = Date.now();
+					if (getCombinations(block)) {
+						setTimeout(computeNextBlock, 3);
+					} else {
+						end = true;
+					}
+					for (; renderedTo < built.length && built[renderedTo]; renderedTo++) {
+						mainCallback(built[renderedTo]);
+					}
+					if (lastTime !== Date.now() - start) {
+						lastTime = Date.now() - start + 1;
+						block = desiredTime / lastTime * block + 1 | 0;
+					}
+					chunkCallback && chunkCallback();
+					end && endCallback && endCallback();
+				};
+			computeNextBlock();
+		};
+	//console.log(recipeCrunchData);
+	//delete recipeCrunchData.recipes;
+	//recipeCrunchString = JSON.stringify(recipeCrunchData); //recipeCrunch might also be used for multithreading later
+
 	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Perish\n|');
 	var setTab;
 	(function () {
@@ -1543,23 +1628,27 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			return tr;
 		};
-	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback) {
-		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight,
-			generateAndHighlight = function (item) {
-				var row = rowGenerator(item);
-				if (highlightCallback && highlightCallback(item)) {
-					row.className = 'highlighted';
-					if (!firstHighlight) {
-						firstHighlight = row;
+	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) {
+		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight, rows,
+			generateAndHighlight = function (item, index) {
+				var row;
+				if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
+					row = rowGenerator(item);
+					if (highlightCallback && highlightCallback(item)) {
+						row.className = 'highlighted';
+						if (!firstHighlight) {
+							firstHighlight = row;
+						}
+						lastHighlight = row;
 					}
-					lastHighlight = row;
+					table.appendChild(row);
+					rows++;
 				}
-				table.appendChild(row);
 			},
 			create = function (e, sort, scrollHighlight) {
 				var tr, th, oldTable, sortBy, summary, links, i;
-				if (sort || (e && e.target.dataset.sort !== '')) {
-					sortBy = sort || e.target.dataset.sort;
+				if (sort || (e && e.target.dataset.sort !== '') || sorting) {
+					sortBy = sort || (e && e.target.dataset.sort) || sorting;
 					if (hasSummary) {
 						summary = dataset.shift();
 					}
@@ -1578,11 +1667,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
 						});
 					}
-					if (sorting === sortBy) {
-						invertSort = !invertSort;
-					} else {
-						sorting = sortBy;
-						invertSort = false;
+					if (sort || e) {
+						if (sorting === sortBy) {
+							invertSort = !invertSort;
+						} else {
+							sorting = sortBy;
+							invertSort = false;
+						}
 					}
 					if (invertSort) {
 						dataset.reverse();
@@ -1612,6 +1703,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				table.appendChild(tr);
 				firstHighlight = null;
 				lastHighlight = null;
+				rows = 0;
 				dataset.forEach(generateAndHighlight);
 				if (linkCallback) {
 					table.className = 'links';
@@ -1638,12 +1730,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		table.update = function (scrollHighlight) {
 			create(null, null, scrollHighlight);
 		};
+		table.setMaxRows = function (max) {
+			maxRows = max;
+			this.update();
+		};
 		return table;
 	};
 
 	var sign = function (n) { return isNaN(n) ? '' : n > 0 ? '+' + n : n },
+		rawpct = function (base, val) {
+			return base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0;
+		},
 		pct = function (base, val) {
-			return !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / base : base > val ? -(base - val) / base : 0)*100).toFixed(0)) + '%)' : '';
+			return !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
 		};
 	var makeFoodRow = function (item) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
@@ -1790,6 +1889,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					results = document.getElementById('results'),
 					discoverfood = document.getElementById('discoverfood'),
 					discover = document.getElementById('discover'),
+					makable = document.getElementById('makable'),
 					clear = document.createElement('span'),
 					displaying = false,
 					appendSlot = function (id) {
@@ -1957,7 +2057,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					updateRecipes = function () {
 						var ingredients,
 							foodTable,
-							table;
+							table,
+							makableDiv,
+							makableTable,
+							makableButton,
+							made,
+							ingredientToIcon = function (a, b) {
+								return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
+							};
 						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), function (slot) {
 							return getSlot(slot);
 						});
@@ -1966,6 +2073,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 						if (discover.firstChild) {
 							discover.removeChild(discover.firstChild);
+						}
+						if (makable.firstChild) {
+							makable.removeChild(makable.firstChild);
 						}
 						if (ingredients.length > 0) {
 							foodTable = makeSortableTable(
@@ -1984,6 +2094,168 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 									'name'
 								)
 								discover.appendChild(table);
+
+								makableButton = document.createElement('button');
+								makableButton.appendChild(document.createTextNode('Calculate efficient recipes'));
+								makableButton.className = 'makablebutton';
+								makableButton.addEventListener('click', function () {
+									var idealIngredients = [],
+										i = ingredients.length,
+										selectedRecipe,
+										selectedRecipeElement,
+										addedRecipes = 0,
+										makableRecipes = [],
+										makableRecipe,
+										makableSummary,
+										splitCommaSpace = /, */,
+										makableFilter,
+										usesIngredients = [],
+										makableApply,
+										option,
+										checkIngredient = function (item) {
+											return this.indexOf(food[item]) !== -1;
+											//return usesIngredients.indexOf(item.id) !== -1;
+										},
+										toggleFilter = function (e) {
+											if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+												usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+												e.target.className = '';
+											} else {
+												usesIngredients.push(e.target.dataset.id);
+												e.target.className = 'selected';
+											}
+											makableTable.update();
+										},
+										setRecipe = function (e) {
+											if (selectedRecipeElement) {
+												selectedRecipeElement.className = '';
+											}
+											selectedRecipe = e.target.dataset.recipe;
+											selectedRecipeElement = e.target;
+											e.target.className = 'selected';
+											makableTable.update();
+										};
+									//TODO: optimize so much around this
+									while (i--) {
+										if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
+											idealIngredients.push(ingredients[i].cook);
+										}
+										if ((ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
+											idealIngredients.push(ingredients[i]);
+										}
+									}
+									made = [];
+									makableTable = makeSortableTable(
+										{'': '', 'Name': 'name', 'Health': 'health', 'Health+': 'healthpls', 'Hunger': 'hunger', 'Hunger+': 'hungerpls', 'Ingredients': ''},
+										made,
+										function (data) {
+											var item = data.recipe,
+												health = data.tags.health,
+												hunger = data.tags.hunger;
+											
+											//console.log('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0',
+											//	data.ingredients.reduce(ingredientToIcon, ''), data.ingredients);
+											return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)', sign(item.hunger), sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
+												makeLinkable(data.ingredients.reduce(ingredientToIcon, '')));
+										},
+										'hungerpls',
+										false,
+										null,
+										null,
+										function (data) {
+											return data.recipe.name === selectedRecipe && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
+										},
+										0,
+										15
+									);
+									makableDiv = document.createElement('div');
+									makableSummary = document.createElement('div');
+									makableSummary.appendChild(document.createTextNode('Computing combinations..'));
+									makableDiv.appendChild(makableSummary);
+									makableRecipe = document.createElement('div');
+									makableRecipe.className = 'recipeFilter';
+									makableDiv.appendChild(makableRecipe);
+									makableFilter = document.createElement('div');
+									makableFilter.className = 'foodFilter';
+									idealIngredients.forEach(function (item) {
+										var img = makeImage(item.img, 32);
+										img.dataset.id = item.id;
+										img.addEventListener('click', toggleFilter, false);
+										makableFilter.appendChild(img);
+									});
+									makableDiv.appendChild(makableFilter);
+									makableDiv.appendChild(makableTable);
+									makable.replaceChild(makableDiv, makableButton);
+									getRealRecipesFromCollection(idealIngredients, function (data) { //row update
+										var i, img;
+										if (makableRecipes.indexOf(data.recipe.name) === -1) {
+											for (i = 0; i < makableRecipes.length; i++) {
+												if (data.recipe.name < makableRecipes[i]) {
+													break;
+												}
+											}
+											makableRecipes.splice(i, 0, data.recipe.name);
+											img = makeImage(recipes.byName(makableRecipes[i].toLowerCase()).img);
+											//TODO: optimize
+											img.dataset.recipe = makableRecipes[i];
+											img.addEventListener('click', setRecipe, false);
+											if (i < makableRecipe.childNodes.length) {
+												makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
+											} else {
+												makableRecipe.appendChild(img);
+											}
+											if (i === 0) {
+												if (selectedRecipeElement) {
+													selectedRecipeElement.className = '';
+												}
+												selectedRecipe = makableRecipes[0];
+												selectedRecipeElement = makableRecipe.firstChild;
+												makableRecipe.firstChild.className = 'selected';
+											}
+										}
+										if (!data.name) {
+											data.name = data.recipe.name;
+											data.health = data.recipe.health;
+											data.ihealth = data.tags.health;
+											data.healthpls = data.recipe.health - data.tags.health;
+											data.hunger = data.recipe.hunger;
+											data.ihunger = data.tags.hunger;
+											data.hungerpls = data.recipe.hunger - data.tags.hunger;
+											data.healthpct = rawpct(data.tags.health, data.recipe.health);
+											data.hungerpct = rawpct(data.tags.hunger, data.recipe.hunger);
+											data.sanity = data.recipe.sanity;
+											data.perish = data.recipe.perish;
+											data.worth = data.tags.worth;
+										}
+										made.push(data);
+									}, function () { //chunk update
+										/*var l = makableRecipes.length, img;
+										while (addedRecipes < l) {
+											img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);
+											//TODO: optimize
+											img.dataset.recipe = makableRecipes[addedRecipes];
+											img.addEventListener('click', setRecipe, false);
+											makableRecipe.appendChild(img);
+											addedRecipes++;
+											makableRecipes.sort();
+											if (selectedRecipe !== makableRecipes[0]) {
+												selectedRecipe = makableRecipes[0];
+												selectedRecipeElement = makableRecipe.firstChild;
+												makableRecipe.firstChild.className = 'selected';
+											}
+											makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+											makableTable.update();
+										}*/
+										makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+										//makableTable.update();
+									}, function () { //computation finished
+										//console.log(makableRecipes);
+										//makableDiv.removeChild(makableSummary);
+										makableTable.setMaxRows(30);
+										makableSummary.firstChild.textContent = 'Done! Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients.';
+									});
+								}, false);
+								makable.appendChild(makableButton);
 							}
 						}
 					};

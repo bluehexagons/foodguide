@@ -40,6 +40,13 @@
 		#footer { padding-left: 10px; padding-right: 10px; color: #777; text-align: center; }
 		#footer a { color: #585858; }
 		#footer a:hover { color: #777; }
+		button.makablebutton { font-size: 14pt; margin: 4px; padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
+		div.recipeFilter img { opacity: 0.6; margin: 4px; padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
+		div.recipeFilter img:hover { opacity: 0.8; }
+		div.recipeFilter img.selected { opacity: 1; border-width: 3px; margin: 2px; }
+		div.foodFilter img { width: 32px; height: 32px; opacity: 0.4; margin: 4px; padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
+		div.foodFilter img:hover { opacity: 0.8; }
+		div.foodFilter img.selected { border-width: 3px; margin: 2px; opacity: 1; }
 	</style>
 </head>
 <body>
@@ -61,8 +68,12 @@
 		<div id="discovery">
 			<div style="margin-bottom: 6pt">Add items in your inventory to see your options.</div>
 			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Choose an ingredient" /><div id="inventory" class="ingredientlist"></div>
+			Stats about your food:
 			<div id="discoverfood"></div>
+			With these, you can make:
 			<div id="discover"></div>
+			Find what recipes are most efficient:
+			<div id="makable"></div>
 		</div>
 		<div id="foodlist">
 			<div id="food"></div>

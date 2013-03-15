@@ -2111,13 +2111,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 										splitCommaSpace = /, */,
 										makableFilter,
 										usesIngredients = [],
+										excludesIngredients = [],
 										makableApply,
 										option,
+										checkExcludes = function (item) {
+											return excludesIngredients.indexOf(item.id) !== -1;
+										},
 										checkIngredient = function (item) {
 											return this.indexOf(food[item]) !== -1;
 											//return usesIngredients.indexOf(item.id) !== -1;
 										},
 										toggleFilter = function (e) {
+											if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+												excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+											}
 											if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
 												usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
 												e.target.className = '';
@@ -2126,6 +2133,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 												e.target.className = 'selected';
 											}
 											makableTable.update();
+										},
+										toggleExclude = function (e) {
+											if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+												usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+											}
+											if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+												excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+												e.target.className = '';
+											} else {
+												excludesIngredients.push(e.target.dataset.id);
+												e.target.className = 'excluded';
+											}
+											makableTable.update();
+											e.preventDefault();
 										},
 										setRecipe = function (e) {
 											if (selectedRecipeElement) {
@@ -2169,7 +2190,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 										null,
 										null,
 										function (data) {
-											return (!selectedRecipe || data.recipe.name === selectedRecipe) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
+											return (!selectedRecipe || data.recipe.name === selectedRecipe) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
 										},
 										0,
 										15
@@ -2187,6 +2208,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 										var img = makeImage(item.img, 32);
 										img.dataset.id = item.id;
 										img.addEventListener('click', toggleFilter, false);
+										img.addEventListener('contextmenu', toggleExclude, false);
 										makableFilter.appendChild(img);
 									});
 									makableDiv.appendChild(makableFilter);

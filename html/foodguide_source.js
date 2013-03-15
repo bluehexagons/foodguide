@@ -343,6 +343,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			drumstick: {
 				name: 'Drumstick',
 				ismeat: true,
+				ideal: true,
 				meat: 0.5,
 				health: 0,
 				hunger: calories_small,
@@ -1510,7 +1511,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				callback = function (combination) {
 					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {};
 					setIngredientValues(ingredients, names, tags);
-					for (var i = 0; i < l && !(recipeCrunchData.recipes[i].priority < priority); i++) {
+					for (var i = 0; i < l && (priority === null || recipeCrunchData.recipes[i].priority >= priority); i++) {
 						if (recipeCrunchData.test[i](null, names, tags)) {
 							built.push({ recipe: recipeCrunchData.recipes[i], combination: combination, ingredients: ingredients, tags: tags });
 							priority = recipeCrunchData.recipes[i].priority;

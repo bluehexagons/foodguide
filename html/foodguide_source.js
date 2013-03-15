@@ -2130,9 +2130,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 											if (selectedRecipeElement) {
 												selectedRecipeElement.className = '';
 											}
-											selectedRecipe = e.target.dataset.recipe;
-											selectedRecipeElement = e.target;
-											e.target.className = 'selected';
+											if (selectedRecipe === e.target.dataset.recipe) {
+												selectedRecipeElement = null;
+												selectedRecipe = null;
+											} else {
+												selectedRecipe = e.target.dataset.recipe;
+												selectedRecipeElement = e.target;
+												e.target.className = 'selected';
+											}
 											makableTable.update();
 										};
 									//TODO: optimize so much around this
@@ -2163,7 +2168,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 										null,
 										null,
 										function (data) {
-											return data.recipe.name === selectedRecipe && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
+											return (!selectedRecipe || data.recipe.name === selectedRecipe) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
 										},
 										0,
 										15

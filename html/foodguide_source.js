@@ -2280,7 +2280,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 										//console.log(makableRecipes);
 										//makableDiv.removeChild(makableSummary);
 										makableTable.setMaxRows(30);
-										makableSummary.firstChild.textContent = 'Done! Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients.';
+										makableSummary.firstChild.textContent = 'Done! Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude ingredients.';
 									});
 								}, false);
 								makable.appendChild(makableButton);

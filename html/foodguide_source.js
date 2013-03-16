@@ -370,7 +370,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				sanity: 0,
 				perish: perish_med,
-				stack: stack_size_smallitem
+				stack: stack_size_smallitem,
+				comment: 'Bug may prevent using in crock pot'
 			},
 			green_mushroom: {
 				name: 'Green Mushroom',
@@ -379,7 +380,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				sanity: -sanity_huge,
 				perish: perish_med,
-				stack: stack_size_smallitem
+				stack: stack_size_smallitem,
+				comment: 'Bug may prevent using in crock pot'
 			},
 			blue_mushroom: {
 				name: 'Blue Mushroom',
@@ -388,7 +390,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				sanity: -sanity_med,
 				perish: perish_med,
-				stack: stack_size_smallitem
+				stack: stack_size_smallitem,
+				comment: 'Bug may prevent using in crock pot'
 			},
 			petals: {
 				name: 'Petals',
@@ -1352,7 +1355,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.sweetener && info.push(taggify('sweetener'));
 			f.fat && info.push(taggify('fat'));
 			f.dairy && info.push(taggify('dairy'));
-			f.comment && info.push(comment);
+			f.comment && info.push(f.comment);
 			food[index++] = f;
 		}
 	}
@@ -1836,6 +1839,220 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	//a = document.createElement('textarea');
 	//a.value = output.join('');
 	//document.body.appendChild(a);
+
+	var ingredientToIcon = function (a, b) {
+			return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
+		},
+		makeRecipeGrinder = function (ingredients) {
+			var makableButton = document.createElement('button');
+			makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
+			makableButton.className = 'makablebutton';
+			makableButton.addEventListener('click', function () {
+				var idealIngredients = [],
+					i = ingredients ? ingredients.length : null,
+					selectedRecipe,
+					selectedRecipeElement,
+					addedRecipes = 0,
+					makableRecipes = [],
+					makableRecipe,
+					makableSummary,
+					splitCommaSpace = /, */,
+					makableFilter,
+					customFilter = null,
+					customFilterHolder,
+					customFilterInput,
+					usesIngredients = [],
+					excludesIngredients = [],
+					makableApply,
+					option,
+					made,
+					makableDiv,
+					makableTable,
+					checkExcludes = function (item) {
+						return excludesIngredients.indexOf(item.id) !== -1;
+					},
+					checkIngredient = function (item) {
+						return this.indexOf(food[item]) !== -1;
+						//return usesIngredients.indexOf(item.id) !== -1;
+					},
+					toggleFilter = function (e) {
+						if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+						}
+						if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+							e.target.className = '';
+						} else {
+							usesIngredients.push(e.target.dataset.id);
+							e.target.className = 'selected';
+						}
+						makableTable.update();
+					},
+					toggleExclude = function (e) {
+						if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+						}
+						if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+							e.target.className = '';
+						} else {
+							excludesIngredients.push(e.target.dataset.id);
+							e.target.className = 'excluded';
+						}
+						makableTable.update();
+						e.preventDefault();
+					},
+					setRecipe = function (e) {
+						if (selectedRecipeElement) {
+							selectedRecipeElement.className = '';
+						}
+						if (selectedRecipe === e.target.dataset.recipe) {
+							selectedRecipeElement = null;
+							selectedRecipe = null;
+						} else {
+							selectedRecipe = e.target.dataset.recipe;
+							selectedRecipeElement = e.target;
+							e.target.className = 'selected';
+						}
+						makableTable.update();
+					};
+				//TODO: optimize so much around this
+				if (i === null) {
+					i = food.length;
+					ingredients = food;
+				}
+				while (i--) {
+					if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
+						idealIngredients.push(ingredients[i].cook);
+					}
+					if (!ingredients[i].uncookable && (ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
+						idealIngredients.push(ingredients[i]);
+					}
+				}
+				made = [];
+				makableTable = makeSortableTable(
+					{'': '', 'Name': 'name', 'Health': 'health', 'Health+': 'healthpls', 'Hunger': 'hunger', 'Hunger+': 'hungerpls', 'Ingredients': ''},
+					made,
+					function (data) {
+						var item = data.recipe,
+							health = data.tags.health,
+							hunger = data.tags.hunger;
+						
+						//console.log('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0',
+						//	data.ingredients.reduce(ingredientToIcon, ''), data.ingredients);
+						return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)', sign(item.hunger), sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
+							makeLinkable(data.ingredients.reduce(ingredientToIcon, '')));
+					},
+					'hungerpls',
+					false,
+					null,
+					null,
+					function (data) {
+						return (!selectedRecipe || data.recipe.name === selectedRecipe) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
+					},
+					0,
+					15
+				);
+				makableDiv = document.createElement('div');
+				makableSummary = document.createElement('div');
+				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
+				makableDiv.appendChild(makableSummary);
+				makableRecipe = document.createElement('div');
+				makableRecipe.className = 'recipeFilter';
+				makableDiv.appendChild(makableRecipe);
+				makableFilter = document.createElement('div');
+				makableFilter.className = 'foodFilter';
+				idealIngredients.forEach(function (item) {
+					var img = makeImage(item.img, 32);
+					img.dataset.id = item.id;
+					img.addEventListener('click', toggleFilter, false);
+					img.addEventListener('contextmenu', toggleExclude, false);
+					makableFilter.appendChild(img);
+				});
+				makableDiv.appendChild(makableFilter);
+				customFilterHolder = document.createElement('div');
+				customFilterInput = document.createElement('input');
+				customFilterInput.type = 'text';
+				customFilterInput.placeholder = 'use custom filter';
+				customFilterInput.className = 'customFilterInput';
+				customFilterHolder.appendChild(customFilterInput);
+				//customFilterHolder.appendChild(document.createTextNode());
+				//makableDiv.appendChild(customFilterHolder);
+				makableDiv.appendChild(makableTable);
+				makableButton.parentNode.replaceChild(makableDiv, makableButton);
+				getRealRecipesFromCollection(idealIngredients, function (data) { //row update
+					var i, img;
+					if (makableRecipes.indexOf(data.recipe.name) === -1) {
+						for (i = 0; i < makableRecipes.length; i++) {
+							if (data.recipe.name < makableRecipes[i]) {
+								break;
+							}
+						}
+						makableRecipes.splice(i, 0, data.recipe.name);
+						img = makeImage(recipes.byName(makableRecipes[i].toLowerCase()).img);
+						//TODO: optimize
+						img.dataset.recipe = makableRecipes[i];
+						img.addEventListener('click', setRecipe, false);
+						if (i < makableRecipe.childNodes.length) {
+							makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
+						} else {
+							makableRecipe.appendChild(img);
+						}
+						/*if (i === 0) {
+							if (selectedRecipeElement) {
+								selectedRecipeElement.className = '';
+							}
+							selectedRecipe = makableRecipes[0];
+							selectedRecipeElement = makableRecipe.firstChild;
+							makableRecipe.firstChild.className = 'selected';
+						}*/
+					}
+					if (!data.name) {
+						data.name = data.recipe.name;
+						data.health = data.recipe.health;
+						data.ihealth = data.tags.health;
+						data.healthpls = data.recipe.health - data.tags.health;
+						data.hunger = data.recipe.hunger;
+						data.ihunger = data.tags.hunger;
+						data.hungerpls = data.recipe.hunger - data.tags.hunger;
+						data.healthpct = rawpct(data.tags.health, data.recipe.health);
+						data.hungerpct = rawpct(data.tags.hunger, data.recipe.hunger);
+						data.sanity = data.recipe.sanity;
+						data.perish = data.recipe.perish;
+						data.worth = data.tags.worth;
+					}
+					made.push(data);
+				}, function () { //chunk update
+					/*var l = makableRecipes.length, img;
+					while (addedRecipes < l) {
+						img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);
+						//TODO: optimize
+						img.dataset.recipe = makableRecipes[addedRecipes];
+						img.addEventListener('click', setRecipe, false);
+						makableRecipe.appendChild(img);
+						addedRecipes++;
+						makableRecipes.sort();
+						if (selectedRecipe !== makableRecipes[0]) {
+							selectedRecipe = makableRecipes[0];
+							selectedRecipeElement = makableRecipe.firstChild;
+							makableRecipe.firstChild.className = 'selected';
+						}
+						makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+						makableTable.update();
+					}*/
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+					//makableTable.update();
+				}, function () { //computation finished
+					//console.log(makableRecipes);
+					//makableDiv.removeChild(makableSummary);
+					makableTable.setMaxRows(30);
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude ingredients.';
+				});
+			}, false);
+			return makableButton;
+		};
+	document.getElementById('statistics').appendChild(makeRecipeGrinder());
+
 	window.food = food;
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;
@@ -2058,14 +2275,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					updateRecipes = function () {
 						var ingredients,
 							foodTable,
-							table,
-							makableDiv,
-							makableTable,
-							makableButton,
-							made,
-							ingredientToIcon = function (a, b) {
-								return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
-							};
+							table;
 						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), function (slot) {
 							return getSlot(slot);
 						});
@@ -2096,194 +2306,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								)
 								discover.appendChild(table);
 
-								makableButton = document.createElement('button');
-								makableButton.appendChild(document.createTextNode('Calculate efficient recipes'));
-								makableButton.className = 'makablebutton';
-								makableButton.addEventListener('click', function () {
-									var idealIngredients = [],
-										i = ingredients.length,
-										selectedRecipe,
-										selectedRecipeElement,
-										addedRecipes = 0,
-										makableRecipes = [],
-										makableRecipe,
-										makableSummary,
-										splitCommaSpace = /, */,
-										makableFilter,
-										usesIngredients = [],
-										excludesIngredients = [],
-										makableApply,
-										option,
-										checkExcludes = function (item) {
-											return excludesIngredients.indexOf(item.id) !== -1;
-										},
-										checkIngredient = function (item) {
-											return this.indexOf(food[item]) !== -1;
-											//return usesIngredients.indexOf(item.id) !== -1;
-										},
-										toggleFilter = function (e) {
-											if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
-												excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
-											}
-											if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
-												usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
-												e.target.className = '';
-											} else {
-												usesIngredients.push(e.target.dataset.id);
-												e.target.className = 'selected';
-											}
-											makableTable.update();
-										},
-										toggleExclude = function (e) {
-											if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
-												usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
-											}
-											if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
-												excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
-												e.target.className = '';
-											} else {
-												excludesIngredients.push(e.target.dataset.id);
-												e.target.className = 'excluded';
-											}
-											makableTable.update();
-											e.preventDefault();
-										},
-										setRecipe = function (e) {
-											if (selectedRecipeElement) {
-												selectedRecipeElement.className = '';
-											}
-											if (selectedRecipe === e.target.dataset.recipe) {
-												selectedRecipeElement = null;
-												selectedRecipe = null;
-											} else {
-												selectedRecipe = e.target.dataset.recipe;
-												selectedRecipeElement = e.target;
-												e.target.className = 'selected';
-											}
-											makableTable.update();
-										};
-									//TODO: optimize so much around this
-									while (i--) {
-										if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
-											idealIngredients.push(ingredients[i].cook);
-										}
-										if ((ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
-											idealIngredients.push(ingredients[i]);
-										}
-									}
-									made = [];
-									makableTable = makeSortableTable(
-										{'': '', 'Name': 'name', 'Health': 'health', 'Health+': 'healthpls', 'Hunger': 'hunger', 'Hunger+': 'hungerpls', 'Ingredients': ''},
-										made,
-										function (data) {
-											var item = data.recipe,
-												health = data.tags.health,
-												hunger = data.tags.hunger;
-											
-											//console.log('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0',
-											//	data.ingredients.reduce(ingredientToIcon, ''), data.ingredients);
-											return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)', sign(item.hunger), sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
-												makeLinkable(data.ingredients.reduce(ingredientToIcon, '')));
-										},
-										'hungerpls',
-										false,
-										null,
-										null,
-										function (data) {
-											return (!selectedRecipe || data.recipe.name === selectedRecipe) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
-										},
-										0,
-										15
-									);
-									makableDiv = document.createElement('div');
-									makableSummary = document.createElement('div');
-									makableSummary.appendChild(document.createTextNode('Computing combinations..'));
-									makableDiv.appendChild(makableSummary);
-									makableRecipe = document.createElement('div');
-									makableRecipe.className = 'recipeFilter';
-									makableDiv.appendChild(makableRecipe);
-									makableFilter = document.createElement('div');
-									makableFilter.className = 'foodFilter';
-									idealIngredients.forEach(function (item) {
-										var img = makeImage(item.img, 32);
-										img.dataset.id = item.id;
-										img.addEventListener('click', toggleFilter, false);
-										img.addEventListener('contextmenu', toggleExclude, false);
-										makableFilter.appendChild(img);
-									});
-									makableDiv.appendChild(makableFilter);
-									makableDiv.appendChild(makableTable);
-									makable.replaceChild(makableDiv, makableButton);
-									getRealRecipesFromCollection(idealIngredients, function (data) { //row update
-										var i, img;
-										if (makableRecipes.indexOf(data.recipe.name) === -1) {
-											for (i = 0; i < makableRecipes.length; i++) {
-												if (data.recipe.name < makableRecipes[i]) {
-													break;
-												}
-											}
-											makableRecipes.splice(i, 0, data.recipe.name);
-											img = makeImage(recipes.byName(makableRecipes[i].toLowerCase()).img);
-											//TODO: optimize
-											img.dataset.recipe = makableRecipes[i];
-											img.addEventListener('click', setRecipe, false);
-											if (i < makableRecipe.childNodes.length) {
-												makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
-											} else {
-												makableRecipe.appendChild(img);
-											}
-											if (i === 0) {
-												if (selectedRecipeElement) {
-													selectedRecipeElement.className = '';
-												}
-												selectedRecipe = makableRecipes[0];
-												selectedRecipeElement = makableRecipe.firstChild;
-												makableRecipe.firstChild.className = 'selected';
-											}
-										}
-										if (!data.name) {
-											data.name = data.recipe.name;
-											data.health = data.recipe.health;
-											data.ihealth = data.tags.health;
-											data.healthpls = data.recipe.health - data.tags.health;
-											data.hunger = data.recipe.hunger;
-											data.ihunger = data.tags.hunger;
-											data.hungerpls = data.recipe.hunger - data.tags.hunger;
-											data.healthpct = rawpct(data.tags.health, data.recipe.health);
-											data.hungerpct = rawpct(data.tags.hunger, data.recipe.hunger);
-											data.sanity = data.recipe.sanity;
-											data.perish = data.recipe.perish;
-											data.worth = data.tags.worth;
-										}
-										made.push(data);
-									}, function () { //chunk update
-										/*var l = makableRecipes.length, img;
-										while (addedRecipes < l) {
-											img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);
-											//TODO: optimize
-											img.dataset.recipe = makableRecipes[addedRecipes];
-											img.addEventListener('click', setRecipe, false);
-											makableRecipe.appendChild(img);
-											addedRecipes++;
-											makableRecipes.sort();
-											if (selectedRecipe !== makableRecipes[0]) {
-												selectedRecipe = makableRecipes[0];
-												selectedRecipeElement = makableRecipe.firstChild;
-												makableRecipe.firstChild.className = 'selected';
-											}
-											makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
-											makableTable.update();
-										}*/
-										makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
-										//makableTable.update();
-									}, function () { //computation finished
-										//console.log(makableRecipes);
-										//makableDiv.removeChild(makableSummary);
-										makableTable.setMaxRows(30);
-										makableSummary.firstChild.textContent = 'Done! Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude ingredients.';
-									});
-								}, false);
-								makable.appendChild(makableButton);
+								makable.appendChild(makeRecipeGrinder(ingredients));
 							}
 						}
 					};

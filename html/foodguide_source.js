@@ -1461,7 +1461,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			var size = 4, index = 1, current = startPos || [0, 0, 0, 0], check, max = 0, iter = 0;
 			return function (batch) {
 				var overflow;
-				while (batch-- && index < length && iter < 200000) {
+				while (batch-- && index < length) {
 					callback(current);
 					current[0]++;
 					overflow = 0;
@@ -1512,7 +1512,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				built = [],
 				renderedTo = 0,
 				lastTime,
-				block = 3,
+				block = 60,
 				desiredTime = 38,
 				foodFromIndex = function (index) {
 					return items[index];
@@ -1522,7 +1522,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					setIngredientValues(ingredients, names, tags);
 					for (var i = 0; i < l && (priority === null || recipeCrunchData.recipes[i].priority >= priority); i++) {
 						if (recipeCrunchData.test[i](null, names, tags)) {
-
 							built.push({ recipe: recipeCrunchData.recipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger } });
 							priority = recipeCrunchData.recipes[i].priority;
 						}
@@ -1533,7 +1532,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					var end = false,
 						start = Date.now();
 					if (getCombinations(block)) {
-						setTimeout(computeNextBlock, 3);
+						setTimeout(computeNextBlock, 0);
 					} else {
 						end = true;
 					}

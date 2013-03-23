@@ -1122,7 +1122,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				if (item !== null) {
 					names[item.id] = 1 + (names[item.id] || 0);
 					for (k in item) {
-						if (item.hasOwnProperty(k) && k !== 'perish') {
+						if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
 							tags[k] = item[k] + (tags[k] || 0);
 						} else if (k === 'perish') {
 							tags[k] = Math.min(tags[k] || perish_preserved, item[k]);

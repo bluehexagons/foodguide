@@ -403,7 +403,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem
 			},
 			petals_evil: {
-				name: 'Evil Petals',
+				name: 'Dark Petals',
 				uncookable: true,
 				health: 0,
 				hunger: 0,
@@ -1009,8 +1009,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				ingredientsplit = /^ingredient:? */,
 				anywhere,
 				wordstarts,
+				allowUncookable = false,
 				filter = function (element) {
-					if (element.uncookable) {
+					if (!allowUncookable && element.uncookable) {
 						element.match = 0;
 					} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
 						element.match = 3;
@@ -1080,7 +1081,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 					return b.match - a.match;
 				};
-			return function (arr, search) {
+			return function (arr, search, includeUncookable) {
+				allowUncookable = !!includeUncookable;
 				name = search.toLowerCase();
 				if (tagsearch.test(name)) {
 					tag = name.split(tagsplit)[1];
@@ -1322,7 +1324,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		});
 	}
 	//var info = [];
+	document.getElementById('stalehealth').appendChild(document.createTextNode(Math.round(stale_food_health * 1000) / 10 + '%'));
+	document.getElementById('stalehunger').appendChild(document.createTextNode(Math.round(stale_food_hunger * 1000) / 10 + '%'));
+	document.getElementById('spoiledhunger').appendChild(document.createTextNode(Math.round(spoiled_food_hunger * 1000) / 10 + '%'));
 	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_small));
+	document.getElementById('perishground').appendChild(document.createTextNode(Math.round(perish_ground_mult * 1000) / 10 + '%'));
+	document.getElementById('perishwinter').appendChild(document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'));
+	document.getElementById('perishfridge').appendChild(document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'));
 	var info,
 		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 	for (i in food) {
@@ -1455,7 +1463,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				var overflow;
 				while (batch-- && index < length && iter < 200000) {
 					callback(current);
-					//console.log(current.slice(), iter);
 					current[0]++;
 					overflow = 0;
 					while (current[overflow] >= length) {
@@ -1478,7 +1485,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					iter++;
 				}
 				return true;
-				//console.log(iter);
 			};
 		};
 	recipeCrunchData = {};
@@ -1574,6 +1580,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				tabs[navtab.dataset.tab] = navtab;
 				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
 				elements[navtab.dataset.tab].style.display = 'none';
+				navtab.addEventListener('selectstart', function (e) { e.preventDefault(); }, false);
 				navtab.addEventListener('click', showTab, false);
 			}
 		}
@@ -1938,8 +1945,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							health = data.tags.health,
 							hunger = data.tags.hunger;
 						
-						//console.log('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0',
-						//	data.ingredients.reduce(ingredientToIcon, ''), data.ingredients);
 						return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)', sign(item.hunger), sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
 							makeLinkable(data.ingredients.reduce(ingredientToIcon, '')));
 					},
@@ -2043,8 +2048,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
 					//makableTable.update();
 				}, function () { //computation finished
-					//console.log(makableRecipes);
-					//makableDiv.removeChild(makableSummary);
 					makableTable.setMaxRows(30);
 					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude ingredients.';
 				});
@@ -2098,17 +2101,40 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					index = i,
 					state,
 					from = picker.dataset.type === 'recipes' ? recipes : food,
+					allowUncookable = !picker.dataset.cookable,
 					parent = picker.nextSibling,
 					slots = parent.getElementsByClassName('ingredient'),
 					limited,
+					ingredients = [],
 					updateRecipes,
 					suggestions = [],
 					inventoryrecipes = [],
+					selected = null,
 					results = document.getElementById('results'),
 					discoverfood = document.getElementById('discoverfood'),
 					discover = document.getElementById('discover'),
 					makable = document.getElementById('makable'),
 					clear = document.createElement('span'),
+					findPreviousMatching = function (el, test) {
+						var previous = el;
+						while (previous.previousSibling) {
+							previous = previous.previousSibling;
+							if (test(previous)) {
+								return previous;
+							}
+						}
+						return null;
+					},
+					findNextMatching = function (el, test) {
+						var next = el;
+						while (next.nextSibling) {
+							next = next.nextSibling;
+							if (test(next)) {
+								return next;
+							}
+						}
+						return null;
+					},
 					displaying = false,
 					appendSlot = function (id) {
 						var i, item = food[id] || recipes[id] || null;
@@ -2140,32 +2166,52 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target,
 							result = appendSlot(target.dataset.id);
 						if (result !== -1) {
-							dropdown.removeChild(ul);
-							ul = document.createElement('ul');
-							names = matchingNames(from, '');
+							/*dropdown.removeChild(ul);
+							ul = document.createElement('div');
+							names = matchingNames(from, '', allowUncookable);
+							ul.dataset.length = 0;
 							names.forEach(liIntoPicker, ul);
 							dropdown.appendChild(ul);
 							if (ul.firstChild) {
 								ul.firstChild.className = 'selected';
 							}
-							picker.value = '';
-							if (result < slots.length - 1 || !limited) {
-								picker.focus();
+							picker.value = '';*/
+							/*if (result < slots.length - 1 || !limited) {
+								//picker.focus();
 							} else {
-								picker.blur();
-							}
+								//picker.blur();
+							}*/
 							e && e.preventDefault && e.preventDefault();
-							refreshLocation();
+							//refreshLocation();
 						}
 					},
 					liIntoPicker = function (item) {
 						var img = makeImage(item.img, 32),
-							li = document.createElement('li');
+							li = document.createElement('span');
 						li.appendChild(img);
 						li.appendChild(document.createTextNode(item.name));
 						li.dataset.id = item.id;
+						//li.dataset.tooltip = item.name;
+						if (ingredients.indexOf(item) !== -1) {
+							li.style.opacity = 0.5;
+						}
 						li.addEventListener('mousedown', pickItem, false);
 						this.appendChild(li);
+						this.dataset.length++;
+						/*if (this.dataset.length % 10 === 0) {
+							this.appendChild(document.createElement('br'));
+						}*/
+					},
+					updateFaded = function (el) {
+						if (ingredients.indexOf(food[el.dataset.id]) !== -1) {
+							if (!el.style.opacity) {
+								el.style.opacity = 0.5;
+							}
+						} else {
+							if (el.style.opacity) {
+								el.style.removeProperty('opacity');
+							}
+						}
 					},
 					removeSlot = function (e) {
 						var i, target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
@@ -2175,7 +2221,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								updateRecipes();
 								return target.dataset.id;
 							} else {
-								picker.focus();
+								//picker.focus();
 							}
 						} else {
 							i = slots.indexOf(target.dataset.id);
@@ -2186,7 +2232,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 					},
 					refreshLocation = function () {
-						if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
+						/*if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
 							//to the left
 							dropdown.style.left = -dropdown.offsetWidth + 'px';
 							dropdown.style.top = picker.offsetTop + 'px';
@@ -2198,35 +2244,33 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							//to the right
 							dropdown.style.left = picker.offsetLeft + picker.offsetWidth + 'px';
 							dropdown.style.top = picker.offsetTop + 'px';
-						}
+						}*/
 					},
 					refreshPicker = function () {
-						var li = document.createElement('li'),
-							names = matchingNames(from, picker.value);
+						var names = matchingNames(from, picker.value, allowUncookable);
 						dropdown.removeChild(ul);
-						ul = document.createElement('ul');
+						ul = document.createElement('div');
+						ul.dataset.length = 0;
 						names.forEach(liIntoPicker, ul);
-						if (ul.firstChild) {
-							ul.firstChild.className = 'selected';
-						}
 						dropdown.appendChild(ul);
-						refreshLocation();
+						//refreshLocation();
+						selected = null;
 					},
 					searchFor = function (e) {
 						var name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link,
-							matches = matchingNames(from, name);
+							matches = matchingNames(from, name, allowUncookable);
 						if (matches.length === 1) {
 							appendSlot(matches[0].id);
 						} else {
 							picker.value = name;
 							refreshPicker();
-							picker.focus();
+							//picker.focus();
 						}
-					};
+					},
+					coords;
 				if (parent.id === 'ingredients') {
 					updateRecipes = function () {
-						var ingredients,
-							cooking,
+						var cooking,
 							health, hunger,
 							table;
 						ingredients = Array.prototype.map.call(slots, function (slot) {
@@ -2270,11 +2314,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								results.appendChild(table);
 							}
 						}
+						ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
 					};
 				} else if (parent.id === 'inventory') {
 					updateRecipes = function () {
-						var ingredients,
-							foodTable,
+						var foodTable,
 							table;
 						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), function (slot) {
 							return getSlot(slot);
@@ -2309,6 +2353,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								makable.appendChild(makeRecipeGrinder(ingredients));
 							}
 						}
+						ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
 					};
 				}
 				if (slots.length !== 0) {
@@ -2335,15 +2380,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				dropdown.appendChild(ul);
 				dropdown.addEventListener('mousedown', function (e) { e.preventDefault(); }, false);
 				(function () {
-					var li = document.createElement('li'),
-						names = matchingNames(from, picker.value);
+					var names = matchingNames(from, picker.value, allowUncookable);
 					dropdown.removeChild(ul);
-					ul = document.createElement('ul');
+					ul = document.createElement('div');
+					ul.dataset.length = 0;
 					names.forEach(liIntoPicker, ul);
 					dropdown.appendChild(ul);
-					if (ul.firstChild) {
-						ul.firstChild.className = 'selected';
-					}
 				}());
 				clear.className = 'clearingredients';
 				clear.appendChild(document.createTextNode('clear'));
@@ -2358,16 +2400,115 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 				}, false);
 				parent.parentNode.insertBefore(clear, parent);
+				parent.parentNode.insertBefore(dropdown, parent);
 				picker.addEventListener('keydown', function (e) {
-					
+					var movement = [16, 17, 37, 38, 39, 40, 13],
+						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i, find;
+					if (movement.indexOf(e.keyCode) !== -1) {
+						current = selected;
+						if (e.keyCode === enter) {
+							if (selected === null) {
+								selected = ul.firstChild || null;
+							}
+							if (selected !== null) {
+								pickItem({target: selected});
+							}
+						} else {
+							if (selected === null) {
+								if (e.keyCode === down) {
+									selected = ul.childNodes[1] || ul.firstChild || null;
+									if (selected !== null) {
+										coords = (selected.offsetLeft + selected.offsetWidth / 2);
+										e.preventDefault();
+									}
+								}
+							} else {
+								e.preventDefault();
+								if (e.keyCode === left) {
+									if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
+										selected = selected.previousSibling;
+									} else {
+										find = findNextMatching(selected, function (el) {
+											//separate this out
+											return el.offsetTop !== selected.offsetTop;
+										});
+										if (find) {
+											selected = find.previousSibling;
+										} else {
+											selected = ul.lastChild;
+										}
+									}
+									if (selected !== null) {
+										coords = (selected.offsetLeft + selected.offsetWidth / 2);
+									}
+								} else if (e.keyCode === right) {
+									if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
+										selected = selected.nextSibling;
+									} else {
+										find = findPreviousMatching(selected, function (el) {
+											//separate this out
+											return el.offsetTop !== selected.offsetTop;
+										});
+										if (find) {
+											selected = find.nextSibling;
+										} else {
+											selected = ul.firstChild;
+										}
+									}
+									if (selected !== null) {
+										coords = (selected.offsetLeft + selected.offsetWidth / 2);
+									}
+								} else if (e.keyCode === up) {
+									find = findPreviousMatching(selected, function (el) {
+										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+									});
+									if (!find) {
+										find = findPreviousMatching(ul.lastChild, function (el) {
+											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+										});
+									}
+									if (find) {
+										selected = find;
+									} else {
+										selected = ul.firstChild;
+									}
+								} else if (e.keyCode === down) {
+									find = findNextMatching(selected, function (el) {
+										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+									});
+									if (!find) {
+										find = findNextMatching(ul.firstChild, function (el) {
+											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+										});
+									}
+									if (find) {
+										selected = find;
+									} else {
+										selected = ul.lastChild;
+									}
+								}
+							}
+						}
+						if (selected !== current) {
+							if (current !== null) {
+								current.className = '';
+							}
+							if (selected !== null) {
+								selected.className = 'selected';
+							}
+						}
+					}
 				}, false);
 				picker.addEventListener('keyup', function (e) {
 					var movement = [16, 17, 37, 38, 39, 40, 13],
-						up = 38, down = 40, enter = 13, current, items, i;
-
+						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i;
+					current = selected;
 					if (movement.indexOf(e.keyCode) === -1) {
 						refreshPicker();
-					} else {
+					} else if (selected !== null) {
+						e.preventDefault();
+					}
+					/* else {
 						items = ul.getElementsByTagName('li');
 						for (i = 0; i < items.length; i++) {
 							if (items[i].className === 'selected') {
@@ -2395,19 +2536,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								pickItem({target: items[0]});
 							}
 						}
-					}
+					}*/
 				}, false);
 				picker.addEventListener('focus', function () {
 					if (!displaying) {
 						displaying = true;
-						parent.appendChild(dropdown);
-						refreshLocation();
+						//parent.appendChild(dropdown);
+						//refreshLocation();
 					}
 				}, false);
 				picker.addEventListener('blur', function () {
 					if (displaying) {
 						displaying = false;
-						parent.removeChild(dropdown);
+						//parent.removeChild(dropdown);
 					}
 				}, false);
 				updateRecipes();

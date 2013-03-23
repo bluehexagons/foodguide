@@ -16,14 +16,16 @@
 		.ingredientlist {  }
 		span.ingredient { width: 68px; height: 68px; display: inline-block; margin: 0px; margin-right: 5px; overflow: hidden; cursor: pointer; background: url('img/background.png') top left no-repeat; position: relative; }
 		span.ingredient img { display: block; position: absolute; top: 50%; left: 50%; width: 64px; height: 64px; margin-left: -32px; margin-top: -32px; border: none; }
-		.ingredientpicker { border: 1px solid #888; padding: 3px; border-radius: 4px; margin-bottom: 4px; }
+		.ingredientpicker { border: 1px solid #888; padding: 3px; border-radius: 4px; }
 		.ingredientpicker:hover { border: 1px solid #aaa; }
-		.ingredientdropdown { position: absolute; left: 0px; top: 0px; display: block; background: #bbb; border-radius: 4px; z-index: 1; }
-		.ingredientdropdown ul { margin: 0px; padding: 0px; }
-		.ingredientdropdown li { padding-left: 0px; padding-right: 3px; margin: 1px; list-style-type: none; cursor: pointer; border-radius: 4px; background: #ddd; background: linear-gradient(to bottom, #dddddd 0%,#cccccc 2px,#cccccc 60%,#bbbbbb 85%,#888888 100%); background: -moz-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%); background: -webkit-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee),color-stop(8%, #dddddd),color-stop(60%, #dddddd),color-stop(85%, #cccccc)); }
-		.ingredientdropdown li img { padding-left: 4px; padding-right: 4px; width: 14px; height: 14px; }
-		.ingredientdropdown li:hover { background: #eee; background: linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); background: -moz-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d8d8d8),color-stop(60%, #d8d8d8),color-stop(85%, #c8c8c8),color-stop(100%, #aaaaaa)); }
-		.ingredientdropdown li.selected { background: #fff; background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa)); }
+		.ingredientdropdown { display: block; z-index: 1; }
+		.ingredientdropdown div { margin: 0px; padding: 0px; margin-bottom: 4px; text-align: justify; }
+		.ingredientdropdown div span { border: 1px solid #bbb; font-size: 8pt; padding-top: 2px; white-space: nowrap; text-align: center; line-height: 14px; display: inline-block; vertical-align: top; padding-left: 1px; overflow: hidden; padding-right: 1px; margin: 1px; list-style-type: none; cursor: pointer; border-radius: 4px; background: #ddd; background: linear-gradient(to bottom, #dddddd 0%,#cccccc 2px,#cccccc 60%,#bbbbbb 85%,#888888 100%); background: -moz-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%); background: -webkit-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee),color-stop(8%, #dddddd),color-stop(60%, #dddddd),color-stop(85%, #cccccc)); }
+		.ingredientdropdown span img { margin-left: auto; margin-right: auto; width: 20px; height: 20px; display: block; }
+		.ingredientdropdown span:hover { background: #eee; background: linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); background: -moz-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d8d8d8),color-stop(60%, #d8d8d8),color-stop(85%, #c8c8c8),color-stop(100%, #aaaaaa)); }
+		.ingredientdropdown span:active { background: #fff; background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa)); }
+		.ingredientdropdown span.selected { background: #fff; background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa)); }
+		.ingredientdropdown span.faded { opacity: 0.5; }
 		.clearingredients { color: red; display: inline-block; padding-left: 5px; padding-right: 5px; cursor: pointer; border: 1px solid #c55; margin-left: 12pt; text-align: center; vertical-align: center; font-size: 75%; opacity: 0.4; }
 		.clearingredients:hover { opacity: 1; }
 		h2 { padding-left: 10px; color: #444; margin-bottom: 4pt; }
@@ -58,18 +60,17 @@
 		<li data-tab="crockpot">Recipe List</li>
 		<li data-tab="statistics">Statistics Analyzer</li>
 		<li data-tab="help">Help</li>
-		<li><a href="http://dont-starve-game.wikia.com/" target="_blank">Wikia</a></li>
 		<li><a href="http://www.dontstarvegame.com/" target="_blank">Don't Starve</a></li>
 	</ul>
 	<div id="main">
 		<div id="simulator">
 			<div style="margin-bottom: 6pt">Add ingredients to see what they make.</div>
-			<input type="text" class="ingredientpicker" data-type="food" style="width: 25%" placeholder="Choose an ingredient" /><div id="ingredients" class="ingredientlist"><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
+			<input type="text" class="ingredientpicker" data-type="food" data-cookable="true" style="width: 25%" placeholder="Filter ingredients" /><div id="ingredients" class="ingredientlist"><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
 			<div id="results"></div>
 		</div>
 		<div id="discovery">
 			<div style="margin-bottom: 6pt">Add items in your inventory to see your options.</div>
-			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Choose an ingredient" /><div id="inventory" class="ingredientlist"></div>
+			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Filter ingredients" /><div id="inventory" class="ingredientlist"></div>
 			Stats about your food:
 			<div id="discoverfood"></div>
 			With these, you can make:
@@ -98,22 +99,33 @@
 			<p>The food and recipe database should be current as of the Rain update, March 12th.</p>
 			<h2>About Don't Starve Food</h2>
 			<p>
-				Perish time is the time before a food item becomes Rot. Halfway through this period, it will go stale, and give 50% health and 75% hunger.
-				Food spoils at three quarters of the way to Rot, giving only 50% hunger and no longer giving any health.
-				Eating spoiled food will decrease sanity by <span id="spoiledsanity"></span>.
+				<strong>Perish time</strong> is the time before a food item becomes <strong>Rot</strong>. <strong>Halfway</strong> through this period, it will go <strong>stale</strong>, and give <strong><span id="stalehealth"></span> health</strong> and <strong><span id="stalehunger"></span> hunger</strong>.
+				Food <strong>spoils</strong> at <strong>three quarters</strong>, giving only <strong><span id="spoiledhunger"></span> hunger</strong> and <strong>no longer giving any health</strong>.
+				Eating spoiled food will decrease sanity by <strong><span id="spoiledsanity"></span></strong>.
+				Food <strong>dropped on the ground</strong> will <strong>perish</strong> at a rate of <strong><span id="perishground"></span></strong> (or <strong><span id="perishwinter"></span></strong> in <strong>winter</strong>), while keeping it in the <strong>Ice Box</strong> will reduce the rate to <strong><span id="perishfridge"></span></strong>.
 			</p>
-			<p>Recipe priority determines which recipe a food combination will make; only the highest-priority possible recipes can be produced by a batch of ingredients.</p>
+			<p><strong>Recipe priority</strong> determines which recipe a food combination will make; only the highest-priority possible recipes can be produced by a batch of ingredients.</p>
 			<p>In recipe requirements, cooked/uncooked usually doesn't make a difference. If it does, then only the valid form will be listed.</p>
 			<h2>Simulator</h2>
 			<p>
-				The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. Note that only the highest-priority recipes will be candidates.
+				The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. Note that only the highest-priority recipes will be candidates when actually cooking in-game.
 				The combined totals at the top reflect the ingredients added, where perish time is the shortest.
 				The suggestions below the real results show what recipes could be made by adding different items to those already in the Crock Pot.
 			</p>
 			<h2>Discovery</h2>
 			<p>
-				The Discovery tab is finds what recipes can be prepared using a collection of ingredients. It doesn't take item quantity into account.
+				The Discovery tab is finds what recipes can be prepared using a collection of ingredients. It doesn't take item quantity into account, instead assuming you have four of each.
+				You are also able to calculate efficient recipes using your ingredients to get the most health or hunger benefit from cooking them in the crock pot. This works identically to the Statistics Analyzer tab, but limited to your inventory.
 			</p>
+			<h2>Statistics Analyzer</h2>
+			<p>
+				The Statistics Analyzer tab is for those who just want to explore ingredient combinations. It will calculate every valid ingredient combination possible (using an "ideal" ingredient selection, generally excluding uncooked food) and allows filtration by recipe and ingredient contents. Computation may take some time on slower computers.
+			</p>
+			<h2>Links</h2>
+			<p><a href="https://code.google.com/p/dont-starve-food/source/list" target="_blank">Food Guide Change Log</a>
+			<p><a href="http://www.dontstarvegame.com/" target="_blank">Don't Starve Official Website</a>
+			<p><a href="http://dont-starve-game.wikia.com/" target="_blank">Don't Starve on Wikia</a>
+			<p><a href="http://dontstarvewiki.net/" target="_blank">Don't Starve Wiki (mostly abandoned)</a>
 		</div>
 	</div>
 	<div id="footer">

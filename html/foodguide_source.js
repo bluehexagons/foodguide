@@ -1522,7 +1522,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					setIngredientValues(ingredients, names, tags);
 					for (var i = 0; i < l && (priority === null || recipeCrunchData.recipes[i].priority >= priority); i++) {
 						if (recipeCrunchData.test[i](null, names, tags)) {
-							built.push({ recipe: recipeCrunchData.recipes[i], combination: combination, ingredients: ingredients, tags: tags });
+
+							built.push({ recipe: recipeCrunchData.recipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger } });
 							priority = recipeCrunchData.recipes[i].priority;
 						}
 					}
@@ -2024,7 +2025,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						data.hungerpct = rawpct(data.tags.hunger, data.recipe.hunger);
 						data.sanity = data.recipe.sanity;
 						data.perish = data.recipe.perish;
-						data.worth = data.tags.worth;
 					}
 					made.push(data);
 				}, function () { //chunk update

@@ -2430,7 +2430,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						},
 						tagsplit = /: */,
 						controls = {
-							tagText: '',
+							getTag: function () {
+								return selectedType.title;
+							},
+							setSearchType: function (index) {
+								setSearchType(searchTypes[index]);
+							},
 							getSearch: function () {
 								return selectedType.prefix + picker.value;
 							},
@@ -2511,13 +2516,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				clear.className = 'clearingredients';
 				clear.appendChild(document.createTextNode('clear'));
 				clear.addEventListener('click', function () {
-					if (picker.value === '') {
+					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
 						while (getSlot(parent.firstChild)) {
 							removeSlot({ target: parent.firstChild });
 						}
 					} else {
 						picker.value = '';
+						searchSelectorControls.setSearchType(0);
 						refreshPicker();
+					}
+				}, false);
+				clear.addEventListener('mouseover', function () {
+					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
+						clear.firstChild.textContent = 'clear chosen ingredients';
+					}
+				}, false);
+				clear.addEventListener('mouseout', function () {
+					if (clear.firstChild.textContent !== 'clear') {
+						clear.firstChild.textContent = 'clear';
 					}
 				}, false);
 				parent.parentNode.insertBefore(clear, parent);

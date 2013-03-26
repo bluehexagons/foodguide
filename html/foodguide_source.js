@@ -150,7 +150,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				ismeat: true,
 				meat: 0.5,
 				fish: 1,
-				health: healing_med,
+				health: healing_tiny,
 				hunger: calories_small,
 				perish: perish_superfast,
 				stack: stack_size_smallitem
@@ -161,7 +161,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				fish: 1,
 				precook: 1,
-				health: healing_large,
+				health: healing_tiny,
 				hunger: calories_small,
 				perish: perish_fast,
 				stack: stack_size_smallitem

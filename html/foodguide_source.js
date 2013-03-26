@@ -370,8 +370,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				sanity: 0,
 				perish: perish_med,
-				stack: stack_size_smallitem,
-				comment: 'Bug may prevent using in crock pot'
+				stack: stack_size_smallitem
 			},
 			green_mushroom: {
 				name: 'Green Mushroom',
@@ -380,8 +379,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				sanity: -sanity_huge,
 				perish: perish_med,
-				stack: stack_size_smallitem,
-				comment: 'Bug may prevent using in crock pot'
+				stack: stack_size_smallitem
 			},
 			blue_mushroom: {
 				name: 'Blue Mushroom',
@@ -390,8 +388,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				sanity: -sanity_med,
 				perish: perish_med,
-				stack: stack_size_smallitem,
-				comment: 'Bug may prevent using in crock pot'
+				stack: stack_size_smallitem
 			},
 			petals: {
 				name: 'Petals',
@@ -2094,7 +2091,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			i = pickers.length;
 		while (i--) {
 			(function () {
-				var dropdown = document.createElement('div'),
+				var searchSelector = document.createElement('span'),
+					searchSelectorControls,
+					dropdown = document.createElement('div'),
 					ul = document.createElement('ul'),
 					picker = pickers[i],
 					index = i,
@@ -2109,6 +2108,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					suggestions = [],
 					inventoryrecipes = [],
 					selected = null,
+					loaded = false,
 					results = document.getElementById('results'),
 					discoverfood = document.getElementById('discoverfood'),
 					discover = document.getElementById('discover'),
@@ -2141,7 +2141,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							for (i = 0; i < slots.length; i++) {
 								if (getSlot(slots[i]) === null) {
 									setSlot(slots[i], item);
-									updateRecipes();
+									loaded && updateRecipes();
 									return i;
 								}
 							}
@@ -2154,7 +2154,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 								setSlot(i, item);
 								i.addEventListener('click', removeSlot, false);
 								parent.appendChild(i);
-								updateRecipes();
+								loaded && updateRecipes();
 								return 1;
 							}
 							return 1;
@@ -2246,7 +2246,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}*/
 					},
 					refreshPicker = function () {
-						var names = matchingNames(from, picker.value, allowUncookable);
+						var names;
+						searchSelectorControls.splitTag();
+						names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
 						dropdown.removeChild(ul);
 						ul = document.createElement('div');
 						ul.dataset.length = 0;
@@ -2375,11 +2377,131 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						});
 					}
 				}
+				loaded = true;
+				searchSelector.className = 'searchselector retracted';
+				searchSelector.appendChild(document.createTextNode('name'));
+				searchSelectorControls = (function () {
+					var dropdown = document.createElement('div'),
+						extended = false,
+						extendedHeight = null,
+						searchTypes = [{title: 'name', prefix: '', placeholder: 'Filter ingredients'}, {title: 'tag', prefix: 'tag:', placeholder: 'Meat, veggie, fruit, egg, monster...'}, {title: 'recipe', prefix: 'recipe:', placeholder: 'Find ingredients used in a recipe'}],
+						selectedType = searchTypes[0],
+						retractTimer = null,
+						retract = function () {
+							extended = false;
+							dropdown.style.height = '0px';
+							searchSelector.style.borderBottomLeftRadius = '3px';
+							dropdown.style.borderTopLeftRadius = '3px';
+							if (retractTimer !== null) {
+								clearTimeout(retractTimer);
+								retractTimer = null;
+							}
+							searchSelector.className = 'searchselector retracted';
+						},
+						extend = function () {
+							if (extendedHeight === null) {
+								dropdown.style.height = 'auto';
+								dropdown.style.left = searchSelector.offsetLeft;
+								dropdown.style.top = searchSelector.offsetTop + searchSelector.offsetHeight;
+								extendedHeight = dropdown.offsetHeight + 'px';
+								dropdown.style.height = '0px';
+							}
+							extended = true;
+							dropdown.style.height = extendedHeight;
+							searchSelector.style.borderBottomLeftRadius = '0px';
+							dropdown.style.borderTopLeftRadius = '0px';
+							dropdown.style.width = 'auto';
+							dropdown.style.width = Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1) + 'px';
+							if (retractTimer !== null) {
+								clearTimeout(retractTimer);
+								retractTimer = null;
+							}
+							searchSelector.className = 'searchselector extended';
+						},
+						setSearchType = function (searchType) {
+							selectedType = searchType;
+							picker.placeholder = selectedType.placeholder;
+							searchSelector.firstChild.textContent = selectedType.title;
+						},
+						setSearchTypeFromClick = function (e) {
+							setSearchType(searchTypes[e.target.dataset.typeIndex]);
+							refreshPicker();
+							retract();
+						},
+						tagsplit = /: */,
+						controls = {
+							tagText: '',
+							getSearch: function () {
+								return selectedType.prefix + picker.value;
+							},
+							splitTag: function () {
+								var i,
+									parts = picker.value.split(tagsplit),
+									tag,
+									name;
+								if (parts.length === 2) {
+									tag = parts[0].toLowerCase() + ':';
+									name = parts[1];
+									for (i = 0; i < searchTypes.length; i++) {
+										if (tag === searchTypes[i].prefix) {
+											setSearchType(searchTypes[i]);
+											picker.value = name;
+											break;
+										}
+									}
+								}
+							}
+						};
+					searchSelector.addEventListener('click', function () {
+						if (extended) {
+							retract();
+						} else {
+							extend();
+						}
+					}, false);
+					searchSelector.addEventListener('selectstart', function (e) { e.preventDefault(); }, false);
+					searchSelector.addEventListener('mouseout', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+						}
+						retractTimer = setTimeout(retract, 500);
+					}, false);
+					searchSelector.addEventListener('mouseover', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+							retractTimer = null;
+						}
+					}, false);
+					dropdown.addEventListener('mouseout', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+						}
+						retractTimer = setTimeout(retract, 500);
+					}, false);
+					dropdown.addEventListener('mouseover', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+							retractTimer = null;
+						}
+					}, false);
+					searchTypes.forEach(function (searchType, index) {
+						var element = document.createElement('div');
+						element.appendChild(document.createTextNode(searchType.title));
+						element.dataset.typeIndex = index;
+						element.addEventListener('click', setSearchTypeFromClick, false);
+						searchType.element = element;
+						dropdown.appendChild(element);
+					});
+					picker.parentNode.insertBefore(searchSelector, picker);
+					dropdown.className = 'searchdropdown';
+					picker.parentNode.insertBefore(dropdown, picker);
+					return controls;
+				}());
 				dropdown.className = 'ingredientdropdown';
 				dropdown.appendChild(ul);
 				dropdown.addEventListener('mousedown', function (e) { e.preventDefault(); }, false);
 				(function () {
-					var names = matchingNames(from, picker.value, allowUncookable);
+					var names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
 					dropdown.removeChild(ul);
 					ul = document.createElement('div');
 					ul.dataset.length = 0;

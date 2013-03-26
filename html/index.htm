@@ -16,7 +16,13 @@
 		.ingredientlist {  }
 		span.ingredient { width: 68px; height: 68px; display: inline-block; margin: 0px; margin-right: 5px; overflow: hidden; cursor: pointer; background: url('img/background.png') top left no-repeat; position: relative; }
 		span.ingredient img { display: block; position: absolute; top: 50%; left: 50%; width: 64px; height: 64px; margin-left: -32px; margin-top: -32px; border: none; }
-		.ingredientpicker { border: 1px solid #888; padding: 3px; border-radius: 4px; }
+		.searchselector { display: inline-block; padding: 0px 0px 0px 2px; line-height: 22px; vertical-align: bottom; border: 1px solid #999; border-right: none; height: 100%; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px 0px 0px 3px; transition: border-bottom-left-radius 100ms ease; cursor: pointer; }
+		.searchselector.retracted:after { content: ''; margin-left: 3px; margin-right: 2px; width: 0; height: 0; display: inline-block; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #444; margin-bottom: 2px; }
+		.searchselector.extended:after { content: ''; margin-left: 3px; margin-right: 2px; width: 0; height: 0; display: inline-block; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #444; margin-bottom: 2px; }
+		.searchselector:active { background-color: #777; }
+		.searchdropdown { z-index: 2; position: absolute; height: 0px; overflow: hidden; border-radius: 0px 0px 3px 3px; transition: height 200ms ease, border-top-left-radius 100ms ease; border-top-left-radius: 3px; }
+		.searchdropdown div { background: #ccc; border: 1px solid #888; border-top: none; cursor: pointer; padding: 0px 2px 0px 2px; }
+		.ingredientpicker { border: 1px solid #888; padding: 3px; height: 12pt; border-radius: 0px 4px 4px 0px; }
 		.ingredientpicker:hover { border: 1px solid #aaa; }
 		.ingredientdropdown { display: block; z-index: 1; }
 		.ingredientdropdown div { margin: 0px; padding: 0px; margin-bottom: 4px; text-align: justify; }
@@ -50,6 +56,7 @@
 		div.foodFilter img:hover { opacity: 0.8; }
 		div.foodFilter img.selected { border-width: 3px; margin: 2px; opacity: 1; }
 		div.foodFilter img.excluded { border-width: 3px; border-color: #711; margin: 2px; opacity: 0.8; background: #fcc; }
+		strong { color: #333; }
 	</style>
 </head>
 <body>
@@ -96,7 +103,7 @@
 				and <a href="http://store.steampowered.com/app/219740/">Steam</a>.
 			</p>
 			<p>This tool requires a modern web browser and is officially supported in recent versions of: Chrome/Chromium (and mobile), Firefox, Safari (and mobile), and Internet Explorer 9+</p>
-			<p>The food and recipe database should be current as of the Rain update, March 12th.</p>
+			<p>The food and recipe database should be current as of the <strong>Doorway to Adventure update, March 26th</strong>.</p>
 			<h2>About Don't Starve Food</h2>
 			<p>
 				<strong>Perish time</strong> is the time before a food item becomes <strong>Rot</strong>. <strong>Halfway</strong> through this period, it will go <strong>stale</strong>, and give <strong><span id="stalehealth"></span> health</strong> and <strong><span id="stalehunger"></span> hunger</strong>.

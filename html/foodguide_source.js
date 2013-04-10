@@ -87,6 +87,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 		base_cook_time = night_time*.3333,
 
+		tips = [
+			'Cooking meat '
+		],
 		Strings = {
 			'butter': 'Butter',
 			'butterflywings': 'Butterfly Wings',
@@ -654,7 +657,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		ORString = function () { return this.item1 + ' or ' + this.item2; },
 		OR = function (item1, item2) { return {item1: item1, item2: item2, test: ORTest, toString: ORString, cancel: item1.cancel || item2.cancel}; },
 		NOTTest = function (cooker, names, tags) { return !this.item.test(cooker, names, tags); },
-		NOTString = function () { return 'not ' + this.item; },
+		NOTString = function () { return this.item.toString().substring(0, this.item.toString().length - 1) + '|strike]'; },
 		NOT = function (item) { return {item: item, test: NOTTest, toString: NOTString, cancel: true}; },
 		NAMETest = function (cooker, names, tags) { return (names[this.name] || 0) + (names[this.name + '_cooked'] || 0); },
 		NAMEString = function () { return '[*' + food[this.name].name + '|' + food[this.name].img + ' ' + food[this.name].name + ']' + (food[this.name].cook ? '[*' + food[this.name].cook.name + '|' + food[this.name].cook.img + ']' : '') + (food[this.name].raw ? '[*' + food[this.name].raw.name + '|' + food[this.name].raw.img + ']' : '') + (this.qty ? this.qty : ''); },
@@ -1263,21 +1266,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return makeImage;
 		}()),
 		makeLinkable = (function () {
-			var linkSearch = /\[([^\|]*)\|([^\|]*)\]/;
+			var linkSearch = /\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/,
+				leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g,
+				rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g,
+				addLeftClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); },
+				addRightClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); };
 			return function (str) {
-				var results = str && str.split(linkSearch),
+				var processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass),
+					results = processed && processed.split(linkSearch),
 					fragment, i, span, image;
 				if (!results || results.length === 1) {
-					return str;
+					return processed;
 				} else {
 					fragment = document.createDocumentFragment();
 					fragment.appendChild(document.createTextNode(results[0]));
-					for (i = 1; i < results.length; i += 3) {
+					for (i = 1; i < results.length; i += 4) {
 						if (results[i] === '' && results[i + 1] === '') {
 							fragment.appendChild(document.createElement('br'));
 						} else {
 							span = document.createElement('span');
-							span.className = 'link';
+							span.className = results[i + 2] === '' ? 'link' : 'link ' + results[i + 2]; //IE doesn't support classList, too lazy to come up with a polyfill
 							span.dataset.link = results[i];
 							if (noDataset) {
 								span.setAttribute('data-link', results[i]);
@@ -1290,7 +1298,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							}
 							fragment.appendChild(span);
 						}
-						fragment.appendChild(document.createTextNode(results[i + 2]));
+						fragment.appendChild(document.createTextNode(results[i + 3]));
 					}
 					return fragment;
 				}
@@ -1397,6 +1405,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var reduceRecipeButton = function (a, b) {
 		return a + '[recipe:' + b.name + '|' + b.img + ']';
 	};
+	var pl = function (str, n, plr) {
+		return n === 1 ? str : str + (plr || 's');
+	};
 
 	for (i in food) {
 		if (food.hasOwnProperty(i) && isNaN(i) && isNaN(food[i])) {
@@ -1408,7 +1419,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				if (!(f.dry instanceof Object)) {
 					f.dry = food[f.dry];
 				}
-				info.push('dry: [*' + f.dry.name + '|' + f.dry.img + ']');
+				info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
 			}
 			f.info = info.join('; ');
 			if (!f.uncookable) {
@@ -1753,10 +1764,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
 		};
 	var makeFoodRow = function (item) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', item.info || '');
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
 	var makeRecipeRow = function (item, health, hunger) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
 	};
 	(function () {
 		var foodHighlight,
@@ -1969,6 +1980,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					img.dataset.id = item.id;
 					img.addEventListener('click', toggleFilter, false);
 					img.addEventListener('contextmenu', toggleExclude, false);
+					img.title = item.name;
 					makableFilter.appendChild(img);
 				});
 				makableDiv.appendChild(makableFilter);
@@ -1995,6 +2007,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						//TODO: optimize
 						img.dataset.recipe = makableRecipes[i];
 						img.addEventListener('click', setRecipe, false);
+						img.title = data.recipe.name;
 						if (i < makableRecipe.childNodes.length) {
 							makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
 						} else {

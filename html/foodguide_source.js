@@ -1297,11 +1297,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g,
 				rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g,
 				addLeftClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); },
-				addRightClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); };
+				addRightClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); },
+				titleCase = /_(\w)/g,
+				toTitleCase = function (a, b) { return ' ' + b.toUpperCase(); };
 			return function (str) {
 				var processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass),
 					results = processed && processed.split(linkSearch),
-					fragment, i, span, image;
+					fragment, i, span, url, image;
 				if (!results || results.length === 1) {
 					return processed;
 				} else {
@@ -1319,7 +1321,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							}
 							if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
 								span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
-								span.appendChild(makeImage(results[i + 1].split(' ')[0], 32));
+								url = results[i + 1].split(' ')[0];
+								image = makeImage(url, 32);
+								image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
+								span.appendChild(image);
 							} else {
 								span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
 							}

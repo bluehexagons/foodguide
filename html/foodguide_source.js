@@ -109,7 +109,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: Strings.butterflywings,
 				isveggie: true,
 				decoration: 2,
-				health: healing_med,
+				health: healing_medsmall,
 				hunger: calories_tiny,
 				perish: perish_fast,
 				stack: stack_size_smallitem
@@ -367,7 +367,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_meditem
 			},
 			red_mushroom: {
-				name: 'Red Mushroom',
+				name: 'Red Cap',
 				veggie: 0.5,
 				health: -healing_med,
 				hunger: calories_small,
@@ -375,8 +375,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_smallitem
 			},
+			red_mushroom_cooked: {
+				name: 'Cooked Red Cap',
+				veggie: 0.5,
+				health: healing_tiny,
+				hunger: 0,
+				sanity: -sanity_small,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
 			green_mushroom: {
-				name: 'Green Mushroom',
+				name: 'Green Cap',
 				veggie: 0.5,
 				health: 0,
 				hunger: calories_small,
@@ -384,12 +393,30 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_smallitem
 			},
+			green_mushroom_cooked: {
+				name: 'Cooked Green Cap',
+				veggie: 0.5,
+				health: -healing_tiny,
+				hunger: 0,
+				sanity: sanity_med,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
 			blue_mushroom: {
-				name: 'Blue Mushroom',
+				name: 'Blue Cap',
 				veggie: 0.5,
 				health: healing_med,
 				hunger: calories_small,
 				sanity: -sanity_med,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			blue_mushroom_cooked: {
+				name: 'Cooked Blue Cap',
+				veggie: 0.5,
+				health: -healing_small,
+				hunger: 0,
+				sanity: sanity_small,
 				perish: perish_med,
 				stack: stack_size_smallitem
 			},

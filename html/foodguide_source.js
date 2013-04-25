@@ -151,7 +151,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			fish: {
 				name: Strings.fish,
 				ismeat: true,
-				meat: 0.5,
+				//meat: 0.5,
 				fish: 1,
 				health: healing_tiny,
 				hunger: calories_small,
@@ -161,7 +161,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			fish_cooked: {
 				name: 'Cooked Fish',
 				ismeat: true,
-				meat: 0.5,
+				//meat: 0.5,
 				fish: 1,
 				precook: 1,
 				health: healing_tiny,
@@ -187,7 +187,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_small,
 				hunger: calories_small,
 				perish: perish_med,
-				sanity: -sanity_small,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			flowerhat: {

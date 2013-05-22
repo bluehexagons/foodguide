@@ -220,6 +220,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Honeycomb',
 				sweetener: true
 			},
+			lightbulb: {
+				name: 'Light Bulb',
+				health: healing_tiny,
+				hunger: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				uncookable: true
+			},
 			mandrake: {
 				name: 'Mandrake',
 				veggie: 1,
@@ -366,9 +374,31 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_meditem
 			},
+			batwing: {
+				name: 'Batilisk Wing',
+				ismeat: true,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				drytime: dry_med,
+				dry: 'smallmeat_dried',
+				uncookable: true
+			},
+			batwing_cooked: {
+				name: 'Cooked Batilisk Wing',
+				ismeat: true,
+				health: healing_medsmall,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_med,
+				uncookable: true
+			},
 			red_mushroom: {
 				name: 'Red Cap',
 				veggie: 0.5,
+				ideal: true,
 				health: -healing_med,
 				hunger: calories_small,
 				sanity: 0,
@@ -387,6 +417,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			green_mushroom: {
 				name: 'Green Cap',
 				veggie: 0.5,
+				ideal: true,
 				health: 0,
 				hunger: calories_small,
 				sanity: -sanity_huge,
@@ -405,6 +436,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			blue_mushroom: {
 				name: 'Blue Cap',
 				veggie: 0.5,
+				ideal: true,
 				health: healing_med,
 				hunger: calories_small,
 				sanity: -sanity_med,
@@ -731,7 +763,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return tags.sweetener && tags.sweetener >= 3 && !tags.meat;
 				},
-				requirements: [TAG('sweetener', COMPARE('>=', 3), NOT(TAG('meat')))],
+				requirements: [TAG('sweetener', COMPARE('>=', 3)), NOT(TAG('meat'))],
 				priority: 10,
 				foodtype: "veggie",
 				health: -healing_small,
@@ -1004,6 +1036,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_fast,
 				sanity: -sanity_medlarge,
+				cooktime: 0.5
+			},
+			powcake: {
+				name: 'Powdercake',
+				test: function(cooker, names, tags) {
+					return names.twigs && names.honey && (names.corn || names.corn_cooked);
+				},
+				requirements: [SPECIFIC('twigs'), SPECIFIC('honey'), NAME('corn')],
+				priority: 10,
+				foodtype: "veggie",
+				health: -healing_small,
+				hunger: 0,
+				perishtime: 9000000,
+				sanity: 0,
 				cooktime: 0.5
 			},
 			wetgoop: {
@@ -1736,7 +1782,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				tr = document.createElement('tr');
 				for (header in headers) {
 					th = document.createElement('th');
-					th.appendChild(document.createTextNode(header));
+					if (header.indexOf(':') === -1) {
+						th.appendChild(document.createTextNode(header));
+					} else {
+						th.appendChild(document.createTextNode(header.split(':')[0]));
+						th.title = header.split(':')[1];
+					}
 					if (headers[header]) {
 						if (headers[header] === sorting) {
 							th.style.background = invertSort ? '#555' : '#ccc';
@@ -1839,7 +1890,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				return recipeHighlighted.indexOf(item) !== -1;
 			},
 			foodTable = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Info': ''},
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
 				Array.prototype.slice.call(food),
 				makeFoodRow,
 				'name',
@@ -1848,7 +1899,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				testFoodHighlight
 			),
 			recipeTable = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 				Array.prototype.slice.call(recipes),
 				makeRecipeRow,
 				'name',
@@ -1859,33 +1910,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		foodElement.appendChild(foodTable);
 		recipesElement.appendChild(recipeTable);
 	}());
-	//this was used to generate a Wiki table, might be re-purposed later
-	/*fragment = document.createDocumentFragment();
-	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Perish', 'Info'));
-	food.forEach(function (item) {
-		fragment.appendChild(makeFoodRow(item));
-		//output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
-	});
-	foodElement.appendChild(fragment);*/
-	//output.push('}');
-	//var a = document.createElement('textarea');
-	//a.value = output.join('');
-	//document.body.appendChild(a);
-
-	//output = [];
-	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Cook time\n! width=60px |Perish\n|');
-	
-	/*fragment = document.createDocumentFragment();
-	fragment.appendChild(cells('th', '', 'Name', 'Health', 'Hunger', 'Cook Time', 'Perish', 'Priority', 'Requires'));
-	recipes.forEach(function (item) {
-		fragment.appendChild(makeRecipeRow(item));
-		//output.push('-\n', '| ', item.name, '\n| ', isNaN(item.health) ? '' : item.health < 0 ? "'''" + item.health + "'''" : '+' + item.health, '\n| ', isNaN(item.hunger) ? '' : '+' + item.hunger, '\n| ', (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', '\n| ', isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' days', '\n|');
-	});
-	recipesElement.appendChild(fragment);*/
-	//output.push('}');
-	//a = document.createElement('textarea');
-	//a.value = output.join('');
-	//document.body.appendChild(a);
 
 	var ingredientToIcon = function (a, b) {
 			return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
@@ -1978,7 +2002,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 				made = [];
 				makableTable = makeSortableTable(
-					{'': '', 'Name': 'name', 'Health': 'health', 'Health+': 'healthpls', 'Hunger': 'hunger', 'Hunger+': 'hungerpls', 'Ingredients': ''},
+					{'': '', 'Name': 'name', 'Health': 'health', 'Health+:Health gained compared to ingredients': 'healthpls', 'Hunger': 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
 					made,
 					function (data) {
 						var item = data.recipe,
@@ -2022,8 +2046,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				customFilterInput.placeholder = 'use custom filter';
 				customFilterInput.className = 'customFilterInput';
 				customFilterHolder.appendChild(customFilterInput);
-				//customFilterHolder.appendChild(document.createTextNode());
-				//makableDiv.appendChild(customFilterHolder);
 				makableDiv.appendChild(makableTable);
 				makableButton.parentNode.replaceChild(makableDiv, makableButton);
 				getRealRecipesFromCollection(idealIngredients, function (data) { //row update
@@ -2045,14 +2067,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						} else {
 							makableRecipe.appendChild(img);
 						}
-						/*if (i === 0) {
-							if (selectedRecipeElement) {
-								selectedRecipeElement.className = '';
-							}
-							selectedRecipe = makableRecipes[0];
-							selectedRecipeElement = makableRecipe.firstChild;
-							makableRecipe.firstChild.className = 'selected';
-						}*/
 					}
 					if (!data.name) {
 						data.name = data.recipe.name;
@@ -2069,7 +2083,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 					made.push(data);
 				}, function () { //chunk update
-					/*var l = makableRecipes.length, img;
+					/* this code provided updates to the table while the data was being crunched
+					var l = makableRecipes.length, img;
 					while (addedRecipes < l) {
 						img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);
 						//TODO: optimize
@@ -2326,7 +2341,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						health = cooking[0].health;
 						hunger = cooking[0].hunger;
 						table = makeSortableTable(
-							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
+							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 							cooking,
 							function (item) {
 								return makeRecipeRow(item, health, hunger);
@@ -2348,7 +2363,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							if (suggestions.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 									suggestions,
 									function (item) {
 										return makeRecipeRow(item, health, hunger);
@@ -2380,7 +2395,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 						if (ingredients.length > 0) {
 							foodTable = makeSortableTable(
-								{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Info': ''},
+								{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
 								ingredients,
 								makeFoodRow,
 								'name'
@@ -2389,7 +2404,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							getSuggestions(inventoryrecipes, ingredients, null, true);
 							if (inventoryrecipes.length > 0) {
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish': 'perish', 'Cook Time': 'cooktime', 'Priority': 'priority', 'Requires': ''},
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 									inventoryrecipes,
 									makeRecipeRow,
 									'name'
@@ -2690,7 +2705,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					} else if (selected !== null) {
 						e.preventDefault();
 					}
-					/* else {
+					/*
+					using comments as version control is bad
+					else {
 						items = ul.getElementsByTagName('li');
 						for (i = 0; i < items.length; i++) {
 							if (items[i].className === 'selected') {

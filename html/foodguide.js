@@ -1,81 +1,2830 @@
-(function(){var N,fa,qa=30,r=16*qa,qa=r/16,ga=3*r,m=6*r,k=10*r,v=15*r,O=20*r,ra=40*r,Da=2*r,Ya=0.6666*qa,h={butter:{name:"Butter",fat:1,dairy:1,health:40,hunger:25,perish:ra,stack:40},butterflywings:{name:"Butterfly Wings",isveggie:!0,decoration:2,health:8,hunger:9.375,perish:m,stack:40},deerclopseyeball:{name:"Deerclops Eyeball",uncookable:!0,health:60,hunger:75,sanity:-15},bird_egg:{name:"Egg",egg:1,health:0,hunger:9.375,sanity:0,perish:k,stack:40,rot:"rottenegg"},bird_egg_cooked:{name:"Cooked Egg",
-egg:1,precook:1,health:0,hunger:12.5,sanity:0,perish:m,stack:40},rottenegg:{name:"Rotten Egg",uncookable:!0,health:-1,hunger:-10,stack:40},fish:{name:"Fish",ismeat:!0,fish:1,health:1,hunger:12.5,perish:ga,stack:40},fish_cooked:{name:"Cooked Fish",ismeat:!0,fish:1,precook:1,health:1,hunger:12.5,perish:m,stack:40},froglegs:{name:"Frog Legs",ismeat:!0,meat:0.5,health:0,hunger:12.5,perish:m,sanity:-10,stack:40},froglegs_cooked:{name:"Cooked Frog Legs",ismeat:!0,meat:0.5,precook:1,health:1,hunger:12.5,
-perish:k,sanity:0,stack:40},flowerhat:{name:"Garland",health:3,hunger:0,sanity:10,perish:m,stack:1,uncookable:!0},hambat:{name:"Ham Bat",health:-8,hunger:25,sanity:-15,perish:k,stack:1,uncookable:!0},honey:{name:"Honey",sweetener:!0,health:3,hunger:9.375,perish:ra,stack:40},honeycomb:{name:"Honeycomb",sweetener:!0},lightbulb:{name:"Light Bulb",health:1,hunger:0,perish:m,stack:40,uncookable:!0},mandrake:{name:"Mandrake",veggie:1,magic:1,health:60,hunger:75,stack:40},mandrake_cooked:{name:"Cooked Mandrake",
-uncookable:!0,veggie:1,magic:1,precook:1,health:100,hunger:150,stack:40},monstermeat:{name:"Monster Meat",ismeat:!0,meat:1,monster:!0,health:-20,hunger:18.75,sanity:-15,perish:m,stack:20,dry:"monstermeat_dried",drytime:r},monstermeat_cooked:{name:"Cooked Monster Meat",ismeat:!0,meat:1,monster:!0,precook:1,health:-3,hunger:18.75,sanity:-10,perish:v,stack:20},monstermeat_dried:{name:"Monster Jerky",ismeat:!0,meat:1,monster:!0,dried:1,health:-3,hunger:18.75,sanity:-5,perish:O,stack:20},meat:{name:"Meat",
-ismeat:!0,meat:1,health:1,hunger:25,sanity:-10,perish:m,stack:20,dry:"meat_dried",drytime:Da},meat_cooked:{name:"Cooked Meat",ismeat:!0,meat:1,precook:1,health:3,hunger:25,sanity:0,perish:k,stack:20},meat_dried:{name:"Jerky",ismeat:!0,meat:1,dried:1,health:20,hunger:25,sanity:15,perish:O,stack:20},morsel:{name:"Morsel",ismeat:!0,meat:0.5,health:0,hunger:12.5,sanity:-10,perish:m,stack:40,drytime:r,dry:"smallmeat_dried"},morsel_cooked:{name:"Cooked Morsel",ismeat:!0,meat:0.5,precook:1,health:1,hunger:12.5,
-sanity:0,perish:k,stack:40},smallmeat_dried:{name:"Small Jerky",ismeat:!0,meat:0.5,dried:1,health:8,hunger:12.5,sanity:10,perish:O,stack:40},drumstick:{name:"Drumstick",ismeat:!0,ideal:!0,meat:0.5,health:0,hunger:12.5,sanity:-10,perish:m,stack:20,drytime:r,dry:"smallmeat_dried"},drumstick_cooked:{name:"Fried Drumstick",ismeat:!0,meat:0.5,precook:1,health:1,hunger:12.5,perish:k,stack:20},batwing:{name:"Batilisk Wing",ismeat:!0,health:3,hunger:12.5,sanity:-10,perish:m,stack:40,drytime:Da,dry:"smallmeat_dried",
-uncookable:!0},batwing_cooked:{name:"Cooked Batilisk Wing",ismeat:!0,health:8,hunger:18.75,sanity:0,perish:k,uncookable:!0},red_mushroom:{name:"Red Cap",veggie:0.5,ideal:!0,health:-20,hunger:12.5,sanity:0,perish:k,stack:40},red_mushroom_cooked:{name:"Cooked Red Cap",veggie:0.5,health:1,hunger:0,sanity:-10,perish:k,stack:40},green_mushroom:{name:"Green Cap",veggie:0.5,ideal:!0,health:0,hunger:12.5,sanity:-50,perish:k,stack:40},green_mushroom_cooked:{name:"Cooked Green Cap",veggie:0.5,health:-1,hunger:0,
-sanity:15,perish:k,stack:40},blue_mushroom:{name:"Blue Cap",veggie:0.5,ideal:!0,health:20,hunger:12.5,sanity:-15,perish:k,stack:40},blue_mushroom_cooked:{name:"Cooked Blue Cap",veggie:0.5,health:-3,hunger:0,sanity:10,perish:k,stack:40},petals:{name:"Petals",uncookable:!0,health:1,hunger:0,sanity:-2.5,perish:m,stack:40},petals_evil:{name:"Dark Petals",uncookable:!0,health:0,hunger:0,sanity:-5,perish:m,stack:40},seeds:{name:"Seeds",uncookable:!0,health:0,hunger:4.6875,perish:ra,stack:40},seeds_cooked:{name:"Toasted Seeds",
-uncookable:!0,health:1,hunger:4.6875,perish:k,stack:40},spoiled_food:{name:"Rot",uncookable:!0,health:-1,hunger:-10,stack:40},tallbirdegg:{name:"Tallbird Egg",egg:4,health:3,hunger:25},tallbirdegg_cooked:{name:"Fried Tallbird Egg",egg:4,precook:1,health:0,hunger:37.5,perish:m},trunk_summer:{name:"Koalefant Trunk",uncookable:!0,ismeat:!0,health:30,hunger:37.5,perish:m,stack:20},trunk_summer_cooked:{name:"Koalefant Trunk Steak",uncookable:!0,ismeat:!0,health:40,hunger:75,perish:v,stack:20},twigs:{name:"Twigs",
-inedible:1},carrot:{name:"Carrot",isveggie:!0,veggie:1,health:1,hunger:12.5,perish:k,sanity:0,stack:40},carrot_cooked:{name:"Roasted Carrot",isveggie:!0,veggie:1,precook:1,health:3,hunger:12.5,perish:m,sanity:0,stack:40},corn:{name:"Corn",ideal:!0,isveggie:!0,veggie:1,health:3,hunger:25,perish:k,sanity:0,stack:40},corn_cooked:{name:"Popcorn",isveggie:!0,veggie:1,precook:1,health:3,hunger:12.5,perish:v,sanity:0,stack:40},pumpkin:{name:"Pumpkin",isveggie:!0,veggie:1,health:3,hunger:37.5,perish:k,sanity:0,
-stack:20},pumpkin_cooked:{name:"Hot Pumpkin",isveggie:!0,veggie:1,precook:1,health:8,hunger:37.5,perish:m,sanity:0,stack:20},eggplant:{name:"Eggplant",isveggie:!0,veggie:1,health:8,hunger:25,perish:k,sanity:0,stack:20},eggplant_cooked:{name:"Braised Eggplant",isveggie:!0,veggie:1,precook:1,health:20,hunger:25,perish:m,sanity:0,stack:20},durian:{name:"Durian",isfruit:!0,monster:1,fruit:1,health:-3,hunger:25,perish:k,sanity:-5,stack:20},durian_cooked:{name:"Extra Smelly Durian",isfruit:!0,monster:1,
-fruit:1,precook:1,health:0,hunger:25,perish:m,sanity:-5,stack:20},pomegranate:{name:"Pomegranate",isfruit:!0,fruit:1,health:3,hunger:9.375,perish:m,sanity:0,stack:40},pomegranate_cooked:{name:"Sliced Pomegranate",isfruit:!0,fruit:1,precook:1,health:20,hunger:12.5,perish:ga,sanity:0,stack:40},dragonfruit:{name:"Dragon Fruit",isfruit:!0,fruit:1,health:3,hunger:9.375,perish:m,sanity:0,stack:40},dragonfruit_cooked:{name:"Prepared Dragon Fruit",isfruit:!0,fruit:1,precook:1,health:20,hunger:12.5,perish:ga,
-sanity:0,stack:40},berries:{name:"Berries",isfruit:!0,fruit:0.5,health:0,hunger:9.375,perish:m,sanity:0,stack:40},berries_cooked:{name:"Roasted Berries",isfruit:!0,fruit:0.5,precook:1,health:1,hunger:12.5,perish:ga,sanity:0,stack:40}},Za=function(){return this.op+this.qty},$a={"=":function(a){return a===this.qty},">":function(a){return a>this.qty},"<":function(a){return a<this.qty},">=":function(a){return a>=this.qty},"<=":function(a){return a<=this.qty}},sa={test:function(a){return!!a},toString:function(){return""}},
-u=function(a,b){return{op:a,qty:b,test:$a[a],toString:Za}},ab=function(a,b,c){return this.item1.test(a,b,c)||this.item2.test(a,b,c)},bb=function(){return this.item1+" or "+this.item2},Ea=function(a,b){return{item1:a,item2:b,test:ab,toString:bb,cancel:a.cancel||b.cancel}},cb=function(a,b,c){return!this.item.test(a,b,c)},db=function(){return this.item.toString().substring(0,this.item.toString().length-1)+"|strike]"},p=function(a){return{item:a,test:cb,toString:db,cancel:!0}},eb=function(a,b){return(b[this.name]||
-0)+(b[this.name+"_cooked"]||0)},fb=function(){return"[*"+h[this.name].name+"|"+h[this.name].img+" "+h[this.name].name+"]"+(h[this.name].cook?"[*"+h[this.name].cook.name+"|"+h[this.name].cook.img+"]":"")+(h[this.name].raw?"[*"+h[this.name].raw.name+"|"+h[this.name].raw.img+"]":"")+(this.qty?this.qty:"")},C=function(a,b){return{name:a,qty:b||sa,test:eb,toString:fb}},gb=function(a,b){return b[this.name]},hb=function(){return"[*"+h[this.name].name+"|"+h[this.name].img+" "+h[this.name].name+"]"+(this.qty?
-this.qty:"")},F=function(a,b){return{name:a,qty:b||sa,test:gb,toString:hb}},ib=function(a,b,c){return c[this.tag]},jb=function(){return"[tag:"+this.tag+"|"+this.tag+"]"+(this.qty?this.qty:"")},e=function(a,b){return{tag:a,qty:b||sa,test:ib,toString:jb}},f={butterflymuffin:{name:"Butter Muffin",test:function(a,b,c){return b.butterflywings&&!c.meat&&c.veggie},requires:"Butterfly Wings, veggie",requirements:[C("butterflywings"),p(e("meat")),e("veggie")],priority:1,weight:1,foodtype:"veggie",health:20,
-hunger:37.5,perish:v,sanity:5,cooktime:2},frogglebunwich:{name:"Froggle Bunwich",test:function(a,b,c){return(b.froglegs||b.froglegs_cooked)&&c.veggie},requirements:[C("froglegs"),e("veggie")],priority:1,foodtype:"meat",health:20,hunger:37.5,perish:v,sanity:5,cooktime:2},taffy:{name:"Taffy",test:function(a,b,c){return c.sweetener&&3<=c.sweetener&&!c.meat},requirements:[e("sweetener",u(">=",3)),p(e("meat"))],priority:10,foodtype:"veggie",health:-3,hunger:25,perish:v,sanity:15,cooktime:2},pumpkincookie:{name:"Pumpkin Cookie",
-test:function(a,b,c){return(b.pumpkin||b.pumpkin_cooked)&&c.sweetener&&2<=c.sweetener},requirements:[C("pumpkin"),e("sweetener",u(">=",2))],priority:10,foodtype:"veggie",health:0,hunger:37.5,perish:k,sanity:15,cooktime:2},stuffedeggplant:{name:"Stuffed Eggplant",test:function(a,b,c){return(b.eggplant||b.eggplant_cooked)&&c.veggie&&1<c.veggie},requirements:[C("eggplant"),e("veggie",u(">",1))],priority:1,foodtype:"veggie",health:3,hunger:37.5,perish:v,sanity:5,cooktime:2},fishsticks:{name:"Fishsticks",
-test:function(a,b,c){return c.fish&&b.twigs&&c.inedible&&1>=c.inedible},requirements:[e("fish"),F("twigs"),e("inedible"),e("inedible",u("<=",1))],priority:10,foodtype:"meat",health:40,hunger:37.5,perish:k,sanity:5,cooktime:2},honeynuggets:{name:"Honey Nuggets",test:function(a,b,c){return b.honey&&c.meat&&1.5>=c.meat&&!c.inedible},requirements:[F("honey"),e("meat",u("<=",1.5)),p(e("inedible"))],priority:2,foodtype:"meat",health:20,hunger:37.5,perish:v,sanity:5,cooktime:2},honeyham:{name:"Honey Ham",
-test:function(a,b,c){return b.honey&&c.meat&&1.5<c.meat&&!c.inedible},requirements:[F("honey"),e("meat",u(">",1.5)),p(e("inedible"))],priority:2,foodtype:"meat",health:30,hunger:75,perish:v,sanity:5,cooktime:2},dragonpie:{name:"Dragonpie",test:function(a,b,c){return(b.dragonfruit||b.dragonfruit_cooked)&&!c.meat},requirements:[C("dragonfruit"),p(e("meat"))],priority:1,foodtype:"veggie",health:40,hunger:75,perish:v,sanity:5,cooktime:2},kabobs:{name:"Kabobs",test:function(a,b,c){return c.meat&&b.twigs&&
-(!c.monster||1>=c.monster)&&c.inedible&&1>=c.inedible},requirements:[e("meat"),F("twigs"),Ea(p(e("monster")),e("monster",u("<=",1))),e("inedible"),e("inedible",u("<=",1))],priority:5,foodtype:"meat",health:3,hunger:37.5,perish:v,sanity:5,cooktime:2},mandrakesoup:{name:"Mandrake Soup",test:function(a,b){return b.mandrake},requirements:[F("mandrake")],priority:10,foodtype:"veggie",health:100,hunger:150,perish:m,sanity:5,cooktime:3},baconeggs:{name:"Bacon and Eggs",test:function(a,b,c){return c.egg&&
-1<c.egg&&c.meat&&1<c.meat&&!c.veggie},requirements:[e("egg",u(">",1)),e("meat",u(">",1)),p(e("veggie"))],priority:10,foodtype:"meat",health:20,hunger:75,perish:O,sanity:5,cooktime:2},meatballs:{name:"Meatballs",test:function(a,b,c){return c.meat&&!c.inedible},requirements:[e("meat"),p(e("inedible"))],priority:-1,foodtype:"meat",health:3,hunger:62.5,perish:k,sanity:5,cooktime:0.75},bonestew:{name:"Meaty Stew",test:function(a,b,c){return c.meat&&3<=c.meat&&!c.inedible},requirements:[e("meat",u(">=",
-3)),p(e("inedible"))],priority:0,foodtype:"meat",health:12,hunger:150,perish:k,sanity:5,cooktime:0.75},perogies:{name:"Pierogi",test:function(a,b,c){return c.egg&&c.meat&&c.veggie&&!c.inedible},requirements:[e("egg"),e("meat"),e("veggie"),p(e("inedible"))],priority:5,foodtype:"meat",health:40,hunger:37.5,perish:O,sanity:5,cooktime:1},turkeydinner:{name:"Turkey Dinner",test:function(a,b,c){return b.drumstick&&1<b.drumstick&&c.meat&&1<c.meat&&(c.veggie||c.fruit)},requirements:[F("drumstick",u(">",1)),
-e("meat",u(">",1)),Ea(e("veggie"),e("fruit"))],priority:10,foodtype:"meat",health:20,hunger:75,perish:m,sanity:5,cooktime:3},ratatouille:{name:"Ratatouille",test:function(a,b,c){return!c.meat&&c.veggie&&!c.inedible},requirements:[p(e("meat")),e("veggie"),p(e("inedible"))],priority:0,foodtype:"veggie",health:3,hunger:25,perish:v,sanity:5,cooktime:1},jammypreserves:{name:"Fist Full of Jam",test:function(a,b,c){return c.fruit&&!c.meat&&!c.veggie&&!c.inedible},requirements:[e("fruit"),p(e("meat")),p(e("veggie")),
-p(e("inedible"))],priority:0,foodtype:"veggie",health:3,hunger:37.5,perish:v,sanity:5,cooktime:0.5},fruitmedley:{name:"Fruit Medley",test:function(a,b,c){return c.fruit&&3<=c.fruit&&!c.meat&&!c.veggie},requirements:[e("fruit",u(">=",3)),p(e("meat")),p(e("veggie"))],priority:0,foodtype:"veggie",health:20,hunger:25,perish:m,sanity:5,cooktime:0.5},fishtacos:{name:"Fish Tacos",test:function(a,b,c){return c.fish&&(b.corn||b.corn_cooked)},requirements:[e("fish"),C("corn")],priority:10,foodtype:"meat",health:20,
-hunger:37.5,perish:m,sanity:5,cooktime:0.5},waffles:{name:"Waffles",test:function(a,b,c){return b.butter&&(b.berries||b.berries_cooked)&&c.egg},requirements:[F("butter"),C("berries"),e("egg")],priority:10,foodtype:"veggie",health:60,hunger:37.5,perish:m,sanity:5,cooktime:0.5},monsterlasagna:{name:"Monster Lasagna",test:function(a,b,c){return c.monster&&2<=c.monster&&!c.inedible},requirements:[e("monster",u(">=",2)),p(e("inedible"))],priority:10,foodtype:"meat",health:-20,hunger:37.5,perish:m,sanity:-20,
-cooktime:0.5},powcake:{name:"Powdercake",test:function(a,b){return b.twigs&&b.honey&&(b.corn||b.corn_cooked)},requirements:[F("twigs"),F("honey"),C("corn")],priority:10,foodtype:"veggie",health:-3,hunger:0,perishtime:9E6,sanity:0,cooktime:0.5},wetgoop:{name:"Wet Goop",test:function(){return!0},requirements:[],trash:!0,priority:-2,health:0,hunger:0,perish:m,sanity:0,cooktime:0.25}},Q,n,Fa,kb=/^tag[: ]/,lb=/^tag:? */,H,mb=/^recipe[: ]/,nb=/^recipe:? */,ta,ob=/^ingredient[: ]/,pb=/^ingredient:? */,Ga,
-Ha,Ia=!1,qb=function(a){a.match=!Ia&&a.uncookable?0:0===a.lowerName.indexOf(n)||a.raw&&0===a.raw.lowerName.indexOf(n)?3:0===Ha.test(a.lowerName)?2:Ga.test(a.lowerName)?1:0;return a.match},rb=function(a){return a.match=a[Fa]+0||0},sb=function(a){for(var b=0,c,l=!0;b<H.length;){c=H[b].test(null,a.nameObject,a);if(H[b].cancel){if(!c){l=!0;break}}else c&&(l=!1);b++}return a.match=l?0:1},tb=function(a){for(var b=0,c,l=!0;b<a.requirements.length;){c=a.requirements[b].test(null,ta.nameObject,ta);if(a.requirements[b].cancel){if(!c){l=
-!0;break}}else c&&(l=!1);b++}return a.match=l?0:1},ub=function(a){return a.match=a.lowerName===n?1:0},vb=function(a){return a.match=a.lowerName===n||a.raw&&a.raw.lowerName===n||a.cook&&a.cook.lowerName===n?1:0},J=function(a,b){var c,l;return a.match===b.match?(c=a.raw?a.raw.name:a.name,l=b.raw?b.raw.name:b.name,c!==l?c>l?1:c<l?-1:0:a.name===b.name?0:a.raw===b?1:-1):b.match-a.match};Q=function(a,b,c){Ia=!!c;n=b.toLowerCase();if(kb.test(n))return Fa=n.split(lb)[1],a.filter(rb).sort(J);if(mb.test(n))return(H=
-f.byName(n.split(nb)[1].toLowerCase()))?(H=H.requirements,a.filter(sb).sort(J)):[];if(ob.test(n))return(ta=h.byName(n.split(pb)[1].toLowerCase()))?a.filter(tb).sort(J):[];if(0===n.indexOf("*"))return n=n.substring(1),a.filter(ub).sort(J);if(0===n.indexOf("~"))return n=n.substring(1),a.filter(vb).sort(J);Ha=RegExp("\\b"+n+".*");Ga=RegExp("\\b"+n.split("").join(".*")+".*");return a.filter(qb).sort(J)};var ua=function(a,b,c){var l,d,e;for(l=0;l<a.length;l++)if(e=a[l],null!==e)for(d in b[e.id]=1+(b[e.id]||
-0),e)e.hasOwnProperty(d)&&"perish"!==d&&!isNaN(e[d])?c[d]=e[d]+(c[d]||0):"perish"===d&&(c[d]=Math.min(c[d]||O,e[d]))},va,wa,T;va=function(a,b,c,l){var d,e;a.length=0;wa={};T={};ua(b,wa,T);for(b=0;b<f.length;b++){e=!1;for(d=0;d<f[b].requirements.length;d++)if(f[b].requirements[d].test(null,wa,T))f[b].requirements[d].cancel||(e=!0);else if(!l&&f[b].requirements[d].cancel){e=!1;break}else if(l&&!f[b].requirements[d].cancel){e=!1;break}e&&(!c||-1===c.indexOf(f[b]))&&a.push(f[b])}T.img="";T.name="Combined";
-return a};var Ja,X=[],xa,R;Ja=function(a){X.length=0;xa={};R={};ua(a,xa,R);for(a=0;a<f.length;a++)f[a].test(null,xa,R)&&X.push(f[a]);X.sort(function(a,c){return c.priority-a.priority});R.img="";R.name="Combined";X.unshift(R);return X};var S=document.createElement("canvas"),ya=S.getContext&&S.toDataURL&&S.getContext("2d"),Y=document.createElement("canvas"),Ka=Y.getContext&&Y.getContext("2d"),K={},za={},La=!!ya,ha=[],wb=function(a){return function(b){b=b.target;ya.clearRect(0,0,64,64);ya.drawImage(b,
-0,0,64,64);Ka.clearRect(0,0,32,32);Ka.drawImage(b,0,0,32,32);try{K[a]=S.toDataURL(),za[a]=Y.toDataURL()}catch(c){La=!1}ha.filter(function(b){return b.url===a}).forEach(function(b){b.url===a&&(delete b.img.dataset.pending,ia&&b.img.removeAttribute("data-pending"),b.img.src=32===b.d?za[a]||a:K[a]||a)});ha=ha.filter(function(b){return b.url!==a})}},Ma=function(a,b,c){a.dataset.pending=b;ia&&a.setAttribute("data-pending",b);ha.push({url:b,img:a,d:c})},U=function(a,b){var c=new Image,l;La?K[a]?c.src=32===
-b?za[a]:K[a]:(null!==K[a]&&(K[a]=null,l=new Image,l.addEventListener("load",wb(a),!1),l.src=a),Ma(c,a,b)):c.src=a;return c};S.width=64;S.height=64;Y.width=32;Y.height=32;U.queue=Ma;var ja,xb=/\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/,Na=/([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g,yb=/(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g,Oa=function(a,b,c){return b+"|"+(0===c.length?"left":c+" left")},zb=function(a,b,c){return b+"|"+(0===c.length?"right":c+" right")},Ab=/_(\w)/g,Bb=function(a,
-b){return" "+b.toUpperCase()};ja=function(a){var b=a&&a.replace(Na,Oa).replace(Na,Oa).replace(yb,zb);a=b&&b.split(xb);var c,l,d,e;if(!a||1===a.length)return b;b=document.createDocumentFragment();b.appendChild(document.createTextNode(a[0]));for(c=1;c<a.length;c+=4)""===a[c]&&""===a[c+1]?b.appendChild(document.createElement("br")):(l=document.createElement("span"),l.className=""===a[c+2]?"link":"link "+a[c+2],l.dataset.link=a[c],ia&&l.setAttribute("data-link",a[c]),a[c+1]&&0===a[c+1].indexOf("img/")?
-(l.appendChild(document.createTextNode(a[c+1].split(" ").slice(1).join(" "))),d=a[c+1].split(" ")[0],e=U(d,32),e.title=(d.substr(4,1).toUpperCase()+d.substr(5).replace(Ab,Bb)).split(".")[0],l.appendChild(e)):l.appendChild(document.createTextNode(a[c+1]?a[c+1]:a[c])),b.appendChild(l)),b.appendChild(document.createTextNode(a[c+3]));return b};var g,ca=0,Pa=document.getElementById("main"),Cb=document.getElementById("food"),Db=document.getElementById("recipes"),Eb=document.getElementById("navbar"),ia=
-!1;document.documentElement.dataset||(ia=!0,Object.defineProperty(Element.prototype,"dataset",{get:function(){this.ds||(this.ds={},Array.prototype.forEach.call(this.attributes,function(a){0===a.name.indexOf("data-")&&(this.ds[a.name.substring(5)]=a.value)},this));return this.ds}}));document.getElementById("stalehealth").appendChild(document.createTextNode(Math.round(333)/10+"%"));document.getElementById("stalehunger").appendChild(document.createTextNode(Math.round(667)/10+"%"));document.getElementById("spoiledhunger").appendChild(document.createTextNode(Math.round(500)/
-10+"%"));document.getElementById("spoiledsanity").appendChild(document.createTextNode(10));document.getElementById("perishground").appendChild(document.createTextNode(Math.round(1500)/10+"%"));document.getElementById("perishwinter").appendChild(document.createTextNode(Math.round(750)/10+"%"));document.getElementById("perishfridge").appendChild(document.createTextNode(Math.round(500)/10+"%"));var q,x=function(a,b){return"[tag:"+a+"|"+(b||a)+"]"};for(g in h)if(h.hasOwnProperty(g)){var d=h[g];d.match=
-0;d.lowerName=d.name.toLowerCase();d.id=g;d.nameObject={};d.nameObject[g]=1;d.img="img/"+d.name.replace(/ /g,"_").toLowerCase()+".png";-1!==g.indexOf("_cooked")&&(d.cooked=!0);h[g+"_cooked"]&&(d.cook=h[g+"_cooked"],h[g+"_cooked"].raw=d);d.info=[];q=d.info;d.fruit&&q.push(x("fruit")+(1===d.fruit?"":"\u00d7"+d.fruit));d.veggie&&q.push(x("veggie","vegetable")+(1===d.veggie?"":"\u00d7"+d.veggie));d.meat&&q.push(x("meat")+(1===d.meat?"":"\u00d7"+d.meat));d.egg&&q.push(x("egg")+(1===d.egg?"":"\u00d7"+d.egg));
-d.fish&&q.push(x("fish"));d.magic&&q.push(x("magic"));d.decoration&&q.push(x("decoration"));d.inedible&&q.push(x("inedible"));d.monster&&q.push(x("monster","monster food"));d.sweetener&&q.push(x("sweetener"));d.fat&&q.push(x("fat"));d.dairy&&q.push(x("dairy"));d.comment&&q.push(d.comment);h[ca++]=d}h.length=ca;ca=0;for(g in f)f.hasOwnProperty(g)&&(f[g].match=0,f[g].name=f[g].name||g,f[g].id=g,f[g].lowerName=f[g].name.toLowerCase(),f[g].weight=f[g].weight||1,f[g].priority=f[g].priority||0,f[g].img=
-"img/"+f[g].name.replace(/ /g,"_").toLowerCase()+".png",f[g].requirements&&(f[g].requires=ja(f[g].requirements.join("; "))),f[ca++]=f[g]);f.length=ca;f.forEach=Array.prototype.forEach;f.filter=Array.prototype.filter;f.sort=Array.prototype.sort;f.byName=function(a){for(var b=this.length;b--;)if(this[b].lowerName===a)return this[b]};var Fb=function(a,b){return a+"[recipe:"+b.name+"|"+b.img+"]"};for(g in h)h.hasOwnProperty(g)&&(isNaN(g)&&isNaN(h[g]))&&(d=h[g],q=d.info,d.cooked&&q.push("from [*"+d.raw.name+
-"|"+d.raw.img+"]"),d.cook&&q.push("cook: [*"+d.cook.name+"|"+d.cook.img+"]"),d.dry&&(d.dry instanceof Object||(d.dry=h[d.dry]),q.push("dry in "+d.drytime/r+" "+(1===d.drytime/r?"day":"days")+": [*"+d.dry.name+"|"+d.dry.img+"]")),d.info=q.join("; "),d.uncookable?d.info+="[|]cannot be added to crock pot":(d.recipes=[],f.forEach(function(a){for(var b=!1,c=a.requirements,l=c.length;l--;)if(c[l].test(null,d.nameObject,d))!c[l].cancel&&!b&&(b=!0);else if(c[l].cancel){b=!1;break}b&&d.recipes.push(a)}),0<
-d.recipes.length&&(d.ingredient=!0,d.info+=d.recipes.reduce(Fb,"[|][ingredient:"+d.name+"|Recipes] "))),d.info=ja(d.info));h.forEach=Array.prototype.forEach;h.filter=Array.prototype.filter;h.sort=Array.prototype.forEach;h.byName=function(a){for(var b=this.length;b--;)if(this[b].lowerName===a)return this[b]};var ka="id health hunger fruit veggie meat egg fish magic decoration inedible monster sweetener fat dairy".split(" ");fa=N=void 0;h.filter(function(a){return!a.uncookable&&!a.skip&&(a.ideal||!a.cook&&
-(!a.raw||!a.raw.ideal))}).map(function(a){for(var b={},c=ka.length;c--;)a.hasOwnProperty(ka[c])&&(b[ka[c]]=a[ka[c]]);return b});N=f.filter(function(a){return!a.trash}).sort(function(a,b){return b.priority-a.priority});fa=N.map(function(a){return a.test});N.map(function(a){return a.test.toString()});N.map(function(a){return a.priority});var la,Qa=Eb.getElementsByTagName("li"),da={},ea={},y,P,G,Gb=function(a){la(a.target.dataset.tab)},D;la=function(a){G.className="";G=da[a];P.style.display="none";P=
-ea[a];G.className="selected";P.style.display="block"};for(g=0;g<Qa.length;g++)D=Qa[g],D.dataset.tab&&(da[D.dataset.tab]=D,ea[D.dataset.tab]=document.getElementById(D.dataset.tab),ea[D.dataset.tab].style.display="none",D.addEventListener("selectstart",function(a){a.preventDefault()},!1),D.addEventListener("click",Gb,!1));G=da.simulator;P=ea.simulator;window.localStorage&&localStorage.foodGuideState&&("["===localStorage.foodGuideState[0]?(y={},y.pickers=JSON.parse(localStorage.foodGuideState),localStorage.foodGuideState=
-JSON.stringify(y)):y=JSON.parse(localStorage.foodGuideState),y.activeTab&&da[y.activeTab]&&(G=da[y.activeTab],P=ea[y.activeTab]));G.className="selected";P.style.display="block";window.addEventListener("beforeunload",function(){var a;window.localStorage&&(localStorage.foodGuideState||(localStorage.foodGuideState="{}"),a=JSON.parse(localStorage.foodGuideState),a.activeTab=G.dataset.tab,localStorage.foodGuideState=JSON.stringify(a))});var Hb=function(a){a.dataset.pending&&U.queue(a,a.dataset.pending,
-32)},Aa=function(a){var b,c,d,e=document.createElement("tr"),h;for(b=1;b<arguments.length;b++)c=document.createElement(a),h=(d=arguments[b])&&d.indexOf?d:d.toString(),d instanceof DocumentFragment?(c.appendChild(d.cloneNode(!0)),Array.prototype.forEach.call(c.getElementsByTagName("img"),Hb)):0===h.indexOf("img/")?(d=U(h),c.appendChild(d)):c.appendChild(document.createTextNode(h)),e.appendChild(c);return e},Z=function(a,b,c,d,e,h,f,g,m,k){var s,W,t,n=!1,q,p,j,r=function(a){var b;if((!k||j<k)&&(!g||
-g(a)))b=c(a),f&&f(a)&&(b.className="highlighted",q||(q=b),p=b),s.appendChild(b),j++},z=function(c,d,l){var f,g;if(d||c&&""!==c.target.dataset.sort||t){f=d||c&&c.target.dataset.sort||t;e&&(g=b.shift());"name"===f?b.sort(function(a,b){var c=a.raw?a.raw.name:a.name,d=b.raw?b.raw.name:b.name;return c!==d?c>d?1:c<d?-1:0:a.name===b.name?0:a.raw===b?1:-1}):b.sort(function(a,b){var c=a[f],d=b[f];return!isNaN(c)&&!isNaN(d)?d-c:isNaN(c)&&isNaN(d)?0:isNaN(c)?1:-1});if(d||c)t===f?n=!n:(t=f,n=!1);n&&b.reverse();
-e&&b.unshift(g)}c=document.createElement("tr");for(W in a)d=document.createElement("th"),-1===W.indexOf(":")?d.appendChild(document.createTextNode(W)):(d.appendChild(document.createTextNode(W.split(":")[0])),d.title=W.split(":")[1]),a[W]&&(a[W]===t&&(d.style.background=n?"#555":"#ccc",d.style.color=n?"#ccc":"#555",d.style.borderRadius="4px"),d.style.cursor="pointer",d.dataset.sort=a[W],d.addEventListener("click",z,!1)),c.appendChild(d);d=s;s=document.createElement("table");s.appendChild(c);p=q=null;
-j=0;b.forEach(r);h&&(s.className="links",Array.prototype.forEach.call(s.getElementsByClassName("link"),function(a){a.addEventListener("click",h,!1)}));d&&d.parentNode.replaceChild(s,d);l&&(q&&q.offsetTop+s.offsetTop+Pa.offsetTop+q.offsetHeight>window.scrollY+window.innerHeight?q.scrollIntoView(!0):p&&p.offsetTop+s.offsetTop+Pa.offsetTop<window.scrollY&&p.scrollIntoView(!1))};d?z(null,d):z();s.update=function(a){z(null,null,a)};s.setMaxRows=function(a){k=a;this.update()};return s},A=function(a){return isNaN(a)?
-"":0<a?"+"+a:a},Ra=function(a,b){return a<b?(b-a)/Math.abs(a):a>b?-(a-b)/Math.abs(a):0},Sa=function(a,b){return!isNaN(a)&&a!==b?" ("+A((100*(a<b?(b-a)/Math.abs(a):a>b?-(a-b)/Math.abs(a):0)).toFixed(0))+"%)":""},Ta=function(a){return Aa("td",a.img?a.img:"",a.name,A(a.health),A(a.hunger),isNaN(a.sanity)?"":A(a.sanity),isNaN(a.perish)?"Never":a.perish/r+" "+(1===a.perish/r?"day":"days"),a.info||"")},na=function(a,b,c){return Aa("td",a.img?a.img:"",a.name,A(a.health)+Sa(b,a.health),A(a.hunger)+Sa(c,a.hunger),
-isNaN(a.sanity)?"":A(a.sanity),isNaN(a.perish)?"Never":a.perish/r+" "+(1===a.perish/r?"day":"days"),(a.cooktime*Ya+0.5|0)+" secs",a.priority||"0",a.requires||"")},oa,pa=[],Ua=[],Ba=Z({"":"",Name:"name",Health:"health",Hunger:"hunger",Sanity:"sanity","Perish:Time to turn to rot":"perish",Info:""},Array.prototype.slice.call(h),Ta,"name",!1,function(a){a=!a.target?a:"IMG"===a.target.tagName?a.target.parentNode.dataset.link:a.target.dataset.link;"recipe:"===a.substring(0,7)||"ingredient:"===a.substring(0,
-11)?(la("crockpot"),"recipe:"===a.substring(0,7)&&(a="*"+a.substring(7)),Ua=Q(f,a),Va.update(!0)):(oa!==a?(oa=a,pa=Q(h,a)):(oa="",pa.length=0),Ba.update(!0))},function(a){return-1!==pa.indexOf(a)}),Va=Z({"":"",Name:"name",Health:"health",Hunger:"hunger",Sanity:"sanity","Perish:Time to turn to rot":"perish","Cook Time":"cooktime","Priority:Highest priority recipe for a combination will be made":"priority","Requires:Dim, struck items cannot be used":""},Array.prototype.slice.call(f),na,"name",!1,function(a){a=
-!a.target?a:"IMG"===a.target.tagName?a.target.parentNode.dataset.link:a.target.dataset.link;la("foodlist");oa=a;pa=Q(h,a);Ba.update(!0)},function(a){return-1!==Ua.indexOf(a)});Cb.appendChild(Ba);Db.appendChild(Va);var Ib=function(a,b){return a+"[ingredient:"+h[b.id].name+"|"+h[b.id].img+"]"},Wa=function(a){var b=document.createElement("button");b.appendChild(document.createTextNode("Calculate efficient recipes (may take some time)"));b.className="makablebutton";b.addEventListener("click",function(){var c=
-[],d=a?a.length:null,e,g,m=[],n,k,q,s,p=[],t=[],r,u,v,j=function(a){return-1!==t.indexOf(a.id)},x=function(a){return-1!==this.indexOf(h[a])},z=function(a){-1!==t.indexOf(a.target.dataset.id)&&t.splice(t.indexOf(a.target.dataset.id),1);-1!==p.indexOf(a.target.dataset.id)?(p.splice(p.indexOf(a.target.dataset.id),1),a.target.className=""):(p.push(a.target.dataset.id),a.target.className="selected");v.update()},F=function(a){-1!==p.indexOf(a.target.dataset.id)&&p.splice(p.indexOf(a.target.dataset.id),
-1);-1!==t.indexOf(a.target.dataset.id)?(t.splice(t.indexOf(a.target.dataset.id),1),a.target.className=""):(t.push(a.target.dataset.id),a.target.className="excluded");v.update();a.preventDefault()},D=function(a){g&&(g.className="");e===a.target.dataset.recipe?e=g=null:(e=a.target.dataset.recipe,g=a.target,a.target.className="selected");v.update()};null===d&&(d=h.length,a=h);for(;d--;)a[d].cook&&(-1===c.indexOf(a[d].cook)&&!a[d].cook.uncookable)&&c.push(a[d].cook),!a[d].uncookable&&((a[d].ideal||!a[d].cook||
-a[d].cook.uncookable)&&-1===c.indexOf(a[d]))&&c.push(a[d]);r=[];v=Z({"":"",Name:"name",Health:"health","Health+:Health gained compared to ingredients":"healthpls",Hunger:"hunger","Hunger+:Hunger gained compared to ingredients":"hungerpls",Ingredients:""},r,function(a){var b=a.recipe;return Aa("td",b.img?b.img:"",b.name,A(b.health),A(a.healthpls)+" ("+A(100*a.healthpct|0)+"%)",A(b.hunger),A(a.hungerpls)+" ("+A(100*a.hungerpct|0)+"%)",ja(a.ingredients.reduce(Ib,"")))},"hungerpls",!1,null,null,function(a){return(!e||
-a.recipe.name===e)&&(!t.length||!a.ingredients.some(j))&&(!p.length||p.every(x,a.ingredients))},0,15);u=document.createElement("div");k=document.createElement("div");k.appendChild(document.createTextNode("Computing combinations.."));u.appendChild(k);n=document.createElement("div");n.className="recipeFilter";u.appendChild(n);q=document.createElement("div");q.className="foodFilter";c.forEach(function(a){var b=U(a.img,32);b.dataset.id=a.id;b.addEventListener("click",z,!1);b.addEventListener("contextmenu",
-F,!1);b.title=a.name;q.appendChild(b)});u.appendChild(q);d=document.createElement("div");s=document.createElement("input");s.type="text";s.placeholder="use custom filter";s.className="customFilterInput";d.appendChild(s);u.appendChild(v);b.parentNode.replaceChild(u,b);var C=function(){k.firstChild.textContent="Found "+r.length+" valid recipes.."},L=function(){v.setMaxRows(30);k.firstChild.textContent="Found "+r.length+" valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude ingredients."},
-Q=fa.length,y=[],ma=0,M,G=60,O=function(a){return c[a]},H,aa=c.length,I=[0,0,0,0],V,E=0,w=0;H=function(a){for(var b;a--&&1<aa;){b=I.map(O);var c=void 0,d=null,e={},l={};ua(b,e,l);for(c=0;c<Q&&(null===d||N[c].priority>=d);c++)fa[c](null,e,l)&&(y.push({recipe:N[c],ingredients:b,tags:{health:l.health,hunger:l.hunger}}),d=N[c].priority);I[0]++;for(b=0;I[b]>=aa;)b++,I[b]++;V=4;for(E=0;V--;)I[V]>=aa?I[V]=E:I[V]>E&&(E=I[V]);if(4===b)return!1;w++}return!0};var J=function(){var a=!1,b=Date.now();for(H(G)?
-setTimeout(J,0):a=!0;ma<y.length&&y[ma];ma++){var c=y[ma],d=void 0,e=void 0;if(-1===m.indexOf(c.recipe.name)){for(d=0;d<m.length&&!(c.recipe.name<m[d]);d++);m.splice(d,0,c.recipe.name);e=U(f.byName(m[d].toLowerCase()).img);e.dataset.recipe=m[d];e.addEventListener("click",D,!1);e.title=c.recipe.name;d<n.childNodes.length?n.insertBefore(e,n.childNodes[d]):n.appendChild(e)}c.name||(c.name=c.recipe.name,c.health=c.recipe.health,c.ihealth=c.tags.health,c.healthpls=c.recipe.health-c.tags.health,c.hunger=
-c.recipe.hunger,c.ihunger=c.tags.hunger,c.hungerpls=c.recipe.hunger-c.tags.hunger,c.healthpct=Ra(c.tags.health,c.recipe.health),c.hungerpct=Ra(c.tags.hunger,c.recipe.hunger),c.sanity=c.recipe.sanity,c.perish=c.recipe.perish);r.push(c)}M!==Date.now()-b&&(M=Date.now()-b+1,G=38/M*G+1|0);C&&C();a&&L&&L()};J()},!1);return b};document.getElementById("statistics").appendChild(Wa());window.food=h;window.recipes=f;window.matchingNames=Q;for(var ba=function(a,b){var c=!1;null!==b?a.dataset.id=b.id:a.nextSibling&&
-null!==M(a.nextSibling)?(ba(a,M(a.nextSibling)),ba(a.nextSibling,null),c=!0):a.dataset.id=null;c||(null!==b?a.firstChild?a.replaceChild(U(b.img),a.firstChild):a.appendChild(U(b.img)):a.firstChild&&a.removeChild(a.firstChild),a.title=b?b.name:"")},M=function(a){return h[a.dataset.id]||f[a.dataset.id]||null},Xa=document.getElementsByClassName("ingredientpicker"),Ca=Xa.length;Ca--;)(function(){var a=document.createElement("span"),b,c=document.createElement("div"),d=document.createElement("ul"),e=Xa[Ca],
-g=Ca,m,n="recipes"===e.dataset.type?f:h,p=!e.dataset.cookable,k=e.nextSibling,s=k.getElementsByClassName("ingredient"),q,t=[],r,u=[],v=[],j=null,x=!1,z=document.getElementById("results"),y=document.getElementById("discoverfood"),A=document.getElementById("discover"),C=document.getElementById("makable"),L=document.createElement("span"),F=function(a,b){for(var c=a;c.previousSibling;)if(c=c.previousSibling,b(c))return c;return null},G=function(a,b){for(var c=a;c.nextSibling;)if(c=c.nextSibling,b(c))return c;
-return null},D=!1,H=function(a){var b=h[a]||f[a]||null;if(q){for(a=0;a<s.length;a++)if(null===M(s[a]))return ba(s[a],b),x&&r(),a;return-1}-1===s.indexOf(a)&&(s.push(a),a=document.createElement("span"),a.className="ingredient",ba(a,b),a.addEventListener("click",aa,!1),k.appendChild(a),x&&r());return 1},J=function(a){-1!==H(("IMG"===a.target.tagName?a.target.parentNode:a.target).dataset.id)&&a&&a.preventDefault&&a.preventDefault()},N=function(a){var b=U(a.img,32),c=document.createElement("span");c.appendChild(b);
-c.appendChild(document.createTextNode(a.name));c.dataset.id=a.id;-1!==t.indexOf(a)&&(c.style.opacity=0.5);c.addEventListener("mousedown",J,!1);this.appendChild(c);this.dataset.length++},O=function(a){-1!==t.indexOf(h[a.dataset.id])?a.style.opacity||(a.style.opacity=0.5):a.style.opacity&&a.style.removeProperty("opacity")},aa=function(a){var b="IMG"===a.target.tagName?a.target.parentNode:a.target;if(q){if(null!==M(b))return ba(b,null),r(),b.dataset.id}else return a=s.indexOf(b.dataset.id),s.splice(a,
-1),k.removeChild(b),r(),s[a]||null},I=function(){var a;b.splitTag();a=Q(n,b.getSearch(),p);c.removeChild(d);d=document.createElement("div");d.dataset.length=0;a.forEach(N,d);c.appendChild(d);j=null},V=function(a){a="IMG"===a.target.tagName?a.target.parentNode.dataset.link:a.target.dataset.link;var b=Q(n,a,p);1===b.length?H(b[0].id):(e.value=a,I())},E;"ingredients"===k.id?r=function(){var a,b,c,e;t=Array.prototype.map.call(s,function(a){return M(a)});a=Ja(t);b=a[0].health;c=a[0].hunger;e=Z({"":"",
-Name:"name",Health:"health",Hunger:"hunger",Sanity:"sanity","Perish:Time to turn to rot":"perish","Cook Time":"cooktime","Priority:Highest priority recipe for a combination will be made":"priority","Requires:Dim, struck items cannot be used":""},a,function(a){return na(a,b,c)},"priority",!0,V);z.firstChild&&z.removeChild(z.firstChild);z.firstChild&&(z.removeChild(z.firstChild),z.removeChild(z.firstChild));z.appendChild(e);null!==t[0]&&(va(u,t,a),0<u.length&&(z.appendChild(document.createTextNode("Add more ingredients to make:")),
-e=Z({"":"",Name:"name",Health:"health",Hunger:"hunger",Sanity:"sanity","Perish:Time to turn to rot":"perish","Cook Time":"cooktime","Priority:Highest priority recipe for a combination will be made":"priority","Requires:Dim, struck items cannot be used":""},u,function(a){return na(a,b,c)},"priority",!1,V),z.appendChild(e)));d&&d.firstChild&&Array.prototype.forEach.call(d.getElementsByTagName("span"),O)}:"inventory"===k.id&&(r=function(){var a;t=Array.prototype.map.call(k.getElementsByClassName("ingredient"),
-function(a){return M(a)});y.firstChild&&y.removeChild(y.firstChild);A.firstChild&&A.removeChild(A.firstChild);C.firstChild&&C.removeChild(C.firstChild);0<t.length&&(a=Z({"":"",Name:"name",Health:"health",Hunger:"hunger",Sanity:"sanity","Perish:Time to turn to rot":"perish",Info:""},t,Ta,"name"),y.appendChild(a),va(v,t,null,!0),0<v.length&&(a=Z({"":"",Name:"name",Health:"health",Hunger:"hunger",Sanity:"sanity","Perish:Time to turn to rot":"perish","Cook Time":"cooktime","Priority:Highest priority recipe for a combination will be made":"priority",
-"Requires:Dim, struck items cannot be used":""},v,na,"name"),A.appendChild(a),C.appendChild(Wa(t))));d&&d.firstChild&&Array.prototype.forEach.call(d.getElementsByTagName("span"),O)});0!==s.length?(q=!0,Array.prototype.forEach.call(s,function(a){ba(a,null);a.addEventListener("click",aa,!1)})):(s=[],q=!1);window.localStorage&&localStorage.foodGuideState&&(m=JSON.parse(localStorage.foodGuideState).pickers)&&m[g]&&m[g].forEach(function(a){h[a]&&H(a)});x=!0;a.className="searchselector retracted";a.appendChild(document.createTextNode("name"));
-var w=document.createElement("div"),R=!1,S=null,$=[{title:"name",prefix:"",placeholder:"Filter ingredients"},{title:"tag",prefix:"tag:",placeholder:"Meat, veggie, fruit, egg, monster..."},{title:"recipe",prefix:"recipe:",placeholder:"Find ingredients used in a recipe"}],K=$[0],B=null,P=function(){R=!1;w.style.height="0px";a.style.borderBottomLeftRadius="3px";w.style.borderTopLeftRadius="3px";null!==B&&(clearTimeout(B),B=null);a.className="searchselector retracted"},T=function(b){K=b;e.placeholder=
-K.placeholder;a.firstChild.textContent=K.title},X=function(a){T($[a.target.dataset.typeIndex]);I();P()},Y=/: */;a.addEventListener("click",function(){R?P():(null===S&&(w.style.height="auto",w.style.left=a.offsetLeft,w.style.top=a.offsetTop+a.offsetHeight,S=w.offsetHeight+"px",w.style.height="0px"),R=!0,w.style.height=S,a.style.borderBottomLeftRadius="0px",w.style.borderTopLeftRadius="0px",w.style.width="auto",w.style.width=Math.max(w.offsetWidth,a.offsetWidth+1)+"px",null!==B&&(clearTimeout(B),B=
-null),a.className="searchselector extended")},!1);a.addEventListener("selectstart",function(a){a.preventDefault()},!1);a.addEventListener("mouseout",function(){null!==B&&clearTimeout(B);B=setTimeout(P,500)},!1);a.addEventListener("mouseover",function(){null!==B&&(clearTimeout(B),B=null)},!1);w.addEventListener("mouseout",function(){null!==B&&clearTimeout(B);B=setTimeout(P,500)},!1);w.addEventListener("mouseover",function(){null!==B&&(clearTimeout(B),B=null)},!1);$.forEach(function(a,b){var c=document.createElement("div");
-c.appendChild(document.createTextNode(a.title));c.dataset.typeIndex=b;c.addEventListener("click",X,!1);a.element=c;w.appendChild(c)});e.parentNode.insertBefore(a,e);w.className="searchdropdown";e.parentNode.insertBefore(w,e);b={getTag:function(){return K.title},setSearchType:function(a){T($[a])},getSearch:function(){return K.prefix+e.value},splitTag:function(){var a;a=e.value.split(Y);var b,c;if(2===a.length){b=a[0].toLowerCase()+":";c=a[1];for(a=0;a<$.length;a++)if(b===$[a].prefix){T($[a]);e.value=
-c;break}}}};c.className="ingredientdropdown";c.appendChild(d);c.addEventListener("mousedown",function(a){a.preventDefault()},!1);m=Q(n,b.getSearch(),p);c.removeChild(d);d=document.createElement("div");d.dataset.length=0;m.forEach(N,d);c.appendChild(d);L.className="clearingredients";L.appendChild(document.createTextNode("clear"));L.addEventListener("click",function(){if(""===e.value&&"name"===b.getTag())for(;M(k.firstChild);)aa({target:k.firstChild});else e.value="",b.setSearchType(0),I()},!1);L.addEventListener("mouseover",
-function(){""===e.value&&"name"===b.getTag()&&(L.firstChild.textContent="clear chosen ingredients")},!1);L.addEventListener("mouseout",function(){"clear"!==L.firstChild.textContent&&(L.firstChild.textContent="clear")},!1);k.parentNode.insertBefore(L,k);k.parentNode.insertBefore(c,k);e.addEventListener("keydown",function(a){var b;-1!==[16,17,37,38,39,40,13].indexOf(a.keyCode)&&(b=j,13===a.keyCode?(null===j&&(j=d.firstChild||null),null!==j&&J({target:j})):null===j?40===a.keyCode&&(j=d.childNodes[1]||
-d.firstChild||null,null!==j&&(E=j.offsetLeft+j.offsetWidth/2,a.preventDefault())):(a.preventDefault(),37===a.keyCode?(j=j.previousSibling&&j.previousSibling.offsetTop===j.offsetTop?j.previousSibling:(a=G(j,function(a){return a.offsetTop!==j.offsetTop}))?a.previousSibling:d.lastChild,null!==j&&(E=j.offsetLeft+j.offsetWidth/2)):39===a.keyCode?(j=j.nextSibling&&j.nextSibling.offsetTop===j.offsetTop?j.nextSibling:(a=F(j,function(a){return a.offsetTop!==j.offsetTop}))?a.nextSibling:d.firstChild,null!==
-j&&(E=j.offsetLeft+j.offsetWidth/2)):38===a.keyCode?((a=F(j,function(a){return E>=a.offsetLeft-1&&E<=a.offsetLeft+a.offsetWidth+1}))||(a=F(d.lastChild,function(a){return E>=a.offsetLeft-1&&E<=a.offsetLeft+a.offsetWidth+1})),j=a?a:d.firstChild):40===a.keyCode&&((a=G(j,function(a){return E>=a.offsetLeft-1&&E<=a.offsetLeft+a.offsetWidth+1}))||(a=G(d.firstChild,function(a){return E>=a.offsetLeft-1&&E<=a.offsetLeft+a.offsetWidth+1})),j=a?a:d.lastChild)),j!==b&&(null!==b&&(b.className=""),null!==j&&(j.className=
-"selected")))},!1);e.addEventListener("keyup",function(a){-1===[16,17,37,38,39,40,13].indexOf(a.keyCode)?I():null!==j&&a.preventDefault()},!1);e.addEventListener("focus",function(){D||(D=!0)},!1);e.addEventListener("blur",function(){D&&(D=!1)},!1);r();window.addEventListener("beforeunload",function(){var a,b;window.localStorage&&(localStorage.foodGuideState||(localStorage.foodGuideState="{}"),a=JSON.parse(localStorage.foodGuideState),a.pickers||(a.pickers=[]),q?(b=[],b=Array.prototype.map.call(s,
-function(a){return(a=M(a))?a.id:null}),a.pickers[g]=b):a.pickers[g]=s,localStorage.foodGuideState=JSON.stringify(a))})})()})();
+/*
+Makes use of no third-party code (for better or worse)
+
+Copyright (c) 2013
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+(function () {
+	'use strict';
+	var calories_per_day = 75,
+		seg_time = 30,
+		total_day_time = seg_time * 16,
+		seg_time = total_day_time / 16,
+		day_segs = 10,
+		dusk_segs = 4,
+		night_segs = 2,
+		day_time = seg_time * day_segs,
+		dusk_time = seg_time * dusk_segs,
+		night_time = seg_time * night_segs,
+		perish_warp = 1,
+		stack_size_largeitem = 10,
+		stack_size_meditem = 20,
+		stack_size_smallitem = 40,
+
+		healing_tiny = 1,
+		healing_small = 3,
+		healing_medsmall = 8,
+		healing_med = 20,
+		healing_medlarge = 30,
+		healing_large = 40,
+		healing_huge = 60,
+		healing_superhuge = 100,
+
+		sanity_supertiny = 1,
+		sanity_tiny = 5,
+		sanity_small = 10,
+		sanity_med = 15,
+		sanity_medlarge = 20,
+		sanity_large = 33,
+		sanity_huge = 50,
+
+		perish_superfast = 3*total_day_time*perish_warp,
+		perish_fast = 6*total_day_time*perish_warp,
+		perish_med = 10*total_day_time*perish_warp,
+		perish_slow = 15*total_day_time*perish_warp,
+		perish_preserved = 20*total_day_time*perish_warp,
+		perish_superslow = 40*total_day_time*perish_warp,
+
+		dry_fast = total_day_time,
+		dry_med = 2*total_day_time,
+
+		calories_tiny = calories_per_day/8, // berries
+		calories_small = calories_per_day/6, // veggies
+		calories_medsmall = calories_per_day/4,
+		calories_med = calories_per_day/3, // meat
+		calories_large = calories_per_day/2, // cooked meat
+		calories_huge = calories_per_day, // crockpot foods?
+		calories_superhuge = calories_per_day*2, // crockpot foods?
+
+		spoiled_health = -1,
+		spoiled_hunger = -10,
+		perish_fridge_mult = .5,
+		perish_ground_mult = 1.5,
+		perish_global_mult = 1,
+		perish_winter_mult = .75,
+
+		stale_food_hunger = .667,
+		spoiled_food_hunger = .5,
+
+		stale_food_health = .333,
+		spoiled_food_health = 0,
+
+		base_cook_time = night_time*.3333,
+
+		tips = [
+			'Cooking meat '
+		],
+		Strings = {
+			'butter': 'Butter',
+			'butterflywings': 'Butterfly Wings',
+			'fish': 'Fish'
+		},
+		food = {
+			butter: {
+				name: Strings.butter,
+				fat: 1,
+				dairy: 1,
+				health: healing_large,
+				hunger: calories_med,
+				perish: perish_superslow,
+				stack: stack_size_smallitem
+			},
+			butterflywings: {
+				name: Strings.butterflywings,
+				isveggie: true,
+				decoration: 2,
+				health: healing_medsmall,
+				hunger: calories_tiny,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			deerclopseyeball: {
+				name: 'Deerclops Eyeball',
+				uncookable: true,
+				health: healing_huge,
+				hunger: calories_huge,
+				sanity: -sanity_med
+			},
+			bird_egg: {
+				name: 'Egg',
+				egg: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				rot: 'rottenegg'
+			},
+			bird_egg_cooked: {
+				name: 'Cooked Egg',
+				egg: 1,
+				precook: 1,
+				health: 0,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			rottenegg: {
+				name: 'Rotten Egg',
+				uncookable: true,
+				health: spoiled_health,
+				hunger: spoiled_hunger,
+				stack: stack_size_smallitem
+			},
+			fish: {
+				name: Strings.fish,
+				ismeat: true,
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				perish: perish_superfast,
+				stack: stack_size_smallitem
+			},
+			fish_cooked: {
+				name: 'Cooked Fish',
+				ismeat: true,
+				meat: 0.5,
+				fish: 1,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			froglegs: {
+				name: 'Frog Legs',
+				ismeat: true,
+				meat: 0.5,
+				health: 0,
+				hunger: calories_small,
+				perish: perish_fast,
+				sanity: -sanity_small,
+				stack: stack_size_smallitem
+			},
+			froglegs_cooked: {
+				name: 'Cooked Frog Legs',
+				ismeat: true,
+				meat: 0.5,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				perish: perish_med,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			flowerhat: {
+				name: 'Garland',
+				health: healing_small,
+				hunger: 0,
+				sanity: sanity_small,
+				perish: perish_fast,
+				stack: 1,
+				uncookable: true
+			},
+			hambat: {
+				name: 'Ham Bat',
+				health: -healing_medsmall,
+				hunger: calories_med,
+				sanity: -sanity_med,
+				perish: perish_med,
+				stack: 1,
+				uncookable: true
+			},
+			honey: {
+				name: 'Honey',
+				sweetener: true,
+				health: healing_small,
+				hunger: calories_tiny,
+				perish: perish_superslow,
+				stack: stack_size_smallitem
+			},
+			honeycomb: {
+				name: 'Honeycomb',
+				sweetener: true
+			},
+			lightbulb: {
+				name: 'Light Bulb',
+				health: healing_tiny,
+				hunger: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				uncookable: true
+			},
+			mandrake: {
+				name: 'Mandrake',
+				veggie: 1,
+				magic: 1,
+				health: healing_huge,
+				hunger: calories_huge,
+				stack: stack_size_smallitem
+			},
+			mandrake_cooked: {
+				name: 'Cooked Mandrake',
+				uncookable: true,
+				veggie: 1,
+				magic: 1,
+				precook: 1,
+				health: healing_superhuge,
+				hunger: calories_superhuge,
+				stack: stack_size_smallitem
+			},
+			plantmeat: {
+				name: 'Leafy Meat',
+				uncookable: true,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			plantmeat_cooked: {
+				name: 'Cooked Leafy Meat',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			monstermeat: {
+				name: 'Monster Meat',
+				ismeat: true,
+				meat: 1,
+				monster: true,
+				health: -healing_med,
+				hunger: calories_medsmall,
+				sanity: -sanity_med,
+				perish: perish_fast,
+				stack: stack_size_meditem,
+				dry: 'monstermeat_dried',
+				drytime: dry_fast
+			},
+			monstermeat_cooked: {
+				name: 'Cooked Monster Meat',
+				ismeat: true,
+				meat: 1,
+				monster: true,
+				precook: 1,
+				health: -healing_small,
+				hunger: calories_medsmall,
+				sanity: -sanity_small,
+				perish: perish_slow,
+				stack: stack_size_meditem
+			},
+			monstermeat_dried: {
+				name: 'Monster Jerky',
+				ismeat: true,
+				meat: 1,
+				monster: true,
+				dried: 1,
+				health: -healing_small,
+				hunger: calories_medsmall,
+				sanity: -sanity_tiny,
+				perish: perish_preserved,
+				stack: stack_size_meditem
+			},
+			meat: {
+				name: 'Meat',
+				ismeat: true,
+				meat: 1,
+				health: healing_tiny,
+				hunger: calories_med,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_meditem,
+				dry: 'meat_dried',
+				drytime: dry_med
+			},
+			meat_cooked: {
+				name: 'Cooked Meat',
+				ismeat: true,
+				meat: 1,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_meditem
+			},
+			meat_dried: {
+				name: 'Jerky',
+				ismeat: true,
+				meat: 1,
+				dried: 1,
+				health: healing_med,
+				hunger: calories_med,
+				sanity: sanity_med,
+				perish: perish_preserved,
+				stack: stack_size_meditem
+			},
+			morsel: {
+				name: 'Morsel',
+				ismeat: true,
+				meat: 0.5,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				drytime: dry_fast,
+				dry: 'smallmeat_dried'
+			},
+			morsel_cooked: {
+				name: 'Cooked Morsel',
+				ismeat: true,
+				meat: 0.5,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			smallmeat_dried: {
+				name: 'Small Jerky',
+				ismeat: true,
+				meat: 0.5,
+				dried: 1,
+				health: healing_medsmall,
+				hunger: calories_small,
+				sanity: sanity_small,
+				perish: perish_preserved,
+				stack: stack_size_smallitem
+			},
+			drumstick: {
+				name: 'Drumstick',
+				ismeat: true,
+				ideal: true,
+				meat: 0.5,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_meditem,
+				drytime: dry_fast,
+				dry: 'smallmeat_dried'
+			},
+			drumstick_cooked: {
+				name: 'Fried Drumstick',
+				ismeat: true,
+				meat: 0.5,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				perish: perish_med,
+				stack: stack_size_meditem
+			},
+			batwing: {
+				name: 'Batilisk Wing',
+				ismeat: true,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				drytime: dry_med,
+				dry: 'smallmeat_dried',
+				uncookable: true
+			},
+			batwing_cooked: {
+				name: 'Cooked Batilisk Wing',
+				ismeat: true,
+				health: healing_medsmall,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_med,
+				uncookable: true
+			},
+			red_mushroom: {
+				name: 'Red Cap',
+				veggie: 0.5,
+				ideal: true,
+				health: -healing_med,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			red_mushroom_cooked: {
+				name: 'Cooked Red Cap',
+				veggie: 0.5,
+				health: healing_tiny,
+				hunger: 0,
+				sanity: -sanity_small,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			green_mushroom: {
+				name: 'Green Cap',
+				veggie: 0.5,
+				ideal: true,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_huge,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			green_mushroom_cooked: {
+				name: 'Cooked Green Cap',
+				veggie: 0.5,
+				health: -healing_tiny,
+				hunger: 0,
+				sanity: sanity_med,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			blue_mushroom: {
+				name: 'Blue Cap',
+				veggie: 0.5,
+				ideal: true,
+				health: healing_med,
+				hunger: calories_small,
+				sanity: -sanity_med,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			blue_mushroom_cooked: {
+				name: 'Cooked Blue Cap',
+				veggie: 0.5,
+				health: -healing_small,
+				hunger: 0,
+				sanity: sanity_small,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			petals: {
+				name: 'Petals',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: 0,
+				sanity: -sanity_tiny / 2,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			petals_evil: {
+				name: 'Dark Petals',
+				uncookable: true,
+				health: 0,
+				hunger: 0,
+				sanity: -sanity_tiny,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			seeds: {
+				name: 'Seeds',
+				uncookable: true,
+				health: 0,
+				hunger: calories_tiny / 2,
+				perish: perish_superslow,
+				stack: stack_size_smallitem
+			},
+			seeds_cooked: {
+				name: 'Toasted Seeds',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: calories_tiny / 2,
+				perish: perish_med,
+				stack: stack_size_smallitem
+			},
+			spoiled_food: {
+				name: 'Rot',
+				uncookable: true,
+				health: spoiled_health,
+				hunger: spoiled_hunger,
+				stack: stack_size_smallitem
+			},
+			tallbirdegg: {
+				name: 'Tallbird Egg',
+				egg: 4,
+				health: healing_small,
+				hunger: calories_med
+			},
+			tallbirdegg_cooked: {
+				name: 'Fried Tallbird Egg',
+				egg: 4,
+				precook: 1,
+				health: 0,
+				hunger: calories_large,
+				perish: perish_fast
+			},
+			trunk_summer: {
+				name: 'Koalefant Trunk',
+				uncookable: true,
+				ismeat: true,
+				health: healing_medlarge,
+				hunger: calories_large,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_meditem
+			},
+			trunk_summer_cooked: {
+				name: 'Koalefant Trunk Steak',
+				uncookable: true,
+				ismeat: true,
+				health: healing_large,
+				hunger: calories_huge,
+				sanity: 0,
+				perish: perish_slow,
+				stack: stack_size_meditem
+			},
+			twigs: {
+				name: 'Twigs',
+				inedible: 1
+			},
+			cavebanana: {
+				name: 'Cave Banana',
+				isfruit: true,
+				fruit: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med
+			},
+			cavebanana_cooked: {
+				name: 'Cooked Banana',
+				isfruit: true,
+				fruit: 1,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast
+			},
+			carrot: {
+				name: 'Carrot',
+				isveggie: true,
+				veggie: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				perish: perish_med,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			carrot_cooked: {
+				name: 'Roasted Carrot',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_small,
+				perish: perish_fast,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			corn: {
+				name: 'Corn',
+				ideal: true,
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_med,
+				perish: perish_med,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			corn_cooked: {
+				name: 'Popcorn',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_small,
+				perish: perish_slow,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			pumpkin: {
+				name: 'Pumpkin',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: 0,
+				stack: stack_size_meditem
+			},
+			pumpkin_cooked: {
+				name: 'Hot Pumpkin',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_medsmall,
+				hunger: calories_large,
+				perish: perish_fast,
+				sanity: 0,
+				stack: stack_size_meditem
+			},
+			eggplant: {
+				name: 'Eggplant',
+				isveggie: true,
+				veggie: 1,
+				health: healing_medsmall,
+				hunger: calories_med,
+				perish: perish_med,
+				sanity: 0,
+				stack: stack_size_meditem
+			},
+			eggplant_cooked: {
+				name: 'Braised Eggplant',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_med,
+				hunger: calories_med,
+				perish: perish_fast,
+				sanity: 0,
+				stack: stack_size_meditem
+			},
+			durian: {
+				name: 'Durian',
+				isfruit: true,
+				monster: 1,
+				fruit: 1,
+				health: -healing_small,
+				hunger: calories_med,
+				perish: perish_med,
+				sanity: -sanity_tiny,
+				stack: stack_size_meditem
+			},
+			durian_cooked: {
+				name: 'Extra Smelly Durian',
+				isfruit: true,
+				monster: 1,
+				fruit: 1,
+				precook: 1,
+				health: 0,
+				hunger: calories_med,
+				perish: perish_fast,
+				sanity: -sanity_tiny,
+				stack: stack_size_meditem
+			},
+			pomegranate: {
+				name: 'Pomegranate',
+				isfruit: true,
+				fruit: 1,
+				health: healing_small,
+				hunger: calories_tiny,
+				perish: perish_fast,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			pomegranate_cooked: {
+				name: 'Sliced Pomegranate',
+				isfruit: true,
+				fruit: 1,
+				precook: 1,
+				health: healing_med,
+				hunger: calories_small,
+				perish: perish_superfast,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			dragonfruit: {
+				name: 'Dragon Fruit',
+				isfruit: true,
+				fruit: 1,
+				health: healing_small,
+				hunger: calories_tiny,
+				perish: perish_fast,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			dragonfruit_cooked: {
+				name: 'Prepared Dragon Fruit',
+				isfruit: true,
+				fruit: 1,
+				precook: 1,
+				health: healing_med,
+				hunger: calories_small,
+				perish: perish_superfast,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			berries: {
+				name: 'Berries',
+				isfruit: true,
+				fruit: 0.5,
+				health: 0,
+				hunger: calories_tiny,
+				perish: perish_fast,
+				sanity: 0,
+				stack: stack_size_smallitem
+			},
+			berries_cooked: {
+				name: 'Roasted Berries',
+				isfruit: true,
+				fruit: 0.5,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				perish: perish_superfast,
+				sanity: 0,
+				stack: stack_size_smallitem
+			}
+		},
+		//note: qty not used yet, this is for rapid summation
+		COMPAREString = function () { return this.op + this.qty; },
+		COMPARISONS = {
+			'=': function (qty) { return qty === this.qty; },
+			'>': function (qty) { return qty > this.qty; },
+			'<': function (qty) { return qty < this.qty; },
+			'>=': function (qty) { return qty >= this.qty; },
+			'<=': function (qty) { return qty <= this.qty; }
+		},
+		NOQTY = {test: function (qty) { return !!qty; }, toString: function () { return ''; }},
+		COMPARE = function (op, qty) { return {op: op, qty: qty, test: COMPARISONS[op], toString: COMPAREString}; },
+		ORTest = function (cooker, names, tags) { return this.item1.test(cooker, names, tags) || this.item2.test(cooker, names, tags); },
+		ORString = function () { return this.item1 + ' or ' + this.item2; },
+		OR = function (item1, item2) { return {item1: item1, item2: item2, test: ORTest, toString: ORString, cancel: item1.cancel || item2.cancel}; },
+		NOTTest = function (cooker, names, tags) { return !this.item.test(cooker, names, tags); },
+		NOTString = function () { return this.item.toString().substring(0, this.item.toString().length - 1) + '|strike]'; },
+		NOT = function (item) { return {item: item, test: NOTTest, toString: NOTString, cancel: true}; },
+		NAMETest = function (cooker, names, tags) { return (names[this.name] || 0) + (names[this.name + '_cooked'] || 0); },
+		NAMEString = function () { return '[*' + food[this.name].name + '|' + food[this.name].img + ' ' + food[this.name].name + ']' + (food[this.name].cook ? '[*' + food[this.name].cook.name + '|' + food[this.name].cook.img + ']' : '') + (food[this.name].raw ? '[*' + food[this.name].raw.name + '|' + food[this.name].raw.img + ']' : '') + (this.qty ? this.qty : ''); },
+		NAME = function (name, qty) { return {name: name, qty: qty || NOQTY, test: NAMETest, toString: NAMEString}; }, //permits cooked variant
+		SPECIFICTest = function (cooker, names, tags) { return names[this.name]; },
+		SPECIFICString = function () { return '[*' + food[this.name].name + '|' + food[this.name].img + ' ' + food[this.name].name + ']' + (this.qty ? this.qty : ''); },
+		SPECIFIC = function (name, qty) { return {name: name, qty: qty || NOQTY, test: SPECIFICTest, toString: SPECIFICString}; }, //disallows cooked/uncooked variant
+		TAGTest = function (cooker, names, tags) { return tags[this.tag]; },
+		TAGString = function () { return '[tag:' + this.tag + '|' + this.tag + ']' + (this.qty ? this.qty : ''); },
+		TAG = function (tag, qty) { return {tag: tag, qty: qty || NOQTY, test: TAGTest, toString: TAGString}; },
+		recipes = {
+			butterflymuffin: {
+				name: 'Butter Muffin',
+				test: function(cooker, names, tags) {
+					return names.butterflywings && !tags.meat && tags.veggie;
+				},
+				requires: 'Butterfly Wings, veggie',
+				requirements: [NAME('butterflywings'), NOT(TAG('meat')), TAG('veggie')],
+				priority: 1,
+				weight: 1,
+				foodtype: "veggie",
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			frogglebunwich: {
+				name: 'Froggle Bunwich',
+				test: function(cooker, names, tags) {
+					return (names.froglegs || names.froglegs_cooked) && tags.veggie;
+				},
+				requirements: [NAME('froglegs'), TAG('veggie')],
+				priority: 1,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			taffy: {
+				name: "Taffy",
+				test: function(cooker, names, tags) {
+					return tags.sweetener && tags.sweetener >= 3 && !tags.meat;
+				},
+				requirements: [TAG('sweetener', COMPARE('>=', 3)), NOT(TAG('meat'))],
+				priority: 10,
+				foodtype: "veggie",
+				health: -healing_small,
+				hunger: calories_small * 2,
+				perish: perish_slow,
+				sanity: sanity_med,
+				cooktime: 2
+			},
+			pumpkincookie: {
+				name: "Pumpkin Cookie",
+				test: function(cooker, names, tags) {
+					return (names.pumpkin || names.pumpkin_cooked) && tags.sweetener && tags.sweetener >= 2;
+				},
+				requirements: [NAME('pumpkin'), TAG('sweetener', COMPARE('>=', 2))],
+				priority: 10,
+				foodtype: "veggie",
+				health: 0,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_med,
+				cooktime: 2
+			},
+			stuffedeggplant: {
+				name: 'Stuffed Eggplant',
+				test: function(cooker, names, tags) {
+					return (names.eggplant || names.eggplant_cooked) && tags.veggie && tags.veggie > 1;
+				},
+				requirements: [NAME('eggplant'), TAG('veggie', COMPARE('>', 1))],
+				priority: 1,
+				foodtype: "veggie",
+				health: healing_small,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			fishsticks: {
+				name: 'Fishsticks',
+				test: function(cooker, names, tags) {
+					return tags.fish && names.twigs && (tags.inedible && tags.inedible <= 1);
+				},
+				requirements: [TAG('fish'), SPECIFIC('twigs'), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
+				priority: 10,
+				foodtype: "meat",
+				health: healing_large,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			honeynuggets: {
+				name: 'Honey Nuggets',
+				test: function(cooker, names, tags) {
+					return names.honey && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+				},
+				requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
+				priority: 2,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			honeyham: {
+				name: 'Honey Ham',
+				test: function(cooker, names, tags) {
+					return names.honey && tags.meat && tags.meat > 1.5 && !tags.inedible;
+				},
+				requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
+				priority: 2,
+				foodtype: "meat",
+				health: healing_medlarge,
+				hunger: calories_huge,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			dragonpie: {
+				name: 'Dragonpie',
+				test: function(cooker, names, tags) {
+					return (names.dragonfruit || names.dragonfruit_cooked) && !tags.meat;
+				},
+				requirements: [NAME('dragonfruit'), NOT(TAG('meat'))],
+				priority: 1,
+				foodtype: "veggie",
+				health: healing_large,
+				hunger: calories_huge,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			kabobs: {
+				name: 'Kabobs',
+				test: function(cooker, names, tags) {
+					return tags.meat && names.twigs && (!tags.monster || tags.monster <= 1) && (tags.inedible && tags.inedible <= 1);
+				},
+				requirements: [TAG('meat'), SPECIFIC('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
+				priority: 5,
+				foodtype: "meat",
+				health: healing_small,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			mandrakesoup: {
+				name: 'Mandrake Soup',
+				test: function(cooker, names, tags) {
+					return names.mandrake;
+				},
+				requirements: [SPECIFIC('mandrake')],
+				priority: 10,
+				foodtype: "veggie",
+				health: healing_superhuge,
+				hunger: calories_superhuge,
+				perish: perish_fast,
+				sanity: sanity_tiny,
+				cooktime: 3
+			},
+			baconeggs: {
+				name: 'Bacon and Eggs',
+				test: function(cooker, names, tags) {
+					return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
+				},
+				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
+				priority: 10,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_huge,
+				perish: perish_preserved,
+				sanity: sanity_tiny,
+				cooktime: 2
+			},
+			meatballs: {
+				name: 'Meatballs',
+				test: function(cooker, names, tags) {
+					return tags.meat && !tags.inedible;
+				},
+				requirements: [TAG('meat'), NOT(TAG('inedible'))],
+				priority: -1,
+				foodtype: "meat",
+				health: healing_small,
+				hunger: calories_small * 5,
+				perish: perish_med,
+				sanity: sanity_tiny,
+				cooktime: 0.75
+			},
+			bonestew: {
+				name: 'Meaty Stew',
+				test: function(cooker, names, tags) {
+					return tags.meat && tags.meat >= 3 && !tags.inedible;
+				},
+				requirements: [TAG('meat', COMPARE('>=', 3)), NOT(TAG('inedible'))],
+				priority: 0,
+				foodtype: "meat",
+				health: healing_small * 4,
+				hunger: calories_large * 4,
+				perish: perish_med,
+				sanity: sanity_tiny,
+				cooktime: 0.75
+			},
+			perogies: {
+				name: 'Pierogi',
+				test: function(cooker, names, tags) {
+					return tags.egg && tags.meat && tags.veggie && !tags.inedible;
+				},
+				requirements: [TAG('egg'), TAG('meat'), TAG('veggie'), NOT(TAG('inedible'))],
+				priority: 5,
+				foodtype: "meat",
+				health: healing_large,
+				hunger: calories_large,
+				perish: perish_preserved,
+				sanity: sanity_tiny,
+				cooktime: 1
+			},
+			turkeydinner: {
+				name: 'Turkey Dinner',
+				test: function(cooker, names, tags) {
+					return names.drumstick && names.drumstick > 1 && tags.meat && tags.meat > 1 && (tags.veggie || tags.fruit);
+				},
+				requirements: [SPECIFIC('drumstick', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), OR(TAG('veggie'), TAG('fruit'))],
+				priority: 10,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_huge,
+				perish: perish_fast,
+				sanity: sanity_tiny,
+				cooktime: 3
+			},
+			ratatouille: {
+				name: 'Ratatouille',
+				test: function(cooker, names, tags) {
+					return !tags.meat && tags.veggie && !tags.inedible;
+				},
+				requirements: [NOT(TAG('meat')), TAG('veggie'), NOT(TAG('inedible'))],
+				priority: 0,
+				foodtype: "veggie",
+				health: healing_small,
+				hunger: calories_med,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 1
+			},
+			jammypreserves: {
+				name: 'Fist Full of Jam',
+				test: function(cooker, names, tags) {
+					return tags.fruit && !tags.meat && !tags.veggie && !tags.inedible;
+				},
+				requirements: [TAG('fruit'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible'))],
+				priority: 0,
+				foodtype: "veggie",
+				health: healing_small,
+				hunger: calories_small * 3,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 0.5
+			},
+			fruitmedley: {
+				name: 'Fruit Medley',
+				test: function(cooker, names, tags) {
+					return tags.fruit && tags.fruit >= 3 && !tags.meat && !tags.veggie;
+				},
+				requirements: [TAG('fruit', COMPARE('>=', 3)), NOT(TAG('meat')), NOT(TAG('veggie'))],
+				priority: 0,
+				foodtype: "veggie",
+				health: healing_med,
+				hunger: calories_med,
+				perish: perish_fast,
+				sanity: sanity_tiny,
+				cooktime: 0.5
+			},
+			fishtacos: {
+				name: 'Fish Tacos',
+				test: function(cooker, names, tags) {
+					return tags.fish && (names.corn || names.corn_cooked);
+				},
+				requirements: [TAG('fish'), NAME('corn')],
+				priority: 10,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_fast,
+				sanity: sanity_tiny,
+				cooktime: 0.5
+			},
+			waffles: {
+				name: 'Waffles',
+				test: function(cooker, names, tags) {
+					return names.butter && (names.berries || names.berries_cooked) && tags.egg;
+				},
+				requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
+				priority: 10,
+				foodtype: "veggie",
+				health: healing_huge,
+				hunger: calories_large,
+				perish: perish_fast,
+				sanity: sanity_tiny,
+				cooktime: 0.5
+			},
+			monsterlasagna: {
+				name: 'Monster Lasagna',
+				test: function(cooker, names, tags) {
+					return tags.monster && tags.monster >= 2 && !tags.inedible;
+				},
+				requirements: [TAG('monster', COMPARE('>=', 2)), NOT(TAG('inedible'))],
+				priority: 10,
+				foodtype: "meat",
+				health: -healing_med,
+				hunger: calories_large,
+				perish: perish_fast,
+				sanity: -sanity_medlarge,
+				cooktime: 0.5
+			},
+			powcake: {
+				name: 'Powdercake',
+				test: function(cooker, names, tags) {
+					return names.twigs && names.honey && (names.corn || names.corn_cooked);
+				},
+				requirements: [SPECIFIC('twigs'), SPECIFIC('honey'), NAME('corn')],
+				priority: 10,
+				foodtype: "veggie",
+				health: -healing_small,
+				hunger: 0,
+				perishtime: 9000000,
+				sanity: 0,
+				cooktime: 0.5
+			},
+			wetgoop: {
+				name: 'Wet Goop',
+				test: function(cooker, names, tags) {
+					return true;
+				},
+				requirements: [],
+				trash: true,
+				priority: -2,
+				health: 0,
+				hunger: 0,
+				perish: perish_fast,
+				sanity: 0,
+				cooktime: 0.25
+			}
+		},
+		recipeCrunchData,
+		recipeCrunchString,
+		matchingNames = (function () {
+			var name,
+				tag,
+				tagsearch = /^tag[: ]/,
+				tagsplit = /^tag:? */,
+				recipe,
+				recipesearch = /^recipe[: ]/,
+				recipesplit = /^recipe:? */,
+				ingredient,
+				ingredientsearch = /^ingredient[: ]/,
+				ingredientsplit = /^ingredient:? */,
+				anywhere,
+				wordstarts,
+				allowUncookable = false,
+				filter = function (element) {
+					if (!allowUncookable && element.uncookable) {
+						element.match = 0;
+					} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
+						element.match = 3;
+					} else if (wordstarts.test(element.lowerName) === 0) {
+						element.match = 2;
+					} else if (anywhere.test(element.lowerName)) {
+						element.match = 1;
+					} else {
+						element.match = 0;
+					}
+					return element.match;
+				},
+				tagFilter = function (element) {
+					return element.match = element[tag] + 0 || 0;
+				},
+				recipeFilter = function (element) {
+					var i = 0, result, failed = true;
+					while (i < recipe.length) {
+						result = recipe[i].test(null, element.nameObject, element);
+						if (recipe[i].cancel) {
+							if (!result) {
+								failed = true;
+								break;
+							}
+						} else {
+							if (result) {
+								failed = false;
+							}
+						}
+						i++;
+					}
+					return element.match = failed ? 0 : 1;
+				},
+				ingredientFilter = function (recipe) {
+					var i = 0, result, failed = true;
+					while (i < recipe.requirements.length) {
+						result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
+						if (recipe.requirements[i].cancel) {
+							if (!result) {
+								failed = true;
+								break;
+							}
+						} else {
+							if (result) {
+								failed = false;
+							}
+						}
+						i++;
+					}
+					return recipe.match = failed ? 0 : 1;
+				},
+				exact = function (element) {
+					return element.match = (element.lowerName === name) ? 1 : 0;
+				},
+				like = function (element) {
+					return element.match = (element.lowerName === name || (element.raw && element.raw.lowerName === name) || (element.cook && element.cook.lowerName === name)) ? 1 : 0;
+				},
+				byMatch = function (a, b) {
+					var aname, bname;
+					if (a.match === b.match) {
+						aname = a.raw ? a.raw.name : a.name;
+						bname = b.raw ? b.raw.name : b.name;
+						if (aname !== bname) {
+							return aname > bname ? 1 : aname < bname ? -1 : 0;
+						}
+						return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
+					}
+					return b.match - a.match;
+				};
+			return function (arr, search, includeUncookable) {
+				allowUncookable = !!includeUncookable;
+				name = search.toLowerCase();
+				if (tagsearch.test(name)) {
+					tag = name.split(tagsplit)[1];
+					return arr.filter(tagFilter).sort(byMatch);
+				} else if (recipesearch.test(name)) {
+					recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
+					if (recipe) {
+						recipe = recipe.requirements;
+						return arr.filter(recipeFilter).sort(byMatch);
+					} else {
+						return [];
+					}
+				} else if (ingredientsearch.test(name)) {
+					ingredient = food.byName(name.split(ingredientsplit)[1].toLowerCase());
+					if (ingredient) {
+						return arr.filter(ingredientFilter).sort(byMatch);
+					} else {
+						return [];
+					}
+				} else if (name.indexOf('*') === 0) {
+					name = name.substring(1);
+					return arr.filter(exact).sort(byMatch);
+				} else if (name.indexOf('~') === 0) {
+					name = name.substring(1);
+					return arr.filter(like).sort(byMatch);
+				} else {
+					wordstarts = new RegExp('\\b' + name + '.*');
+					anywhere = new RegExp('\\b' + name.split('').join('.*') + '.*');
+					return arr.filter(filter).sort(byMatch);
+				}
+			};
+		}()),
+		setIngredientValues = function (items, names, tags) {
+			var i, k, item;
+			for (i = 0; i < items.length; i++) {
+				item = items[i];
+				if (item !== null) {
+					names[item.id] = 1 + (names[item.id] || 0);
+					for (k in item) {
+						if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
+							tags[k] = item[k] + (tags[k] || 0);
+						} else if (k === 'perish') {
+							tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
+						}
+					}
+				}
+			}
+		},
+		getSuggestions = (function () {
+			var names,
+				tags;
+			return function (recipeList, items, exclude, itemComplete) {
+				var i, ii, valid;
+				recipeList.length = 0;
+				names = {};
+				tags = {};
+				setIngredientValues(items, names, tags);
+				for (i = 0; i < recipes.length; i++) {
+					valid = false;
+					for (ii = 0; ii < recipes[i].requirements.length; ii++) {
+						if (recipes[i].requirements[ii].test(null, names, tags)) {
+							if (!recipes[i].requirements[ii].cancel) {
+								valid = true;
+							}
+						} else if (!itemComplete && recipes[i].requirements[ii].cancel) {
+							valid = false;
+							break;
+						} else if (itemComplete && !recipes[i].requirements[ii].cancel) {
+							valid = false;
+							break;
+						}
+					}
+					valid && (!exclude || exclude.indexOf(recipes[i]) === -1) && recipeList.push(recipes[i]);
+				}
+				tags.img = '';
+				tags.name = 'Combined';
+				return recipeList;
+			};
+		}()),
+		getRecipes = (function () {
+			var recipeList = [],
+				names,
+				tags;
+			return function (items) {
+				var i;
+				recipeList.length = 0;
+				names = {};
+				tags = {};
+				setIngredientValues(items, names, tags);
+				for (i = 0; i < recipes.length; i++) {
+					recipes[i].test(null, names, tags) && recipeList.push(recipes[i]);
+				}
+				recipeList.sort(function (a, b) {
+					return b.priority - a.priority;
+				});
+				tags.img = '';
+				tags.name = 'Combined';
+				recipeList.unshift(tags);
+				return recipeList;
+			};
+		}()),
+		makeImage = (function () {
+			var canvas = document.createElement('canvas'),
+				ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d'),
+				canvas32 = document.createElement('canvas'),
+				ctx32 = canvas32.getContext && canvas32.getContext('2d'),
+				images = {},
+				images32 = {},
+				canvasSupported = !!ctx,
+				requests = [],
+				cacheImage = function (url) {
+					var renderToCache = function (url, imageElement) {
+						ctx.clearRect(0, 0, 64, 64);
+						ctx.drawImage(imageElement, 0, 0, 64, 64);
+						ctx32.clearRect(0, 0, 32, 32);
+						ctx32.drawImage(imageElement, 0, 0, 32, 32);
+						try {
+							images[url] = canvas.toDataURL();
+							images32[url] = canvas32.toDataURL();
+						} catch (ex) {
+							canvasSupported = false;
+						}
+						requests.filter(function (request) { return request.url === url; }).forEach(function (request) {
+							if (request.url === url) {
+								delete request.img.dataset.pending;
+								if (noDataset) {
+									request.img.removeAttribute('data-pending');
+								}
+								if (request.d === 32) {
+									request.img.src = images32[url] || url;
+								} else {
+									request.img.src = images[url] || url;
+								}
+							}
+						});
+						requests = requests.filter(function (request) { return request.url !== url; });
+					};
+					return function (e) {
+						renderToCache(url, e.target);
+					}
+				},
+				queue = function (img, url, d) {
+					img.dataset.pending = url;
+					if (noDataset) {
+						img.setAttribute('data-pending', url);
+					}
+					requests.push({url: url, img: img, d: d});
+				},
+				makeImage = function (url, d) {
+					var img = new Image(), dummy, listener;
+					if (canvasSupported) {
+						if (images[url]) {
+							//image is cached
+							if (d === 32) {
+								img.src = images32[url];
+							} else {
+								img.src = images[url];
+							}
+						} else if (images[url] === null) {
+							//image is waiting to be loaded
+							queue(img, url, d);
+						} else {
+							//image has not been cached
+							images[url] = null;
+							dummy = new Image();
+							dummy.addEventListener('load', cacheImage(url), false);
+							dummy.src = url;
+							queue(img, url, d);
+						}
+					} else {
+						//if we can't cache the images with canvas, just do it normally
+						img.src = url;
+					}
+					return img;
+				};
+			canvas.width = 64;
+			canvas.height = 64;
+			canvas32.width = 32;
+			canvas32.height = 32;
+			makeImage.queue = queue;
+			return makeImage;
+		}()),
+		makeLinkable = (function () {
+			var linkSearch = /\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/,
+				leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g,
+				rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g,
+				addLeftClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); },
+				addRightClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); },
+				titleCase = /_(\w)/g,
+				toTitleCase = function (a, b) { return ' ' + b.toUpperCase(); };
+			return function (str) {
+				var processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass),
+					results = processed && processed.split(linkSearch),
+					fragment, i, span, url, image;
+				if (!results || results.length === 1) {
+					return processed;
+				} else {
+					fragment = document.createDocumentFragment();
+					fragment.appendChild(document.createTextNode(results[0]));
+					for (i = 1; i < results.length; i += 4) {
+						if (results[i] === '' && results[i + 1] === '') {
+							fragment.appendChild(document.createElement('br'));
+						} else {
+							span = document.createElement('span');
+							span.className = results[i + 2] === '' ? 'link' : 'link ' + results[i + 2]; //IE doesn't support classList, too lazy to come up with a polyfill
+							span.dataset.link = results[i];
+							if (noDataset) {
+								span.setAttribute('data-link', results[i]);
+							}
+							if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
+								span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
+								url = results[i + 1].split(' ')[0];
+								image = makeImage(url, 32);
+								image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
+								span.appendChild(image);
+							} else {
+								span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
+							}
+							fragment.appendChild(span);
+						}
+						fragment.appendChild(document.createTextNode(results[i + 3]));
+					}
+					return fragment;
+				}
+			};
+		}()),
+		i,
+		index = 0,
+		mainElement = document.getElementById('main'),
+		foodElement = document.getElementById('food'),
+		recipesElement = document.getElementById('recipes'),
+		fragment, navbar = document.getElementById('navbar'),
+		noDataset = false;
+
+	if (!document.documentElement.dataset) {
+		noDataset = true;
+		Object.defineProperty(Element.prototype, 'dataset', {
+			get: function () {
+				if (!this.ds) {
+					this.ds = {};
+					Array.prototype.forEach.call(this.attributes, function (item) {
+						if (item.name.indexOf('data-') === 0) {
+							this.ds[item.name.substring(5)] = item.value;
+						}
+					}, this);
+				}
+				return this.ds;
+			}
+		});
+	}
+	//var info = [];
+	document.getElementById('stalehealth').appendChild(document.createTextNode(Math.round(stale_food_health * 1000) / 10 + '%'));
+	document.getElementById('stalehunger').appendChild(document.createTextNode(Math.round(stale_food_hunger * 1000) / 10 + '%'));
+	document.getElementById('spoiledhunger').appendChild(document.createTextNode(Math.round(spoiled_food_hunger * 1000) / 10 + '%'));
+	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_small));
+	document.getElementById('perishground').appendChild(document.createTextNode(Math.round(perish_ground_mult * 1000) / 10 + '%'));
+	document.getElementById('perishwinter').appendChild(document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'));
+	document.getElementById('perishfridge').appendChild(document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'));
+	var info,
+		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
+	for (i in food) {
+		if (food.hasOwnProperty(i)) {
+			var f = food[i];
+			f.match = 0;
+			f.lowerName = f.name.toLowerCase();
+			f.id = i;
+			f.nameObject = {};
+			f.nameObject[i] = 1;
+			f.img = 'img/' + f.name.replace(/ /g, '_').toLowerCase() + '.png';
+			if (i.indexOf('_cooked') !== -1) {
+				f.cooked = true;
+			}
+			if (food[i + '_cooked']) {
+				f.cook = food[i + '_cooked'];
+				food[i + '_cooked'].raw = f;
+			}
+			f.info = [];
+			info = f.info;
+			f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
+			f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
+			f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : '\xd7' + f.meat));
+			f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : '\xd7' + f.egg));
+			f.fish && info.push(taggify('fish'));
+			f.magic && info.push(taggify('magic'));
+			f.decoration && info.push(taggify('decoration'));
+			f.inedible && info.push(taggify('inedible'));
+			f.monster && info.push(taggify('monster', 'monster food'));
+			f.sweetener && info.push(taggify('sweetener'));
+			f.fat && info.push(taggify('fat'));
+			f.dairy && info.push(taggify('dairy'));
+			f.comment && info.push(f.comment);
+			food[index++] = f;
+		}
+	}
+	food.length = index;
+	index = 0;
+	for (i in recipes) {
+		if (recipes.hasOwnProperty(i)) {
+			recipes[i].match = 0;
+			recipes[i].name = recipes[i].name || i;
+			recipes[i].id = i;
+			recipes[i].lowerName = recipes[i].name.toLowerCase();
+			recipes[i].weight = recipes[i].weight || 1;
+			recipes[i].priority = recipes[i].priority || 0;
+			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').toLowerCase() + '.png';
+			if (recipes[i].requirements) {
+				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; '));
+			}
+			recipes[index++] = recipes[i];
+		}
+	}
+	recipes.length = index;
+	recipes.forEach = Array.prototype.forEach;
+	recipes.filter = Array.prototype.filter;
+	recipes.sort = Array.prototype.sort;
+
+	recipes.byName = function (name) {
+		var i = this.length;
+		while (i--) {
+			if (this[i].lowerName === name) {
+				return this[i];
+			}
+		}
+	};
+	var reduceRecipeButton = function (a, b) {
+		return a + '[recipe:' + b.name + '|' + b.img + ']';
+	};
+	var pl = function (str, n, plr) {
+		return n === 1 ? str : str + (plr || 's');
+	};
+
+	for (i in food) {
+		if (food.hasOwnProperty(i) && isNaN(i) && isNaN(food[i])) {
+			var f = food[i];
+			info = f.info;
+			f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
+			f.cook && info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
+			if (f.dry) {
+				if (!(f.dry instanceof Object)) {
+					f.dry = food[f.dry];
+				}
+				info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
+			}
+			f.info = info.join('; ');
+			if (!f.uncookable) {
+				f.recipes = [];
+				recipes.forEach(function (recipe) {
+					var qualifies = false, r = recipe.requirements, i = r.length;
+					while (i--) {
+						if (r[i].test(null, f.nameObject, f)) {
+							if (!r[i].cancel && !qualifies) {
+								qualifies = true;
+							}
+						} else {
+							if (r[i].cancel) {
+								qualifies = false;
+								break;
+							}
+						}
+					}
+					if (qualifies) {
+						f.recipes.push(recipe);
+					}
+				});
+				if (f.recipes.length > 0) {
+					f.ingredient = true;
+					f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
+				}
+			} else {
+				f.info += ('[|]cannot be added to crock pot');
+			}
+			f.info = makeLinkable(f.info);
+		}
+	}
+	food.forEach = Array.prototype.forEach;
+	food.filter = Array.prototype.filter;
+	food.sort = Array.prototype.forEach;
+	food.byName = function (name) {
+		var i = this.length;
+		while (i--) {
+			if (this[i].lowerName === name) {
+				return this[i];
+			}
+		}
+	};
+
+	var usefulTags = ['id', 'health', 'hunger', 'fruit', 'veggie', 'meat', 'egg', 'fish', 'magic', 'decoration', 'inedible', 'monster', 'sweetener', 'fat', 'dairy'],
+		combinationGenerator = function (length, callback, startPos) {
+			var size = 4, index = 1, current = startPos || [0, 0, 0, 0], check, max = 0, iter = 0;
+			return function (batch) {
+				var overflow;
+				while (batch-- && index < length) {
+					callback(current);
+					current[0]++;
+					overflow = 0;
+					while (current[overflow] >= length) {
+						overflow++;
+						current[overflow]++;
+					}
+					check = size;
+					max = 0;
+					while (check--) {
+						if (current[check] >= length) {
+							current[check] = max;
+						} else if (current[check] > max) {
+							max = current[check];
+						}
+					}
+					if (overflow === size) {
+						return false;
+						break; //in case I copy and paste this for some reason and forget I need to get out of the loop
+					}
+					iter++;
+				}
+				return true;
+			};
+		};
+	recipeCrunchData = {};
+	recipeCrunchData.food = food.filter(function (item) {
+			return !item.uncookable && !item.skip && (item.ideal || (!item.cook && (!item.raw || !item.raw.ideal)));
+		}).map(function (item) {
+			var f = {}, t = usefulTags.length;
+			while (t--) {
+				if (item.hasOwnProperty(usefulTags[t])) {
+					f[usefulTags[t]] = item[usefulTags[t]];
+				}
+			}
+			return f;
+		});
+	recipeCrunchData.recipes = recipes.filter(function (item) {
+			return !item.trash;
+		}).sort(function (a, b) {
+			return b.priority - a.priority;
+		});
+	recipeCrunchData.test = recipeCrunchData.recipes.map(function (a) { return a.test; })
+	recipeCrunchData.tests = recipeCrunchData.recipes.map(function (a) { return a.test.toString(); })
+	recipeCrunchData.priority = recipeCrunchData.recipes.map(function (a) { return a.priority; });
+	var getRealRecipesFromCollection = function (items, mainCallback, chunkCallback, endCallback) {
+			var l = recipeCrunchData.test.length,
+				built = [],
+				renderedTo = 0,
+				lastTime,
+				block = 60,
+				desiredTime = 38,
+				foodFromIndex = function (index) {
+					return items[index];
+				},
+				callback = function (combination) {
+					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {};
+					setIngredientValues(ingredients, names, tags);
+					for (var i = 0; i < l && (priority === null || recipeCrunchData.recipes[i].priority >= priority); i++) {
+						if (recipeCrunchData.test[i](null, names, tags)) {
+							built.push({ recipe: recipeCrunchData.recipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger } });
+							priority = recipeCrunchData.recipes[i].priority;
+						}
+					}
+				},
+				getCombinations = combinationGenerator(items.length, callback),
+				computeNextBlock = function () {
+					var end = false,
+						start = Date.now();
+					if (getCombinations(block)) {
+						setTimeout(computeNextBlock, 0);
+					} else {
+						end = true;
+					}
+					for (; renderedTo < built.length && built[renderedTo]; renderedTo++) {
+						mainCallback(built[renderedTo]);
+					}
+					if (lastTime !== Date.now() - start) {
+						lastTime = Date.now() - start + 1;
+						block = desiredTime / lastTime * block + 1 | 0;
+					}
+					chunkCallback && chunkCallback();
+					end && endCallback && endCallback();
+				};
+			computeNextBlock();
+		};
+	//console.log(recipeCrunchData);
+	//delete recipeCrunchData.recipes;
+	//recipeCrunchString = JSON.stringify(recipeCrunchData); //recipeCrunch might also be used for multithreading later
+
+	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Perish\n|');
+	var setTab;
+	(function () {
+		var navtabs = navbar.getElementsByTagName('li'),
+			tabs = {},
+			elements = {},
+			storage,
+			activeIndex = 0,
+			activePage,
+			activeTab,
+			showTab = function (e) {
+				setTab(e.target.dataset.tab);
+			},
+			navtab;
+		setTab = function (tabID) {
+			activeTab.className = '';
+			activeTab = tabs[tabID];
+			activePage.style.display = 'none';
+			activePage = elements[tabID];
+			activeTab.className = 'selected';
+			activePage.style.display = 'block';
+		};
+		for (i = 0; i < navtabs.length; i++) {
+			navtab = navtabs[i];
+			if (navtab.dataset.tab) {
+				tabs[navtab.dataset.tab] = navtab;
+				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
+				elements[navtab.dataset.tab].style.display = 'none';
+				navtab.addEventListener('selectstart', function (e) { e.preventDefault(); }, false);
+				navtab.addEventListener('click', showTab, false);
+			}
+		}
+		activeTab = tabs['simulator'];
+		activePage = elements['simulator'];
+		if (window.localStorage && localStorage.foodGuideState) {
+			if (localStorage.foodGuideState[0] === '[') {
+				//converts from old format which causes errors
+				storage = {};
+				storage.pickers = JSON.parse(localStorage.foodGuideState);
+				localStorage.foodGuideState = JSON.stringify(storage);
+			} else {
+				storage = JSON.parse(localStorage.foodGuideState);
+			}
+			if (storage.activeTab && tabs[storage.activeTab]) {
+				activeTab = tabs[storage.activeTab];
+				activePage = elements[storage.activeTab];
+			}
+		}
+		activeTab.className = 'selected';
+		activePage.style.display = 'block';
+		window.addEventListener('beforeunload', function () {
+			var obj, serialized;
+			if (window.localStorage) {
+				if (!localStorage.foodGuideState) {
+					localStorage.foodGuideState = '{}';
+				}
+				obj = JSON.parse(localStorage.foodGuideState);
+				obj.activeTab = activeTab.dataset.tab;
+				localStorage.foodGuideState = JSON.stringify(obj);
+			}
+		});
+	}());
+
+	var queue = function (img) {
+			if (img.dataset.pending) {
+				makeImage.queue(img, img.dataset.pending, 32);
+			}
+		},
+		cells = function (cellType) {
+			var i, td, image, tr = document.createElement('tr'), cell, celltext;
+			for (i = 1; i < arguments.length; i++) {
+				td = document.createElement(cellType);
+				cell = arguments[i],
+				celltext = cell && cell.indexOf ? cell : cell.toString();
+				if (cell instanceof DocumentFragment) {
+					td.appendChild(cell.cloneNode(true));
+					Array.prototype.forEach.call(td.getElementsByTagName('img'), queue);
+				} else if (celltext.indexOf('img/') === 0) {
+					image = makeImage(celltext);
+					td.appendChild(image);
+				} else {
+					td.appendChild(document.createTextNode(celltext));
+				}
+				tr.appendChild(td);
+			}
+			return tr;
+		};
+	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) {
+		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight, rows,
+			generateAndHighlight = function (item, index, array) {
+				var row;
+				if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
+					row = rowGenerator(item);
+					if (highlightCallback && highlightCallback(item, array)) {
+						row.className = 'highlighted';
+						if (!firstHighlight) {
+							firstHighlight = row;
+						}
+						lastHighlight = row;
+					}
+					table.appendChild(row);
+					rows++;
+				}
+			},
+			create = function (e, sort, scrollHighlight) {
+				var tr, th, oldTable, sortBy, summary, links, i;
+				if (sort || (e && e.target.dataset.sort !== '') || sorting) {
+					sortBy = sort || (e && e.target.dataset.sort) || sorting;
+					if (hasSummary) {
+						summary = dataset.shift();
+					}
+					if (sortBy === 'name') {
+						dataset.sort(function (a, b) {
+							var aname = a.raw ? a.raw.name : a.name,
+								bname = b.raw ? b.raw.name : b.name;
+							if (aname !== bname) {
+								return aname > bname ? 1 : aname < bname ? -1 : 0;
+							}
+							return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
+						});
+					} else {
+						dataset.sort(function (a, b) {
+							var sa = a[sortBy], sb = b[sortBy];
+							return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
+						});
+					}
+					if (sort || e) {
+						if (sorting === sortBy) {
+							invertSort = !invertSort;
+						} else {
+							sorting = sortBy;
+							invertSort = false;
+						}
+					}
+					if (invertSort) {
+						dataset.reverse();
+					}
+					if (hasSummary) {
+						dataset.unshift(summary);
+					}
+				}
+				tr = document.createElement('tr');
+				for (header in headers) {
+					th = document.createElement('th');
+					if (header.indexOf(':') === -1) {
+						th.appendChild(document.createTextNode(header));
+					} else {
+						th.appendChild(document.createTextNode(header.split(':')[0]));
+						th.title = header.split(':')[1];
+					}
+					if (headers[header]) {
+						if (headers[header] === sorting) {
+							th.style.background = invertSort ? '#555' : '#ccc';
+							th.style.color = invertSort ? '#ccc' : '#555';
+							th.style.borderRadius = '4px';
+						}
+						th.style.cursor = 'pointer';
+						th.dataset.sort = headers[header];
+						th.addEventListener('click', create, false);
+					}
+					tr.appendChild(th);
+				}
+				oldTable = table;
+				table = document.createElement('table');
+				table.appendChild(tr);
+				firstHighlight = null;
+				lastHighlight = null;
+				rows = 0;
+				dataset.forEach(generateAndHighlight);
+				if (linkCallback) {
+					table.className = 'links';
+					Array.prototype.forEach.call(table.getElementsByClassName('link'), function (element) {
+						element.addEventListener('click', linkCallback, false);
+					});
+				}
+				if (oldTable) {
+					oldTable.parentNode.replaceChild(table, oldTable);
+				}
+				if (scrollHighlight) {
+					if (firstHighlight && firstHighlight.offsetTop + table.offsetTop + mainElement.offsetTop + firstHighlight.offsetHeight > window.scrollY + window.innerHeight) {
+						firstHighlight.scrollIntoView(true);
+					} else if (lastHighlight && lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop < window.scrollY) {
+						lastHighlight.scrollIntoView(false);
+					}
+				}
+			};
+		if (defaultSort) {
+			create(null, defaultSort);
+		} else {
+			create();
+		}
+		table.update = function (scrollHighlight) {
+			create(null, null, scrollHighlight);
+		};
+		table.setMaxRows = function (max) {
+			maxRows = max;
+			this.update();
+		};
+		return table;
+	};
+
+	var sign = function (n) { return isNaN(n) ? '' : n > 0 ? '+' + n : n },
+		rawpct = function (base, val) {
+			return base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0;
+		},
+		pct = function (base, val) {
+			return !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
+		};
+	var makeFoodRow = function (item) {
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
+	};
+	var makeRecipeRow = function (item, health, hunger) {
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
+	};
+	(function () {
+		var foodHighlight,
+			foodHighlighted = [],
+			recipeHighlighted = [],
+			setFoodHighlight = function (e) {
+				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
+					setTab('crockpot');
+					if (name.substring(0, 7) === 'recipe:') {
+						name = '*' + name.substring(7);
+					}
+					recipeHighlighted = matchingNames(recipes, name);
+					recipeTable.update(true);
+				} else {
+					if (foodHighlight !== name) {
+						foodHighlight = name;
+						foodHighlighted = matchingNames(food, name);
+					} else {
+						foodHighlight = '';
+						foodHighlighted.length = 0;
+					}
+					foodTable.update(true);
+				}
+			},
+			setRecipeHighlight = function (e) {
+				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				setTab('foodlist');
+				foodHighlight = name;
+				foodHighlighted = matchingNames(food, name);
+				foodTable.update(true);
+			},
+			testFoodHighlight = function (item) {
+				return foodHighlighted.indexOf(item) !== -1;
+			},
+			testRecipeHighlight = function (item) {
+				return recipeHighlighted.indexOf(item) !== -1;
+			},
+			foodTable = makeSortableTable(
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
+				Array.prototype.slice.call(food),
+				makeFoodRow,
+				'name',
+				false,
+				setFoodHighlight,
+				testFoodHighlight
+			),
+			recipeTable = makeSortableTable(
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+				Array.prototype.slice.call(recipes),
+				makeRecipeRow,
+				'name',
+				false,
+				setRecipeHighlight,
+				testRecipeHighlight
+			);
+		foodElement.appendChild(foodTable);
+		recipesElement.appendChild(recipeTable);
+	}());
+
+	var ingredientToIcon = function (a, b) {
+			return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
+		},
+		makeRecipeGrinder = function (ingredients) {
+			var makableButton = document.createElement('button');
+			makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
+			makableButton.className = 'makablebutton';
+			makableButton.addEventListener('click', function () {
+				var idealIngredients = [],
+					i = ingredients ? ingredients.length : null,
+					selectedRecipe,
+					selectedRecipeElement,
+					addedRecipes = 0,
+					makableRecipes = [],
+					makableRecipe,
+					makableSummary,
+					splitCommaSpace = /, */,
+					makableFilter,
+					customFilter = null,
+					customFilterHolder,
+					customFilterInput,
+					usesIngredients = [],
+					excludesIngredients = [],
+					makableApply,
+					option,
+					made,
+					makableDiv,
+					makableTable,
+					checkExcludes = function (item) {
+						return excludesIngredients.indexOf(item.id) !== -1;
+					},
+					checkIngredient = function (item) {
+						return this.indexOf(food[item]) !== -1;
+						//return usesIngredients.indexOf(item.id) !== -1;
+					},
+					toggleFilter = function (e) {
+						if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+						}
+						if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+							e.target.className = '';
+						} else {
+							usesIngredients.push(e.target.dataset.id);
+							e.target.className = 'selected';
+						}
+						makableTable.update();
+					},
+					toggleExclude = function (e) {
+						if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+						}
+						if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+							excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+							e.target.className = '';
+						} else {
+							excludesIngredients.push(e.target.dataset.id);
+							e.target.className = 'excluded';
+						}
+						makableTable.update();
+						e.preventDefault();
+					},
+					setRecipe = function (e) {
+						if (selectedRecipeElement) {
+							selectedRecipeElement.className = '';
+						}
+						if (selectedRecipe === e.target.dataset.recipe) {
+							selectedRecipeElement = null;
+							selectedRecipe = null;
+						} else {
+							selectedRecipe = e.target.dataset.recipe;
+							selectedRecipeElement = e.target;
+							e.target.className = 'selected';
+						}
+						makableTable.update();
+					};
+				//TODO: optimize so much around this
+				if (i === null) {
+					i = food.length;
+					ingredients = food;
+				}
+				while (i--) {
+					if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
+						idealIngredients.push(ingredients[i].cook);
+					}
+					if (!ingredients[i].uncookable && (ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
+						idealIngredients.push(ingredients[i]);
+					}
+				}
+				made = [];
+				makableTable = makeSortableTable(
+					{'': '', 'Name': 'name', 'Health': 'health', 'Health+:Health gained compared to ingredients': 'healthpls', 'Hunger': 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
+					made,
+					function (data) {
+						var item = data.recipe,
+							health = data.tags.health,
+							hunger = data.tags.hunger;
+						
+						return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)', sign(item.hunger), sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
+							makeLinkable(data.ingredients.reduce(ingredientToIcon, '')));
+					},
+					'hungerpls',
+					false,
+					null,
+					null,
+					function (data) {
+						return (!selectedRecipe || data.recipe.name === selectedRecipe) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
+					},
+					0,
+					15
+				);
+				makableDiv = document.createElement('div');
+				makableSummary = document.createElement('div');
+				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
+				makableDiv.appendChild(makableSummary);
+				makableRecipe = document.createElement('div');
+				makableRecipe.className = 'recipeFilter';
+				makableDiv.appendChild(makableRecipe);
+				makableFilter = document.createElement('div');
+				makableFilter.className = 'foodFilter';
+				idealIngredients.forEach(function (item) {
+					var img = makeImage(item.img, 32);
+					img.dataset.id = item.id;
+					img.addEventListener('click', toggleFilter, false);
+					img.addEventListener('contextmenu', toggleExclude, false);
+					img.title = item.name;
+					makableFilter.appendChild(img);
+				});
+				makableDiv.appendChild(makableFilter);
+				customFilterHolder = document.createElement('div');
+				customFilterInput = document.createElement('input');
+				customFilterInput.type = 'text';
+				customFilterInput.placeholder = 'use custom filter';
+				customFilterInput.className = 'customFilterInput';
+				customFilterHolder.appendChild(customFilterInput);
+				makableDiv.appendChild(makableTable);
+				makableButton.parentNode.replaceChild(makableDiv, makableButton);
+				getRealRecipesFromCollection(idealIngredients, function (data) { //row update
+					var i, img;
+					if (makableRecipes.indexOf(data.recipe.name) === -1) {
+						for (i = 0; i < makableRecipes.length; i++) {
+							if (data.recipe.name < makableRecipes[i]) {
+								break;
+							}
+						}
+						makableRecipes.splice(i, 0, data.recipe.name);
+						img = makeImage(recipes.byName(makableRecipes[i].toLowerCase()).img);
+						//TODO: optimize
+						img.dataset.recipe = makableRecipes[i];
+						img.addEventListener('click', setRecipe, false);
+						img.title = data.recipe.name;
+						if (i < makableRecipe.childNodes.length) {
+							makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
+						} else {
+							makableRecipe.appendChild(img);
+						}
+					}
+					if (!data.name) {
+						data.name = data.recipe.name;
+						data.health = data.recipe.health;
+						data.ihealth = data.tags.health;
+						data.healthpls = data.recipe.health - data.tags.health;
+						data.hunger = data.recipe.hunger;
+						data.ihunger = data.tags.hunger;
+						data.hungerpls = data.recipe.hunger - data.tags.hunger;
+						data.healthpct = rawpct(data.tags.health, data.recipe.health);
+						data.hungerpct = rawpct(data.tags.hunger, data.recipe.hunger);
+						data.sanity = data.recipe.sanity;
+						data.perish = data.recipe.perish;
+					}
+					made.push(data);
+				}, function () { //chunk update
+					/* this code provided updates to the table while the data was being crunched
+					var l = makableRecipes.length, img;
+					while (addedRecipes < l) {
+						img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);
+						//TODO: optimize
+						img.dataset.recipe = makableRecipes[addedRecipes];
+						img.addEventListener('click', setRecipe, false);
+						makableRecipe.appendChild(img);
+						addedRecipes++;
+						makableRecipes.sort();
+						if (selectedRecipe !== makableRecipes[0]) {
+							selectedRecipe = makableRecipes[0];
+							selectedRecipeElement = makableRecipe.firstChild;
+							makableRecipe.firstChild.className = 'selected';
+						}
+						makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+						makableTable.update();
+					}*/
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+					//makableTable.update();
+				}, function () { //computation finished
+					makableTable.setMaxRows(30);
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude ingredients.';
+				});
+			}, false);
+			return makableButton;
+		};
+	document.getElementById('statistics').appendChild(makeRecipeGrinder());
+	var highest = function (array, property) {
+		return array.reduce(function (previous, current) {
+			return Math.max(previous, current[property] || 0);
+		}, -100000);
+	};
+
+	window.food = food;
+	window.recipes = recipes;
+	window.matchingNames = matchingNames;
+	var setSlot = function (slotElement, item) {
+			var end = false;
+			if (item !== null) {
+				slotElement.dataset.id = item.id;
+			} else {
+				if (slotElement.nextSibling && getSlot(slotElement.nextSibling) !== null) {
+					setSlot(slotElement, getSlot(slotElement.nextSibling));
+					setSlot(slotElement.nextSibling, null);
+					end = true;
+				} else {
+					slotElement.dataset.id = null;
+				}
+			}
+			if (!end) {
+				if (item !== null) {
+					if (slotElement.firstChild) {
+						slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
+					} else {
+						slotElement.appendChild(makeImage(item.img));
+					}
+				} else {
+					if (slotElement.firstChild) {
+						slotElement.removeChild(slotElement.firstChild);
+					}
+				}
+				slotElement.title = item ? item.name : '';
+			}
+		},
+		getSlot = function (slotElement) {
+			return food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null;
+		};
+	(function () {
+		var pickers = document.getElementsByClassName('ingredientpicker'),
+			i = pickers.length;
+		while (i--) {
+			(function () {
+				var searchSelector = document.createElement('span'),
+					searchSelectorControls,
+					dropdown = document.createElement('div'),
+					ul = document.createElement('ul'),
+					picker = pickers[i],
+					index = i,
+					state,
+					from = picker.dataset.type === 'recipes' ? recipes : food,
+					allowUncookable = !picker.dataset.cookable,
+					parent = picker.nextSibling,
+					slots = parent.getElementsByClassName('ingredient'),
+					limited,
+					ingredients = [],
+					updateRecipes,
+					suggestions = [],
+					inventoryrecipes = [],
+					selected = null,
+					loaded = false,
+					results = document.getElementById('results'),
+					discoverfood = document.getElementById('discoverfood'),
+					discover = document.getElementById('discover'),
+					makable = document.getElementById('makable'),
+					clear = document.createElement('span'),
+					findPreviousMatching = function (el, test) {
+						var previous = el;
+						while (previous.previousSibling) {
+							previous = previous.previousSibling;
+							if (test(previous)) {
+								return previous;
+							}
+						}
+						return null;
+					},
+					findNextMatching = function (el, test) {
+						var next = el;
+						while (next.nextSibling) {
+							next = next.nextSibling;
+							if (test(next)) {
+								return next;
+							}
+						}
+						return null;
+					},
+					displaying = false,
+					appendSlot = function (id) {
+						var i, item = food[id] || recipes[id] || null;
+						if (limited) {
+							for (i = 0; i < slots.length; i++) {
+								if (getSlot(slots[i]) === null) {
+									setSlot(slots[i], item);
+									loaded && updateRecipes();
+									return i;
+								}
+							}
+							return -1;
+						} else {
+							if (slots.indexOf(id) === -1) {
+								slots.push(id);
+								i = document.createElement('span');
+								i.className = 'ingredient';
+								setSlot(i, item);
+								i.addEventListener('click', removeSlot, false);
+								parent.appendChild(i);
+								loaded && updateRecipes();
+								return 1;
+							}
+							return 1;
+						}
+					},
+					pickItem = function (e) {
+						var names,
+							target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target,
+							result = appendSlot(target.dataset.id);
+						if (result !== -1) {
+							/*dropdown.removeChild(ul);
+							ul = document.createElement('div');
+							names = matchingNames(from, '', allowUncookable);
+							ul.dataset.length = 0;
+							names.forEach(liIntoPicker, ul);
+							dropdown.appendChild(ul);
+							if (ul.firstChild) {
+								ul.firstChild.className = 'selected';
+							}
+							picker.value = '';*/
+							/*if (result < slots.length - 1 || !limited) {
+								//picker.focus();
+							} else {
+								//picker.blur();
+							}*/
+							e && e.preventDefault && e.preventDefault();
+							//refreshLocation();
+						}
+					},
+					liIntoPicker = function (item) {
+						var img = makeImage(item.img, 32),
+							li = document.createElement('span');
+						li.appendChild(img);
+						li.appendChild(document.createTextNode(item.name));
+						li.dataset.id = item.id;
+						//li.dataset.tooltip = item.name;
+						if (ingredients.indexOf(item) !== -1) {
+							li.style.opacity = 0.5;
+						}
+						li.addEventListener('mousedown', pickItem, false);
+						this.appendChild(li);
+						this.dataset.length++;
+						/*if (this.dataset.length % 10 === 0) {
+							this.appendChild(document.createElement('br'));
+						}*/
+					},
+					updateFaded = function (el) {
+						if (ingredients.indexOf(food[el.dataset.id]) !== -1) {
+							if (!el.style.opacity) {
+								el.style.opacity = 0.5;
+							}
+						} else {
+							if (el.style.opacity) {
+								el.style.removeProperty('opacity');
+							}
+						}
+					},
+					removeSlot = function (e) {
+						var i, target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
+						if (limited) {
+							if (getSlot(target) !== null) {
+								setSlot(target, null);
+								updateRecipes();
+								return target.dataset.id;
+							} else {
+								//picker.focus();
+							}
+						} else {
+							i = slots.indexOf(target.dataset.id);
+							slots.splice(i, 1);
+							parent.removeChild(target);
+							updateRecipes();
+							return slots[i] || null;
+						}
+					},
+					refreshLocation = function () {
+						/*if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
+							//to the left
+							dropdown.style.left = -dropdown.offsetWidth + 'px';
+							dropdown.style.top = picker.offsetTop + 'px';
+						} else if (mainElement.offsetLeft + picker.offsetLeft + picker.offsetWidth + dropdown.offsetWidth > window.innerWidth) {
+							//below
+							dropdown.style.left = picker.offsetLeft + 'px';
+							dropdown.style.top = picker.offsetTop + picker.offsetHeight + 'px';
+						} else {
+							//to the right
+							dropdown.style.left = picker.offsetLeft + picker.offsetWidth + 'px';
+							dropdown.style.top = picker.offsetTop + 'px';
+						}*/
+					},
+					refreshPicker = function () {
+						var names;
+						searchSelectorControls.splitTag();
+						names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+						dropdown.removeChild(ul);
+						ul = document.createElement('div');
+						ul.dataset.length = 0;
+						names.forEach(liIntoPicker, ul);
+						dropdown.appendChild(ul);
+						//refreshLocation();
+						selected = null;
+					},
+					searchFor = function (e) {
+						var name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link,
+							matches = matchingNames(from, name, allowUncookable);
+						if (matches.length === 1) {
+							appendSlot(matches[0].id);
+						} else {
+							picker.value = name;
+							refreshPicker();
+							//picker.focus();
+						}
+					},
+					coords;
+				if (parent.id === 'ingredients') {
+					//simulator
+					updateRecipes = function () {
+						var cooking,
+							health, hunger,
+							table;
+						ingredients = Array.prototype.map.call(slots, function (slot) {
+							return getSlot(slot);
+						});
+						cooking = getRecipes(ingredients);
+						health = cooking[0].health;
+						hunger = cooking[0].hunger;
+						table = makeSortableTable(
+							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+							cooking,
+							function (item) {
+								return makeRecipeRow(item, health, hunger);
+							},
+							'priority',
+							true,
+							searchFor,
+							function (item, array) {
+								console.log(highest(array, 'priority'));
+								return array.length > 0 && item.priority === highest(array, 'priority');
+							}
+						);
+						if (results.firstChild) {
+							results.removeChild(results.firstChild);
+						}
+						if (results.firstChild) {
+							results.removeChild(results.firstChild);
+							results.removeChild(results.firstChild);
+						}
+						results.appendChild(table);
+						if (ingredients[0] !== null) {
+							getSuggestions(suggestions, ingredients, cooking);
+							if (suggestions.length > 0) {
+								results.appendChild(document.createTextNode('Add more ingredients to make:'));
+								table = makeSortableTable(
+									{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+									suggestions,
+									function (item) {
+										return makeRecipeRow(item, health, hunger);
+									},
+									'priority',
+									false,
+									searchFor
+								);
+								results.appendChild(table);
+							}
+						}
+						ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
+					};
+				} else if (parent.id === 'inventory') {
+					//discovery
+					updateRecipes = function () {
+						var foodTable,
+							table;
+						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), function (slot) {
+							return getSlot(slot);
+						});
+						if (discoverfood.firstChild) {
+							discoverfood.removeChild(discoverfood.firstChild);
+						}
+						if (discover.firstChild) {
+							discover.removeChild(discover.firstChild);
+						}
+						if (makable.firstChild) {
+							makable.removeChild(makable.firstChild);
+						}
+						if (ingredients.length > 0) {
+							foodTable = makeSortableTable(
+								{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
+								ingredients,
+								makeFoodRow,
+								'name'
+							);
+							discoverfood.appendChild(foodTable);
+							getSuggestions(inventoryrecipes, ingredients, null, true);
+							if (inventoryrecipes.length > 0) {
+								table = makeSortableTable(
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+									inventoryrecipes,
+									makeRecipeRow,
+									'name'
+								)
+								discover.appendChild(table);
+
+								makable.appendChild(makeRecipeGrinder(ingredients));
+							}
+						}
+						ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
+					};
+				}
+				if (slots.length !== 0) {
+					limited = true;
+					Array.prototype.forEach.call(slots, function (slot) {
+						setSlot(slot, null);
+						slot.addEventListener('click', removeSlot, false);
+					});
+				} else {
+					slots = [];
+					limited = false;
+				}
+				if (window.localStorage && localStorage.foodGuideState) {
+					state = JSON.parse(localStorage.foodGuideState).pickers;
+					if (state && state[index]) {
+						state[index].forEach(function (id) {
+							if (food[id]) {
+								appendSlot(id);
+							}
+						});
+					}
+				}
+				loaded = true;
+				searchSelector.className = 'searchselector retracted';
+				searchSelector.appendChild(document.createTextNode('name'));
+				searchSelectorControls = (function () {
+					var dropdown = document.createElement('div'),
+						extended = false,
+						extendedHeight = null,
+						searchTypes = [{title: 'name', prefix: '', placeholder: 'Filter ingredients'}, {title: 'tag', prefix: 'tag:', placeholder: 'Meat, veggie, fruit, egg, monster...'}, {title: 'recipe', prefix: 'recipe:', placeholder: 'Find ingredients used in a recipe'}],
+						selectedType = searchTypes[0],
+						retractTimer = null,
+						retract = function () {
+							extended = false;
+							dropdown.style.height = '0px';
+							searchSelector.style.borderBottomLeftRadius = '3px';
+							dropdown.style.borderTopLeftRadius = '3px';
+							if (retractTimer !== null) {
+								clearTimeout(retractTimer);
+								retractTimer = null;
+							}
+							searchSelector.className = 'searchselector retracted';
+						},
+						extend = function () {
+							if (extendedHeight === null) {
+								dropdown.style.height = 'auto';
+								dropdown.style.left = searchSelector.offsetLeft;
+								dropdown.style.top = searchSelector.offsetTop + searchSelector.offsetHeight;
+								extendedHeight = dropdown.offsetHeight + 'px';
+								dropdown.style.height = '0px';
+							}
+							extended = true;
+							dropdown.style.height = extendedHeight;
+							searchSelector.style.borderBottomLeftRadius = '0px';
+							dropdown.style.borderTopLeftRadius = '0px';
+							dropdown.style.width = 'auto';
+							dropdown.style.width = Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1) + 'px';
+							if (retractTimer !== null) {
+								clearTimeout(retractTimer);
+								retractTimer = null;
+							}
+							searchSelector.className = 'searchselector extended';
+						},
+						setSearchType = function (searchType) {
+							selectedType = searchType;
+							picker.placeholder = selectedType.placeholder;
+							searchSelector.firstChild.textContent = selectedType.title;
+						},
+						setSearchTypeFromClick = function (e) {
+							setSearchType(searchTypes[e.target.dataset.typeIndex]);
+							refreshPicker();
+							retract();
+						},
+						tagsplit = /: */,
+						controls = {
+							getTag: function () {
+								return selectedType.title;
+							},
+							setSearchType: function (index) {
+								setSearchType(searchTypes[index]);
+							},
+							getSearch: function () {
+								return selectedType.prefix + picker.value;
+							},
+							splitTag: function () {
+								var i,
+									parts = picker.value.split(tagsplit),
+									tag,
+									name;
+								if (parts.length === 2) {
+									tag = parts[0].toLowerCase() + ':';
+									name = parts[1];
+									for (i = 0; i < searchTypes.length; i++) {
+										if (tag === searchTypes[i].prefix) {
+											setSearchType(searchTypes[i]);
+											picker.value = name;
+											break;
+										}
+									}
+								}
+							}
+						};
+					searchSelector.addEventListener('click', function () {
+						if (extended) {
+							retract();
+						} else {
+							extend();
+						}
+					}, false);
+					searchSelector.addEventListener('selectstart', function (e) { e.preventDefault(); }, false);
+					searchSelector.addEventListener('mouseout', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+						}
+						retractTimer = setTimeout(retract, 500);
+					}, false);
+					searchSelector.addEventListener('mouseover', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+							retractTimer = null;
+						}
+					}, false);
+					dropdown.addEventListener('mouseout', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+						}
+						retractTimer = setTimeout(retract, 500);
+					}, false);
+					dropdown.addEventListener('mouseover', function () {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+							retractTimer = null;
+						}
+					}, false);
+					searchTypes.forEach(function (searchType, index) {
+						var element = document.createElement('div');
+						element.appendChild(document.createTextNode(searchType.title));
+						element.dataset.typeIndex = index;
+						element.addEventListener('click', setSearchTypeFromClick, false);
+						searchType.element = element;
+						dropdown.appendChild(element);
+					});
+					picker.parentNode.insertBefore(searchSelector, picker);
+					dropdown.className = 'searchdropdown';
+					picker.parentNode.insertBefore(dropdown, picker);
+					return controls;
+				}());
+				dropdown.className = 'ingredientdropdown';
+				dropdown.appendChild(ul);
+				dropdown.addEventListener('mousedown', function (e) { e.preventDefault(); }, false);
+				(function () {
+					var names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+					dropdown.removeChild(ul);
+					ul = document.createElement('div');
+					ul.dataset.length = 0;
+					names.forEach(liIntoPicker, ul);
+					dropdown.appendChild(ul);
+				}());
+				clear.className = 'clearingredients';
+				clear.appendChild(document.createTextNode('clear'));
+				clear.addEventListener('click', function () {
+					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
+						while (getSlot(parent.firstChild)) {
+							removeSlot({ target: parent.firstChild });
+						}
+					} else {
+						picker.value = '';
+						searchSelectorControls.setSearchType(0);
+						refreshPicker();
+					}
+				}, false);
+				clear.addEventListener('mouseover', function () {
+					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
+						clear.firstChild.textContent = 'clear chosen ingredients';
+					}
+				}, false);
+				clear.addEventListener('mouseout', function () {
+					if (clear.firstChild.textContent !== 'clear') {
+						clear.firstChild.textContent = 'clear';
+					}
+				}, false);
+				parent.parentNode.insertBefore(clear, parent);
+				parent.parentNode.insertBefore(dropdown, parent);
+				picker.addEventListener('keydown', function (e) {
+					var movement = [16, 17, 37, 38, 39, 40, 13],
+						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i, find;
+					if (movement.indexOf(e.keyCode) !== -1) {
+						current = selected;
+						if (e.keyCode === enter) {
+							if (selected === null) {
+								selected = ul.firstChild || null;
+							}
+							if (selected !== null) {
+								pickItem({target: selected});
+							}
+						} else {
+							if (selected === null) {
+								if (e.keyCode === down) {
+									selected = ul.childNodes[1] || ul.firstChild || null;
+									if (selected !== null) {
+										coords = (selected.offsetLeft + selected.offsetWidth / 2);
+										e.preventDefault();
+									}
+								}
+							} else {
+								e.preventDefault();
+								if (e.keyCode === left) {
+									if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
+										selected = selected.previousSibling;
+									} else {
+										find = findNextMatching(selected, function (el) {
+											//separate this out
+											return el.offsetTop !== selected.offsetTop;
+										});
+										if (find) {
+											selected = find.previousSibling;
+										} else {
+											selected = ul.lastChild;
+										}
+									}
+									if (selected !== null) {
+										coords = (selected.offsetLeft + selected.offsetWidth / 2);
+									}
+								} else if (e.keyCode === right) {
+									if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
+										selected = selected.nextSibling;
+									} else {
+										find = findPreviousMatching(selected, function (el) {
+											//separate this out
+											return el.offsetTop !== selected.offsetTop;
+										});
+										if (find) {
+											selected = find.nextSibling;
+										} else {
+											selected = ul.firstChild;
+										}
+									}
+									if (selected !== null) {
+										coords = (selected.offsetLeft + selected.offsetWidth / 2);
+									}
+								} else if (e.keyCode === up) {
+									find = findPreviousMatching(selected, function (el) {
+										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+									});
+									if (!find) {
+										find = findPreviousMatching(ul.lastChild, function (el) {
+											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+										});
+									}
+									if (find) {
+										selected = find;
+									} else {
+										selected = ul.firstChild;
+									}
+								} else if (e.keyCode === down) {
+									find = findNextMatching(selected, function (el) {
+										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+									});
+									if (!find) {
+										find = findNextMatching(ul.firstChild, function (el) {
+											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+										});
+									}
+									if (find) {
+										selected = find;
+									} else {
+										selected = ul.lastChild;
+									}
+								}
+							}
+						}
+						if (selected !== current) {
+							if (current !== null) {
+								current.className = '';
+							}
+							if (selected !== null) {
+								selected.className = 'selected';
+							}
+						}
+					}
+				}, false);
+				picker.addEventListener('keyup', function (e) {
+					var movement = [16, 17, 37, 38, 39, 40, 13],
+						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i;
+					current = selected;
+					if (movement.indexOf(e.keyCode) === -1) {
+						refreshPicker();
+					} else if (selected !== null) {
+						e.preventDefault();
+					}
+					/*
+					using comments as version control is bad
+					else {
+						items = ul.getElementsByTagName('li');
+						for (i = 0; i < items.length; i++) {
+							if (items[i].className === 'selected') {
+								current = items[i];
+								if (e.keyCode === up || e.keyCode === down) {
+									items[i].className = '';
+								}
+								if (e.keyCode === up) {
+									items[i - 1 < 0 ? items.length - 1 : i - 1].className = 'selected';
+								} else if (e.keyCode === down) {
+									items[(i + 1) % items.length].className = 'selected';
+								} else if (e.keyCode === enter && current) {
+									pickItem({target: current});
+									refreshLocation();
+								}
+								break;
+							}
+						}
+						if (!current && items.length > 0) {
+							if (e.keyCode === up) {
+								items[items.length - 1].className = 'selected';
+							} else if (e.keyCode === down) {
+								items[0].className = 'selected';
+							} else if (e.keyCode === enter) {
+								pickItem({target: items[0]});
+							}
+						}
+					}*/
+				}, false);
+				picker.addEventListener('focus', function () {
+					if (!displaying) {
+						displaying = true;
+						//parent.appendChild(dropdown);
+						//refreshLocation();
+					}
+				}, false);
+				picker.addEventListener('blur', function () {
+					if (displaying) {
+						displaying = false;
+						//parent.removeChild(dropdown);
+					}
+				}, false);
+				updateRecipes();
+				window.addEventListener('beforeunload', function () {
+					var obj, serialized;
+					if (window.localStorage) {
+						if (!localStorage.foodGuideState) {
+							localStorage.foodGuideState = '{}';
+						}
+						obj = JSON.parse(localStorage.foodGuideState);
+						if (!obj.pickers) {
+							obj.pickers = [];
+						}
+						if (limited) {
+							serialized = [];
+							serialized = Array.prototype.map.call(slots, function (slot) {
+								var item = getSlot(slot);
+								return item ? item.id : null;
+							});
+							obj.pickers[index] = serialized;
+						} else {
+							obj.pickers[index] = slots;
+						}
+						localStorage.foodGuideState = JSON.stringify(obj);
+					}
+				});
+			}());
+		}
+	}())
+}());

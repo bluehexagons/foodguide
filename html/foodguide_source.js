@@ -151,7 +151,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			fish: {
 				name: Strings.fish,
 				ismeat: true,
-				//meat: 0.5,
+				meat: 0.5,
 				fish: 1,
 				health: healing_tiny,
 				hunger: calories_small,
@@ -161,7 +161,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			fish_cooked: {
 				name: 'Cooked Fish',
 				ismeat: true,
-				//meat: 0.5,
+				meat: 0.5,
 				fish: 1,
 				precook: 1,
 				health: healing_tiny,
@@ -244,6 +244,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				precook: 1,
 				health: healing_superhuge,
 				hunger: calories_superhuge,
+				stack: stack_size_smallitem
+			},
+			plantmeat: {
+				name: 'Leafy Meat',
+				uncookable: true,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
+			plantmeat_cooked: {
+				name: 'Cooked Leafy Meat',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_med,
 				stack: stack_size_smallitem
 			},
 			monstermeat: {
@@ -513,6 +531,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				ismeat: true,
 				health: healing_medlarge,
 				hunger: calories_large,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_meditem
 			},
@@ -522,12 +541,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				ismeat: true,
 				health: healing_large,
 				hunger: calories_huge,
+				sanity: 0,
 				perish: perish_slow,
 				stack: stack_size_meditem
 			},
 			twigs: {
 				name: 'Twigs',
 				inedible: 1
+			},
+			cavebanana: {
+				name: 'Cave Banana',
+				isfruit: true,
+				fruit: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med
+			},
+			cavebanana_cooked: {
+				name: 'Cooked Banana',
+				isfruit: true,
+				fruit: 1,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast
 			},
 			carrot: {
 				name: 'Carrot',
@@ -1727,11 +1766,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		};
 	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) {
 		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight, rows,
-			generateAndHighlight = function (item, index) {
+			generateAndHighlight = function (item, index, array) {
 				var row;
 				if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
 					row = rowGenerator(item);
-					if (highlightCallback && highlightCallback(item)) {
+					if (highlightCallback && highlightCallback(item, array)) {
 						row.className = 'highlighted';
 						if (!firstHighlight) {
 							firstHighlight = row;
@@ -1899,7 +1938,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				testFoodHighlight
 			),
 			recipeTable = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 				Array.prototype.slice.call(recipes),
 				makeRecipeRow,
 				'name',
@@ -2111,6 +2150,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return makableButton;
 		};
 	document.getElementById('statistics').appendChild(makeRecipeGrinder());
+	var highest = function (array, property) {
+		return array.reduce(function (previous, current) {
+			return Math.max(previous, current[property] || 0);
+		}, -100000);
+	};
 
 	window.food = food;
 	window.recipes = recipes;
@@ -2330,6 +2374,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					},
 					coords;
 				if (parent.id === 'ingredients') {
+					//simulator
 					updateRecipes = function () {
 						var cooking,
 							health, hunger,
@@ -2341,14 +2386,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						health = cooking[0].health;
 						hunger = cooking[0].hunger;
 						table = makeSortableTable(
-							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 							cooking,
 							function (item) {
 								return makeRecipeRow(item, health, hunger);
 							},
 							'priority',
 							true,
-							searchFor
+							searchFor,
+							function (item, array) {
+								console.log(highest(array, 'priority'));
+								return array.length > 0 && item.priority === highest(array, 'priority');
+							}
 						);
 						if (results.firstChild) {
 							results.removeChild(results.firstChild);
@@ -2363,7 +2412,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							if (suggestions.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+									{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 									suggestions,
 									function (item) {
 										return makeRecipeRow(item, health, hunger);
@@ -2378,6 +2427,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
 					};
 				} else if (parent.id === 'inventory') {
+					//discovery
 					updateRecipes = function () {
 						var foodTable,
 							table;
@@ -2404,7 +2454,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							getSuggestions(inventoryrecipes, ingredients, null, true);
 							if (inventoryrecipes.length > 0) {
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:Highest priority recipe for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
 									inventoryrecipes,
 									makeRecipeRow,
 									'name'

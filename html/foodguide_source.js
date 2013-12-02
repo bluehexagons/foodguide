@@ -32,7 +32,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		day_time = seg_time * day_segs,
 		dusk_time = seg_time * dusk_segs,
 		night_time = seg_time * night_segs,
+
 		perish_warp = 1,
+
 		stack_size_largeitem = 10,
 		stack_size_meditem = 20,
 		stack_size_smallitem = 40,
@@ -54,6 +56,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		sanity_large = 33,
 		sanity_huge = 50,
 
+		perish_one_day = 1*total_day_time*perish_warp,
+		perish_two_day = 2*total_day_time*perish_warp,
 		perish_superfast = 3*total_day_time*perish_warp,
 		perish_fast = 6*total_day_time*perish_warp,
 		perish_med = 10*total_day_time*perish_warp,
@@ -148,6 +152,35 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: spoiled_hunger,
 				stack: stack_size_smallitem
 			},
+			cutlichen: {
+				name: 'Lichen',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: -sanity_tiny,
+				perish: perish_two_day
+			},
+			eel: {
+				name: 'Eel',
+				ismeat: true,
+				meat: 0.5,
+				fish: 1,
+				health: healing_small,
+				hunger: calories_tiny,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dry: 'smallmeat_dried',
+				drytime: dry_fast
+			},
+			eel_cooked: {
+				name: 'Cooked Eel',
+				ismeat: true,
+				health: healing_medsmall,
+				hunger: calories_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem
+			},
 			fish: {
 				name: Strings.fish,
 				ismeat: true,
@@ -190,23 +223,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				stack: stack_size_smallitem
 			},
-			flowerhat: {
-				name: 'Garland',
-				health: healing_small,
+			foliage: {
+				name: 'Foliage',
+				uncookable: true,
+				health: healing_tiny,
 				hunger: 0,
-				sanity: sanity_small,
 				perish: perish_fast,
-				stack: 1,
-				uncookable: true
-			},
-			hambat: {
-				name: 'Ham Bat',
-				health: -healing_medsmall,
-				hunger: calories_med,
-				sanity: -sanity_med,
-				perish: perish_med,
-				stack: 1,
-				uncookable: true
+				stack: stack_size_smallitem
 			},
 			honey: {
 				name: 'Honey',
@@ -412,6 +435,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_med,
 				uncookable: true
+			},
+			minotaurhorn: {
+				name: 'Guardian\'s Horn',
+				uncookable: true,
+				ismeat: true,
+				health: healing_huge,
+				hunger: calories_huge,
+				sanity: -sanity_med
 			},
 			red_mushroom: {
 				name: 'Red Cap',
@@ -738,6 +769,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				sanity: 0,
 				stack: stack_size_smallitem
+			},
+			wormlight: {
+				name: 'Glow Berry',
+				uncookable: true,
+				health: healing_medsmall + healing_small,
+				hunger: calories_medsmall,
+				sanity: -sanity_small,
+				perish: perish_med
 			}
 		},
 		//note: qty not used yet, this is for rapid summation
@@ -1089,6 +1128,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: 0,
 				perishtime: 9000000,
 				sanity: 0,
+				cooktime: 0.5
+			},
+			unagi: {
+				name: 'Unagi',
+				test: function(cooker, names, tags) {
+					return names.cutlichen && (names.eel || names.eel_cooked);
+				},
+				requirements: [SPECIFIC('cutlichen'), NAME('eel')],
+				priority: 20,
+				foodtype: "veggie",
+				health: healing_med,
+				hunger: calories_medsmall,
+				perishtime: perish_med,
+				sanity: sanity_tiny,
 				cooktime: 0.5
 			},
 			wetgoop: {
@@ -2395,7 +2448,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							true,
 							searchFor,
 							function (item, array) {
-								console.log(highest(array, 'priority'));
 								return array.length > 0 && item.priority === highest(array, 'priority');
 							}
 						);

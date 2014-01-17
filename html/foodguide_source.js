@@ -1,7 +1,7 @@
 /*
 Makes use of no third-party code (for better or worse)
 
-Copyright (c) 2013
+Copyright (c) 2014
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -506,7 +506,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				uncookable: true,
 				health: healing_tiny,
 				hunger: 0,
-				sanity: -sanity_tiny / 2,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
@@ -1126,7 +1126,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				foodtype: "veggie",
 				health: -healing_small,
 				hunger: 0,
-				perishtime: 9000000,
+				perish: 9000000,
 				sanity: 0,
 				cooktime: 0.5
 			},
@@ -1140,7 +1140,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				foodtype: "veggie",
 				health: healing_med,
 				hunger: calories_medsmall,
-				perishtime: perish_med,
+				perish: perish_med,
 				sanity: sanity_tiny,
 				cooktime: 0.5
 			},
@@ -1696,12 +1696,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					return items[index];
 				},
 				callback = function (combination) {
-					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {};
+					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
 					setIngredientValues(ingredients, names, tags);
-					for (var i = 0; i < l && (priority === null || recipeCrunchData.recipes[i].priority >= priority); i++) {
-						if (recipeCrunchData.test[i](null, names, tags)) {
-							built.push({ recipe: recipeCrunchData.recipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger } });
-							priority = recipeCrunchData.recipes[i].priority;
+					for (i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
+						if (rcdTest[i](null, names, tags)) {
+							if (created !== null) {
+								multiple = true;
+								created.multiple = true;
+							}
+							created = { recipe: rcdRecipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger }, multiple: multiple };
+							built.push(created);
+							priority = rcdRecipes[i].priority;
 						}
 					}
 				},
@@ -2019,6 +2024,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					makableRecipes = [],
 					makableRecipe,
 					makableSummary,
+					makableFootnote,
 					splitCommaSpace = /, */,
 					makableFilter,
 					customFilter = null,
@@ -2102,7 +2108,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							hunger = data.tags.hunger;
 						
 						return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)', sign(item.hunger), sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
-							makeLinkable(data.ingredients.reduce(ingredientToIcon, '')));
+							makeLinkable(data.ingredients.reduce(ingredientToIcon, '') + (data.multiple ? '*' : '')));
 					},
 					'hungerpls',
 					false,
@@ -2117,6 +2123,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				makableDiv = document.createElement('div');
 				makableSummary = document.createElement('div');
 				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
+				makableFootnote = document.createElement('div');
+				makableFootnote.appendChild(document.createTextNode('* combination has multiple possible results'));
 				makableDiv.appendChild(makableSummary);
 				makableRecipe = document.createElement('div');
 				makableRecipe.className = 'recipeFilter';
@@ -2140,6 +2148,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				customFilterHolder.appendChild(customFilterInput);
 				makableDiv.appendChild(makableTable);
 				makableButton.parentNode.replaceChild(makableDiv, makableButton);
+				makableDiv.appendChild(makableFootnote);
 				getRealRecipesFromCollection(idealIngredients, function (data) { //row update
 					var i, img;
 					if (makableRecipes.indexOf(data.recipe.name) === -1) {
@@ -2175,7 +2184,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 					made.push(data);
 				}, function () { //chunk update
-					/* this code provided updates to the table while the data was being crunched
+					/*
+					//this code provided updates to the table while the data was being crunched
+					//there wasn't much point since it wasn't really usable until it was done calculating things anyway
 					var l = makableRecipes.length, img;
 					while (addedRecipes < l) {
 						img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);

@@ -76,12 +76,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		calories_huge = calories_per_day, // crockpot foods?
 		calories_superhuge = calories_per_day*2, // crockpot foods?
 
+		hot_food_bonus_temp = 40,
+		cold_food_bonus_temp = -40,
+		food_temp_brief = 5,
+		food_temp_average = 10,
+		food_temp_long = 15,
+
 		spoiled_health = -1,
 		spoiled_hunger = -10,
 		perish_fridge_mult = .5,
 		perish_ground_mult = 1.5,
 		perish_global_mult = 1,
 		perish_winter_mult = .75,
+		perish_summer_mult = 1.25,
 
 		stale_food_hunger = .667,
 		spoiled_food_hunger = .5,
@@ -91,17 +98,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 		base_cook_time = night_time*.3333,
 
-		tips = [
-			'Cooking meat '
-		],
-		Strings = {
-			'butter': 'Butter',
-			'butterflywings': 'Butterfly Wings',
-			'fish': 'Fish'
-		},
 		food = {
+			acorn: {
+				name: 'Birchnut',
+				hunger: calories_tiny,
+				health: healing_tiny,
+				perish: perish_preserved,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
+			},
+			acorn_cooked: {
+				name: 'Roasted Birchnut',
+				seed: 1,
+				hunger: calories_tiny,
+				health: healing_tiny,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
+			},
 			butter: {
-				name: Strings.butter,
+				name: 'Butter',
 				fat: 1,
 				dairy: 1,
 				health: healing_large,
@@ -110,13 +126,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem
 			},
 			butterflywings: {
-				name: Strings.butterflywings,
+				name: 'Butterfly Wings',
 				isveggie: true,
 				decoration: 2,
 				health: healing_medsmall,
 				hunger: calories_tiny,
 				perish: perish_fast,
 				stack: stack_size_smallitem
+			},
+			cactusflower: {
+				name: 'Cactus Flower',
+				veggie: 0.5,
+				hunger: calories_small,
+				health: healing_medsmall,
+				sanity: sanity_tiny,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
 			},
 			deerclopseyeball: {
 				name: 'Deerclops Eyeball',
@@ -182,7 +208,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem
 			},
 			fish: {
-				name: Strings.fish,
+				name: 'Fish',
 				ismeat: true,
 				meat: 0.5,
 				fish: 1,
@@ -231,6 +257,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
+			goatmilk: {
+				name: 'Electric Milk',
+				dairy: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
+			},
 			honey: {
 				name: 'Honey',
 				sweetener: true,
@@ -242,6 +278,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			honeycomb: {
 				name: 'Honeycomb',
 				sweetener: true
+			},
+			ice: {
+				name: 'Ice',
+				frozen: 1,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
 			},
 			lightbulb: {
 				name: 'Light Bulb',
@@ -268,6 +311,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_superhuge,
 				hunger: calories_superhuge,
 				stack: stack_size_smallitem
+			},
+			mole: {
+				name: 'Moleworm',
+				inedible: true,
+				meat: 0.5,
+				dlc: 'giants'
 			},
 			plantmeat: {
 				name: 'Leafy Meat',
@@ -523,6 +572,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Seeds',
 				uncookable: true,
 				health: 0,
+				//seed: 1,
+				//  In Don't Starve's code, this is commented out.
+				//  I'm guessing they considered making these usable
+				//  in the crock pot again, but changed their minds.
 				hunger: calories_tiny / 2,
 				perish: perish_superslow,
 				stack: stack_size_smallitem
@@ -770,6 +823,50 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				stack: stack_size_smallitem
 			},
+			cactusmeat: {
+				name: 'Cactus Flesh',
+				ideal: true,
+				veggie: 1,
+				hunger: calories_small,
+				health: -healing_small,
+				perish: perish_med,
+				sanity: -sanity_tiny,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
+			},
+			cactusmeat_cooked: {
+				name: 'Cooked Cactus Flesh',
+				veggie: 1,
+				hunger: calories_small,
+				health: healing_tiny,
+				perish: perish_med,
+				sanity: sanity_med,
+				precook: 1,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
+			},
+			watermelon: {
+				name: 'Watermelon',
+				fruit: 1,
+				ideal: true,
+				hunger: calories_small,
+				health: healing_small,
+				perish: perish_fast,
+				sanity: sanity_tiny,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
+			},
+			watermelon_cooked: {
+				name: 'Grilled Watermelon',
+				fruit: 1,
+				hunger: calories_small,
+				health: healing_tiny,
+				perish: perish_superfast,
+				sanity: sanity_tiny * 1.5,
+				precook: 1,
+				stack: stack_size_smallitem,
+				dlc: 'giants'
+			},
 			wormlight: {
 				name: 'Glow Berry',
 				uncookable: true,
@@ -848,7 +945,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small * 2,
 				perish: perish_slow,
 				sanity: sanity_med,
-				cooktime: 2
+				cooktime: 2,
+				tags: ['honeyed']
 			},
 			pumpkincookie: {
 				name: "Pumpkin Cookie",
@@ -862,7 +960,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_med,
 				sanity: sanity_med,
-				cooktime: 2
+				cooktime: 2,
+				tags: ['honeyed']
 			},
 			stuffedeggplant: {
 				name: 'Stuffed Eggplant',
@@ -876,6 +975,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_slow,
 				sanity: sanity_tiny,
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_brief,
 				cooktime: 2
 			},
 			fishsticks: {
@@ -904,7 +1005,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_slow,
 				sanity: sanity_tiny,
-				cooktime: 2
+				cooktime: 2,
+				tags: ['honeyed']
 			},
 			honeyham: {
 				name: 'Honey Ham',
@@ -918,7 +1020,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_huge,
 				perish: perish_slow,
 				sanity: sanity_tiny,
-				cooktime: 2
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_average,
+				cooktime: 2,
+				tags: ['honeyed']
 			},
 			dragonpie: {
 				name: 'Dragonpie',
@@ -932,6 +1037,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_huge,
 				perish: perish_slow,
 				sanity: sanity_tiny,
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_average,
 				cooktime: 2
 			},
 			kabobs: {
@@ -946,6 +1053,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_slow,
 				sanity: sanity_tiny,
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_long,
 				cooktime: 2
 			},
 			mandrakesoup: {
@@ -1016,6 +1125,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_preserved,
 				sanity: sanity_tiny,
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_average,
 				cooktime: 1
 			},
 			turkeydinner: {
@@ -1044,6 +1155,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_med,
 				perish: perish_slow,
 				sanity: sanity_tiny,
+				temperature: cold_food_bonus_temp,
+				temperatureduration: food_temp_brief,
 				cooktime: 1
 			},
 			jammypreserves: {
@@ -1086,7 +1199,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_fast,
 				sanity: sanity_tiny,
-				cooktime: 0.5
+				cooktime: 0.5,
+				tags: ['monstermeat']
 			},
 			waffles: {
 				name: 'Waffles',
@@ -1128,7 +1242,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: 0,
 				perish: 9000000,
 				sanity: 0,
-				cooktime: 0.5
+				cooktime: 0.5,
+				tags: ['honeyed']
 			},
 			unagi: {
 				name: 'Unagi',
@@ -1157,6 +1272,102 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				sanity: 0,
 				cooktime: 0.25
+			},
+			flowersalad: {
+				name: 'Flower Salad',
+				test: function(cooker, names, tags) {
+					return names.cactusflower && tags.veggie && tags.veggie >= 2 && !tags.meat && !tags.inedible && !tags.egg && !tags.sweetener && !tags.fruit;
+				},
+				requirements: [SPECIFIC('cactusflower'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg')), NOT(TAG('sweetener')), NOT(TAG('fruit'))],
+				priority: 10,
+				foodtype: "veggie",
+				health: healing_large,
+				hunger: calories_small,
+				perishtime: perish_fast,
+				sanity: sanity_tiny,
+				cooktime: 0.5,
+				dlc: 'giants'
+			},
+			icecream: {
+				name: 'Ice Cream',
+				test: function(cooker, names, tags) {
+					return tags.frozen && tags.dairy && tags.sweetener && !tags.meat && !tags.veggie && !tags.inedible && !tags.egg;
+				},
+				requirements: [TAG('frozen'), TAG('dairy'), TAG('sweetener'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible')), NOT(TAG('egg'))],
+				priority: 10,
+				foodtype: "veggie",
+				health: 0,
+				hunger: calories_med,
+				perishtime: perish_superfast,
+				sanity: sanity_huge,
+				temperature: cold_food_bonus_temp,
+				temperatureduration: food_temp_long,
+				cooktime: 0.5,
+				dlc: 'giants'
+			},
+			watermelonicle: {
+				name: 'Melonsicle',
+				test: function(cooker, names, tags) {
+					return names.watermelon && tags.frozen && names.twigs && !tags.meat && !tags.veggie && !tags.egg;
+				},
+				requirements: [SPECIFIC('watermelon'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg'))],
+				priority: 10,
+				foodtype: "veggie",
+				health: healing_small,
+				hunger: calories_small,
+				perishtime: perish_superfast,
+				sanity: sanity_medlarge,
+				temperature: cold_food_bonus_temp,
+				temperatureduration: food_temp_average,
+				cooktime: 0.5,
+				dlc: 'giants'
+			},
+			trailmix: {
+				name: 'Trail Mix',
+				test: function(cooker, names, tags) {
+					return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
+				},
+				requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
+				priority: 10,
+				foodtype: "veggie",
+				health: healing_medlarge,
+				hunger: calories_small,
+				perishtime: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 0.5,
+				dlc: 'giants'
+			},
+			hotchili: {
+				name: 'Spicy Chili',
+				test: function(cooker, names, tags) {
+					return tags.meat && tags.veggie && tags.meat >= 1.5 && tags.veggie >= 1.5;
+				},
+				requirements: [TAG('meat', COMPARE('>=', 1.5)), TAG('veggie', COMPARE('>=', 1.5))],
+				priority: 10,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_large,
+				perishtime: perish_med,
+				sanity: 0,
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_long,
+				cooktime: 0.5,
+				dlc: 'giants'
+			},
+			guacamole: {
+				name: 'Guacamole',
+				test: function(cooker, names, tags) {
+					return names.mole && names.cactusmeat && !tags.fruit;
+				},
+				requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
+				priority: 10,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_large,
+				perishtime: perish_med,
+				sanity: 0,
+				cooktime: 0.5,
+				dlc: 'giants'
 			}
 		},
 		recipeCrunchData,
@@ -1480,7 +1691,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		foodElement = document.getElementById('food'),
 		recipesElement = document.getElementById('recipes'),
 		fragment, navbar = document.getElementById('navbar'),
-		noDataset = false;
+		noDataset = false,
+		dlc = {
+			giants: {
+				name: 'Reign of Giants',
+				img: 'img/reign_of_giants_dlc.png'
+			}
+		};
 
 	if (!document.documentElement.dataset) {
 		noDataset = true;
@@ -1505,6 +1722,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_small));
 	document.getElementById('perishground').appendChild(document.createTextNode(Math.round(perish_ground_mult * 1000) / 10 + '%'));
 	document.getElementById('perishwinter').appendChild(document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'));
+	document.getElementById('perishsummer').appendChild(document.createTextNode(Math.round(perish_summer_mult * 1000) / 10 + '%'));
 	document.getElementById('perishfridge').appendChild(document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'));
 	var info,
 		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
@@ -1554,7 +1772,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			recipes[i].priority = recipes[i].priority || 0;
 			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').toLowerCase() + '.png';
 			if (recipes[i].requirements) {
-				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; '));
+				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:dlc|' + dlc[recipes[i].dlc].img + '] DLC') : ''));
 			}
 			recipes[index++] = recipes[i];
 		}
@@ -1590,6 +1808,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					f.dry = food[f.dry];
 				}
 				info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
+			}
+			if (f.dlc) {
+				info.push('requires [tag:dlc|' + dlc[f.dlc].img + '] DLC');
 			}
 			f.info = info.join('; ');
 			if (!f.uncookable) {

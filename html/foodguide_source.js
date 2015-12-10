@@ -101,6 +101,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		food = {
 			acorn: {
 				name: 'Birchnut',
+				uncookable: true,
 				hunger: calories_tiny,
 				health: healing_tiny,
 				perish: perish_preserved,

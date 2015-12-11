@@ -1198,7 +1198,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			lobster_dead: {
 				name: 'Dead Wobster',
-				uncookable: true,
+				uncookable: true, //a mistake, I think
 				health: healing_tiny,
 				hunger: calories_small,
 				sanity: 0,
@@ -1209,7 +1209,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			lobster_cooked: {
 				name: 'Delicious Wobster',
-				fish: 2,
+				uncookable: true, //a mistake, I think
+				// fish: 2,
 				health: healing_tiny,
 				hunger: calories_small,
 				sanity: 0,

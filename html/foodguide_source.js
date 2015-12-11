@@ -332,7 +332,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			mole: {
 				name: 'Moleworm',
-				inedible: true,
+				// inedible: true,
 				meat: 0.5,
 				dlc: 'giants'
 			},
@@ -1148,7 +1148,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			jellyfish: {
 				name: 'Jellyfish',
-				inedible: true,
+				// inedible: true,
 				fish: 1,
 				monster: 1,
 				perish: perish_one_day * 1.5,
@@ -1191,7 +1191,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			lobster: {
 				name: 'Wobster',
-				inedible: true,
+				// inedible: true,
 				fish: 2,
 				perish: total_day_time*2,
 				dlc: 'shipwrecked'
@@ -1221,7 +1221,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			crab: {
 				name: 'Crab',
-				inedible: true,
+				// inedible: true,
 				meat: 0.5,
 				fish: 1,
 				perish: total_day_time*2,
@@ -1776,7 +1776,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			seafoodgumbo: {
 				name: 'Seafood Gumbo',
 				test: function(cooker, names, tags) {
-					return tags.fish && tags.fish >= 2;
+					return tags.fish && tags.fish > 2;
 				},
 				requirements: [TAG('fish', COMPARE(">", 2))],
 				priority: 10,

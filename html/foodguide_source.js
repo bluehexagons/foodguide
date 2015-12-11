@@ -104,6 +104,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				uncookable: true,
 				hunger: calories_tiny,
 				health: healing_tiny,
+				sanity: 0,
 				perish: perish_preserved,
 				stack: stack_size_smallitem,
 				dlc: 'giants'
@@ -113,6 +114,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				seed: 1,
 				hunger: calories_tiny,
 				health: healing_tiny,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
 				dlc: 'giants'
@@ -123,6 +125,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				dairy: 1,
 				health: healing_large,
 				hunger: calories_med,
+				sanity: 0,
 				perish: perish_superslow,
 				stack: stack_size_smallitem
 			},
@@ -132,6 +135,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				decoration: 2,
 				health: healing_medsmall,
 				hunger: calories_tiny,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
@@ -195,6 +199,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				fish: 1,
 				health: healing_small,
 				hunger: calories_tiny,
+				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				dry: 'smallmeat_dried',
@@ -205,6 +210,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				ismeat: true,
 				health: healing_medsmall,
 				hunger: calories_small,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
@@ -215,8 +221,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				fish: 1,
 				health: healing_tiny,
 				hunger: calories_small,
+				sanity: 0,
 				perish: perish_superfast,
-				stack: stack_size_smallitem
+				stack: stack_size_smallitem,
+				drytime: dry_fast,
+				dry: 'smallmeat_dried'
 			},
 			fish_cooked: {
 				name: 'Cooked Fish',
@@ -226,6 +235,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				precook: 1,
 				health: healing_tiny,
 				hunger: calories_small,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
@@ -273,6 +283,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sweetener: true,
 				health: healing_small,
 				hunger: calories_tiny,
+				sanity: 0,
 				perish: perish_superslow,
 				stack: stack_size_smallitem
 			},
@@ -283,6 +294,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			ice: {
 				name: 'Ice',
 				frozen: 1,
+				health: 0,
+				hunger: 0,
+				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				dlc: 'giants'
@@ -291,6 +305,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Light Bulb',
 				health: healing_tiny,
 				hunger: 0,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
 				uncookable: true
@@ -301,6 +316,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				magic: 1,
 				health: healing_huge,
 				hunger: calories_huge,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			mandrake_cooked: {
@@ -311,6 +327,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				precook: 1,
 				health: healing_superhuge,
 				hunger: calories_superhuge,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			mole: {
@@ -462,6 +479,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				precook: 1,
 				health: healing_tiny,
 				hunger: calories_small,
+				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_meditem
 			},
@@ -578,6 +596,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				//  I'm guessing they considered making these usable
 				//  in the crock pot again, but changed their minds.
 				hunger: calories_tiny / 2,
+				sanity: 0,
 				perish: perish_superslow,
 				stack: stack_size_smallitem
 			},
@@ -586,6 +605,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				uncookable: true,
 				health: healing_tiny,
 				hunger: calories_tiny / 2,
+				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_smallitem
 			},
@@ -600,7 +620,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Tallbird Egg',
 				egg: 4,
 				health: healing_small,
-				hunger: calories_med
+				hunger: calories_med,
+				sanity: 0
 			},
 			tallbirdegg_cooked: {
 				name: 'Fried Tallbird Egg',
@@ -608,6 +629,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				precook: 1,
 				health: 0,
 				hunger: calories_large,
+				sanity: 0,
 				perish: perish_fast
 			},
 			trunk_summer: {
@@ -635,7 +657,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				inedible: 1
 			},
 			cavebanana: {
-				name: 'Cave Banana',
+				//Shipwrecked calls them bananas, less confusing to go with that one
+				name: 'Banana',//'Cave Banana',
 				isfruit: true,
 				fruit: 1,
 				health: healing_tiny,
@@ -875,7 +898,367 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_medsmall,
 				sanity: -sanity_small,
 				perish: perish_med
-			}
+			},
+			//Shipwrecked ingredients
+			//TODO: Update consumption values
+			//TODO: Add uncookable foods (that didn't occur to me while looking at cooking.lua)
+			seaweed: {
+				name: 'Seaweed',
+				veggie: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dry: 'seaweed_dried',
+				drytime: dry_fast,
+				dlc: 'shipwrecked'
+			},
+			seaweed_cooked: {
+				name: 'Roasted Seaweed',
+				veggie: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			seaweed_dried: {
+				name: 'Dried Seaweed',
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_preserved,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			sweet_potato: {
+				name: 'Sweet Potato',
+				veggie: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			sweet_potato_cooked: {
+				name: 'Cooked Sweet Potato',
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			coffeebeans: {
+				name: 'Coffee Beans',
+				fruit: 0.5,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			coffeebeans_cooked: {
+				name: 'Roasted Coffee Beans',
+				fruit: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_tiny,
+				perish: perish_slow,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			coconut: {
+				name: 'Coconut',
+				fruit: 1,
+				fat: 1,
+				health: 0,
+				hunger: calories_tiny/2,
+				sanity: 0,
+				perish: perish_preserved,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			coconut_cooked: {
+				name: 'Roasted Coconut',
+				fruit: 1,
+				fat: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+/*			doydoyegg: {
+				name: 'Doydoy Egg', //files don't capitalize Egg, but probably should
+				egg: 1,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			doydoyegg_cooked: {
+				name: 'Cooked Doydoy Egg', // no string for this?
+				egg: 1,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},*/
+			tropical_fish: {
+				name: 'Tropical Fish',
+				ismeat: true,
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dry: 'smallmeat_dried',
+				drytime: dry_fast,
+				dlc: 'shipwrecked'
+			},
+			fish_raw: {
+				name: 'Raw Fish',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				// rot: 'spoiled_fish', //apparently not??
+				dry: 'meat_dried',
+				drytime: dry_fast,
+				dlc: 'shipwrecked',
+			},
+			fish_med: {
+				name: 'Dead Dogfish',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				rot: 'spoiled_fish',
+				dry: 'meat_dried',
+				drytime: dry_fast,
+				dlc: 'shipwrecked'
+			},
+			dead_swordfish: {
+				name: 'Swordfish',
+				uncookable: true, //perhaps a mistake
+				// meat: 0.5,
+				// fish: 1,
+				health: healing_tiny,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				rot: 'spoiled_fish',
+				dry: 'meat_dried',
+				drytime: dry_fast,
+				dlc: 'shipwrecked'
+			},
+			fish_med_cooked: {
+				name: 'Fish Steak',
+				meat: 0.5,
+				fish: 1,
+				health: healing_med,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				// rot: 'spoiled_fish', //apparently not??
+				dlc: 'shipwrecked'
+			},
+			/*swordfish: { //this refers to the living prefab, probably an accident?
+				name: 'Swordfish',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_med,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				rot: 'spoiled_fish',
+				dlc: 'shipwrecked',
+				cook: food.fish_med_cooked //not sure if this works
+			},*/
+			shark_fin: {
+				name: 'Shark Fin',
+				meat: 0.5,
+				fish: 1,
+				health: healing_med, //TODO
+				hunger: calories_med,
+				sanity: -sanity_med,
+				perish: perish_fast,
+				stack: stack_size_largeitem,
+				dlc: 'shipwrecked'
+			},
+			limpets: {
+				name: 'Limpets',
+				meat: 0.5,
+				fish: 1,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			limpets_cooked: {
+				name: 'Cooked Limpets',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			mussel: {
+				name: 'Mussel',
+				meat: 0.5,
+				fish: 1,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			mussel_cooked: {
+				name: 'Cooked Mussel',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			jellyfish: {
+				name: 'Jellyfish',
+				inedible: true,
+				fish: 1,
+				monster: 1,
+				perish: perish_one_day * 1.5,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			jellyfish_dead: {
+				name: 'Dead Jellyfish',
+				uncookable: true,
+				health: 10,
+				hunger: 10,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dry: 'jellyfish_dried',
+				drytime: dry_fast,
+				dlc: 'shipwrecked'
+			},
+			jellyfish_cooked: {
+				name: 'Cooked Jellyfish',
+				fish: 1,
+				monster: 1,
+				health: 10,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			jellyfish_dried: {
+				name: 'Dried Jellyfish',
+				fish: 1,
+				monster: 1,
+				health: 10,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_preserved,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
+			lobster: {
+				name: 'Wobster',
+				inedible: true,
+				fish: 2,
+				perish: total_day_time*2,
+				dlc: 'shipwrecked'
+			},
+			lobster_dead: {
+				name: 'Dead Wobster',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_largeitem,
+				rot: 'spoiled_fish',
+				dlc: 'shipwrecked'
+			},
+			lobster_cooked: {
+				name: 'Delicious Wobster',
+				fish: 2,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				rot: 'spoiled_fish',
+				dlc: 'shipwrecked'
+			},
+			crab: {
+				name: 'Crab',
+				inedible: true,
+				meat: 0.5,
+				fish: 1,
+				perish: total_day_time*2,
+				dlc: 'shipwrecked'
+			},
+			fish_raw_small: {
+				name: 'Fish Morsel',
+				fish: 0.5,
+				health: healing_tiny,
+				hunger: calories_small,
+				perish: perish_superfast,
+				sanity: 0,
+				stack: stack_size_smallitem,
+				rot: 'spoiled_fish',
+				dry: 'smallmeat_dried',
+				dlc: 'shipwrecked'
+			},
+			fish_raw_small_cooked: {
+				name: 'Cooked Fish Morsel',
+				fish: 0.5,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				rot: 'spoiled_fish',
+				dlc: 'shipwrecked'
+			},
+			hail_ice: {
+				name: 'Hail',
+				frozen: 1,
+				health: healing_tiny/2,
+				hunger: calories_tiny/4,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'shipwrecked'
+			},
 		},
 		//note: qty not used yet, this is for rapid summation
 		COMPAREString = function () { return this.op + this.qty; },
@@ -888,6 +1271,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		},
 		NOQTY = {test: function (qty) { return !!qty; }, toString: function () { return ''; }},
 		COMPARE = function (op, qty) { return {op: op, qty: qty, test: COMPARISONS[op], toString: COMPAREString}; },
+		ANDTest = function (cooker, names, tags) { return this.item1.test(cooker, names, tags) && this.item2.test(cooker, names, tags); },
+		ANDString = function () { return this.item1 + ' and ' + this.item2; },
+		AND = function (item1, item2) { return {item1: item1, item2: item2, test: ANDTest, toString: ANDString, cancel: item1.cancel && item2.cancel}; },
 		ORTest = function (cooker, names, tags) { return this.item1.test(cooker, names, tags) || this.item2.test(cooker, names, tags); },
 		ORString = function () { return this.item1 + ' or ' + this.item2; },
 		OR = function (item1, item2) { return {item1: item1, item2: item2, test: ORTest, toString: ORString, cancel: item1.cancel || item2.cancel}; },
@@ -1369,6 +1755,175 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				cooktime: 0.5,
 				dlc: 'giants'
+			},
+			//Shipwrecked recipes; TODO: Strings
+			californiaroll: {
+				name: 'California Roll',
+				test: function(cooker, names, tags) {
+					return names.seaweed && names.seaweed == 2 && tags.fish && tags.fish >= 1;
+				},
+				requirements: [SPECIFIC('seaweed', COMPARE("==", 2)), TAG('fish', COMPARE(">=", 1))],
+				priority: 20,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_med,
+				perish: perish_med,
+				sanity: sanity_small,
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
+			},
+			seafoodgumbo: {
+				name: 'Seafood Gumbo',
+				test: function(cooker, names, tags) {
+					return tags.fish && tags.fish >= 2;
+				},
+				requirements: [TAG('fish', COMPARE(">", 2))],
+				priority: 10,
+				foodtype: "meat",
+				health: healing_large,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_medlarge,
+				cooktime: 1,
+				dlc: 'shipwrecked'
+			},
+			bisque: {
+				name: 'Bisque',
+				test: function(cooker, names, tags) {
+					return names.limpets && names.limpets == 3 && tags.frozen;
+				},
+				requirements: [SPECIFIC('limpets', COMPARE("==", 3)), TAG('frozen')],
+				priority: 30,
+				foodtype: "meat",
+				health: healing_huge,
+				hunger: calories_medsmall,
+				perish: perish_med,
+				sanity: sanity_tiny,
+				cooktime: 1,
+				dlc: 'shipwrecked'
+			},
+			ceviche: {
+				name: 'Ceviche',
+				test: function(cooker, names, tags) {
+					return tags.fish && tags.fish >= 2 && tags.frozen;
+				},
+				requirements: [TAG('fish', COMPARE(">=", 2)), TAG('frozen')],
+				priority: 20,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_med,
+				perish: perish_med,
+				sanity: sanity_tiny,
+				//TODO: add temperature (requires reworks elsewhere and for RoG recipes
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
+			},
+			jellyopop: {
+				name: 'Jelly-O Pop',
+				test: function(cooker, names, tags) {
+					return names.jellyfish && tags.frozen && tags.inedible;
+				},
+				requirements: [SPECIFIC('jellyfish'), TAG('frozen'), TAG('inedible')],
+				priority: 20,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_small,
+				perish: perish_superfast,
+				sanity: 0,
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
+			},
+			bananapop: {
+				name: 'Banana Pop',
+				test: function(cooker, names, tags) {
+					return names.cavebanana && tags.frozen && tags.inedible && !tags.meat && !tags.fish;
+				},
+				requirements: [SPECIFIC('cavebanana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
+				priority: 20,
+				foodtype: "veggie",
+				health: healing_med,
+				hunger: calories_small,
+				perish: perish_superfast,
+				sanity: sanity_large,
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
+			},
+			lobsterbisque: {
+				name: 'Lobster Bisque',
+				test: function(cooker, names, tags) {
+					return names.lobster && tags.frozen;
+				},
+				requirements: [SPECIFIC('lobster'), TAG('frozen')],
+				priority: 30,
+				foodtype: "meat",
+				health: healing_med,
+				hunger: calories_med,
+				perish: perish_med,
+				sanity: sanity_small,
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
+			},
+			lobsterdinner: {
+				name: 'Lobster Dinner',
+				test: function(cooker, names, tags) {
+					return names.lobster && names.butter && !tags.meat && !tags.frozen;
+				},
+				requirements: [SPECIFIC('lobster'), SPECIFIC('butter'), NOT(TAG('meat')), NOT(TAG('frozen'))],
+				priority: 25,
+				foodtype: "meat",
+				health: healing_huge,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_huge,
+				cooktime: 1,
+				dlc: 'shipwrecked'
+			},
+			sharkfinsoup: {
+				name: 'Shark Fin Soup',
+				test: function(cooker, names, tags) {
+					return names.shark_fin;
+				},
+				requirements: [SPECIFIC('shark_fin')],
+				priority: 20,
+				foodtype: "meat",
+				health: healing_large,
+				hunger: calories_small,
+				perish: perish_med,
+				sanity: sanity_small,
+				//apparently this has 10 naughtiness?? wtf?
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
+			},
+			surfnturf: {
+				name: "Surf 'n' Turf",
+				test: function(cooker, names, tags) {
+					return tags.meat && tags.meat >= 2.5 && tags.fish && tags.fish >= 1.5 && !tags.frozen;
+				},
+				requirements: [TAG('meat', COMPARE(">=", 2.5)), TAG('fish', COMPARE(">=", 1.5)), NOT(TAG('frozen'))],
+				priority: 30,
+				foodtype: "meat",
+				health: healing_huge,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_large,
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
+			},
+			coffee: {
+				name: 'Coffee', //not in files yet
+				test: function(cooker, names, tags) {
+					return names.coffeebeans_cooked && (names.coffeebeans_cooked == 4 || (names.coffeebeans_cooked == 3 && (tags.dairy || tags.sweetener)));
+				},
+				requirements: [OR(SPECIFIC('coffeebeans_cooked', COMPARE("==", 4)), (AND(SPECIFIC('coffeebeans_cooked', COMPARE('==', 3)), OR(TAG('dairy'), TAG('sweetener')))))],
+				priority: 30,
+				foodtype: "veggie",
+				health: healing_small,
+				hunger: calories_tiny,
+				perish: perish_med,
+				sanity: -sanity_tiny,
+				//TODO figure in caffeine somehow
+				cooktime: 0.5,
+				dlc: 'shipwrecked'
 			}
 		},
 		recipeCrunchData,
@@ -1697,9 +2252,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			giants: {
 				name: 'Reign of Giants',
 				img: 'img/reign_of_giants_dlc.png'
+			},
+			shipwrecked: {
+				name: 'Shipwrecked',
+				img: 'img/shipwrecked_dlc.png'
 			}
 		};
-
+	
+	food.tropical_fish.cook = food.fish_raw_small_cooked; //might need to be here instead
+	// food.swordfish_dead.cook = food.fish_med_cooked; //might need to be here instead
+	food.fish_raw.cook = food.fish_med_cooked; //might need to be here instead
+	
 	if (!document.documentElement.dataset) {
 		noDataset = true;
 		Object.defineProperty(Element.prototype, 'dataset', {
@@ -1771,9 +2334,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			recipes[i].lowerName = recipes[i].name.toLowerCase();
 			recipes[i].weight = recipes[i].weight || 1;
 			recipes[i].priority = recipes[i].priority || 0;
-			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').toLowerCase() + '.png';
+			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
 			if (recipes[i].requirements) {
-				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:dlc|' + dlc[recipes[i].dlc].img + '] DLC') : ''));
+				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:' + recipes[i].dlc + '|' + dlc[recipes[i].dlc].img + '] DLC') : ''));
 			}
 			recipes[index++] = recipes[i];
 		}
@@ -1811,7 +2374,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
 			}
 			if (f.dlc) {
-				info.push('requires [tag:dlc|' + dlc[f.dlc].img + '] DLC');
+				f[f.dlc] = true;
+				info.push('requires [tag:' + f.dlc + '|' + dlc[f.dlc].img + '] DLC');
 			}
 			f.info = info.join('; ');
 			if (!f.uncookable) {

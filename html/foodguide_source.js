@@ -1237,6 +1237,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				rot: 'spoiled_fish',
 				dry: 'smallmeat_dried',
+				drytime: dry_fast,
 				dlc: 'shipwrecked'
 			},
 			fish_raw_small_cooked: {

@@ -294,8 +294,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			ice: {
 				name: 'Ice',
 				frozen: 1,
-				health: 0,
-				hunger: 0,
+				health: healing_tiny/2,
+				hunger: calories_tiny/4,
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
@@ -902,6 +902,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			//Shipwrecked ingredients
 			//TODO: Update consumption values
 			//TODO: Add uncookable foods (that didn't occur to me while looking at cooking.lua)
+			blubber: {
+				name: 'Blubber',
+				uncookable: true,
+				health: 10,
+				hunger: 10,
+				sanity: 0,
+				stack: stack_size_largeitem,
+				dlc: 'shipwrecked'
+			},
 			seaweed: {
 				name: 'Seaweed',
 				veggie: 1,
@@ -1045,7 +1054,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_tiny,
 				hunger: calories_med,
 				sanity: 0,
-				perish: perish_superfast,
+				perish: perish_fast,
 				stack: stack_size_smallitem,
 				rot: 'spoiled_fish',
 				dry: 'meat_dried',
@@ -1060,7 +1069,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_tiny,
 				hunger: calories_med,
 				sanity: 0,
-				perish: perish_superfast,
+				perish: perish_fast,
 				stack: stack_size_smallitem,
 				rot: 'spoiled_fish',
 				dry: 'meat_dried',
@@ -1858,7 +1867,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [SPECIFIC('lobster'), TAG('frozen')],
 				priority: 30,
 				foodtype: "meat",
-				health: healing_med,
+				health: healing_huge,
 				hunger: calories_med,
 				perish: perish_med,
 				sanity: sanity_small,
@@ -1891,7 +1900,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_large,
 				hunger: calories_small,
 				perish: perish_med,
-				sanity: sanity_small,
+				sanity: -sanity_small,
 				//apparently this has 10 naughtiness?? wtf?
 				cooktime: 0.5,
 				dlc: 'shipwrecked'

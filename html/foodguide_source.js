@@ -897,11 +897,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_medsmall + healing_small,
 				hunger: calories_medsmall,
 				sanity: -sanity_small,
-				perish: perish_med
+				perish: perish_med,
+				note: "Gives 90 seconds of light."
+			},
+			glommerfuel: {
+				name: "Glommer's Goop",
+				uncookable: true,
+				health: healing_large,
+				hunger: calories_tiny,
+				sanity: -sanity_huge,
+				dlc: 'giants'
 			},
 			//Shipwrecked ingredients
-			//TODO: Update consumption values
-			//TODO: Add uncookable foods (that didn't occur to me while looking at cooking.lua)
 			blubber: {
 				name: 'Blubber',
 				uncookable: true,
@@ -981,6 +988,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_tiny,
 				perish: perish_slow,
 				stack: stack_size_smallitem,
+				note: 'Gives 5 bonus speed (+83%) for 30 seconds.',
 				dlc: 'shipwrecked'
 			},
 			coconut: {
@@ -1270,6 +1278,28 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				dlc: 'shipwrecked'
 			},
+			//DST Ingredients
+			wormlight_lesser: {
+				name: 'Lesser Glowberry',
+				uncookable: true,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				note: "Gives 22.5 seconds of light.",
+				dlc: 'dst'
+			},
+			phlegm: {
+				name: 'Phlegm',
+				uncookable: true,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_med,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				dlc: 'dst'
+			},
 		},
 		//note: qty not used yet, this is for rapid summation
 		COMPAREString = function () { return this.op + this.qty; },
@@ -1451,8 +1481,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_slow,
 				sanity: sanity_tiny,
-				temperature: hot_food_bonus_temp,
-				temperatureduration: food_temp_long,
 				cooktime: 2
 			},
 			mandrakesoup: {
@@ -1509,6 +1537,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large * 4,
 				perish: perish_med,
 				sanity: sanity_tiny,
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_long,
 				cooktime: 0.75
 			},
 			perogies: {
@@ -1539,6 +1569,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_huge,
 				perish: perish_fast,
 				sanity: sanity_tiny,
+				temperature: hot_food_bonus_temp,
+				temperatureduration: food_temp_average,
 				cooktime: 3
 			},
 			ratatouille: {
@@ -1583,6 +1615,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_med,
 				perish: perish_fast,
 				sanity: sanity_tiny,
+				temperature: cold_food_bonus_temp,
+				temperatureduration: food_temp_brief,
 				cooktime: 0.5
 			},
 			fishtacos: {
@@ -1767,7 +1801,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 0.5,
 				dlc: 'giants'
 			},
-			//Shipwrecked recipes; TODO: Strings
+			//Shipwrecked recipes
 			californiaroll: {
 				name: 'California Roll',
 				test: function(cooker, names, tags) {
@@ -1825,7 +1859,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_med,
 				perish: perish_med,
 				sanity: sanity_tiny,
-				//TODO: add temperature (requires reworks elsewhere and for RoG recipes
+				temperature: cold_food_bonus_temp,
+				temperatureduration: food_temp_average,
 				cooktime: 0.5,
 				dlc: 'shipwrecked'
 			},
@@ -1841,6 +1876,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				perish: perish_superfast,
 				sanity: 0,
+				temperature: cold_food_bonus_temp,
+				temperatureduration: food_temp_average,
 				cooktime: 0.5,
 				dlc: 'shipwrecked'
 			},
@@ -1856,6 +1893,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				perish: perish_superfast,
 				sanity: sanity_large,
+				temperature: cold_food_bonus_temp,
+				temperatureduration: food_temp_average,
 				cooktime: 0.5,
 				dlc: 'shipwrecked'
 			},
@@ -1901,8 +1940,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				perish: perish_med,
 				sanity: -sanity_small,
-				//apparently this has 10 naughtiness?? wtf?
 				cooktime: 0.5,
+				note: 'Gives 10 naughtiness.',
 				dlc: 'shipwrecked'
 			},
 			surfnturf: {
@@ -1932,8 +1971,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_tiny,
 				perish: perish_med,
 				sanity: -sanity_tiny,
-				//TODO figure in caffeine somehow
 				cooktime: 0.5,
+				note: 'Gives 5 bonus speed (+83%) for 0.5 days.',
 				dlc: 'shipwrecked'
 			}
 		},
@@ -2262,11 +2301,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		dlc = {
 			giants: {
 				name: 'Reign of Giants',
-				img: 'img/reign_of_giants_dlc.png'
+				img: 'img/reign_of_giants.png'
 			},
 			shipwrecked: {
 				name: 'Shipwrecked',
-				img: 'img/shipwrecked_dlc.png'
+				img: 'img/shipwrecked.png'
+			},
+			dst: {
+				name: "Together",
+				img: 'img/together.png'
 			}
 		};
 	
@@ -2309,7 +2352,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.id = i;
 			f.nameObject = {};
 			f.nameObject[i] = 1;
-			f.img = 'img/' + f.name.replace(/ /g, '_').toLowerCase() + '.png';
+			f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
 			if (i.indexOf('_cooked') !== -1) {
 				f.cooked = true;
 			}
@@ -2347,7 +2390,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			recipes[i].priority = recipes[i].priority || 0;
 			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
 			if (recipes[i].requirements) {
-				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:' + recipes[i].dlc + '|' + dlc[recipes[i].dlc].img + '] DLC') : ''));
+				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:' + recipes[i].dlc + '|' + dlc[recipes[i].dlc].img + ']') : ''));
+				if(recipes[i].dlc) { recipes[i][recipes[i].dlc] = true; }
 			}
 			recipes[index++] = recipes[i];
 		}
@@ -2386,7 +2430,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			if (f.dlc) {
 				f[f.dlc] = true;
-				info.push('requires [tag:' + f.dlc + '|' + dlc[f.dlc].img + '] DLC');
+				info.push('requires [tag:' + f.dlc + '|' + dlc[f.dlc].img + ']');
 			}
 			f.info = info.join('; ');
 			if (!f.uncookable) {
@@ -2415,6 +2459,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 			} else {
 				f.info += ('[|]cannot be added to crock pot');
+			}
+			if(f.note) {
+				f.info += ('[|]' + f.note);
 			}
 			f.info = makeLinkable(f.info);
 		}
@@ -2743,8 +2790,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var makeFoodRow = function (item) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
-	var makeRecipeRow = function (item, health, hunger) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '');
+	var makeRecipeRow = function (item, health, hunger, sanity) {
+		var note = item.note || '';
+		if(item.temperature) {
+			note = note + 'Provides ' + item.temperature + ' heat for ' + item.temperatureduration + ' seconds.';
+		}
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity) + pct(sanity, item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', note);
 	};
 	(function () {
 		var foodHighlight,
@@ -2772,10 +2823,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			setRecipeHighlight = function (e) {
 				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
-				setTab('foodlist');
-				foodHighlight = name;
-				foodHighlighted = matchingNames(food, name);
-				foodTable.update(true);
+				var dlcname = name.substring(name.indexOf(":")+1);
+				var dlctag = dlc[dlcname] && true || false;
+				if(dlctag) {
+					// setTab('crockpot');
+					// name = dlcname;
+					recipeHighlighted = matchingNames(recipes, name);
+					console.log(recipeHighlighted);
+					recipeTable.update(true);
+				} else {
+					setTab('foodlist');
+					foodHighlight = name;
+					foodHighlighted = matchingNames(food, name);
+					foodTable.update(true);
+				}
 			},
 			testFoodHighlight = function (item) {
 				return foodHighlighted.indexOf(item) !== -1;
@@ -2793,7 +2854,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				testFoodHighlight
 			),
 			recipeTable = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
 				Array.prototype.slice.call(recipes),
 				makeRecipeRow,
 				'name',
@@ -3238,7 +3299,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					//simulator
 					updateRecipes = function () {
 						var cooking,
-							health, hunger,
+							health, hunger, sanity,
 							table;
 						ingredients = Array.prototype.map.call(slots, function (slot) {
 							return getSlot(slot);
@@ -3246,11 +3307,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						cooking = getRecipes(ingredients);
 						health = cooking[0].health;
 						hunger = cooking[0].hunger;
+						sanity = cooking[0].sanity;
 						table = makeSortableTable(
-							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
 							cooking,
 							function (item) {
-								return makeRecipeRow(item, health, hunger);
+								return makeRecipeRow(item, health, hunger, sanity);
 							},
 							'priority',
 							true,
@@ -3272,10 +3334,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							if (suggestions.length > 0) {
 								results.appendChild(document.createTextNode('Add more ingredients to make:'));
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+									{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
 									suggestions,
 									function (item) {
-										return makeRecipeRow(item, health, hunger);
+										return makeRecipeRow(item, health, hunger, sanity);
 									},
 									'priority',
 									false,
@@ -3314,7 +3376,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							getSuggestions(inventoryrecipes, ingredients, null, true);
 							if (inventoryrecipes.length > 0) {
 								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': ''},
+									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
 									inventoryrecipes,
 									makeRecipeRow,
 									'name'

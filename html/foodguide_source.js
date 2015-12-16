@@ -202,7 +202,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dry: 'smallmeat_dried',
+				dry: 'morsel_dried',
 				drytime: dry_fast
 			},
 			eel_cooked: {
@@ -225,7 +225,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				drytime: dry_fast,
-				dry: 'smallmeat_dried'
+				dry: 'morsel_dried'
 			},
 			fish_cooked: {
 				name: 'Cooked Fish',
@@ -334,6 +334,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Moleworm',
 				// inedible: true,
 				meat: 0.5,
+				perish: total_day_time*2,
 				dlc: 'giants'
 			},
 			plantmeat: {
@@ -435,7 +436,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				stack: stack_size_smallitem,
 				drytime: dry_fast,
-				dry: 'smallmeat_dried'
+				dry: 'morsel_dried'
 			},
 			morsel_cooked: {
 				name: 'Cooked Morsel',
@@ -448,7 +449,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_smallitem
 			},
-			smallmeat_dried: {
+			morsel_dried: {
 				name: 'Small Jerky',
 				ismeat: true,
 				meat: 0.5,
@@ -470,7 +471,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				stack: stack_size_meditem,
 				drytime: dry_fast,
-				dry: 'smallmeat_dried'
+				dry: 'morsel_dried'
 			},
 			drumstick_cooked: {
 				name: 'Fried Drumstick',
@@ -492,7 +493,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				stack: stack_size_smallitem,
 				drytime: dry_med,
-				dry: 'smallmeat_dried',
+				dry: 'morsel_dried',
 				uncookable: true
 			},
 			batwing_cooked: {
@@ -909,6 +910,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				dlc: 'giants'
 			},
 			//Shipwrecked ingredients
+			coral_brain: {
+				name: 'Brainy Matter',
+				uncookable: true,
+				health: -10,
+				hunger: 10,
+				sanity: 50,
+				perish: perish_one_day,
+				dlc: 'shipwrecked'
+			},
 			blubber: {
 				name: 'Blubber',
 				uncookable: true,
@@ -1037,7 +1047,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dry: 'smallmeat_dried',
+				dry: 'morsel_dried',
 				drytime: dry_fast,
 				dlc: 'shipwrecked'
 			},
@@ -1253,7 +1263,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				stack: stack_size_smallitem,
 				rot: 'spoiled_fish',
-				dry: 'smallmeat_dried',
+				dry: 'morsel_dried',
 				drytime: dry_fast,
 				dlc: 'shipwrecked'
 			},
@@ -2313,9 +2323,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		};
 	
-	food.tropical_fish.cook = food.fish_raw_small_cooked; //might need to be here instead
-	// food.swordfish_dead.cook = food.fish_med_cooked; //might need to be here instead
-	food.fish_raw.cook = food.fish_med_cooked; //might need to be here instead
+	//Have to specify these after the table because they need to refer to the actual entries
+	//It would probably be better to simply allow .cook to have the key in it, and then
+	//	process it later, though...
+	// TODO: ^ make that work, and also process the rot: entries
+	food.tropical_fish.cook = food.fish_raw_small_cooked;
+	food.crab.cook = food.fish_raw_small_cooked;
+	food.jellyfish.cook = food.jellyfish_cooked;
+	food.dead_swordfish.cook = food.fish_med_cooked; 
+	food.fish_raw.cook = food.fish_med_cooked;
+	food.lobster_dead.cook = food.lobster_cooked;
+	food.mole.cook = food.morsel_cooked;
 	
 	if (!document.documentElement.dataset) {
 		noDataset = true;

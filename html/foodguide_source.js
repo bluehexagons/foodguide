@@ -925,6 +925,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: 10,
 				hunger: 10,
 				sanity: 0,
+				perish: perish_med,
 				stack: stack_size_largeitem,
 				dlc: 'shipwrecked'
 			},
@@ -1189,7 +1190,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: 10,
 				sanity: 0,
 				perish: perish_fast,
-				stack: stack_size_smallitem,
+				stack: stack_size_meditem,
 				dry: 'jellyfish_dried',
 				drytime: dry_fast,
 				dlc: 'shipwrecked'
@@ -1202,7 +1203,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_medsmall,
 				sanity: 0,
 				perish: perish_med,
-				stack: stack_size_smallitem,
+				stack: stack_size_meditem,
 				dlc: 'shipwrecked'
 			},
 			jellyfish_dried: {
@@ -1213,7 +1214,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_medsmall,
 				sanity: 0,
 				perish: perish_preserved,
-				stack: stack_size_smallitem,
+				stack: stack_size_meditem,
 				dlc: 'shipwrecked'
 			},
 			lobster: {
@@ -1281,9 +1282,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			hail_ice: {
 				name: 'Hail',
 				frozen: 1,
-				health: healing_tiny/2,
-				hunger: calories_tiny/4,
-				sanity: 0,
+				// health: healing_tiny/2,
+				// hunger: calories_tiny/4,
+				// sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				dlc: 'shipwrecked'

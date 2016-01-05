@@ -98,6 +98,76 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 		base_cook_time = night_time*.3333,
 
+		activeMode = 'shipwrecked',
+		modeRefreshers = [],
+		modes = {
+			vanilla: {
+				name: "Vanilla",
+				img: "vanilla.png",
+				gametags: {
+					vanilla: true,
+					giants: false,
+					shipwrecked: false,
+					together: false,
+				},
+				color: '#ff592e',
+				buttons: [],
+			},
+			rog: {
+				name: "Reign of Giants",
+				img: "reign_of_giants.png",
+				gametags: {
+					vanilla: true,
+					giants: true,
+					shipwrecked: false,
+					together: false,
+				},
+				color: '#b857c6',
+				buttons: [],
+			},
+			shipwrecked: {
+				name: "Shipwrecked",
+				img: "shipwrecked.png",
+				gametags: {
+					vanilla: true,
+					giants: true,
+					shipwrecked: true,
+					together: false,
+				},
+				color: '#50c1cc',
+				buttons: [],
+			},
+			together: {
+				name: "Together",
+				img: "together.png",
+				gametags: {
+					vanilla: true,
+					giants: true,
+					shipwrecked: false,
+					together: true,
+				},
+				color: '#c0c0c0',
+				buttons: [],
+			},
+		},
+		setMode = function(modeName) {
+			for(var modeButton in modes[activeMode].buttons) {
+				modes[activeMode].buttons[modeButton].className = 'link';
+			}
+			activeMode = modeName
+			for(var modeButton in modes[activeMode].buttons) {
+				modes[activeMode].buttons[modeButton].className = 'link selected';
+			}
+			var body = document.getElementsByTagName("BODY")[0];
+			body.style.background = modes[activeMode].color;
+			body.style['background-image'] = "url('img/backgroundstripes.png')";
+			body.style['background-size'] = '100%';
+			body.style['background-attachment'] = 'fixed';
+			for(var modeRefresher in modeRefreshers) {
+				modeRefreshers[modeRefresher]();
+			}
+		},
+		
 		food = {
 			acorn: {
 				name: 'Birchnut',
@@ -335,6 +405,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				// inedible: true,
 				meat: 0.5,
 				perish: total_day_time*2,
+				cook: 'morsel_cooked',
 				dlc: 'giants'
 			},
 			plantmeat: {
@@ -1048,6 +1119,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
+				cook: 'fish_raw_small_cooked',
 				dry: 'morsel_dried',
 				drytime: dry_fast,
 				dlc: 'shipwrecked'
@@ -1061,6 +1133,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
+				cook: 'fish_med_cooked',
 				// rot: 'spoiled_fish', //apparently not??
 				dry: 'meat_dried',
 				drytime: dry_fast,
@@ -1090,6 +1163,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
+				cook: 'fish_med_cooked',
 				rot: 'spoiled_fish',
 				dry: 'meat_dried',
 				drytime: dry_fast,
@@ -1191,6 +1265,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_meditem,
+				cook: 'jellyfish_cooked',
 				dry: 'jellyfish_dried',
 				drytime: dry_fast,
 				dlc: 'shipwrecked'
@@ -1232,6 +1307,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_largeitem,
+				cook: 'lobster_cooked',
 				rot: 'spoiled_fish',
 				dlc: 'shipwrecked'
 			},
@@ -1253,6 +1329,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				fish: 1,
 				perish: total_day_time*2,
+				cook: 'fish_raw_small_cooked',
 				dlc: 'shipwrecked'
 			},
 			fish_raw_small: {
@@ -1994,6 +2071,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				tag,
 				tagsearch = /^tag[: ]/,
 				tagsplit = /^tag:? */,
+				tagnotsearch = /^tagnot[: ]/,
+				tagnotsplit = /^tagnot:? */,
 				recipe,
 				recipesearch = /^recipe[: ]/,
 				recipesplit = /^recipe:? */,
@@ -2077,7 +2156,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return function (arr, search, includeUncookable) {
 				allowUncookable = !!includeUncookable;
 				name = search.toLowerCase();
-				if (tagsearch.test(name)) {
+				if(tagnotsearch.test(name)) {
+					tag = name.split(tagnotsplit)[1];
+					return arr.filter(function(element){ return !tagFilter(element); }).sort(byMatch);
+				} else if (tagsearch.test(name)) {
 					tag = name.split(tagsplit)[1];
 					return arr.filter(tagFilter).sort(byMatch);
 				} else if (recipesearch.test(name)) {
@@ -2124,6 +2206,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 			}
 		},
+		testMode = function(item) {
+			for(var gametag in modes[activeMode].gametags) {
+				if(!modes[activeMode].gametags[gametag] && item[gametag]) {
+					return false;
+				}
+			}
+			return true;
+		},
 		getSuggestions = (function () {
 			var names,
 				tags;
@@ -2135,6 +2225,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				setIngredientValues(items, names, tags);
 				for (i = 0; i < recipes.length; i++) {
 					valid = false;
+					if(!testMode(recipes[i])) { break; }
 					for (ii = 0; ii < recipes[i].requirements.length; ii++) {
 						if (recipes[i].requirements[ii].test(null, names, tags)) {
 							if (!recipes[i].requirements[ii].cancel) {
@@ -2166,13 +2257,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				tags = {};
 				setIngredientValues(items, names, tags);
 				for (i = 0; i < recipes.length; i++) {
-					recipes[i].test(null, names, tags) && recipeList.push(recipes[i]);
+					recipes[i].test(null, names, tags)
+					&& testMode(recipes[i])
+					&& recipeList.push(recipes[i]);
 				}
 				recipeList.sort(function (a, b) {
 					return b.priority - a.priority;
 				});
 				tags.img = '';
 				tags.name = 'Combined';
+				tags.priority = Number.NEGATIVE_INFINITY;
 				recipeList.unshift(tags);
 				return recipeList;
 			};
@@ -2324,17 +2418,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		};
 	
-	//Have to specify these after the table because they need to refer to the actual entries
-	//It would probably be better to simply allow .cook to have the key in it, and then
-	//	process it later, though...
-	// TODO: ^ make that work, and also process the rot: entries
-	food.tropical_fish.cook = food.fish_raw_small_cooked;
-	food.crab.cook = food.fish_raw_small_cooked;
-	food.jellyfish.cook = food.jellyfish_cooked;
-	food.dead_swordfish.cook = food.fish_med_cooked; 
-	food.fish_raw.cook = food.fish_med_cooked;
-	food.lobster_dead.cook = food.lobster_cooked;
-	food.mole.cook = food.morsel_cooked;
+	// TODO: process the rot: entries, and add the spoiled fish
 	
 	if (!document.documentElement.dataset) {
 		noDataset = true;
@@ -2379,6 +2463,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				f.cook = food[i + '_cooked'];
 				food[i + '_cooked'].raw = f;
 			}
+			if (typeof f.cook == "string") {
+				f.cook = food[f.cook]
+			}
 			f.info = [];
 			info = f.info;
 			f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
@@ -2411,6 +2498,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			if (recipes[i].requirements) {
 				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:' + recipes[i].dlc + '|' + dlc[recipes[i].dlc].img + ']') : ''));
 				if(recipes[i].dlc) { recipes[i][recipes[i].dlc] = true; }
+				else { recipes[i].vanilla = true; }
 			}
 			recipes[index++] = recipes[i];
 		}
@@ -2450,7 +2538,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			if (f.dlc) {
 				f[f.dlc] = true;
 				info.push('requires [tag:' + f.dlc + '|' + dlc[f.dlc].img + ']');
-			}
+			} else { f.vanilla = true; }
 			f.info = info.join('; ');
 			if (!f.uncookable) {
 				f.recipes = [];
@@ -2660,7 +2748,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 		});
 	}());
-
+	
 	var queue = function (img) {
 			if (img.dataset.pending) {
 				makeImage.queue(img, img.dataset.pending, 32);
@@ -2848,7 +2936,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					// setTab('crockpot');
 					// name = dlcname;
 					recipeHighlighted = matchingNames(recipes, name);
-					console.log(recipeHighlighted);
 					recipeTable.update(true);
 				} else {
 					setTab('foodlist');
@@ -3131,6 +3218,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		getSlot = function (slotElement) {
 			return food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null;
 		};
+	
 	(function () {
 		var pickers = document.getElementsByClassName('ingredientpicker'),
 			i = pickers.length;
@@ -3294,6 +3382,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						var names;
 						searchSelectorControls.splitTag();
 						names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+						var newNames = [];
+						for(var gametag in modes[activeMode].gametags) {
+							if(!modes[activeMode].gametags[gametag]) {
+								names = matchingNames(names, 'tagnot:'+gametag, allowUncookable);
+							}
+						}
+						// newNames.concat(matchingNames(names, 'tag:frozen', allowUncookable));
+						// names = newNames;
+						// names.sort();
 						dropdown.removeChild(ul);
 						ul = document.createElement('div');
 						ul.dataset.length = 0;
@@ -3314,6 +3411,45 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						}
 					},
 					coords;
+				var modeSelector = document.createElement('table');
+				modeSelector.className = 'modes';
+				var modeSelectorRow = document.createElement('tr');
+				modeSelector.appendChild(modeSelectorRow);
+				var explanationCell = document.createElement('td');
+				explanationCell.innerHTML = '<b>Select a mode for a particular version of the game:</b>';
+				modeSelectorRow.appendChild(explanationCell);
+				picker.parentNode.insertBefore(modeSelector, picker);
+
+				
+				// var modeButtons = {};
+				// var setMode = function(modeName) {
+					// modeButtons[activeMode].className = 'link';
+					// activeMode = modeName
+					// modeButtons[activeMode].className = 'link selected';
+					// var body = document.getElementsByTagName("BODY")[0];
+					// body.style.background = modes[activeMode].color;
+					// body.style['background-image'] = "url('img/backgroundstripes.png')";
+					// body.style['background-size'] = '100%';
+					// body.style['background-attachment'] = 'fixed';
+					// refreshPicker();
+					// updateRecipes();
+				// };
+				var showMode = function (e) {
+						setMode(e.target.tagName == 'SPAN' ? e.target.dataset.mode : e.target.parentNode.dataset.mode);
+					};
+				for(var mode in modes) {
+					var modeCell = document.createElement('td');
+					var modeButton = document.createElement('span');
+					// modeButtons[mode] = modeButton;
+					modes[mode].buttons.push(modeButton);
+					modeButton.className = 'link';
+					modeButton.dataset.mode = mode;
+					modeButton.innerHTML = "<img src='img/" + modes[mode].img + "'><br/>" + modes[mode].name;
+					modeButton.addEventListener('click', showMode, false);
+					modeCell.appendChild(modeButton);
+					modeSelectorRow.appendChild(modeCell);
+				}
+				
 				if (parent.id === 'ingredients') {
 					//simulator
 					updateRecipes = function () {
@@ -3765,6 +3901,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						localStorage.foodGuideState = JSON.stringify(obj);
 					}
 				});
+				modeRefreshers.push(refreshPicker);
+				modeRefreshers.push(updateRecipes);
+				setMode(activeMode);
 			}());
 		}
 	}())

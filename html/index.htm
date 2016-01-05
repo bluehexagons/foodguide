@@ -5,7 +5,7 @@
 	<link rel="shortcut icon" href="icon.png" />
 	<meta charset='utf-8' />
 	<style type="text/css">
-		body { background: #ccc; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; font-family: sans-serif; }
+		body { background-blend-mode: multiply; background: #ccc; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; font-family: sans-serif; }
 		a { color: #333; }
 		a:hover { color: #888; }
 		#navbar { position: relative; left: 0px; top: 0px; display: block; z-index: 1; }
@@ -48,10 +48,15 @@
 		table.links span.link.right { border-top-right-radius: 0px; border-bottom-right-radius: 0px; }
 		table span.link.strike { text-decoration: line-through; color: #755; }
 		table.links span.link.strike { border: 1px solid #bbb; }
+		table.modes { width: inherit; }
+		table.modes span.link img { width: 40px; height: 40px; }
+		table.modes span.link { display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; opacity: 0.5; text-align: center; }
+		table.modes span.selected { opacity: 1; }
+		table.modes td { border: none; background: none; }
 		span.link img { width: 20px; height: 20px; vertical-align: text-bottom; }
-		#footer { padding-left: 10px; padding-right: 10px; color: #777; text-align: center; }
-		#footer a { color: #585858; }
-		#footer a:hover { color: #777; }
+		#footer { padding-left: 10px; padding-right: 10px; color: #fff; text-align: center; }
+		#footer a { color: #ccc; }
+		#footer a:hover { color: #fff; }
 		button.makablebutton { font-size: 14pt; margin: 4px; padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
 		div.recipeFilter img { opacity: 0.6; margin: 4px; padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
 		div.recipeFilter img:hover { opacity: 0.8; }

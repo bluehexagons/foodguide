@@ -1371,6 +1371,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				rot: 'spoiled_fish',
 				dlc: 'shipwrecked'
 			},
+			tigereye: {
+				name: 'Eye of the Tiger Shark',
+				uncookable: true,
+				health: healing_huge,
+				hunger: calories_huge,
+				sanity: -sanity_med,
+				stack: stack_size_largeitem,
+				dlc: 'shipwrecked'
+			},
 			//DST Ingredients
 			wormlight_lesser: {
 				name: 'Lesser Glowberry',

@@ -251,6 +251,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				uncookable: true,
 				health: spoiled_health,
 				hunger: spoiled_hunger,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			cutlichen: {
@@ -335,6 +336,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				uncookable: true,
 				health: healing_tiny,
 				hunger: 0,
+				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem
 			},
@@ -686,6 +688,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				uncookable: true,
 				health: spoiled_health,
 				hunger: spoiled_hunger,
+				sanity: 0,
 				stack: stack_size_smallitem
 			},
 			tallbirdegg: {
@@ -1095,20 +1098,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				dlc: 'shipwrecked'
 			},
-/*			doydoyegg: {
+			doydoyegg: {
 				name: 'Doydoy Egg', //files don't capitalize Egg, but probably should
 				egg: 1,
-				perish: perish_superfast,
-				stack: stack_size_smallitem,
+				health: healing_small,
+				hunger: calories_med,
+				sanity: 0,
 				dlc: 'shipwrecked'
 			},
 			doydoyegg_cooked: {
 				name: 'Cooked Doydoy Egg', // no string for this?
 				egg: 1,
-				perish: perish_superfast,
-				stack: stack_size_smallitem,
+				health: 0,
+				hunger: calories_large,
+				sanity: 0,
+				perish: perish_fast,
 				dlc: 'shipwrecked'
-			},*/
+			},
 			tropical_fish: {
 				name: 'Tropical Fish',
 				ismeat: true,
@@ -1248,6 +1254,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				dlc: 'shipwrecked'
 			},
+			mysterymeat: {
+				name: 'Bile-Covered Slop',
+				uncookable: true,
+				health: spoiled_health,
+				hunger: spoiled_hunger,
+				sanity: 0,
+				stack: stack_size_meditem,
+				dlc: 'shipwrecked'
+			},
 			jellyfish: {
 				name: 'Jellyfish',
 				// inedible: true,
@@ -1354,16 +1369,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				stack: stack_size_smallitem,
 				rot: 'spoiled_fish',
-				dlc: 'shipwrecked'
-			},
-			hail_ice: {
-				name: 'Hail',
-				frozen: 1,
-				// health: healing_tiny/2,
-				// hunger: calories_tiny/4,
-				// sanity: 0,
-				perish: perish_superfast,
-				stack: stack_size_smallitem,
 				dlc: 'shipwrecked'
 			},
 			//DST Ingredients
@@ -1908,9 +1913,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			seafoodgumbo: {
 				name: 'Seafood Gumbo',
 				test: function(cooker, names, tags) {
-					return tags.fish && tags.fish > 2;
+					return tags.fish && tags.fish > 1;
 				},
-				requirements: [TAG('fish', COMPARE(">", 2))],
+				requirements: [TAG('fish', COMPARE(">", 1))],
 				priority: 10,
 				foodtype: "meat",
 				health: healing_large,

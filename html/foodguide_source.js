@@ -1087,6 +1087,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				dlc: 'shipwrecked'
 			},
+			coconut_halved: {
+				name: 'Halved Coconut',
+				uncookable: true,
+				fruit: 1,
+				fat: 1,
+				health: healing_tiny,
+				hunger: calories_tiny/2,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				cook: 'coconut_cooked',
+				dlc: 'shipwrecked'
+			},
 			coconut_cooked: {
 				name: 'Roasted Coconut',
 				fruit: 1,
@@ -1099,15 +1112,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				dlc: 'shipwrecked'
 			},
 			doydoyegg: {
-				name: 'Doydoy Egg', //files don't capitalize Egg, but probably should
+				name: 'Doydoy Egg',
 				egg: 1,
 				health: healing_small,
 				hunger: calories_med,
 				sanity: 0,
+				perish: perish_med,
 				dlc: 'shipwrecked'
 			},
 			doydoyegg_cooked: {
-				name: 'Cooked Doydoy Egg', // no string for this?
+				name: 'Fried Doydoy Egg',
 				egg: 1,
 				health: 0,
 				hunger: calories_large,
@@ -1140,7 +1154,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				cook: 'fish_med_cooked',
-				// rot: 'spoiled_fish', //apparently not??
 				dry: 'meat_dried',
 				drytime: dry_fast,
 				dlc: 'shipwrecked',
@@ -1184,7 +1197,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				// rot: 'spoiled_fish', //apparently not??
 				dlc: 'shipwrecked'
 			},
 			/*swordfish: { //this refers to the living prefab, probably an accident?
@@ -1212,8 +1224,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			limpets: {
 				name: 'Limpets',
-				meat: 0.5,
-				fish: 1,
+				fish: 0.5,
 				health: 0,
 				hunger: calories_small,
 				sanity: -sanity_small,
@@ -1223,8 +1234,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			limpets_cooked: {
 				name: 'Cooked Limpets',
-				meat: 0.5,
-				fish: 1,
+				fish: 0.5,
 				health: healing_tiny,
 				hunger: calories_small,
 				sanity: 0,
@@ -1234,8 +1244,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			mussel: {
 				name: 'Mussel',
-				meat: 0.5,
-				fish: 1,
+				fish: 0.5,
 				health: 0,
 				hunger: calories_small,
 				sanity: -sanity_small,
@@ -1245,8 +1254,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			mussel_cooked: {
 				name: 'Cooked Mussel',
-				meat: 0.5,
-				fish: 1,
+				fish: 0.5,
 				health: healing_tiny,
 				hunger: calories_small,
 				sanity: 0,
@@ -1265,8 +1273,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			jellyfish: {
 				name: 'Jellyfish',
-				// inedible: true,
 				fish: 1,
+				jellyfish: 1,
 				monster: 1,
 				perish: perish_one_day * 1.5,
 				stack: stack_size_smallitem,
@@ -1274,7 +1282,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			jellyfish_dead: {
 				name: 'Dead Jellyfish',
-				uncookable: true,
+				fish: 1,
+				jellyfish: 1,
+				monster: 1,
 				health: 10,
 				hunger: 10,
 				sanity: 0,
@@ -1288,6 +1298,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			jellyfish_cooked: {
 				name: 'Cooked Jellyfish',
 				fish: 1,
+				jellyfish: 1,
 				monster: 1,
 				health: 10,
 				hunger: calories_medsmall,
@@ -1299,6 +1310,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			jellyfish_dried: {
 				name: 'Dried Jellyfish',
 				fish: 1,
+				jellyfish: 1,
 				monster: 1,
 				health: 10,
 				hunger: calories_medsmall,
@@ -1323,7 +1335,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_largeitem,
 				cook: 'lobster_cooked',
-				rot: 'spoiled_fish',
 				dlc: 'shipwrecked'
 			},
 			lobster_cooked: {
@@ -1335,14 +1346,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				rot: 'spoiled_fish',
 				dlc: 'shipwrecked'
 			},
 			crab: {
 				name: 'Crab',
 				// inedible: true,
-				meat: 0.5,
-				fish: 1,
+				fish: 0.5,
 				perish: total_day_time*2,
 				cook: 'fish_raw_small_cooked',
 				dlc: 'shipwrecked'
@@ -1355,7 +1364,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				sanity: 0,
 				stack: stack_size_smallitem,
-				rot: 'spoiled_fish',
 				dry: 'morsel_dried',
 				drytime: dry_fast,
 				dlc: 'shipwrecked'
@@ -1368,7 +1376,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				rot: 'spoiled_fish',
 				dlc: 'shipwrecked'
 			},
 			tigereye: {
@@ -1378,6 +1385,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_huge,
 				sanity: -sanity_med,
 				stack: stack_size_largeitem,
+				dlc: 'shipwrecked'
+			},
+			dragoonheart: {
+				name: 'Dragoon Heart',
+				uncookable: true,
+				health: healing_medsmall + healing_small,
+				hunger: calories_med,
+				sanity: -sanity_small,
+				perish: perish_med,
+				stack: stack_size_largeitem,
+				note: "Gives 90 seconds of light.",
 				dlc: 'shipwrecked'
 			},
 			//DST Ingredients
@@ -1913,7 +1931,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				priority: 20,
 				foodtype: "meat",
 				health: healing_med,
-				hunger: calories_med,
+				hunger: calories_med*2,
 				perish: perish_med,
 				sanity: sanity_small,
 				cooktime: 0.5,
@@ -1922,9 +1940,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			seafoodgumbo: {
 				name: 'Seafood Gumbo',
 				test: function(cooker, names, tags) {
-					return tags.fish && tags.fish > 1;
+					return tags.fish && tags.fish > 2;
 				},
-				requirements: [TAG('fish', COMPARE(">", 1))],
+				requirements: [TAG('fish', COMPARE(">", 2))],
 				priority: 10,
 				foodtype: "meat",
 				health: healing_large,
@@ -1969,9 +1987,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			jellyopop: {
 				name: 'Jelly-O Pop',
 				test: function(cooker, names, tags) {
-					return names.jellyfish && tags.frozen && tags.inedible;
+					return tags.jellyfish && tags.frozen && tags.inedible;
 				},
-				requirements: [SPECIFIC('jellyfish'), TAG('frozen'), TAG('inedible')],
+				requirements: [TAG('jellyfish'), TAG('frozen'), TAG('inedible')],
 				priority: 20,
 				foodtype: "meat",
 				health: healing_med,

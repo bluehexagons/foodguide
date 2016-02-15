@@ -2504,7 +2504,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
 			f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : '\xd7' + f.meat));
 			f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : '\xd7' + f.egg));
-			f.fish && info.push(taggify('fish'));
+			f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : '\xd7' + f.fish));
 			f.magic && info.push(taggify('magic'));
 			f.decoration && info.push(taggify('decoration'));
 			f.inedible && info.push(taggify('inedible'));

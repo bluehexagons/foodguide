@@ -1018,8 +1018,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			seaweed_cooked: {
 				name: 'Roasted Seaweed',
 				veggie: 1,
-				health: healing_tiny,
-				hunger: calories_small,
+				health: healing_small,
+				hunger: calories_tiny,
 				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_smallitem,

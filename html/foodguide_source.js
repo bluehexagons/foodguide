@@ -2186,12 +2186,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return function (arr, search, includeUncookable) {
 				allowUncookable = !!includeUncookable;
 				name = search.toLowerCase();
-				if (tagnotsearch.test(name)) {
-					tag = name.split(tagnotsplit)[1];
-					return arr.filter(function(element){ return !tagFilter(element); }).sort(byMatch);
-				} else if (tagsearch.test(name)) {
+				if (tagsearch.test(name)) {
 					tag = name.split(tagsplit)[1];
 					return arr.filter(tagFilter).sort(byMatch);
+				} else if (tagnotsearch.test(name)) {
+					tag = name.split(tagnotsplit)[1];
+					return arr.filter(function(element){ return !tagFilter(element); }).sort(byMatch);
 				} else if (recipesearch.test(name)) {
 					recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
 					if (recipe) {
@@ -2472,7 +2472,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				food[i + '_cooked'].raw = f;
 			}
 			if (typeof f.cook === "string") {
-				f.cook = food[f.cook]
+				f.cook = food[f.cook];
 			}
 			f.info = [];
 			info = f.info;
@@ -2513,6 +2513,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				recipes[i].dlc = 'vanilla';
 			}
 			recipes[i].dlcMask = dlc[recipes[i].dlc].bit;
+			if (recipes[i].temperature) {
+				if (recipes[i].note) {
+					recipes[i].note += '; ';
+				} else {
+					recipes[i].note = '';
+				}
+				recipes[i].note += 'Provides ' + recipes[i].temperature + ' heat for ' + recipes[i].temperatureduration + ' seconds';
+			}
 			recipes[index++] = recipes[i];
 		}
 	}
@@ -2703,7 +2711,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	//delete recipeCrunchData.recipes;
 	//recipeCrunchString = JSON.stringify(recipeCrunchData); //recipeCrunch might also be used for multithreading later
 
-	//output.push('{| class="wikitable sortable"\n! width=145px |Name\n! width=40px |Health\n! width=50px |Food\n! width=60px |Perish\n|');
 	var setTab;
 	(function () {
 		var navtabs = navbar.getElementsByTagName('li'),
@@ -2910,11 +2917,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
 	var makeRecipeRow = function (item, health, hunger, sanity) {
-		var note = item.note || '';
-		if (item.temperature) {
-			note = note + 'Provides ' + item.temperature + ' heat for ' + item.temperatureduration + ' seconds';
-		}
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity) + pct(sanity, item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', note);
+		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity) + pct(sanity, item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
 	};
 	(function () {
 		var foodHighlight,
@@ -2959,6 +2962,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			testRecipeHighlight = function (item) {
 				return recipeHighlighted.indexOf(item) !== -1;
 			},
+			testDLC = function (item) {
+				return (item.dlcMask & dlcMask) !== 0;
+			},
 			foodTable = makeSortableTable(
 				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
 				Array.prototype.slice.call(food),
@@ -2966,7 +2972,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				'name',
 				false,
 				setFoodHighlight,
-				testFoodHighlight
+				testFoodHighlight,
+				testDLC
 			),
 			recipeTable = makeSortableTable(
 				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
@@ -2975,10 +2982,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				'name',
 				false,
 				setRecipeHighlight,
-				testRecipeHighlight
+				testRecipeHighlight,
+				testDLC
 			);
 		foodElement.appendChild(foodTable);
 		recipesElement.appendChild(recipeTable);
+		modeRefreshers.push(function () {
+			foodTable.update();
+			recipeTable.update();
+		});
 	}());
 
 	var ingredientToIcon = function (a, b) {
@@ -3197,32 +3209,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;
 	var setSlot = function (slotElement, item) {
-			var end = false;
 			if (item !== null) {
 				slotElement.dataset.id = item.id;
 			} else {
 				if (slotElement.nextSibling && getSlot(slotElement.nextSibling) !== null) {
 					setSlot(slotElement, getSlot(slotElement.nextSibling));
 					setSlot(slotElement.nextSibling, null);
-					end = true;
+					return;
 				} else {
 					slotElement.dataset.id = null;
 				}
 			}
-			if (!end) {
-				if (item !== null) {
-					if (slotElement.firstChild) {
-						slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
-					} else {
-						slotElement.appendChild(makeImage(item.img));
-					}
+			if (item !== null) {
+				if (slotElement.firstChild) {
+					slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
 				} else {
-					if (slotElement.firstChild) {
-						slotElement.removeChild(slotElement.firstChild);
-					}
+					slotElement.appendChild(makeImage(item.img));
 				}
-				slotElement.title = item ? item.name : '';
+			} else {
+				if (slotElement.firstChild) {
+					slotElement.removeChild(slotElement.firstChild);
+				}
 			}
+			slotElement.title = item ? item.name : '';
 		},
 		getSlot = function (slotElement) {
 			return food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null;
@@ -3391,7 +3400,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						var names;
 						searchSelectorControls.splitTag();
 						names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
-						var newNames = [];
 						dropdown.removeChild(ul);
 						ul = document.createElement('div');
 						ul.dataset.length = 0;
@@ -3819,49 +3827,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					} else if (selected !== null) {
 						e.preventDefault();
 					}
-					/*
-					using comments as version control is bad
-					else {
-						items = ul.getElementsByTagName('li');
-						for (i = 0; i < items.length; i++) {
-							if (items[i].className === 'selected') {
-								current = items[i];
-								if (e.keyCode === up || e.keyCode === down) {
-									items[i].className = '';
-								}
-								if (e.keyCode === up) {
-									items[i - 1 < 0 ? items.length - 1 : i - 1].className = 'selected';
-								} else if (e.keyCode === down) {
-									items[(i + 1) % items.length].className = 'selected';
-								} else if (e.keyCode === enter && current) {
-									pickItem({target: current});
-									refreshLocation();
-								}
-								break;
-							}
-						}
-						if (!current && items.length > 0) {
-							if (e.keyCode === up) {
-								items[items.length - 1].className = 'selected';
-							} else if (e.keyCode === down) {
-								items[0].className = 'selected';
-							} else if (e.keyCode === enter) {
-								pickItem({target: items[0]});
-							}
-						}
-					}*/
 				}, false);
 				picker.addEventListener('focus', function () {
 					if (!displaying) {
 						displaying = true;
-						//parent.appendChild(dropdown);
-						//refreshLocation();
 					}
 				}, false);
 				picker.addEventListener('blur', function () {
 					if (displaying) {
 						displaying = false;
-						//parent.removeChild(dropdown);
 					}
 				}, false);
 				updateRecipes();

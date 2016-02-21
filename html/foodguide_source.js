@@ -98,68 +98,59 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 		base_cook_time = night_time*.3333,
 
-		activeMode = 'shipwrecked',
 		modeRefreshers = [],
-		modes = {
+		VANILLA = 1,
+		GIANTS = 1 << 1,
+		SHIPWRECKED = 1 << 2,
+		TOGETHER = 1 << 3,
+		activeDLC = 'shipwrecked',
+		dlcMask = VANILLA | GIANTS | SHIPWRECKED,
+
+		dlc = {
 			vanilla: {
 				name: "Vanilla",
 				img: "vanilla.png",
-				gametags: {
-					vanilla: true,
-					giants: false,
-					shipwrecked: false,
-					together: false,
-				},
+				bit: VANILLA,
+				mask: VANILLA,
 				color: '#ff592e',
 				buttons: [],
 			},
-			rog: {
+			giants: {
 				name: "Reign of Giants",
 				img: "reign_of_giants.png",
-				gametags: {
-					vanilla: true,
-					giants: true,
-					shipwrecked: false,
-					together: false,
-				},
+				bit: GIANTS,
+				mask: VANILLA | GIANTS,
 				color: '#b857c6',
 				buttons: [],
 			},
 			shipwrecked: {
 				name: "Shipwrecked",
 				img: "shipwrecked.png",
-				gametags: {
-					vanilla: true,
-					giants: true,
-					shipwrecked: true,
-					together: false,
-				},
+				bit: SHIPWRECKED,
+				mask: VANILLA | GIANTS | SHIPWRECKED,
 				color: '#50c1cc',
 				buttons: [],
 			},
 			together: {
 				name: "Together",
 				img: "together.png",
-				gametags: {
-					vanilla: true,
-					giants: true,
-					shipwrecked: false,
-					together: true,
-				},
+				bit: TOGETHER,
+				mask: VANILLA | GIANTS | TOGETHER,
 				color: '#c0c0c0',
 				buttons: [],
 			},
 		},
 		setMode = function (modeName) {
-			for (var modeButton in modes[activeMode].buttons) {
-				modes[activeMode].buttons[modeButton].className = 'link';
+			for (var modeButton in dlc[activeDLC].buttons) {
+				dlc[activeDLC].buttons[modeButton].className = 'link';
 			}
-			activeMode = modeName
-			for (var modeButton in modes[activeMode].buttons) {
-				modes[activeMode].buttons[modeButton].className = 'link selected';
+			activeDLC = modeName;
+			dlcMask = dlc[activeDLC].mask;
+			for (var modeButton in dlc[activeDLC].buttons) {
+				dlc[activeDLC].buttons[modeButton].className = 'link selected';
 			}
 			var body = document.getElementsByTagName("BODY")[0];
-			body.style.background = modes[activeMode].color;
+			body.style.background = dlc[activeDLC].color;
 			body.style['background-image'] = "url('img/backgroundstripes.png')";
 			body.style['background-size'] = '100%';
 			body.style['background-attachment'] = 'fixed';
@@ -1412,7 +1403,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				note: "Gives 22.5 seconds of light",
-				dlc: 'dst'
+				dlc: 'together'
 			},
 			phlegm: {
 				name: 'Phlegm',
@@ -1422,7 +1413,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_med,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dlc: 'dst'
+				dlc: 'together'
 			},
 		},
 		//note: qty not used yet, this is for rapid summation
@@ -2068,7 +2059,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: -sanity_small,
 				cooktime: 0.5,
-				note: 'Gives 10 naughtiness.',
+				note: 'Gives 10 naughtiness',
 				dlc: 'shipwrecked'
 			},
 			surfnturf: {
@@ -2099,7 +2090,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: -sanity_tiny,
 				cooktime: 0.5,
-				note: 'Gives 5 bonus speed (+83%) for 0.5 days.',
+				note: 'Gives 5 bonus speed (+83%) for 0.5 days',
 				dlc: 'shipwrecked'
 			}
 		},
@@ -2122,7 +2113,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				wordstarts,
 				allowUncookable = false,
 				filter = function (element) {
-					if (!allowUncookable && element.uncookable) {
+					if ((!allowUncookable && element.uncookable) || (element.dlcMask & dlcMask) === 0) {
 						element.match = 0;
 					} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
 						element.match = 3;
@@ -2245,14 +2236,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 			}
 		},
-		testMode = function(item) {
-			for (var gametag in modes[activeMode].gametags) {
-				if (!modes[activeMode].gametags[gametag] && item[gametag]) {
-					return false;
-				}
-			}
-			return true;
-		},
 		getSuggestions = (function () {
 			var names,
 				tags;
@@ -2262,20 +2245,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				names = {};
 				tags = {};
 				setIngredientValues(items, names, tags);
-				for (i = 0; i < recipes.length; i++) {
+				outer: for (i = 0; i < recipes.length; i++) {
 					valid = false;
-					if (!testMode(recipes[i])) { break; }
+					if ((recipes[i].dlcMask & dlcMask) === 0) {
+						continue;
+					}
 					for (ii = 0; ii < recipes[i].requirements.length; ii++) {
 						if (recipes[i].requirements[ii].test(null, names, tags)) {
 							if (!recipes[i].requirements[ii].cancel) {
 								valid = true;
 							}
 						} else if (!itemComplete && recipes[i].requirements[ii].cancel) {
-							valid = false;
-							break;
+							continue outer;
 						} else if (itemComplete && !recipes[i].requirements[ii].cancel) {
-							valid = false;
-							break;
+							continue outer;
 						}
 					}
 					valid && (!exclude || exclude.indexOf(recipes[i]) === -1) && recipeList.push(recipes[i]);
@@ -2297,7 +2280,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				setIngredientValues(items, names, tags);
 				for (i = 0; i < recipes.length; i++) {
 					recipes[i].test(null, names, tags)
-						&& testMode(recipes[i])
+						&& (recipes[i].dlcMask & dlcMask) !== 0
 						&& recipeList.push(recipes[i]);
 				}
 				recipeList.sort(function (a, b) {
@@ -2441,21 +2424,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		foodElement = document.getElementById('food'),
 		recipesElement = document.getElementById('recipes'),
 		fragment, navbar = document.getElementById('navbar'),
-		noDataset = false,
-		dlc = {
-			giants: {
-				name: 'Reign of Giants',
-				img: 'img/reign_of_giants.png'
-			},
-			shipwrecked: {
-				name: 'Shipwrecked',
-				img: 'img/shipwrecked.png'
-			},
-			dst: {
-				name: "Together",
-				img: 'img/together.png'
-			}
-		};
+		noDataset = false;
 
 	// TODO: process the rot: entries, and add the spoiled fish
 
@@ -2494,7 +2463,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.id = i;
 			f.nameObject = {};
 			f.nameObject[i] = 1;
-			f.img = 'img/' + f.name.replace(/[' ]/g, '_').toLowerCase() + '.png';
+			f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
 			if (i.indexOf('_cooked') !== -1) {
 				f.cooked = true;
 			}
@@ -2533,15 +2502,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			recipes[i].lowerName = recipes[i].name.toLowerCase();
 			recipes[i].weight = recipes[i].weight || 1;
 			recipes[i].priority = recipes[i].priority || 0;
-			recipes[i].img = 'img/' + recipes[i].name.replace(/[' ]/g, '_').toLowerCase() + '.png';
+			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
 			if (recipes[i].requirements) {
-				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:' + recipes[i].dlc + '|' + dlc[recipes[i].dlc].img + ']') : ''));
-				if (recipes[i].dlc) {
-					recipes[i][recipes[i].dlc] = true;
-				} else {
-					recipes[i].vanilla = true;
-				}
+				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:' + recipes[i].dlc + '|img/' + dlc[recipes[i].dlc].img + ']') : ''));
 			}
+			if (recipes[i].dlc) {
+				recipes[i][recipes[i].dlc] = true;
+			} else {
+				recipes[i].vanilla = true;
+				recipes[i].dlc = 'vanilla';
+			}
+			recipes[i].dlcMask = dlc[recipes[i].dlc].bit;
 			recipes[index++] = recipes[i];
 		}
 	}
@@ -2579,10 +2550,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			if (f.dlc) {
 				f[f.dlc] = true;
-				info.push('requires [tag:' + f.dlc + '|' + dlc[f.dlc].img + ']');
+				info.push('requires [tag:' + f.dlc + '|img/' + dlc[f.dlc].img + ']');
 			} else {
 				f.vanilla = true;
+				f.dlc = 'vanilla';
 			}
+			f.dlcMask = dlc[f.dlc].bit;
 			f.info = info.join('; ');
 			if (!f.uncookable) {
 				f.recipes = [];
@@ -2765,17 +2738,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		activeTab = tabs['simulator'];
 		activePage = elements['simulator'];
 		if (window.localStorage && localStorage.foodGuideState) {
-			if (localStorage.foodGuideState[0] === '[') {
-				//converts from old format which causes errors
-				storage = {};
-				storage.pickers = JSON.parse(localStorage.foodGuideState);
-				localStorage.foodGuideState = JSON.stringify(storage);
-			} else {
-				storage = JSON.parse(localStorage.foodGuideState);
-			}
+			storage = JSON.parse(localStorage.foodGuideState);
 			if (storage.activeTab && tabs[storage.activeTab]) {
 				activeTab = tabs[storage.activeTab];
 				activePage = elements[storage.activeTab];
+				activeDLC = storage.activeDLC || 'shipwrecked';
 			}
 		}
 		activeTab.className = 'selected';
@@ -2788,6 +2755,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 				obj = JSON.parse(localStorage.foodGuideState);
 				obj.activeTab = activeTab.dataset.tab;
+				obj.activeDLC = activeDLC;
 				localStorage.foodGuideState = JSON.stringify(obj);
 			}
 		});
@@ -2944,7 +2912,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var makeRecipeRow = function (item, health, hunger, sanity) {
 		var note = item.note || '';
 		if (item.temperature) {
-			note = note + 'Provides ' + item.temperature + ' heat for ' + item.temperatureduration + ' seconds.';
+			note = note + 'Provides ' + item.temperature + ' heat for ' + item.temperatureduration + ' seconds';
 		}
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity) + pct(sanity, item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', note);
 	};
@@ -2975,10 +2943,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			setRecipeHighlight = function (e) {
 				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
 				var dlcname = name.substring(name.indexOf(':') + 1);
-				var dlctag = dlc[dlcname] && true || false;
-				if (dlctag) {
-					// setTab('crockpot');
-					// name = dlcname;
+				if (!!dlc[dlcname]) {
 					recipeHighlighted = matchingNames(recipes, name);
 					recipeTable.update(true);
 				} else {
@@ -3212,7 +3177,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
 						makableTable.update();
 					}*/
-					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change tabs during this process)';
 					//makableTable.update();
 				}, function () { //computation finished
 					makableTable.setMaxRows(30);
@@ -3427,14 +3392,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						searchSelectorControls.splitTag();
 						names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
 						var newNames = [];
-						for (var gametag in modes[activeMode].gametags) {
-							if (!modes[activeMode].gametags[gametag]) {
-								names = matchingNames(names, 'tagnot:' + gametag, allowUncookable);
-							}
-						}
-						// newNames.concat(matchingNames(names, 'tag:frozen', allowUncookable));
-						// names = newNames;
-						// names.sort();
 						dropdown.removeChild(ul);
 						ul = document.createElement('div');
 						ul.dataset.length = 0;
@@ -3464,31 +3421,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				modeSelectorRow.appendChild(explanationCell);
 				picker.parentNode.insertBefore(modeSelector, picker);
 
-
-				// var modeButtons = {};
-				// var setMode = function(modeName) {
-					// modeButtons[activeMode].className = 'link';
-					// activeMode = modeName
-					// modeButtons[activeMode].className = 'link selected';
-					// var body = document.getElementsByTagName('BODY')[0];
-					// body.style.background = modes[activeMode].color;
-					// body.style['background-image'] = 'url("img/backgroundstripes.png")';
-					// body.style['background-size'] = '100%';
-					// body.style['background-attachment'] = 'fixed';
-					// refreshPicker();
-					// updateRecipes();
-				// };
 				var showMode = function (e) {
 					setMode(e.target.tagName == 'SPAN' ? e.target.dataset.mode : e.target.parentNode.dataset.mode);
 				};
-				for (var mode in modes) {
+				for (var mode in dlc) {
 					var modeCell = document.createElement('td');
 					var modeButton = document.createElement('span');
 					// modeButtons[mode] = modeButton;
-					modes[mode].buttons.push(modeButton);
+					dlc[mode].buttons.push(modeButton);
 					modeButton.className = 'link';
 					modeButton.dataset.mode = mode;
-					modeButton.innerHTML = '<img src="img/' + modes[mode].img + '"><br/>' + modes[mode].name;
+					modeButton.innerHTML = '<img src="img/' + dlc[mode].img + '"><br/>' + dlc[mode].name;
 					modeButton.addEventListener('click', showMode, false);
 					modeCell.appendChild(modeButton);
 					modeSelectorRow.appendChild(modeCell);
@@ -3947,7 +3890,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				});
 				modeRefreshers.push(refreshPicker);
 				modeRefreshers.push(updateRecipes);
-				setMode(activeMode);
+				setMode(activeDLC);
 			}());
 		}
 	}())

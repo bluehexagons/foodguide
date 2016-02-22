@@ -3049,10 +3049,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						makableTable.update();
 						e.preventDefault();
 					},
+					excludedRecipes = [],
+					excludedRecipesElements = [],
 					setRecipe = function (e) {
 						if (selectedRecipeElement) {
 							selectedRecipeElement.className = '';
 						}
+						for (var i = 0; i < excludedRecipesElements.length; i++) {
+							excludedRecipesElements[i].className = '';
+						}
+						excludedRecipes.length = 0;
+						excludedRecipesElements.length = 0;
 						if (selectedRecipe === e.target.dataset.recipe) {
 							selectedRecipeElement = null;
 							selectedRecipe = null;
@@ -3062,6 +3069,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 							e.target.className = 'selected';
 						}
 						makableTable.update();
+					},
+					excludeRecipe = function (e) {
+						if (selectedRecipeElement) {
+							selectedRecipeElement.className = '';
+							selectedRecipeElement = null;
+							selectedRecipe = null;
+						}
+
+						var index = excludedRecipesElements.indexOf(e.target);
+						if (index !== -1) {
+							excludedRecipes.splice(index, 1);
+							excludedRecipesElements.splice(index, 1);
+							e.target.className = '';
+						} else {
+							excludedRecipes.push(e.target.dataset.recipe);
+							excludedRecipesElements.push(e.target);
+							e.target.className = 'excluded';
+						}
+						makableTable.update();
+						e.preventDefault();
 					};
 				//TODO: optimize so much around this
 				if (i === null) {
@@ -3093,7 +3120,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					null,
 					null,
 					function (data) {
-						return (!selectedRecipe || data.recipe.name === selectedRecipe) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
+						return (!selectedRecipe || data.recipe.name === selectedRecipe) && (excludedRecipes.length === 0 || excludedRecipes.indexOf(data.recipe.name) === -1) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
 					},
 					0,
 					15
@@ -3140,6 +3167,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						//TODO: optimize
 						img.dataset.recipe = makableRecipes[i];
 						img.addEventListener('click', setRecipe, false);
+						img.addEventListener('contextmenu', excludeRecipe, false);
 						img.title = data.recipe.name;
 						if (i < makableRecipe.childNodes.length) {
 							makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
@@ -3182,11 +3210,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
 						makableTable.update();
 					}*/
-					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change tabs during this process)';
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
 					//makableTable.update();
 				}, function () { //computation finished
 					makableTable.setMaxRows(30);
-					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude ingredients.';
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude recipes or ingredients.';
 				});
 			}, false);
 			return makableButton;

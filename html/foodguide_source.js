@@ -383,6 +383,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			mole: {
 				name: 'Moleworm',
 				// inedible: true,
+				ideal: true,
 				meat: 0.5,
 				perish: total_day_time * 2,
 				cook: 'morsel_cooked',
@@ -712,6 +713,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			cavebanana: {
 				//Shipwrecked calls them bananas, less confusing to go with that one (instead of Cave Banana)
 				name: 'Banana',
+				ideal: true,
 				isfruit: true,
 				fruit: 1,
 				health: healing_tiny,
@@ -986,6 +988,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			seaweed: {
 				name: 'Seaweed',
+				ideal: true,
 				veggie: 1,
 				health: healing_tiny,
 				hunger: calories_tiny,
@@ -1205,6 +1208,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			limpets: {
 				name: 'Limpets',
+				ideal: true,
 				fish: 0.5,
 				health: 0,
 				hunger: calories_small,
@@ -2579,7 +2583,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
 				}
 			} else {
-				f.info += ('[|]cannot be added to crock pot');
+				f.info += (f.info ? '[|]' : '') + ('cannot be added to crock pot');
 			}
 			if (f.note) {
 				f.info += ('[|]' + f.note);
@@ -2604,7 +2608,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			var size = 4, index = 1, current = startPos || [0, 0, 0, 0], check, max = 0, iter = 0;
 			return function (batch) {
 				var overflow;
-				while (batch-- && index < length) {
+				while (batch-- && index <= length) {
 					callback(current);
 					current[0]++;
 					overflow = 0;
@@ -3223,7 +3227,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			slotElement.title = item ? item.name : '';
 		},
 		getSlot = function (slotElement) {
-			return food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null;
+			return slotElement && (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null);
 		};
 
 	(function () {

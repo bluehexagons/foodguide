@@ -107,29 +107,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 		dlc = {
 			vanilla: {
-				name: "Vanilla",
-				img: "vanilla.png",
+				name: 'Vanilla',
+				img: 'vanilla.png',
 				bit: VANILLA,
 				mask: VANILLA,
 				color: '#ff592e'
 			},
 			giants: {
-				name: "Reign of Giants",
-				img: "reign_of_giants.png",
+				name: 'Reign of Giants',
+				img: 'reign_of_giants.png',
 				bit: GIANTS,
 				mask: VANILLA | GIANTS,
 				color: '#b857c6'
 			},
 			shipwrecked: {
-				name: "Shipwrecked",
-				img: "shipwrecked.png",
+				name: 'Shipwrecked',
+				img: 'shipwrecked.png',
 				bit: SHIPWRECKED,
 				mask: VANILLA | GIANTS | SHIPWRECKED,
 				color: '#50c1cc'
 			},
 			together: {
-				name: "Together",
-				img: "together.png",
+				name: 'Together',
+				img: 'together.png',
 				bit: TOGETHER,
 				mask: VANILLA | GIANTS | TOGETHER,
 				color: '#c0c0c0'
@@ -159,6 +159,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			acorn_cooked: {
 				name: 'Roasted Birchnut',
+				ideal: true,
 				seed: 1,
 				hunger: calories_tiny,
 				health: healing_tiny,
@@ -567,6 +568,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			red_mushroom: {
 				name: 'Red Cap',
+				basename: 'CapRed',
 				veggie: 0.5,
 				ideal: true,
 				health: -healing_med,
@@ -586,6 +588,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			green_mushroom: {
 				name: 'Green Cap',
+				basename: 'CapGreen',
 				veggie: 0.5,
 				ideal: true,
 				health: 0,
@@ -605,6 +608,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			blue_mushroom: {
 				name: 'Blue Cap',
+				basename: 'CapBlue',
 				veggie: 0.5,
 				ideal: true,
 				health: healing_med,
@@ -633,6 +637,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			petals_evil: {
 				name: 'Dark Petals',
+				basename: 'Petals.',
 				uncookable: true,
 				health: 0,
 				hunger: 0,
@@ -955,10 +960,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_medsmall,
 				sanity: -sanity_small,
 				perish: perish_med,
-				note: "Gives 90 seconds of light"
+				note: 'Gives 90 seconds of light'
 			},
 			glommerfuel: {
-				name: "Glommer's Goop",
+				name: 'Glommer\'s Goop',
 				uncookable: true,
 				health: healing_large,
 				hunger: calories_tiny,
@@ -1051,6 +1056,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			coffeebeans_cooked: {
 				name: 'Roasted Coffee Beans',
+				ideal: true,
 				fruit: 1,
 				health: 0,
 				hunger: calories_tiny,
@@ -1073,6 +1079,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			coconut_halved: {
 				name: 'Halved Coconut',
+				basename: 'Coconut.',
 				uncookable: true,
 				fruit: 1,
 				fat: 1,
@@ -1115,6 +1122,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			tropical_fish: {
 				name: 'Tropical Fish',
+				skip: true,
 				ismeat: true,
 				meat: 0.5,
 				fish: 1,
@@ -1267,6 +1275,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			jellyfish_dead: {
 				name: 'Dead Jellyfish',
+				basename: 'Jellyfish.',
 				fish: 1,
 				jellyfish: 1,
 				monster: 1,
@@ -1313,7 +1322,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			lobster_dead: {
 				name: 'Dead Wobster',
-				uncookable: true, //a mistake, I think
+				basename: 'Wobster.',
+				uncookable: true,
 				health: healing_tiny,
 				hunger: calories_small,
 				sanity: 0,
@@ -1324,7 +1334,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			lobster_cooked: {
 				name: 'Delicious Wobster',
-				uncookable: true, //a mistake, I think
+				uncookable: true,
 				// fish: 2,
 				health: healing_tiny,
 				hunger: calories_small,
@@ -1336,6 +1346,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			crab: {
 				name: 'Crab',
 				// inedible: true,
+				skip: true,
 				fish: 0.5,
 				perish: total_day_time * 2,
 				cook: 'fish_raw_small_cooked',
@@ -1380,7 +1391,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_small,
 				perish: perish_med,
 				stack: stack_size_largeitem,
-				note: "Gives 90 seconds of light",
+				note: 'Gives 90 seconds of light',
 				dlc: 'shipwrecked'
 			},
 
@@ -1393,7 +1404,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_small,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				note: "Gives 22.5 seconds of light",
+				note: 'Gives 22.5 seconds of light',
 				dlc: 'together'
 			},
 			phlegm: {
@@ -1446,7 +1457,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				requirements: [NAME('butterflywings'), NOT(TAG('meat')), TAG('veggie')],
 				priority: 1,
 				weight: 1,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_slow,
@@ -1460,7 +1471,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [NAME('froglegs'), TAG('veggie')],
 				priority: 1,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_slow,
@@ -1468,13 +1479,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 2
 			},
 			taffy: {
-				name: "Taffy",
+				name: 'Taffy',
 				test: function(cooker, names, tags) {
 					return tags.sweetener && tags.sweetener >= 3 && !tags.meat;
 				},
 				requirements: [TAG('sweetener', COMPARE('>=', 3)), NOT(TAG('meat'))],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: -healing_small,
 				hunger: calories_small * 2,
 				perish: perish_slow,
@@ -1483,13 +1494,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				tags: ['honeyed']
 			},
 			pumpkincookie: {
-				name: "Pumpkin Cookie",
+				name: 'Pumpkin Cookie',
 				test: function(cooker, names, tags) {
 					return (names.pumpkin || names.pumpkin_cooked) && tags.sweetener && tags.sweetener >= 2;
 				},
 				requirements: [NAME('pumpkin'), TAG('sweetener', COMPARE('>=', 2))],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: 0,
 				hunger: calories_large,
 				perish: perish_med,
@@ -1504,7 +1515,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [NAME('eggplant'), TAG('veggie', COMPARE('>', 1))],
 				priority: 1,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_small,
 				hunger: calories_large,
 				perish: perish_slow,
@@ -1520,7 +1531,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('fish'), SPECIFIC('twigs'), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_large,
 				hunger: calories_large,
 				perish: perish_med,
@@ -1534,7 +1545,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 				priority: 2,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_slow,
@@ -1549,7 +1560,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
 				priority: 2,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_medlarge,
 				hunger: calories_huge,
 				perish: perish_slow,
@@ -1566,7 +1577,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [NAME('dragonfruit'), NOT(TAG('meat'))],
 				priority: 1,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_large,
 				hunger: calories_huge,
 				perish: perish_slow,
@@ -1582,7 +1593,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('meat'), SPECIFIC('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
 				priority: 5,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_small,
 				hunger: calories_large,
 				perish: perish_slow,
@@ -1596,7 +1607,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('mandrake')],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_superhuge,
 				hunger: calories_superhuge,
 				perish: perish_fast,
@@ -1610,7 +1621,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_huge,
 				perish: perish_preserved,
@@ -1624,7 +1635,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('meat'), NOT(TAG('inedible'))],
 				priority: -1,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_small,
 				hunger: calories_small * 5,
 				perish: perish_med,
@@ -1638,7 +1649,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('meat', COMPARE('>=', 3)), NOT(TAG('inedible'))],
 				priority: 0,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_small * 4,
 				hunger: calories_large * 4,
 				perish: perish_med,
@@ -1654,7 +1665,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('egg'), TAG('meat'), TAG('veggie'), NOT(TAG('inedible'))],
 				priority: 5,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_large,
 				hunger: calories_large,
 				perish: perish_preserved,
@@ -1670,7 +1681,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('drumstick', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), OR(TAG('veggie'), TAG('fruit'))],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_huge,
 				perish: perish_fast,
@@ -1686,7 +1697,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [NOT(TAG('meat')), TAG('veggie'), NOT(TAG('inedible'))],
 				priority: 0,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_small,
 				hunger: calories_med,
 				perish: perish_slow,
@@ -1702,7 +1713,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('fruit'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible'))],
 				priority: 0,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_small,
 				hunger: calories_small * 3,
 				perish: perish_slow,
@@ -1716,7 +1727,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('fruit', COMPARE('>=', 3)), NOT(TAG('meat')), NOT(TAG('veggie'))],
 				priority: 0,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_med,
 				hunger: calories_med,
 				perish: perish_fast,
@@ -1732,7 +1743,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('fish'), NAME('corn')],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_fast,
@@ -1747,7 +1758,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_huge,
 				hunger: calories_large,
 				perish: perish_fast,
@@ -1761,7 +1772,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('monster', COMPARE('>=', 2)), NOT(TAG('inedible'))],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: -healing_med,
 				hunger: calories_large,
 				perish: perish_fast,
@@ -1775,7 +1786,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('twigs'), SPECIFIC('honey'), NAME('corn')],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: -healing_small,
 				hunger: 0,
 				perish: 9000000,
@@ -1790,7 +1801,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('cutlichen'), NAME('eel')],
 				priority: 20,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_med,
 				hunger: calories_medsmall,
 				perish: perish_med,
@@ -1820,7 +1831,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('cactusflower'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg')), NOT(TAG('sweetener')), NOT(TAG('fruit'))],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_large,
 				hunger: calories_small,
 				perish: perish_fast,
@@ -1835,7 +1846,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('frozen'), TAG('dairy'), TAG('sweetener'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible')), NOT(TAG('egg'))],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: 0,
 				hunger: calories_med,
 				perish: perish_superfast,
@@ -1852,7 +1863,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('watermelon'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg'))],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_small,
 				hunger: calories_small,
 				perish: perish_superfast,
@@ -1869,7 +1880,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
 				priority: 10,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_medlarge,
 				hunger: calories_small,
 				perish: perish_slow,
@@ -1884,7 +1895,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('meat', COMPARE('>=', 1.5)), TAG('veggie', COMPARE('>=', 1.5))],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_med,
@@ -1901,7 +1912,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_large,
 				perish: perish_med,
@@ -1918,7 +1929,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('seaweed', COMPARE('==', 2)), TAG('fish', COMPARE('>=', 1))],
 				priority: 20,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_med*2,
 				perish: perish_med,
@@ -1933,7 +1944,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('fish', COMPARE('>', 2))],
 				priority: 10,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_large,
 				hunger: calories_large,
 				perish: perish_med,
@@ -1948,7 +1959,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('limpets', COMPARE('==', 3)), TAG('frozen')],
 				priority: 30,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_huge,
 				hunger: calories_medsmall,
 				perish: perish_med,
@@ -1963,7 +1974,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('fish', COMPARE('>=', 2)), TAG('frozen')],
 				priority: 20,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_med,
 				perish: perish_med,
@@ -1980,7 +1991,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [TAG('jellyfish'), TAG('frozen'), TAG('inedible')],
 				priority: 20,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_med,
 				hunger: calories_small,
 				perish: perish_superfast,
@@ -1997,7 +2008,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('cavebanana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
 				priority: 20,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_med,
 				hunger: calories_small,
 				perish: perish_superfast,
@@ -2014,7 +2025,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('lobster'), TAG('frozen')],
 				priority: 30,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_huge,
 				hunger: calories_med,
 				perish: perish_med,
@@ -2029,7 +2040,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('lobster'), SPECIFIC('butter'), NOT(TAG('meat')), NOT(TAG('frozen'))],
 				priority: 25,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_huge,
 				hunger: calories_large,
 				perish: perish_slow,
@@ -2044,7 +2055,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [SPECIFIC('shark_fin')],
 				priority: 20,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_large,
 				hunger: calories_small,
 				perish: perish_med,
@@ -2054,13 +2065,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				dlc: 'shipwrecked'
 			},
 			surfnturf: {
-				name: "Surf 'n' Turf",
+				name: 'Surf \'n\' Turf',
 				test: function(cooker, names, tags) {
 					return tags.meat && tags.meat >= 2.5 && tags.fish && tags.fish >= 1.5 && !tags.frozen;
 				},
 				requirements: [TAG('meat', COMPARE('>=', 2.5)), TAG('fish', COMPARE('>=', 1.5)), NOT(TAG('frozen'))],
 				priority: 30,
-				foodtype: "meat",
+				foodtype: 'meat',
 				health: healing_huge,
 				hunger: calories_large,
 				perish: perish_med,
@@ -2075,7 +2086,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				},
 				requirements: [OR(SPECIFIC('coffeebeans_cooked', COMPARE('==', 4)), (AND(SPECIFIC('coffeebeans_cooked', COMPARE('==', 3)), OR(TAG('dairy'), TAG('sweetener')))))],
 				priority: 30,
-				foodtype: "veggie",
+				foodtype: 'veggie',
 				health: healing_small,
 				hunger: calories_tiny,
 				perish: perish_med,
@@ -2165,8 +2176,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				byMatch = function (a, b) {
 					var aname, bname;
 					if (a.match === b.match) {
-						aname = a.raw ? a.raw.name : a.name;
-						bname = b.raw ? b.raw.name : b.name;
+						aname = a.basename ? a.basename : a.name;
+						bname = b.basename ? b.basename : b.name;
 						if (aname !== bname) {
 							return aname > bname ? 1 : aname < bname ? -1 : 0;
 						}
@@ -2236,6 +2247,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				names = {};
 				tags = {};
 				setIngredientValues(items, names, tags);
+				tags.hunger = tags.bestHunger;
+				tags.health = tags.bestHealth;
 				outer: for (i = 0; i < recipes.length; i++) {
 					valid = false;
 					if ((recipes[i].dlcMask & dlcMask) === 0) {
@@ -2269,6 +2282,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				names = {};
 				tags = {};
 				setIngredientValues(items, names, tags);
+				tags.hunger = tags.bestHunger;
+				tags.health = tags.bestHealth;
 				for (i = 0; i < recipes.length; i++) {
 					recipes[i].test(null, names, tags)
 						&& (recipes[i].dlcMask & dlcMask) !== 0
@@ -2457,16 +2472,59 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.nameObject = {};
 			f.nameObject[i] = 1;
 			f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
-			if (i.indexOf('_cooked') !== -1) {
-				f.cooked = true;
-			}
 			if (food[i + '_cooked']) {
 				f.cook = food[i + '_cooked'];
-				food[i + '_cooked'].raw = f;
 			}
-			if (typeof f.cook === "string") {
+			if (typeof f.cook === 'string') {
 				f.cook = food[f.cook];
 			}
+			if (f.cook) {
+				f.cook.raw = f;
+				f.cook.cooked = true;
+				if (!f.cook.basename) {
+					f.cook.basename = (f.basename || f.name) + '.';
+				}
+			}
+			if (typeof f.dry === 'string') {
+				f.dry = food[f.dry];
+			}
+			if (f.dry && !f.dry.rackdried) {
+				f.dry.wet = f;
+				f.dry.rackdried = true;
+				if (!f.dry.basename) {
+					f.dry.basename = (f.basename || f.name) + '.';
+				}
+			}
+
+			var bestHealth = f.health || 0;
+			var bestHunger = f.hunger || 0;
+			if (f.cook) {
+				bestHealth = Math.max(f.cook.health || 0, bestHealth);
+				bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
+			}
+			if (f.dry) {
+				bestHealth = Math.max(f.dry.health || 0, bestHealth);
+				bestHunger = Math.max(f.dry.hunger || 0, bestHunger);
+			}
+			if (f.raw) {
+				bestHealth = Math.max(f.raw.health || 0, bestHealth);
+				bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
+				if (f.raw.dry) {
+					bestHealth = Math.max(f.raw.dry.health || 0, bestHealth);
+					bestHunger = Math.max(f.raw.dry.hunger || 0, bestHunger);
+				}
+			}
+			if (f.wet) {
+				bestHealth = Math.max(f.wet.health || 0, bestHealth);
+				bestHunger = Math.max(f.wet.hunger || 0, bestHunger);
+				if (f.wet.cook) {
+					bestHealth = Math.max(f.wet.cook.health || 0, bestHealth);
+					bestHunger = Math.max(f.wet.cook.hunger || 0, bestHunger);
+				}
+			}
+			f.bestHealth = bestHealth;
+			f.bestHunger = bestHunger;
+
 			f.info = [];
 			info = f.info;
 			f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
@@ -2537,63 +2595,66 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		return n === 1 ? str : str + (plr || 's');
 	};
 
-	for (i in food) {
-		if (food.hasOwnProperty(i) && isNaN(i) && isNaN(food[i])) {
-			var f = food[i];
-			info = f.info;
-			f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
-			f.cook && info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
-			if (f.dry) {
-				if (!(f.dry instanceof Object)) {
-					f.dry = food[f.dry];
-				}
-				info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
+	for (i = 0; i < food.length; i++) {
+		var f = food[i];
+		info = f.info;
+		f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
+		if (f.cook) {
+			if (!(f.cook instanceof Object)) {
+				f.cook = food[f.cook];
 			}
-			if (f.dlc) {
-				f[f.dlc] = true;
-				info.push('requires [tag:' + f.dlc + '|img/' + dlc[f.dlc].img + ']');
-			} else {
-				f.vanilla = true;
-				f.dlc = 'vanilla';
+			info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
+		}
+		if (f.dry) {
+			if (!(f.dry instanceof Object)) {
+				f.dry = food[f.dry];
 			}
-			f.dlcMask = dlc[f.dlc].bit;
-			f.info = info.join('; ');
-			if (!f.uncookable) {
-				f.recipes = [];
-				recipes.forEach(function (recipe) {
-					var qualifies = false, r = recipe.requirements, i = r.length;
-					while (i--) {
-						if (r[i].test(null, f.nameObject, f)) {
-							if (!r[i].cancel && !qualifies) {
-								qualifies = true;
-							}
-						} else {
-							if (r[i].cancel) {
-								qualifies = false;
-								break;
-							}
+			info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
+		}
+		if (f.dlc) {
+			f[f.dlc] = true;
+			info.push('requires [tag:' + f.dlc + '|img/' + dlc[f.dlc].img + ']');
+		} else {
+			f.vanilla = true;
+			f.dlc = 'vanilla';
+		}
+		f.dlcMask = dlc[f.dlc].bit;
+		f.info = info.join('; ');
+		if (!f.uncookable) {
+			f.recipes = [];
+			recipes.forEach(function (recipe) {
+				var qualifies = false, r = recipe.requirements, i = r.length;
+				while (i--) {
+					if (r[i].test(null, f.nameObject, f)) {
+						if (!r[i].cancel && !qualifies) {
+							qualifies = true;
+						}
+					} else {
+						if (r[i].cancel) {
+							qualifies = false;
+							break;
 						}
 					}
-					if (qualifies) {
-						f.recipes.push(recipe);
-					}
-				});
-				if (f.recipes.length > 0) {
-					f.ingredient = true;
-					f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
 				}
-			} else {
-				f.info += (f.info ? '[|]' : '') + ('cannot be added to crock pot');
+				if (qualifies) {
+					f.recipes.push(recipe);
+				}
+			});
+			if (f.recipes.length > 0) {
+				f.ingredient = true;
+				f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
 			}
-			if (f.note) {
-				f.info += ('[|]' + f.note);
-			}
-			f.info = makeLinkable(f.info);
+		} else {
+			f.info += (f.info ? '[|]' : '') + ('cannot be added to crock pot');
 		}
+		if (f.note) {
+			f.info += ('[|]' + f.note);
+		}
+		f.info = makeLinkable(f.info);
 	}
 	food.forEach = Array.prototype.forEach;
 	food.filter = Array.prototype.filter;
-	food.sort = Array.prototype.forEach;
+	food.sort = Array.prototype.sort;
 	food.byName = function (name) {
 		var i = this.length;
 		while (i--) {
@@ -2635,7 +2696,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			};
 		};
 	recipeCrunchData = {};
-	recipeCrunchData.food = food.filter(function (item) {
+	/* recipeCrunchData.food = food.filter(function (item) {
 			return !item.uncookable && !item.skip && (item.ideal || (!item.cook && (!item.raw || !item.raw.ideal)));
 		}).map(function (item) {
 			var f = {}, t = usefulTags.length;
@@ -2645,7 +2706,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 			}
 			return f;
-		});
+		}); */ // this isn't currently used for some reason?
 	recipeCrunchData.recipes = recipes.filter(function (item) {
 			return !item.trash;
 		}).sort(function (a, b) {
@@ -2667,6 +2728,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				callback = function (combination) {
 					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
 					setIngredientValues(ingredients, names, tags);
+					tags.hunger = tags.bestHunger;
+					tags.health = tags.bestHealth;
 					for (i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
 						if (rcdTest[i](null, names, tags)) {
 							if (created !== null) {
@@ -2811,8 +2874,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					}
 					if (sortBy === 'name') {
 						dataset.sort(function (a, b) {
-							var aname = a.raw ? a.raw.name : a.name,
-								bname = b.raw ? b.raw.name : b.name;
+							var aname = a.basename ? a.basename : a.name,
+								bname = b.basename ? b.basename : b.name;
 							if (aname !== bname) {
 								return aname > bname ? 1 : aname < bname ? -1 : 0;
 							}
@@ -2907,11 +2970,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			return !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
 		};
 	var makeFoodRow = function (item) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
+		var health = sign(item.health);
+		var hunger = sign(item.hunger);
+		if (item.cook || item.dry) {
+			health += ' (' + (Math.max(item.health || 0, item.cook ? item.cook.health || 0 : 0, item.dry ? item.dry.health || 0 : 0)) + ')';
+			hunger += ' (' + (Math.max(item.hunger || 0, item.cook ? item.cook.hunger || 0 : 0, item.dry ? item.dry.hunger || 0 : 0)) + ')';
+		}
+		return cells('td', item.img ? item.img : '', item.name, health, hunger, isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
 	var makeRecipeRow = function (item, health, hunger, sanity) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity) + pct(sanity, item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
 	};
+	// food list, recipe list
 	(function () {
 		var foodHighlight,
 			foodHighlighted = [],
@@ -2986,6 +3056,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		});
 	}());
 
+	// statistics analyzer
 	var ingredientToIcon = function (a, b) {
 			return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
 		},
@@ -3096,12 +3167,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					ingredients = food;
 				}
 				while (i--) {
-					if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
+					if (!ingredients[i].skip) {
+						if (!ingredients[i].uncookable && (!ingredients[i].cooked || ingredients[i].ideal) && (!ingredients[i].rackdried || ingredients[i].ideal) && idealIngredients.indexOf(ingredients[i]) === -1) {
+							idealIngredients.push(ingredients[i]);
+						}
+					} else {
+						if (ingredients[i].cook && !ingredients[i].cook.uncookable && !ingredients[i].cook.skip && idealIngredients.indexOf(ingredients[i].cook) === -1) {
+							idealIngredients.push(ingredients[i].cook);
+						} else if (ingredients[i].dry && !ingredients[i].dry.uncookable && !ingredients[i].dry.skip && idealIngredients.indexOf(ingredients[i].dry) === -1) {
+							idealIngredients.push(ingredients[i].dry);
+						}
+					}
+					if (ingredients[i].cooked && !ingredients[i].raw.uncookable && !ingredients[i].raw.skip && idealIngredients.indexOf(ingredients[i].raw) === -1) {
+						idealIngredients.push(ingredients[i].raw);
+					}
+					if (ingredients[i].rackdried && !ingredients[i].wet.uncookable && !ingredients[i].wet.skip && idealIngredients.indexOf(ingredients[i].wet) === -1) {
+						idealIngredients.push(ingredients[i].wet);
+					}
+					/* if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
 						idealIngredients.push(ingredients[i].cook);
 					}
 					if (!ingredients[i].uncookable && (ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
 						idealIngredients.push(ingredients[i]);
-					}
+					} */
 				}
 				made = [];
 				makableTable = makeSortableTable(
@@ -3179,12 +3267,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						data.name = data.recipe.name;
 						data.health = data.recipe.health;
 						data.ihealth = data.tags.health;
-						data.healthpls = data.recipe.health - data.tags.health;
+						data.healthpls = data.recipe.health - data.ihealth;
 						data.hunger = data.recipe.hunger;
 						data.ihunger = data.tags.hunger;
-						data.hungerpls = data.recipe.hunger - data.tags.hunger;
-						data.healthpct = rawpct(data.tags.health, data.recipe.health);
-						data.hungerpct = rawpct(data.tags.hunger, data.recipe.hunger);
+						data.hungerpls = data.recipe.hunger - data.ihunger;
+						data.healthpct = rawpct(data.ihealth, data.recipe.health);
+						data.hungerpct = rawpct(data.ihunger, data.recipe.hunger);
 						data.sanity = data.recipe.sanity;
 						data.perish = data.recipe.perish;
 					}

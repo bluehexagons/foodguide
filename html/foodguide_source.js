@@ -493,6 +493,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			morsel_cooked: {
 				name: 'Cooked Morsel',
+				raw: 'morsel',
 				ismeat: true,
 				meat: 0.5,
 				precook: 1,
@@ -504,6 +505,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			morsel_dried: {
 				name: 'Small Jerky',
+				wet: 'morsel',
 				ismeat: true,
 				meat: 0.5,
 				dried: 1,
@@ -2478,21 +2480,35 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			if (typeof f.cook === 'string') {
 				f.cook = food[f.cook];
 			}
-			if (f.cook) {
+			if (f.cook && !f.cook.raw) {
 				f.cook.raw = f;
 				f.cook.cooked = true;
 				if (!f.cook.basename) {
 					f.cook.basename = (f.basename || f.name) + '.';
 				}
 			}
+			if (typeof f.raw === 'string') {
+				f.raw = food[f.raw];
+				f.cooked = true;
+				if (!f.basename) {
+					f.basename = (f.raw.basename || f.raw.name) + '.';
+				}
+			}
 			if (typeof f.dry === 'string') {
 				f.dry = food[f.dry];
 			}
-			if (f.dry && !f.dry.rackdried) {
+			if (f.dry && !f.dry.wet) {
 				f.dry.wet = f;
 				f.dry.rackdried = true;
 				if (!f.dry.basename) {
-					f.dry.basename = (f.basename || f.name) + '.';
+					f.dry.basename = (f.basename || f.name) + '..';
+				}
+			}
+			if (typeof f.wet === 'string') {
+				f.rackdried = true;
+				f.wet = food[f.wet];
+				if (!f.basename) {
+					f.basename = (f.wet.basename || f.wet.name) + '..';
 				}
 			}
 
@@ -2502,25 +2518,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				bestHealth = Math.max(f.cook.health || 0, bestHealth);
 				bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
 			}
-			if (f.dry) {
-				bestHealth = Math.max(f.dry.health || 0, bestHealth);
-				bestHunger = Math.max(f.dry.hunger || 0, bestHunger);
-			}
 			if (f.raw) {
 				bestHealth = Math.max(f.raw.health || 0, bestHealth);
 				bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
-				if (f.raw.dry) {
-					bestHealth = Math.max(f.raw.dry.health || 0, bestHealth);
-					bestHunger = Math.max(f.raw.dry.hunger || 0, bestHunger);
-				}
-			}
-			if (f.wet) {
-				bestHealth = Math.max(f.wet.health || 0, bestHealth);
-				bestHunger = Math.max(f.wet.hunger || 0, bestHunger);
-				if (f.wet.cook) {
-					bestHealth = Math.max(f.wet.cook.health || 0, bestHealth);
-					bestHunger = Math.max(f.wet.cook.hunger || 0, bestHunger);
-				}
 			}
 			f.bestHealth = bestHealth;
 			f.bestHunger = bestHunger;
@@ -2972,11 +2972,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	var makeFoodRow = function (item) {
 		var health = sign(item.health);
 		var hunger = sign(item.hunger);
-		if (item.cook || item.dry) {
-			health += ' (' + (Math.max(item.health || 0, item.cook ? item.cook.health || 0 : 0, item.dry ? item.dry.health || 0 : 0)) + ')';
-			hunger += ' (' + (Math.max(item.hunger || 0, item.cook ? item.cook.hunger || 0 : 0, item.dry ? item.dry.hunger || 0 : 0)) + ')';
+		var sanity = isNaN(item.sanity) ? '' : item.sanity;
+		if (item.cook) {
+			if (item.cook.health !== item.health) {
+				health += ' (' + (item.health || 0, item.cook.health || 0) + ')';
+			}
+			if (item.cook.hunger !== item.hunger) {
+				hunger += ' (' + (item.hunger || 0, item.cook.hunger || 0) + ')';
+			}
+			if (item.cook.sanity !== item.sanity) {
+				sanity += ' (' + (item.sanity || 0, item.cook.sanity || 0) + ')';
+			}
 		}
-		return cells('td', item.img ? item.img : '', item.name, health, hunger, isNaN(item.sanity) ? '' : sign(item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
+		return cells('td', item.img ? item.img : '', item.name, health, hunger, sanity, isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
 	var makeRecipeRow = function (item, health, hunger, sanity) {
 		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity) + pct(sanity, item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');

@@ -2974,14 +2974,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		var hunger = sign(item.hunger);
 		var sanity = isNaN(item.sanity) ? '' : item.sanity;
 		if (item.cook) {
-			if (item.cook.health !== item.health) {
-				health += ' (' + (item.health || 0, item.cook.health || 0) + ')';
+			if (item.cook.health !== (item.health || 0)) {
+				health += ' (' + sign(item.cook.health - (item.health || 0)) + ')';
 			}
-			if (item.cook.hunger !== item.hunger) {
-				hunger += ' (' + (item.hunger || 0, item.cook.hunger || 0) + ')';
+			if (item.cook.hunger !== (item.hunger || 0)) {
+				hunger += ' (' + sign(item.cook.hunger - (item.hunger || 0)) + ')';
 			}
-			if (item.cook.sanity !== item.sanity) {
-				sanity += ' (' + (item.sanity || 0, item.cook.sanity || 0) + ')';
+			if (item.cook.sanity !== (item.sanity || 0)) {
+				sanity += ' (' + sign(item.cook.sanity - (item.sanity || 0)) + ')';
 			}
 		}
 		return cells('td', item.img ? item.img : '', item.name, health, hunger, sanity, isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');

@@ -5,7 +5,7 @@
 	<link rel="shortcut icon" href="icon.png" />
 	<meta charset='utf-8' />
 	<style type="text/css">
-		body { background: #ccc url('img/backgroundstripes.png'); background-size: 100%; background-attachment: fixed; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; font-family: sans-serif; }
+		body { background-blend-mode: multiply; background: #ccc url('img/backgroundstripes.png'); background-size: 100%; background-attachment: fixed; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; font-family: sans-serif; }
 		a { color: #333; }
 		a:hover { color: #888; }
 		#navbar { position: relative; left: 0px; top: 0px; display: block; z-index: 1; padding-left: 0; }
@@ -62,7 +62,7 @@
 		div.foodFilter img.selected { border-width: 3px; margin: 2px; opacity: 1; }
 		div.foodFilter img.excluded { border-width: 3px; border-color: #711; margin: 2px; opacity: 0.8; background: #fcc; }
 		strong { color: #333; }
-		#navbar li.dlc {
+		#navbar li.mode {
 			padding: 0 0 0 4px;
 			margin: 0;
 			cursor: default;
@@ -72,7 +72,7 @@
 			position: relative;
 			top: 12px;
 		}
-		#navbar li.dlc img {
+		#navbar li.mode img {
 			padding: 2px;
 			margin: 0 2px 0 2px;
 			width: 30px;
@@ -81,13 +81,13 @@
 			cursor: pointer;
 			opacity: 0.25;
 		}
-		#navbar li.dlc img:hover {
+		#navbar li.mode img:hover {
 			opacity: 0.66;
 		}
-		#navbar li.dlc img.enabled {
+		#navbar li.mode img.enabled {
 			opacity: 1;
 		}
-		#navbar li.dlc img.enabled:hover {
+		#navbar li.mode img.enabled:hover {
 			opacity: 1;
 		}
 	</style>
@@ -135,7 +135,7 @@
 				available on <a href="http://store.steampowered.com/app/219740/">Steam</a>.
 			</p>
 			<p>This tool requires a modern web browser and is officially supported in recent versions of: Chrome/Chromium (and mobile), Firefox, Safari (and mobile), and Internet Explorer 9+</p>
-			<p>The food and recipe database should be current as of <strong>Wilbur vs. the Volcano update, February 4th 2016</strong>.</p>
+			<p>The food and recipe database should be current as of the <strong>Unleash the Quacken update, February 25th 2016</strong>.</p>
 			<h2>About Don't Starve Food</h2>
 			<p>
 				<strong>Perish time</strong> is the time before a food item becomes <strong>Rot</strong>. <strong>Halfway</strong> through this period, it will go <strong>stale</strong>, and give <strong><span id="stalehealth"></span> health</strong> and <strong><span id="stalehunger"></span> hunger</strong>, as well as <strong>no sanity</strong>.
@@ -148,8 +148,7 @@
 			<p>In recipe requirements, cooked/uncooked usually doesn't make a difference. If it does, then only the valid form will be listed.</p>
 			<h2>About DLC and Don't Starve Together</h2>
 			<p>
-				All foods in <strong>Don't Starve</strong> and <strong>Reign of Giants</strong> are present in <strong>Don't Starve Together</strong>, with some additional non-crock-pot foods in <strong>Together</strong>.
-				All foods in <strong>Don't Starve</strong> and <strong>Reign of Giants</strong> are also present in <strong>Shipwrecked</strong>, although some may be unobtainable (such as moleworms).
+				Which foods and recipes exist in each version of the game gets a little complicated. For this reason, there are buttons in the upper-left that let you switch modes for a game. Click on a badge to switch to the mode for that game; you can also right-click on badges to toggle their individual recipes and ingredients on and off.
 			</p>
 			<h2>Simulator</h2>
 			<p>

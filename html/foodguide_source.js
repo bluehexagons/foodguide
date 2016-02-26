@@ -39,6 +39,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		stack_size_meditem = 20,
 		stack_size_smallitem = 40,
 
+		stats = ['hunger', 'health', 'sanity'],
+		isStat = {
+			hunger: true,
+			health: true,
+			sanity: true
+		},
+		isBestStat = {
+			bestHunger: true,
+			bestHealth: true,
+			bestSanity: true
+		},
+		
 		healing_tiny = 1,
 		healing_small = 3,
 		healing_medsmall = 8,
@@ -97,15 +109,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		spoiled_food_health = 0,
 
 		base_cook_time = night_time*.3333,
+		
+		defaultStatMultipliers = {
+			raw: 1,
+			dried: 1,
+			cooked: 1,
+			recipe: 1
+		},
+		statMultipliers = defaultStatMultipliers,
 
-		dlcRefreshers = [],
+		modeRefreshers = [],
 		VANILLA = 1,
 		GIANTS = 1 << 1,
 		SHIPWRECKED = 1 << 2,
 		TOGETHER = 1 << 3,
-		dlcMask = VANILLA | GIANTS | SHIPWRECKED,
+		WARLY = 1 << 4,
+		modeMask = VANILLA | GIANTS | SHIPWRECKED,
 
-		dlc = {
+		modes = {
 			vanilla: {
 				name: 'Vanilla',
 				img: 'vanilla.png',
@@ -128,21 +149,55 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				color: '#50c1cc'
 			},
 			together: {
-				name: 'Together',
+				name: 'Don\'t Starve Together',
 				img: 'together.png',
 				bit: TOGETHER,
 				mask: VANILLA | GIANTS | TOGETHER,
 				color: '#c0c0c0'
 			},
+			warly: {
+				name: 'Warly',
+				img: 'warly.png',
+				bit: WARLY,
+				mask: VANILLA | GIANTS | SHIPWRECKED | WARLY,
+				multipliers: {
+					raw: 0.7,
+					dried: 0.8,
+					cooked: 0.9,
+					recipe: 1.2
+				},
+			},
 		},
-		setDLC = function (mask) {
-			dlcMask = mask;
-			for (var i = 0; i < dlcTab.childNodes.length; i++) {
-				var img = dlcTab.childNodes[i];
-				img.className = (dlcMask & dlc[img.dataset.dlc].bit) !== 0 ? 'enabled' : '';
+		setMode = function (mask) {
+			statMultipliers = {};
+			for (i in defaultStatMultipliers) {
+				if (defaultStatMultipliers.hasOwnProperty(i)) {
+					statMultipliers[i] = defaultStatMultipliers[i];
+				}
 			}
-			for (var i = 0; i < dlcRefreshers.length; i++) {
-				dlcRefreshers[i]();
+			modeMask = mask;
+			for (var i = 0; i < modeTab.childNodes.length; i++) {
+				var img = modeTab.childNodes[i];
+				var mode = modes[img.dataset.mode]
+				img.className = (modeMask & mode.bit) !== 0 ? 'enabled' : '';
+				
+				if (mode.multipliers && ((modeMask & mode.bit) !== 0)) {
+					for (var foodtype in mode.multipliers) {
+						if (mode.multipliers.hasOwnProperty(foodtype)) {
+							statMultipliers[foodtype] *= mode.multipliers[foodtype];
+						}
+					}
+				}
+			}
+			for (var i = 0; i < modeRefreshers.length; i++) {
+				modeRefreshers[i]();
+			}
+			var modeOrder = ['together', 'shipwrecked', 'giants', 'vanilla']
+			for (var i = 0; i < modeOrder.length; i++) {
+				if ((modeMask & modes[modeOrder[i]].bit) !== 0) {
+					document.getElementsByTagName('BODY')[0].style['background-color'] = modes[modeOrder[i]].color;
+					return;
+				}
 			}
 		},
 
@@ -155,7 +210,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_preserved,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			acorn_cooked: {
 				name: 'Roasted Birchnut',
@@ -166,7 +221,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			butter: {
 				name: 'Butter',
@@ -196,7 +251,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: sanity_tiny,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			deerclopseyeball: {
 				name: 'Deerclops Eyeball',
@@ -327,7 +382,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: sanity_small,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			honey: {
 				name: 'Honey',
@@ -350,7 +405,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			lightbulb: {
 				name: 'Light Bulb',
@@ -388,7 +443,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				perish: total_day_time * 2,
 				cook: 'morsel_cooked',
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			plantmeat: {
 				name: 'Leafy Meat',
@@ -920,7 +975,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: -sanity_tiny,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			cactusmeat_cooked: {
 				name: 'Cooked Cactus Flesh',
@@ -931,7 +986,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: sanity_med,
 				precook: 1,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			watermelon: {
 				name: 'Watermelon',
@@ -942,7 +997,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				sanity: sanity_tiny,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			watermelon_cooked: {
 				name: 'Grilled Watermelon',
@@ -953,7 +1008,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: sanity_tiny * 1.5,
 				precook: 1,
 				stack: stack_size_smallitem,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			wormlight: {
 				name: 'Glow Berry',
@@ -970,7 +1025,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				health: healing_large,
 				hunger: calories_tiny,
 				sanity: -sanity_huge,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 
 			//Shipwrecked ingredients
@@ -981,7 +1036,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: 10,
 				sanity: 50,
 				perish: perish_one_day,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			blubber: {
 				name: 'Blubber',
@@ -991,7 +1046,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_largeitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			seaweed: {
 				name: 'Seaweed',
@@ -1004,7 +1059,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				dry: 'seaweed_dried',
 				drytime: dry_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			seaweed_cooked: {
 				name: 'Roasted Seaweed',
@@ -1014,7 +1069,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			seaweed_dried: {
 				name: 'Dried Seaweed',
@@ -1024,7 +1079,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_preserved,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			sweet_potato: {
 				name: 'Sweet Potato',
@@ -1034,7 +1089,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			sweet_potato_cooked: {
 				name: 'Cooked Sweet Potato',
@@ -1044,7 +1099,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			coffeebeans: {
 				name: 'Coffee Beans',
@@ -1054,7 +1109,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			coffeebeans_cooked: {
 				name: 'Roasted Coffee Beans',
@@ -1066,23 +1121,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_slow,
 				stack: stack_size_smallitem,
 				note: 'Gives 5 bonus speed (+83%) for 30 seconds',
-				dlc: 'shipwrecked'
-			},
-			coconut: {
-				name: 'Coconut',
-				fruit: 1,
-				fat: 1,
-				health: 0,
-				hunger: calories_tiny / 2,
-				sanity: 0,
-				perish: perish_preserved,
-				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			coconut_halved: {
 				name: 'Halved Coconut',
 				basename: 'Coconut.',
-				uncookable: true,
 				fruit: 1,
 				fat: 1,
 				health: healing_tiny,
@@ -1091,7 +1134,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_smallitem,
 				cook: 'coconut_cooked',
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			coconut_cooked: {
 				name: 'Roasted Coconut',
@@ -1102,7 +1145,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			doydoyegg: {
 				name: 'Doydoy Egg',
@@ -1111,7 +1154,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_med,
 				sanity: 0,
 				perish: perish_med,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			doydoyegg_cooked: {
 				name: 'Fried Doydoy Egg',
@@ -1120,7 +1163,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				sanity: 0,
 				perish: perish_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			tropical_fish: {
 				name: 'Tropical Fish',
@@ -1136,7 +1179,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cook: 'fish_raw_small_cooked',
 				dry: 'morsel_dried',
 				drytime: dry_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			fish_raw: {
 				name: 'Raw Fish',
@@ -1150,7 +1193,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cook: 'fish_med_cooked',
 				dry: 'meat_dried',
 				drytime: dry_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			fish_med: {
 				name: 'Dead Dogfish',
@@ -1164,7 +1207,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				rot: 'spoiled_fish',
 				dry: 'meat_dried',
 				drytime: dry_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			dead_swordfish: {
 				name: 'Swordfish',
@@ -1180,7 +1223,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				rot: 'spoiled_fish',
 				dry: 'meat_dried',
 				drytime: dry_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			fish_med_cooked: {
 				name: 'Fish Steak',
@@ -1191,7 +1234,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			/* swordfish: { //this refers to the living prefab, probably an accident?
 				name: 'Swordfish',
@@ -1202,19 +1245,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				rot: 'spoiled_fish',
-				dlc: 'shipwrecked',
-				cook: food.fish_med_cooked //not sure if this works
+				mode: 'shipwrecked',
+				cook: 'fish_med_cooked'
 			}, */
 			shark_fin: {
 				name: 'Shark Fin',
 				meat: 0.5,
 				fish: 1,
-				health: healing_med, //TODO // (what?)
+				health: healing_med,
 				hunger: calories_med,
 				sanity: -sanity_med,
 				perish: perish_fast,
 				stack: stack_size_largeitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			limpets: {
 				name: 'Limpets',
@@ -1225,7 +1268,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_small,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			limpets_cooked: {
 				name: 'Cooked Limpets',
@@ -1235,7 +1278,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			mussel: {
 				name: 'Mussel',
@@ -1245,7 +1288,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_small,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			mussel_cooked: {
 				name: 'Cooked Mussel',
@@ -1255,7 +1298,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			mysterymeat: {
 				name: 'Bile-Covered Slop',
@@ -1264,7 +1307,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: spoiled_hunger,
 				sanity: 0,
 				stack: stack_size_meditem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			jellyfish: {
 				name: 'Jellyfish',
@@ -1273,7 +1316,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				monster: 1,
 				perish: perish_one_day * 1.5,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			jellyfish_dead: {
 				name: 'Dead Jellyfish',
@@ -1289,7 +1332,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cook: 'jellyfish_cooked',
 				dry: 'jellyfish_dried',
 				drytime: dry_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			jellyfish_cooked: {
 				name: 'Cooked Jellyfish',
@@ -1301,7 +1344,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_med,
 				stack: stack_size_meditem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			jellyfish_dried: {
 				name: 'Dried Jellyfish',
@@ -1313,14 +1356,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_preserved,
 				stack: stack_size_meditem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			lobster: {
 				name: 'Wobster',
 				// inedible: true,
 				fish: 2,
 				perish: total_day_time * 2,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			lobster_dead: {
 				name: 'Dead Wobster',
@@ -1332,7 +1375,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_largeitem,
 				cook: 'lobster_cooked',
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			lobster_cooked: {
 				name: 'Delicious Wobster',
@@ -1343,7 +1386,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			crab: {
 				name: 'Crab',
@@ -1352,7 +1395,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				fish: 0.5,
 				perish: total_day_time * 2,
 				cook: 'fish_raw_small_cooked',
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			fish_raw_small: {
 				name: 'Fish Morsel',
@@ -1364,7 +1407,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				dry: 'morsel_dried',
 				drytime: dry_fast,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			fish_raw_small_cooked: {
 				name: 'Cooked Fish Morsel',
@@ -1374,7 +1417,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_fast,
 				stack: stack_size_smallitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			tigereye: {
 				name: 'Eye of the Tiger Shark',
@@ -1383,7 +1426,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_huge,
 				sanity: -sanity_med,
 				stack: stack_size_largeitem,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			dragoonheart: {
 				name: 'Dragoon Heart',
@@ -1394,7 +1437,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_largeitem,
 				note: 'Gives 90 seconds of light',
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 
 			//DST Ingredients
@@ -1407,7 +1450,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				note: 'Gives 22.5 seconds of light',
-				dlc: 'together'
+				mode: 'together'
 			},
 			phlegm: {
 				name: 'Phlegm',
@@ -1417,8 +1460,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_med,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				dlc: 'together'
-			},
+				mode: 'together'
+			}
 		},
 		//note: qty not used yet, this is for rapid summation
 		COMPAREString = function () { return this.op + this.qty; },
@@ -1839,7 +1882,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fast,
 				sanity: sanity_tiny,
 				cooktime: 0.5,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			icecream: {
 				name: 'Ice Cream',
@@ -1856,7 +1899,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: cold_food_bonus_temp,
 				temperatureduration: food_temp_long,
 				cooktime: 0.5,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			watermelonicle: {
 				name: 'Melonsicle',
@@ -1873,7 +1916,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: cold_food_bonus_temp,
 				temperatureduration: food_temp_average,
 				cooktime: 0.5,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			trailmix: {
 				name: 'Trail Mix',
@@ -1888,7 +1931,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_slow,
 				sanity: sanity_tiny,
 				cooktime: 0.5,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			hotchili: {
 				name: 'Spicy Chili',
@@ -1905,7 +1948,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: hot_food_bonus_temp,
 				temperatureduration: food_temp_long,
 				cooktime: 0.5,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 			guacamole: {
 				name: 'Guacamole',
@@ -1920,7 +1963,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: 0,
 				cooktime: 0.5,
-				dlc: 'giants'
+				mode: 'giants'
 			},
 
 			//Shipwrecked recipes
@@ -1933,11 +1976,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				priority: 20,
 				foodtype: 'meat',
 				health: healing_med,
-				hunger: calories_med*2,
+				hunger: calories_large,
 				perish: perish_med,
 				sanity: sanity_small,
 				cooktime: 0.5,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			seafoodgumbo: {
 				name: 'Seafood Gumbo',
@@ -1952,7 +1995,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: sanity_medlarge,
 				cooktime: 1,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			bisque: {
 				name: 'Bisque',
@@ -1967,7 +2010,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: sanity_tiny,
 				cooktime: 1,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			ceviche: {
 				name: 'Ceviche',
@@ -1984,7 +2027,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: cold_food_bonus_temp,
 				temperatureduration: food_temp_average,
 				cooktime: 0.5,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			jellyopop: {
 				name: 'Jelly-O Pop',
@@ -2001,7 +2044,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: cold_food_bonus_temp,
 				temperatureduration: food_temp_average,
 				cooktime: 0.5,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			bananapop: {
 				name: 'Banana Pop',
@@ -2018,7 +2061,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: cold_food_bonus_temp,
 				temperatureduration: food_temp_average,
 				cooktime: 0.5,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			lobsterbisque: {
 				name: 'Lobster Bisque',
@@ -2033,7 +2076,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: sanity_small,
 				cooktime: 0.5,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			lobsterdinner: {
 				name: 'Lobster Dinner',
@@ -2048,7 +2091,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_slow,
 				sanity: sanity_huge,
 				cooktime: 1,
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			sharkfinsoup: {
 				name: 'Shark Fin Soup',
@@ -2062,9 +2105,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_small,
 				perish: perish_med,
 				sanity: -sanity_small,
-				cooktime: 0.5,
+				cooktime: 1,
 				note: 'Gives 10 naughtiness',
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
 			},
 			surfnturf: {
 				name: 'Surf \'n\' Turf',
@@ -2078,11 +2121,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_med,
 				sanity: sanity_large,
-				cooktime: 0.5,
-				dlc: 'shipwrecked'
+				cooktime: 1,
+				mode: 'shipwrecked'
 			},
 			coffee: {
-				name: 'Coffee', //not in files yet
+				name: 'Coffee',
 				test: function(cooker, names, tags) {
 					return names.coffeebeans_cooked && (names.coffeebeans_cooked == 4 || (names.coffeebeans_cooked == 3 && (tags.dairy || tags.sweetener)));
 				},
@@ -2095,7 +2138,69 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: -sanity_tiny,
 				cooktime: 0.5,
 				note: 'Gives 5 bonus speed (+83%) for 0.5 days',
-				dlc: 'shipwrecked'
+				mode: 'shipwrecked'
+			},
+			
+			//Warly recipes
+			sweetpotatosouffle: {
+				name: 'Sweet Potato Souffle',
+				test: function(cooker, names, tags) {
+					return names.sweet_potato && names.sweet_potato == 2 && tags.egg && tags.egg >= 2;
+				},
+				requirements: [SPECIFIC('sweet_potato', COMPARE('==', 2)), TAG('egg', COMPARE('>=', 2))],
+				priority: 30,
+				foodtype: 'veggie',
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_med,
+				cooktime: 2,
+				mode: 'warly'
+			},
+			monstertartare: {
+				name: 'Monster Tartare',
+				test: function(cooker, names, tags) {
+					return tags.monster && tags.monster >= 2 && tags.egg && tags.veggie;
+				},
+				requirements: [TAG('monster', COMPARE('>=', 2)), TAG('egg'), TAG('veggie')],
+				priority: 30,
+				foodtype: 'meat',
+				health: healing_small,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_small,
+				cooktime: 2,
+				mode: 'warly'
+			},
+			freshfruitcrepes: {
+				name: 'Fresh Fruit Crepes',
+				test: function(cooker, names, tags) {
+					return tags.monster && tags.monster >= 2 && tags.egg && tags.veggie;
+				},
+				requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter'), SPECIFIC('honey')],
+				priority: 30,
+				foodtype: 'veggie',
+				health: healing_huge,
+				hunger: calories_superhuge,
+				perish: perish_med,
+				sanity: sanity_med,
+				cooktime: 2,
+				mode: 'warly'
+			},
+			musselbouillabaise: {
+				name: 'Mussel Bouillabaise',
+				test: function(cooker, names, tags) {
+					return names.mussel && names.mussel == 2 && tags.veggie && tags.veggie >= 2;
+				},
+				requirements: [SPECIFIC('mussel', COMPARE('==', 2)), TAG('veggie', COMPARE('>=', 2))],
+				priority: 30,
+				foodtype: 'meat',
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_med,
+				cooktime: 2,
+				mode: 'warly'
 			}
 		},
 		recipeCrunchData,
@@ -2117,7 +2222,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				wordstarts,
 				allowUncookable = false,
 				filter = function (element) {
-					if ((!allowUncookable && element.uncookable) || (element.dlcMask & dlcMask) === 0) {
+					if ((!allowUncookable && element.uncookable) || (element.modeMask & modeMask) === 0) {
 						element.match = 0;
 					} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
 						element.match = 3;
@@ -2232,7 +2337,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					names[item.id] = 1 + (names[item.id] || 0);
 					for (k in item) {
 						if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
-							tags[k] = item[k] + (tags[k] || 0);
+							var val = item[k]
+							if (isStat[k]) {
+								val *= statMultipliers[item.preparationType];
+							}
+							else if(isBestStat[k]) {
+								val *= statMultipliers[item[k+'Type']];
+							}
+							tags[k] = val + (tags[k] || 0);
 						} else if (k === 'perish') {
 							tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
 						}
@@ -2251,9 +2363,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				setIngredientValues(items, names, tags);
 				tags.hunger = tags.bestHunger;
 				tags.health = tags.bestHealth;
+				tags.sanity = tags.bestSanity;
 				outer: for (i = 0; i < recipes.length; i++) {
 					valid = false;
-					if ((recipes[i].dlcMask & dlcMask) === 0) {
+					if ((recipes[i].modeMask & modeMask) === 0) {
 						continue;
 					}
 					for (ii = 0; ii < recipes[i].requirements.length; ii++) {
@@ -2286,9 +2399,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				setIngredientValues(items, names, tags);
 				tags.hunger = tags.bestHunger;
 				tags.health = tags.bestHealth;
+				tags.sanity = tags.bestSanity;
 				for (i = 0; i < recipes.length; i++) {
 					recipes[i].test(null, names, tags)
-						&& (recipes[i].dlcMask & dlcMask) !== 0
+						&& (recipes[i].modeMask & modeMask) !== 0
 						&& recipeList.push(recipes[i]);
 				}
 				recipeList.sort(function (a, b) {
@@ -2474,6 +2588,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.nameObject = {};
 			f.nameObject[i] = 1;
 			f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
+			f.preparationType = f.preparationType || 'raw';
 			if (food[i + '_cooked']) {
 				f.cook = food[i + '_cooked'];
 			}
@@ -2511,19 +2626,50 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					f.basename = (f.wet.basename || f.wet.name) + '..';
 				}
 			}
-
-			var bestHealth = f.health || 0;
-			var bestHunger = f.hunger || 0;
 			if (f.cook) {
-				bestHealth = Math.max(f.cook.health || 0, bestHealth);
-				bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
+				f.cook.preparationType = 'cooked';
 			}
-			if (f.raw) {
-				bestHealth = Math.max(f.raw.health || 0, bestHealth);
-				bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
+			if (f.dry) {
+				f.dry.preparationType = 'dried';
 			}
-			f.bestHealth = bestHealth;
-			f.bestHunger = bestHunger;
+			
+			for (var i = 0; i < stats.length; i++) {
+				var stat = stats[i];
+				var bestStat = f[stat] || 0;
+				var bestStatType = f.preparationType;
+				if (f.raw) {
+					bestStat = Math.max(f.raw[stat] || 0, bestStat)
+					if (bestStat == f.raw[stat]) {
+						bestStatType = 'raw';
+					}
+				}
+				if (f.cook) {
+					bestStat = Math.max(f.cook[stat] || 0, bestStat)
+					if (bestStat == f.cook[stat]) {
+						bestStatType = 'cooked';
+					}
+				}
+				stat = stat.charAt(0).toUpperCase() + stat.slice(1);
+				f['best' + stat] = bestStat;
+				f['best' + stat + 'Type'] = bestStatType;
+				// console.log('best' + stat + 'Type');
+			}
+			// var bestHealth = f.health || 0;
+			// var bestHunger = f.hunger || 0;
+			// var bestSanity = f.sanity || 0;
+			// if (f.cook) {
+				// bestHealth = Math.max(f.cook.health || 0, bestHealth);
+				// bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
+				// bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
+			// }
+			// if (f.raw) {
+				// bestHealth = Math.max(f.raw.health || 0, bestHealth);
+				// bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
+				// bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
+			// }
+			// f.bestHealth = bestHealth;
+			// f.bestHunger = bestHunger;
+			// f.bestSanity = bestSanity;
 
 			f.info = [];
 			info = f.info;
@@ -2555,15 +2701,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			recipes[i].priority = recipes[i].priority || 0;
 			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
 			if (recipes[i].requirements) {
-				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].dlc ? ('; [tag:' + recipes[i].dlc + '|img/' + dlc[recipes[i].dlc].img + ']') : ''));
+				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].mode ? ('; [tag:' + recipes[i].mode + '|img/' + modes[recipes[i].mode].img + ']') : ''));
 			}
-			if (recipes[i].dlc) {
-				recipes[i][recipes[i].dlc] = true;
+			if (recipes[i].mode) {
+				recipes[i][recipes[i].mode] = true;
 			} else {
 				recipes[i].vanilla = true;
-				recipes[i].dlc = 'vanilla';
+				recipes[i].mode = 'vanilla';
 			}
-			recipes[i].dlcMask = dlc[recipes[i].dlc].bit;
+			recipes[i].modeMask = modes[recipes[i].mode].bit;
 			if (recipes[i].temperature) {
 				if (recipes[i].note) {
 					recipes[i].note += '; ';
@@ -2572,6 +2718,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 				recipes[i].note += 'Provides ' + recipes[i].temperature + ' heat for ' + recipes[i].temperatureduration + ' seconds';
 			}
+			recipes[i].preparationType = 'recipe';
 			recipes[index++] = recipes[i];
 		}
 	}
@@ -2611,14 +2758,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
 		}
-		if (f.dlc) {
-			f[f.dlc] = true;
-			info.push('requires [tag:' + f.dlc + '|img/' + dlc[f.dlc].img + ']');
+		if (f.mode) {
+			f[f.mode] = true;
+			info.push('requires [tag:' + f.mode + '|img/' + modes[f.mode].img + ']');
 		} else {
 			f.vanilla = true;
-			f.dlc = 'vanilla';
+			f.mode = 'vanilla';
 		}
-		f.dlcMask = dlc[f.dlc].bit;
+		f.modeMask = modes[f.mode].bit;
 		f.info = info.join('; ');
 		if (!f.uncookable) {
 			f.recipes = [];
@@ -2728,8 +2875,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				callback = function (combination) {
 					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
 					setIngredientValues(ingredients, names, tags);
-					tags.hunger = tags.bestHunger;
-					tags.health = tags.bestHealth;
+					// console.log("callback: " + tags.bestHungerType);
+					tags.hunger = tags.bestHunger;// * statMultipliers[tags.bestHungerType];
+					tags.health = tags.bestHealth;// * statMultipliers[tags.bestHealthType];
+					tags.sanity = tags.bestSanity;// * statMultipliers[tags.bestSanityType];
 					for (i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
 						if (rcdTest[i](null, names, tags)) {
 							if (created !== null) {
@@ -2805,7 +2954,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			if (storage.activeTab && tabs[storage.activeTab]) {
 				activeTab = tabs[storage.activeTab];
 				activePage = elements[storage.activeTab];
-				dlcMask = storage.dlcMask || dlc.shipwrecked.mask;
+				modeMask = storage.modeMask || modes.shipwrecked.mask;
 			}
 		}
 		activeTab.className = 'selected';
@@ -2818,7 +2967,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				}
 				obj = JSON.parse(localStorage.foodGuideState);
 				obj.activeTab = activeTab.dataset.tab;
-				obj.dlcMask = dlcMask;
+				obj.modeMask = modeMask;
 				localStorage.foodGuideState = JSON.stringify(obj);
 			}
 		});
@@ -2962,32 +3111,47 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		return table;
 	};
 
-	var sign = function (n) { return isNaN(n) ? '' : n > 0 ? '+' + n : n },
+	var sign = function (n) {
+			if (isNaN(n)) {
+				return '';
+			}
+			else {
+				n = parseFloat(parseFloat(n).toFixed(4));
+				return n > 0 ? '+' + n : n
+			}
+		},
 		rawpct = function (base, val) {
 			return base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0;
 		},
 		pct = function (base, val) {
-			return !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
+			var result = !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
+			return result.indexOf('Infinity') == -1 ? result : ' (' + sign(val - base) + ')';
 		};
 	var makeFoodRow = function (item) {
-		var health = sign(item.health);
-		var hunger = sign(item.hunger);
-		var sanity = isNaN(item.sanity) ? '' : item.sanity;
+		var mult = statMultipliers[item.preparationType],
+			health = sign(item.health * mult),
+			hunger = sign(item.hunger * mult),
+			sanity = isNaN(item.sanity) ? '' : (item.sanity * mult);
 		if (item.cook) {
+			var cookmult = statMultipliers[item.cook.preparationType]
 			if (item.cook.health !== (item.health || 0)) {
-				health += ' (' + sign(item.cook.health - (item.health || 0)) + ')';
+				health += ' (' + sign((item.cook.health * cookmult) - (health || 0)) + ')';
 			}
 			if (item.cook.hunger !== (item.hunger || 0)) {
-				hunger += ' (' + sign(item.cook.hunger - (item.hunger || 0)) + ')';
+				hunger += ' (' + sign((item.cook.hunger * cookmult) - (hunger || 0)) + ')';
 			}
 			if (item.cook.sanity !== (item.sanity || 0)) {
-				sanity += ' (' + sign(item.cook.sanity - (item.sanity || 0)) + ')';
+				sanity += ' (' + sign((item.cook.sanity * cookmult) - (sanity || 0)) + ')';
 			}
 		}
 		return cells('td', item.img ? item.img : '', item.name, health, hunger, sanity, isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
 	var makeRecipeRow = function (item, health, hunger, sanity) {
-		return cells('td', item.img ? item.img : '', item.name, sign(item.health) + pct(health, item.health), sign(item.hunger) + pct(hunger, item.hunger), isNaN(item.sanity) ? '' : sign(item.sanity) + pct(sanity, item.sanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
+		var mult = statMultipliers[item.preparationType] || 1,
+			ihealth = item.health * mult,
+			ihunger = item.hunger * mult,
+			isanity = item.sanity * mult;
+		return cells('td', item.img ? item.img : '', item.name, sign(ihealth) + pct(health, ihealth), sign(ihunger) + pct(hunger, ihunger), isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
 	};
 	// food list, recipe list
 	(function () {
@@ -3016,8 +3180,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			setRecipeHighlight = function (e) {
 				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
-				var dlcname = name.substring(name.indexOf(':') + 1);
-				if (!!dlc[dlcname]) {
+				var modename = name.substring(name.indexOf(':') + 1);
+				if (!!modes[modename]) {
 					recipeHighlighted = matchingNames(recipes, name);
 					recipeTable.update(true);
 				} else {
@@ -3033,8 +3197,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			testRecipeHighlight = function (item) {
 				return recipeHighlighted.indexOf(item) !== -1;
 			},
-			testDLC = function (item) {
-				return (item.dlcMask & dlcMask) !== 0;
+			testmode = function (item) {
+				return (item.modeMask & modeMask) !== 0;
 			},
 			foodTable = makeSortableTable(
 				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
@@ -3044,7 +3208,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				false,
 				setFoodHighlight,
 				testFoodHighlight,
-				testDLC
+				testmode
 			),
 			recipeTable = makeSortableTable(
 				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
@@ -3054,11 +3218,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				false,
 				setRecipeHighlight,
 				testRecipeHighlight,
-				testDLC
+				testmode
 			);
 		foodElement.appendChild(foodTable);
 		recipesElement.appendChild(recipeTable);
-		dlcRefreshers.push(function () {
+		modeRefreshers.push(function () {
 			foodTable.update();
 			recipeTable.update();
 		});
@@ -3955,31 +4119,31 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						localStorage.foodGuideState = JSON.stringify(obj);
 					}
 				});
-				dlcRefreshers.push(refreshPicker);
-				dlcRefreshers.push(updateRecipes);
+				modeRefreshers.push(refreshPicker);
+				modeRefreshers.push(updateRecipes);
 			}());
 		}
 	}())
 
-	var showDLC = function (e) {
-		setDLC(dlc[e.target.dataset.dlc].mask);
+	var showmode = function (e) {
+		setMode(modes[e.target.dataset.mode].mask);
 	};
-	var toggleDLC = function(e) {
-		setDLC(dlcMask ^ dlc[e.target.dataset.dlc].bit);
+	var togglemode = function(e) {
+		setMode(modeMask ^ modes[e.target.dataset.mode].bit);
 		e.preventDefault();
 	}
-	var dlcTab = document.createElement('li');
-	navbar.insertBefore(dlcTab, navbar.firstChild);
-	dlcTab.className = 'dlc';
+	var modeTab = document.createElement('li');
+	navbar.insertBefore(modeTab, navbar.firstChild);
+	modeTab.className = 'mode';
 
-	for (var name in dlc) {
-		var dlcButton = makeImage('img/' + dlc[name].img);
-		dlcButton.dataset.dlc = name;
-		dlcButton.addEventListener('click', showDLC, false);
-		dlcButton.addEventListener('contextmenu', toggleDLC, false);
+	for (var name in modes) {
+		var modeButton = makeImage('img/' + modes[name].img);
+		modeButton.dataset.mode = name;
+		modeButton.addEventListener('click', showmode, false);
+		modeButton.addEventListener('contextmenu', togglemode, false);
 
-		dlcButton.title = dlc[name].name + '\nleft-click to select\nright-click to toggle';
-		dlcTab.appendChild(dlcButton);
+		modeButton.title = modes[name].name + '\nleft-click to select\nright-click to toggle';
+		modeTab.appendChild(modeButton);
 	}
-	setDLC(dlcMask);
+	setMode(modeMask);
 }());

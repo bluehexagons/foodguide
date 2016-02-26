@@ -50,7 +50,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			bestHealth: true,
 			bestSanity: true
 		},
-		
+
 		healing_tiny = 1,
 		healing_small = 3,
 		healing_medsmall = 8,
@@ -109,7 +109,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		spoiled_food_health = 0,
 
 		base_cook_time = night_time*.3333,
-		
+
 		defaultStatMultipliers = {
 			raw: 1,
 			dried: 1,
@@ -180,7 +180,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				var img = modeTab.childNodes[i];
 				var mode = modes[img.dataset.mode]
 				img.className = (modeMask & mode.bit) !== 0 ? 'enabled' : '';
-				
+
 				if (mode.multipliers && ((modeMask & mode.bit) !== 0)) {
 					for (var foodtype in mode.multipliers) {
 						if (mode.multipliers.hasOwnProperty(foodtype)) {
@@ -1970,9 +1970,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			californiaroll: {
 				name: 'California Roll',
 				test: function(cooker, names, tags) {
-					return names.seaweed && names.seaweed == 2 && tags.fish && tags.fish >= 1;
+					return names.seaweed && names.seaweed === 2 && tags.fish && tags.fish >= 1;
 				},
-				requirements: [SPECIFIC('seaweed', COMPARE('==', 2)), TAG('fish', COMPARE('>=', 1))],
+				requirements: [SPECIFIC('seaweed', COMPARE('=', 2)), TAG('fish', COMPARE('>=', 1))],
 				priority: 20,
 				foodtype: 'meat',
 				health: healing_med,
@@ -2000,9 +2000,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			bisque: {
 				name: 'Bisque',
 				test: function(cooker, names, tags) {
-					return names.limpets && names.limpets == 3 && tags.frozen;
+					return names.limpets && names.limpets === 3 && tags.frozen;
 				},
-				requirements: [SPECIFIC('limpets', COMPARE('==', 3)), TAG('frozen')],
+				requirements: [SPECIFIC('limpets', COMPARE('=', 3)), TAG('frozen')],
 				priority: 30,
 				foodtype: 'meat',
 				health: healing_huge,
@@ -2127,9 +2127,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			coffee: {
 				name: 'Coffee',
 				test: function(cooker, names, tags) {
-					return names.coffeebeans_cooked && (names.coffeebeans_cooked == 4 || (names.coffeebeans_cooked == 3 && (tags.dairy || tags.sweetener)));
+					return names.coffeebeans_cooked && (names.coffeebeans_cooked === 4 || (names.coffeebeans_cooked === 3 && (tags.dairy || tags.sweetener)));
 				},
-				requirements: [OR(SPECIFIC('coffeebeans_cooked', COMPARE('==', 4)), (AND(SPECIFIC('coffeebeans_cooked', COMPARE('==', 3)), OR(TAG('dairy'), TAG('sweetener')))))],
+				requirements: [OR(SPECIFIC('coffeebeans_cooked', COMPARE('=', 4)), (AND(SPECIFIC('coffeebeans_cooked', COMPARE('=', 3)), OR(TAG('dairy'), TAG('sweetener')))))],
 				priority: 30,
 				foodtype: 'veggie',
 				health: healing_small,
@@ -2140,14 +2140,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				note: 'Gives 5 bonus speed (+83%) for 0.5 days',
 				mode: 'shipwrecked'
 			},
-			
+
 			//Warly recipes
 			sweetpotatosouffle: {
 				name: 'Sweet Potato Souffle',
 				test: function(cooker, names, tags) {
-					return names.sweet_potato && names.sweet_potato == 2 && tags.egg && tags.egg >= 2;
+					return names.sweet_potato && names.sweet_potato === 2 && tags.egg && tags.egg >= 2;
 				},
-				requirements: [SPECIFIC('sweet_potato', COMPARE('==', 2)), TAG('egg', COMPARE('>=', 2))],
+				requirements: [SPECIFIC('sweet_potato', COMPARE('=', 2)), TAG('egg', COMPARE('>=', 2))],
 				priority: 30,
 				foodtype: 'veggie',
 				health: healing_med,
@@ -2190,9 +2190,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			musselbouillabaise: {
 				name: 'Mussel Bouillabaise',
 				test: function(cooker, names, tags) {
-					return names.mussel && names.mussel == 2 && tags.veggie && tags.veggie >= 2;
+					return names.mussel && names.mussel === 2 && tags.veggie && tags.veggie >= 2;
 				},
-				requirements: [SPECIFIC('mussel', COMPARE('==', 2)), TAG('veggie', COMPARE('>=', 2))],
+				requirements: [SPECIFIC('mussel', COMPARE('=', 2)), TAG('veggie', COMPARE('>=', 2))],
 				priority: 30,
 				foodtype: 'meat',
 				health: healing_med,
@@ -2632,20 +2632,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			if (f.dry) {
 				f.dry.preparationType = 'dried';
 			}
-			
+
 			for (var i = 0; i < stats.length; i++) {
 				var stat = stats[i];
 				var bestStat = f[stat] || 0;
 				var bestStatType = f.preparationType;
 				if (f.raw) {
 					bestStat = Math.max(f.raw[stat] || 0, bestStat)
-					if (bestStat == f.raw[stat]) {
+					if (bestStat === f.raw[stat]) {
 						bestStatType = 'raw';
 					}
 				}
 				if (f.cook) {
 					bestStat = Math.max(f.cook[stat] || 0, bestStat)
-					if (bestStat == f.cook[stat]) {
+					if (bestStat === f.cook[stat]) {
 						bestStatType = 'cooked';
 					}
 				}
@@ -3125,7 +3125,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		},
 		pct = function (base, val) {
 			var result = !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
-			return result.indexOf('Infinity') == -1 ? result : ' (' + sign(val - base) + ')';
+			return result.indexOf('Infinity') === -1 ? result : ' (' + sign(val - base) + ')';
 		};
 	var makeFoodRow = function (item) {
 		var mult = statMultipliers[item.preparationType],

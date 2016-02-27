@@ -2175,7 +2175,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			freshfruitcrepes: {
 				name: 'Fresh Fruit Crepes',
 				test: function(cooker, names, tags) {
-					return tags.fruit >= 1.5 && names.butter && names.honey;
+					return tags.fruit && tags.fruit >= 1.5 && names.butter && names.honey;
 				},
 				requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter'), SPECIFIC('honey')],
 				priority: 30,

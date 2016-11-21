@@ -202,16 +202,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		},
 
 		food = {
-			acorn: {
-				name: 'Birchnut',
-				uncookable: true,
-				hunger: calories_tiny,
-				health: healing_tiny,
-				sanity: 0,
-				perish: perish_preserved,
-				stack: stack_size_smallitem,
-				mode: 'giants'
-			},
 			acorn_cooked: {
 				name: 'Roasted Birchnut',
 				ideal: true,

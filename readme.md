@@ -9,3 +9,4 @@ github.io](https://bluehexagons.github.io/foodguide/html/index.htm)
 Contributors:
   [bluehexagons](https://github.com/bluehexagons)
   [rezecib](https://github.com/rezecib)
+  [levy9527](https://github.com/levy9527)

@@ -2987,12 +2987,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				} else if (celltext.indexOf('img/') === 0) {
 					image = makeImage(celltext);
 					td.appendChild(image);
+				} else if (cell && cell.nodeType && cell.nodeType === 1) {
+					td.appendChild(cell);
 				} else {
 					td.appendChild(document.createTextNode(celltext));
 				}
 				tr.appendChild(td);
 			}
 			return tr;
+		},
+		wikiaHref = function(name) {
+			if (name && name === 'Combined') {
+				return name;
+			}
+			var node = document.createElement('a');
+			node.setAttribute('target', '_blank');
+			node.setAttribute('href', 'http://dontstarve.wikia.com/wiki/' + name.replace(/\s/g, '_'));
+			var text = document.createTextNode(name);
+			node.appendChild(text);
+			return node;
 		};
 	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) {
 		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight, rows,
@@ -3141,14 +3154,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity += ' (' + sign((item.cook.sanity * cookmult) - (sanity || 0)) + ')';
 			}
 		}
-		return cells('td', item.img ? item.img : '', item.name, health, hunger, sanity, isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
+		return cells('td', item.img ? item.img : '', wikiaHref(item.name), health, hunger, sanity, isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
 	var makeRecipeRow = function (item, health, hunger, sanity) {
 		var mult = statMultipliers[item.preparationType] || 1,
 			ihealth = item.health * mult,
 			ihunger = item.hunger * mult,
 			isanity = item.sanity * mult;
-		return cells('td', item.img ? item.img : '', item.name, sign(ihealth) + pct(health, ihealth), sign(ihunger) + pct(hunger, ihunger), isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
+		return cells('td', item.img ? item.img : '', wikiaHref(item.name), sign(ihealth) + pct(health, ihealth), sign(ihunger) + pct(hunger, ihunger), isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
 	};
 	// food list, recipe list
 	(function () {

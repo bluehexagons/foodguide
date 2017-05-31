@@ -2394,9 +2394,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				names = {};
 				tags = {};
 				setIngredientValues(items, names, tags);
-				tags.hunger = tags.bestHunger;
-				tags.health = tags.bestHealth;
-				tags.sanity = tags.bestSanity;
+				// tags.hunger = tags.bestHunger;
+				// tags.health = tags.bestHealth;
+				// tags.sanity = tags.bestSanity;
 				for (i = 0; i < recipes.length; i++) {
 					recipes[i].test(null, names, tags)
 						&& (recipes[i].modeMask & modeMask) !== 0

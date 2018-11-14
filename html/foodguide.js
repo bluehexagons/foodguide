@@ -1712,8 +1712,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_large,
 				perish: perish_preserved,
 				sanity: sanity_tiny,
-				temperature: hot_food_bonus_temp,
-				temperatureduration: food_temp_average,
 				cooktime: 1
 			},
 			turkeydinner: {
@@ -1744,8 +1742,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_med,
 				perish: perish_slow,
 				sanity: sanity_tiny,
-				temperature: cold_food_bonus_temp,
-				temperatureduration: food_temp_brief,
 				cooktime: 1
 			},
 			jammypreserves: {

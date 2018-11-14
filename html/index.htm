@@ -5,7 +5,9 @@
 	<link rel="shortcut icon" href="icon.png" />
 	<meta charset='utf-8' />
 	<style type="text/css">
-		body { background-blend-mode: multiply; background: #ccc url('img/backgroundstripes.png'); background-size: 100%; background-attachment: fixed; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; font-family: sans-serif; }
+		body { margin: 0px; }
+		#background { background-blend-mode: multiply; background: #ccc url('img/backgroundstripes.png'); background-size: 100%; background-attachment: fixed; width: 100%; min-height: 100%; overflow: hidden; position: fixed; top: 0; z-index: -1; }
+		#content { width: 1000px; margin-left: auto; margin-right: auto; font-family: sans-serif; }
 		a { color: #333; }
 		a:hover { color: #888; }
 		#navbar { position: relative; left: 0px; top: 0px; display: block; z-index: 1; padding-left: 0; }
@@ -49,7 +51,7 @@
 		table span.link.strike { text-decoration: line-through; color: #755; }
 		table.links span.link.strike { border: 1px solid #bbb; }
 		span.link img { width: 20px; height: 20px; vertical-align: text-bottom; }
-		#footer { padding-left: 10px; padding-right: 10px; color: #777; text-align: center; }
+		#footer { padding-left: 10px; padding: 4px 10px; color: #444; text-align: center; background-color: rgba(255,255,255,0.6); border-radius: 10px; }
 		#footer a { color: #585858; }
 		#footer a:hover { color: #777; }
 		button.makablebutton { font-size: 14pt; margin: 4px; padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
@@ -93,6 +95,8 @@
 	</style>
 </head>
 <body>
+<div id="background"></div>
+<div id="content">
 	<ul id="navbar">
 		<li data-tab="simulator">Simulator</li>
 		<li data-tab="discovery">Discovery</li>
@@ -177,5 +181,6 @@
 	</div>
 	<a href="https://github.com/bluehexagons/foodguide" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
 	<script type="text/javascript" src="foodguide.js"></script>
+</div>
 </body>
 </html>

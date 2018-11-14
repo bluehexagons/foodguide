@@ -195,7 +195,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			var modeOrder = ['together', 'shipwrecked', 'giants', 'vanilla']
 			for (var i = 0; i < modeOrder.length; i++) {
 				if ((modeMask & modes[modeOrder[i]].bit) !== 0) {
-					document.getElementsByTagName('BODY')[0].style['background-color'] = modes[modeOrder[i]].color;
+					document.getElementById('background').style['background-color'] = modes[modeOrder[i]].color;
 					return;
 				}
 			}

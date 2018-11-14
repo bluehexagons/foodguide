@@ -1436,6 +1436,100 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				note: 'Gives 90 seconds of light',
 				mode: 'shipwrecked'
 			},
+			roe: {
+				name: 'Roe',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_tiny/2,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				mode: 'shipwrecked'
+			},
+			roe_cooked: {
+				name: 'Cooked Roe',
+				meat: 0.5,
+				fish: 1,
+				health: 0,
+				hunger: calories_tiny/2,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'shipwrecked'
+			},
+			fish3: {
+				name: 'Purple Grouper',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				note: 'Gives 2 bonus speed (+33%) for 30 seconds',
+				mode: 'shipwrecked'
+			},
+			fish3_cooked: {
+				name: 'Cooked Purple Grouper',
+				meat: 0.5,
+				fish: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				note: 'Gives 2 bonus speed (+33%) for 30 seconds',
+				mode: 'shipwrecked'
+			},
+			fish4: {
+				name: 'Pierrot Fish',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				note: 'Dries 1/s for 30 seconds',
+				mode: 'shipwrecked'
+			},
+			fish4_cooked: {
+				name: 'Cooked Pierrot Fish',
+				meat: 0.5,
+				fish: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				note: 'Dries 1/s for 30 seconds',
+				mode: 'shipwrecked'
+			},
+			fish5: {
+				name: 'Neon Quattro',
+				meat: 0.5,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				note: '-3 heat',
+				mode: 'shipwrecked'
+			},
+			fish5_cooked: {
+				name: 'Cooked Neon Quattro',
+				meat: 0.5,
+				fish: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				note: '-3 heat',
+				mode: 'shipwrecked'
+			},
 
 			//DST Ingredients
 			wormlight_lesser: {
@@ -2130,7 +2224,38 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				sanity: -sanity_tiny,
 				cooktime: 0.5,
-				note: 'Gives 5 bonus speed (+83%) for 0.5 days',
+				note: 'Gives 5 bonus speed (+83%) for 240 seconds (0.5 days)',
+				mode: 'shipwrecked'
+			},
+			tropicalbouillabaisse: {
+				name: 'Tropical Bouillabaisse',
+				test: function(cooker, names, tags) {
+					return (names.fish3 || names.fish3_cooked) && (names.fish4 || names.fish4_cooked) && (names.fish5 || names.fish5_cooked) && tags.veggie;
+				},
+				requirements: [NAME('fish3'), NAME('fish4'), NAME('fish5'), TAG('veggie')],
+				priority: 35,
+				foodtype: 'meat',
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_med,
+				cooktime: 2,
+				note: 'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)',
+				mode: 'shipwrecked'
+			},
+			caviar: {
+				name: 'Caviar',
+				test: function(cooker, names, tags) {
+					return (names.roe || names.roe_cooked == 3) && tags.veggie;
+				},
+				requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie')],
+				priority: 20,
+				foodtype: 'meat',
+				health: healing_small,
+				hunger: calories_small,
+				perish: perish_med,
+				sanity: sanity_large,
+				cooktime: 2,
 				mode: 'shipwrecked'
 			},
 

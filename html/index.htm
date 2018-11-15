@@ -5,14 +5,16 @@
 	<link rel="shortcut icon" href="icon.png" />
 	<meta charset='utf-8' />
 	<style type="text/css">
-		body { background-blend-mode: multiply; background: #ccc url('img/backgroundstripes.png'); background-size: 100%; background-attachment: fixed; width: 1000px; margin-left: auto; margin-right: auto; overflow: scroll; font-family: sans-serif; }
+		body { margin: 0px; }
+		#background { background-blend-mode: multiply; background: #ccc url('img/backgroundstripes.png'); background-size: 100%; background-attachment: fixed; width: 100%; min-height: 100%; overflow: hidden; position: fixed; top: 0; z-index: -1; }
+		#content { width: 1000px; margin-left: auto; margin-right: auto; font-family: sans-serif; }
 		a { color: #333; }
 		a:hover { color: #888; }
 		#navbar { position: relative; left: 0px; top: 0px; display: block; z-index: 1; padding-left: 0; }
 		#navbar li { display: inline-block; list-style-type: none; padding-left: 0px; margin-left: 0px; border: 1px solid black; background: #ddd; cursor: pointer; margin-bottom: 8px; vertical-align: top; padding: 4px; }
 		#navbar li.selected { font-weight: bold; background: #fff; padding-top: 8px; margin-bottom: 0px; border-radius: 0px 0px 6px 6px; border-bottom: 2px solid black; }
 		#navbar a { color: inherit; text-decoration: none; }
-		#main { background: #eee; position: relative; top: -40px; padding: 10px; padding-top: 40px; border: 1px solid #999; }
+		#main { background: #eee; position: relative; top: -58px; padding: 10px; padding-top: 58px; border: 1px solid #999; }
 		.ingredientlist {  }
 		span.ingredient { width: 68px; height: 68px; display: inline-block; margin: 0px; margin-right: 5px; overflow: hidden; cursor: pointer; background: url('img/background.png') top left no-repeat; position: relative; }
 		span.ingredient img { display: block; position: absolute; top: 50%; left: 50%; width: 64px; height: 64px; margin-left: -32px; margin-top: -32px; border: none; }
@@ -49,7 +51,7 @@
 		table span.link.strike { text-decoration: line-through; color: #755; }
 		table.links span.link.strike { border: 1px solid #bbb; }
 		span.link img { width: 20px; height: 20px; vertical-align: text-bottom; }
-		#footer { padding-left: 10px; padding-right: 10px; color: #777; text-align: center; }
+		#footer { padding-left: 10px; padding: 4px 10px; color: #444; text-align: center; background-color: rgba(255,255,255,0.6); border-radius: 10px; }
 		#footer a { color: #585858; }
 		#footer a:hover { color: #777; }
 		button.makablebutton { font-size: 14pt; margin: 4px; padding-left: 2px; padding-right: 2px; padding-bottom: 1px; padding-top: 1px; display: inline-block; border: 1px solid #999; background: #ccc; background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); border-radius: 3px; cursor: pointer; }
@@ -73,26 +75,45 @@
 			top: 12px;
 		}
 		#navbar li.mode img {
-			padding: 2px;
-			margin: 0 2px 0 2px;
-			width: 30px;
-			height: 30px;
+			width: 100%;
+			height: 100%;
 			border: none;
+			border-radius: 6px;
+		}
+		#navbar li.mode div.mode-button {
 			cursor: pointer;
+			display: inline-block;
+			position: relative;
+			margin: 0 2px;
+			width: 48px;
+			height: 48px;
 			opacity: 0.25;
 		}
-		#navbar li.mode img:hover {
+		#navbar li.mode div.mode-button:hover {
 			opacity: 0.66;
 		}
-		#navbar li.mode img.enabled {
+		#navbar li.mode div.mode-button.enabled {
 			opacity: 1;
 		}
-		#navbar li.mode img.enabled:hover {
-			opacity: 1;
+		#navbar li.mode div.mode-button.enabled:hover {
+			opacity: 0.9;
+		}
+		#navbar li.mode div.mode-button:before {
+			display: block;
+			content:'';
+			position:absolute;
+			width: 100%;
+			height: 100%;
+			-moz-box-shadow:inset 0px 0px 5px 3px #eee;
+			-webkit-box-shadow:inset 0px 0px 5px 3px #eee;
+			box-shadow: inset 0px 0px 5px 3px #eee;
+			border-radius: 5px;
 		}
 	</style>
 </head>
 <body>
+<div id="background"></div>
+<div id="content">
 	<ul id="navbar">
 		<li data-tab="simulator">Simulator</li>
 		<li data-tab="discovery">Discovery</li>
@@ -177,5 +198,6 @@
 	</div>
 	<a href="https://github.com/bluehexagons/foodguide" target="_blank"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
 	<script type="text/javascript" src="foodguide.js"></script>
+</div>
 </body>
 </html>

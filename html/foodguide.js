@@ -1855,6 +1855,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				mode: 'together'
+			},
+			royal_jelly: {
+				name: "Royal Jelly",
+				sweetener: 3,
+				health: healing_large,
+				hunger: calories_small,
+				sanity: sanity_med,
+				perish: perish_med,
+				mode: 'together'
 			}
 		},
 		//note: qty not used yet, this is for rapid summation
@@ -2783,6 +2792,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 2,
 				mode: 'hamlet'
 			},
+			
+			//Together recipes
+			jellybean: {
+				name: "Jellybeans",
+				test: function(cooker, names, tags) {
+					return names.royal_jelly && !tags.inedible && !tags.monster;
+				},
+				requirements: [SPECIFIC('royal_jelly'), NOT(TAG('inedible')), NOT(TAG('monster'))],
+				priority: 12,
+				foodtype: 'goodies',
+				health: 2,
+				hunger: 0,
+				sanity: sanity_tiny,
+				cooktime: 2.5,
+				note: 'Recipe produces 3; heals 120 health over 2 minutes',
+				mode: 'together'
+			}
 		},
 		recipeCrunchData,
 		recipeCrunchString,

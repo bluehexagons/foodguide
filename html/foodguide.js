@@ -126,7 +126,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		TOGETHER = 1 << 3,
 		WARLY = 1 << 4,
 		HAMLET = 1 << 5,
-		
+
 		modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET,
 
 		modes = {
@@ -1541,7 +1541,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				note: '-3 heat',
 				mode: 'shipwrecked'
 			},
-			
+
 			//Hamlet Ingredients
 			asparagus: {
 				name: 'Asparagus',
@@ -1689,7 +1689,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				mode: 'hamlet'
 			},
-			
+
 			//Hamlet edibles
 			clippings: {
 				name: 'Clippings',
@@ -2623,7 +2623,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 2,
 				mode: 'warly'
 			},
-			
+
 			//Hamlet recipes
 			nettlelosange: {
 				name: "Nettle Rolls",
@@ -2709,7 +2709,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			spicyvegstinger: {
 				name: "Spicy Vegetable Stinger",
 				test: function(cooker, names, tags) {
-					return (names.asparagus || names.asparagus_cooked || names.radish || names.radish_cooked) 
+					return (names.asparagus || names.asparagus_cooked || names.radish || names.radish_cooked)
 							&& tags.veggie && tags.veggie > 2 && tags.frozen && !tags.meat;
 				},
 				requirements: [OR(NAME('asparagus'), NAME('radish')), TAG('veggie', COMPARE('>', 2)), TAG('frozen'), NOT(TAG('meat'))],
@@ -3239,14 +3239,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			// var bestHunger = f.hunger || 0;
 			// var bestSanity = f.sanity || 0;
 			// if (f.cook) {
-				// bestHealth = Math.max(f.cook.health || 0, bestHealth);
-				// bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
-				// bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
+			// 	bestHealth = Math.max(f.cook.health || 0, bestHealth);
+			// 	bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
+			// 	bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
 			// }
 			// if (f.raw) {
-				// bestHealth = Math.max(f.raw.health || 0, bestHealth);
-				// bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
-				// bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
+			// 	bestHealth = Math.max(f.raw.health || 0, bestHealth);
+			// 	bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
+			// 	bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
 			// }
 			// f.bestHealth = bestHealth;
 			// f.bestHunger = bestHunger;
@@ -3543,26 +3543,34 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		}
 		activeTab = tabs['simulator'];
 		activePage = elements['simulator'];
-		if (window.localStorage && localStorage.foodGuideState) {
-			storage = JSON.parse(localStorage.foodGuideState);
-			if (storage.activeTab && tabs[storage.activeTab]) {
-				activeTab = tabs[storage.activeTab];
-				activePage = elements[storage.activeTab];
-				modeMask = storage.modeMask || modes.shipwrecked.mask;
+		try {
+			if (window.localStorage && localStorage.foodGuideState) {
+				storage = JSON.parse(localStorage.foodGuideState);
+				if (storage.activeTab && tabs[storage.activeTab]) {
+					activeTab = tabs[storage.activeTab];
+					activePage = elements[storage.activeTab];
+					modeMask = storage.modeMask || modes.shipwrecked.mask;
+				}
 			}
+		} catch(err) {
+			console && console.warn('Unable to access localStorage', err);
 		}
 		activeTab.className = 'selected';
 		activePage.style.display = 'block';
 		window.addEventListener('beforeunload', function () {
 			var obj, serialized;
-			if (window.localStorage) {
-				if (!localStorage.foodGuideState) {
-					localStorage.foodGuideState = '{}';
+			try {
+				if (window.localStorage) {
+					if (!localStorage.foodGuideState) {
+						localStorage.foodGuideState = '{}';
+					}
+					obj = JSON.parse(localStorage.foodGuideState);
+					obj.activeTab = activeTab.dataset.tab;
+					obj.modeMask = modeMask;
+					localStorage.foodGuideState = JSON.stringify(obj);
 				}
-				obj = JSON.parse(localStorage.foodGuideState);
-				obj.activeTab = activeTab.dataset.tab;
-				obj.modeMask = modeMask;
-				localStorage.foodGuideState = JSON.stringify(obj);
+			} catch(err) {
+				console && console.warn('Unable to access localStorage', err);
 			}
 		});
 	}());
@@ -4413,15 +4421,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					slots = [];
 					limited = false;
 				}
-				if (window.localStorage && localStorage.foodGuideState) {
-					state = JSON.parse(localStorage.foodGuideState).pickers;
-					if (state && state[index]) {
-						state[index].forEach(function (id) {
-							if (food[id]) {
-								appendSlot(id);
-							}
-						});
+				try {
+					if (window.localStorage && localStorage.foodGuideState) {
+						state = JSON.parse(localStorage.foodGuideState).pickers;
+						if (state && state[index]) {
+							state[index].forEach(function (id) {
+								if (food[id]) {
+									appendSlot(id);
+								}
+							});
+						}
 					}
+				} catch (err) {
+					console && console.warn('Unable to access localStorage', err);
 				}
 				loaded = true;
 				searchSelector.className = 'searchselector retracted';

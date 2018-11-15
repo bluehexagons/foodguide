@@ -72,6 +72,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		perish_two_day = 2*total_day_time*perish_warp,
 		perish_superfast = 3*total_day_time*perish_warp,
 		perish_fast = 6*total_day_time*perish_warp,
+		perish_fastish = 8*total_day_time*perish_warp,
 		perish_med = 10*total_day_time*perish_warp,
 		perish_slow = 15*total_day_time*perish_warp,
 		perish_preserved = 20*total_day_time*perish_warp,
@@ -124,7 +125,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		SHIPWRECKED = 1 << 2,
 		TOGETHER = 1 << 3,
 		WARLY = 1 << 4,
-		modeMask = VANILLA | GIANTS | SHIPWRECKED,
+		HAMLET = 1 << 5,
+		
+		modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET,
 
 		modes = {
 			vanilla: {
@@ -147,6 +150,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				bit: SHIPWRECKED,
 				mask: VANILLA | GIANTS | SHIPWRECKED,
 				color: '#50c1cc'
+			},
+			hamlet: {
+				name: 'Hamlet',
+				img: 'hamlet.png',
+				bit: HAMLET,
+				mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
+				color: '#ffdf93'
 			},
 			together: {
 				name: 'Don\'t Starve Together',
@@ -192,7 +202,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			for (var i = 0; i < modeRefreshers.length; i++) {
 				modeRefreshers[i]();
 			}
-			var modeOrder = ['together', 'shipwrecked', 'giants', 'vanilla']
+			var modeOrder = ['together', 'hamlet', 'shipwrecked', 'giants', 'vanilla']
 			for (var i = 0; i < modeOrder.length; i++) {
 				if ((modeMask & modes[modeOrder[i]].bit) !== 0) {
 					document.getElementById('background').style['background-color'] = modes[modeOrder[i]].color;
@@ -362,15 +372,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				stack: stack_size_smallitem
 			},
-			foliage: {
-				name: 'Foliage',
-				uncookable: true,
-				health: healing_tiny,
-				hunger: 0,
-				sanity: 0,
-				perish: perish_fast,
-				stack: stack_size_smallitem
-			},
+			//Pre-Hamlet foliage could be eaten but wasn't an ingredient
+			// foliage: {
+				// name: 'Foliage',
+				// uncookable: true,
+				// health: healing_tiny,
+				// hunger: 0,
+				// sanity: 0,
+				// perish: perish_fast,
+				// stack: stack_size_smallitem
+			// },
 			goatmilk: {
 				name: 'Electric Milk',
 				dairy: 1,
@@ -1530,6 +1541,298 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				note: '-3 heat',
 				mode: 'shipwrecked'
 			},
+			
+			//Hamlet Ingredients
+			asparagus: {
+				name: 'Asparagus',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			asparagus_cooked: {
+				name: 'Cooked Asparagus',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			radish: {
+				name: 'Radish',
+				isveggie: true,
+				veggie: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_slow,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			radish_cooked: {
+				name: 'Cooked Radish',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			aloe: {
+				name: 'Aloe',
+				isveggie: true,
+				veggie: 1,
+				health: healing_medsmall,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			aloe_cooked: {
+				name: 'Cooked Aloe',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			jellybug: {
+				name: 'Bean Bugs',
+				bug: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_superslow,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			jellybug_cooked: {
+				name: 'Cooked Bean Bugs',
+				bug: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			foliage: {
+				name: 'Foliage',
+				veggie: 1,
+				health: healing_tiny,
+				hunger: 0,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'hamlet' //as an ingredient, but was a food before... probably okay to leave like this
+			},
+			cutnettle: {
+				name: 'Nettle',
+				antihistamine: 1,
+				health: 0,
+				hunger: 0,
+				sanity: 0,
+				note: 'Prevents hayfever for 200 seconds',
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			snake_bone: {
+				name: 'Snake Bone',
+				isbone: true,
+				bone: 1,
+				stack: stack_size_meditem,
+				mode: 'hamlet'
+			},
+			piko_orange: {
+				name: 'Orange Piko',
+				filter: 1,
+				perish: total_day_time * 2,
+				cook: 'morsel_cooked',
+				mode: 'hamlet'
+			},
+			slugbug: {
+				name: 'Gummy Slug',
+				bug: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_superslow,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			slugbug_cooked: {
+				name: 'Cooked Gummy Slug',
+				bug: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			weevole_carapace: {
+				name: 'Weevole Carapace',
+				inedible: 1,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			
+			//Hamlet edibles
+			clippings: {
+				name: 'Clippings',
+				uncookable: true,
+				isveggie: true,
+				health: healing_tiny,
+				hunger: calories_tiny/2,
+				sanity: 0,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			lotus_flower: {
+				name: 'Lotus Flower',
+				uncookable: true,
+				isveggie: true,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			lotus_flower_cooked: {
+				name: 'Cooked Lotus Root',
+				uncookable: true,
+				isveggie: true,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: sanity_med,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			venus_stalk: {
+				name: 'Flytrap Stalk',
+				uncookable: true,
+				health: 0,
+				hunger: calories_small,
+				sanity: -sanity_small,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				dry: 'walkingstick',
+				drytime: dry_fast,
+				mode: 'hamlet'
+			},
+			nectar_pod: {
+				name: 'Nectar',
+				uncookable: true,
+				health: healing_small,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_superslow,
+				stack: stack_size_smallitem,
+				mode: 'hamlet'
+			},
+			teatree_nut: {
+				name: 'Seed Pod',
+				uncookable: true,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_preserved,
+				stack: stack_size_smallitem,
+				note: 'Prevents hayfever for 60 seconds',
+				mode: 'hamlet'
+			},
+			teatree_nut_cooked: {
+				name: 'Cooked Seed Pod',
+				uncookable: true,
+				health: healing_small,
+				hunger: calories_tiny,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				note: 'Prevents hayfever for 120 seconds',
+				mode: 'hamlet'
+			},
+			tuber_crop: {
+				name: 'Tuber',
+				uncookable: true,
+				isveggie: true,
+				health: 0,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_preserved,
+				stack: stack_size_largeitem,
+				note: 'Poisonous',
+				mode: 'hamlet'
+			},
+			tuber_crop_cooked: {
+				name: 'Fried Tuber',
+				uncookable: true,
+				health: healing_small,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_largeitem,
+				note: 'Poisonous',
+				mode: 'hamlet'
+			},
+			tuber_bloom_crop: {
+				name: 'Blooming Tuber',
+				uncookable: true,
+				isveggie: true,
+				health: 0,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_preserved,
+				stack: stack_size_largeitem,
+				mode: 'hamlet'
+			},
+			tuber_bloom_crop_cooked: {
+				name: 'Fried Blooming Tuber',
+				uncookable: true,
+				health: healing_small,
+				hunger: calories_medsmall,
+				sanity: sanity_tiny,
+				perish: perish_fast,
+				stack: stack_size_largeitem,
+				mode: 'hamlet'
+			},
+			waterdrop: {
+				name: 'Magic Water',
+				uncookable: true,
+				isveggie: true,
+				health: healing_superhuge * 3,
+				hunger: calories_superhuge * 3,
+				sanity: sanity_huge * 3,
+				note: 'Cures poison',
+				mode: 'hamlet'
+			},
+			// Not yet implemented
+			// whisperpod: {
+				// name: 'Magic Water',
+				// uncookable: true,
+				// health: 0,
+				// hunger: calories_tiny/2,
+				// sanity: 0,
+				// perish: perish_superslow,
+				// stack: stack_size_smallitem,
+				// cook: 'seeds_cooked',
+				// mode: 'hamlet'
+			// },
 
 			//DST Ingredients
 			wormlight_lesser: {
@@ -2319,7 +2622,167 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: sanity_med,
 				cooktime: 2,
 				mode: 'warly'
-			}
+			},
+			
+			//Hamlet recipes
+			nettlelosange: {
+				name: "Nettle Rolls",
+				test: function(cooker, names, tags) {
+					return tags.antihistamine && tags.antihistamine >= 3;
+				},
+				requirements: [TAG('antihistamine', COMPARE('>=', 3))],
+				priority: 0,
+				foodtype: 'veggie',
+				health: healing_med,
+				hunger: calories_med,
+				perish: perish_fast,
+				sanity: sanity_tiny,
+				cooktime: 0.5,
+				note: 'Prevents hayfever for 720 seconds (1.5 days)',
+				mode: 'hamlet'
+			},
+			snakebonesoup: {
+				name: "Snake Bone Soup",
+				test: function(cooker, names, tags) {
+					return tags.bone && tags.bone >= 2 && tags.meat && tags.meat >= 2;
+				},
+				requirements: [TAG('bone', COMPARE('>=', 2)), TAG('meat', COMPARE('>=', 2))],
+				priority: 20,
+				foodtype: 'meat',
+				health: healing_large,
+				hunger: calories_med,
+				perish: perish_med,
+				sanity: sanity_small,
+				cooktime: 1,
+				mode: 'hamlet'
+			},
+			tea: {
+				name: "Tea",
+				test: function(cooker, names, tags) {
+					return tags.filter && tags.filter >= 2 && tags.sweetener && !tags.meat && !tags.veggie && !tags.inedible;
+				},
+				requirements: [TAG('filter', COMPARE('>=', 2)), TAG('sweetener'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible'))],
+				priority: 25,
+				foodtype: 'veggie',
+				health: healing_small,
+				hunger: calories_small,
+				perish: perish_one_day,
+				sanity: sanity_large,
+				temperaturebump: 15,
+				cooktime: 0.5,
+				rot: 'icedtea',
+				note: 'Gives 2.5 bonus speed (+42%) for 120 seconds',
+				mode: 'hamlet'
+			},
+			icedtea: {
+				name: "Iced Tea",
+				test: function(cooker, names, tags) {
+					return tags.filter && tags.filter >= 2 && tags.sweetener && tags.frozen;
+				},
+				requirements: [TAG('filter', COMPARE('>=', 2)), TAG('sweetener'), TAG('frozen')],
+				priority: 30,
+				foodtype: 'veggie',
+				health: healing_small,
+				hunger: calories_small,
+				perish: perish_fast,
+				sanity: sanity_large,
+				temperaturebump: -10,
+				cooktime: 0.5,
+				note: 'Gives 1.7 bonus speed (+28%) for 80 seconds',
+				mode: 'hamlet'
+			},
+			asparagussoup: {
+				name: "Asparagus Soup",
+				test: function(cooker, names, tags) {
+					return (names.asparagus || names.asparagus_cooked) && tags.veggie && tags.veggie > 1;
+				},
+				requirements: [NAME('asparagus'), TAG('veggie', COMPARE('>', 1))],
+				priority: 10,
+				foodtype: 'veggie',
+				health: healing_med,
+				hunger: calories_medsmall,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 0.5,
+				mode: 'hamlet'
+			},
+			spicyvegstinger: {
+				name: "Spicy Vegetable Stinger",
+				test: function(cooker, names, tags) {
+					return (names.asparagus || names.asparagus_cooked || names.radish || names.radish_cooked) 
+							&& tags.veggie && tags.veggie > 2 && tags.frozen && !tags.meat;
+				},
+				requirements: [OR(NAME('asparagus'), NAME('radish')), TAG('veggie', COMPARE('>', 2)), TAG('frozen'), NOT(TAG('meat'))],
+				priority: 15,
+				foodtype: 'veggie',
+				health: healing_small,
+				hunger: calories_med,
+				perish: perish_slow,
+				sanity: sanity_large,
+				cooktime: 0.5,
+				mode: 'hamlet'
+			},
+			feijoada: {
+				name: "Feijoada",
+				test: function(cooker, names, tags) {
+					return tags.meat && names.jellybug === 3 || names.jellybug_cooked === 3
+							|| (names.jellybug && names.jellybug_cooked && names.jellybug + names.jellybug_cooked === 3);
+				},
+				requirements: [TAG('meat'), NAME('jellybug', COMPARE('=', 3))],
+				priority: 30,
+				foodtype: 'meat',
+				health: healing_med,
+				hunger: calories_huge,
+				perish: perish_fastish,
+				sanity: sanity_med,
+				cooktime: 3.5,
+				mode: 'hamlet'
+			},
+			steamedhamsandwich: {
+				name: "Steamed Ham Sandwich",
+				test: function(cooker, names, tags) {
+					return (names.meat || names.meat_cooked) && (tags.veggie && tags.veggie >= 2) && names.foliage;
+				},
+				requirements: [NAME('meat'), TAG('veggie', COMPARE('>=', 2)), SPECIFIC('foliage')],
+				priority: 5,
+				foodtype: 'meat',
+				health: healing_large,
+				hunger: calories_large,
+				perish: perish_fast,
+				sanity: sanity_med,
+				cooktime: 2,
+				mode: 'hamlet'
+			},
+			hardshell_tacos: {
+				name: "Hard Shell Tacos",
+				test: function(cooker, names, tags) {
+					return names.weevole_carapace == 2 && tags.veggie;
+				},
+				requirements: [SPECIFIC('weevole_carapace', COMPARE('=', 2)), TAG('veggie')],
+				priority: 1,
+				foodtype: 'veggie',
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_tiny,
+				cooktime: 1,
+				mode: 'hamlet'
+			},
+			gummy_cake: {
+				name: "Gummy Cake",
+				test: function(cooker, names, tags) {
+					return (names.slugbug || names.slugbug_cooked) && tags.sweetener;
+				},
+				requirements: [NAME('slugbug'), TAG('sweetener')],
+				priority: 1,
+				foodtype: 'meat',
+				health: healing_small,
+				hunger: calories_superhuge,
+				perish: perish_preserved,
+				sanity: -sanity_tiny,
+				cooktime: 2,
+				mode: 'hamlet'
+			},
 		},
 		recipeCrunchData,
 		recipeCrunchString,
@@ -2803,6 +3266,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			f.sweetener && info.push(taggify('sweetener'));
 			f.fat && info.push(taggify('fat'));
 			f.dairy && info.push(taggify('dairy'));
+			f.jellyfish && info.push(taggify('jellyfish'));
+			f.antihistamine && info.push(taggify('antihistamine'));
+			f.filter && info.push(taggify('filter'));
+			f.bug && info.push(taggify('bug'));
+			f.bone && info.push(taggify('bone'));
 			f.comment && info.push(f.comment);
 			food[index++] = f;
 		}
@@ -2835,6 +3303,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					recipes[i].note = '';
 				}
 				recipes[i].note += 'Provides ' + recipes[i].temperature + ' heat for ' + recipes[i].temperatureduration + ' seconds';
+			}
+			if (recipes[i].temperaturebump) {
+				if (recipes[i].note) {
+					recipes[i].note += '; ';
+				} else {
+					recipes[i].note = '';
+				}
+				recipes[i].note += recipes[i].temperature + ' heat when consumed';
 			}
 			recipes[i].preparationType = 'recipe';
 			recipes[index++] = recipes[i];

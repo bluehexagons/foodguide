@@ -14,7 +14,7 @@
 		#navbar li { display: inline-block; list-style-type: none; padding-left: 0px; margin-left: 0px; border: 1px solid black; background: #ddd; cursor: pointer; margin-bottom: 8px; vertical-align: top; padding: 4px; }
 		#navbar li.selected { font-weight: bold; background: #fff; padding-top: 8px; margin-bottom: 0px; border-radius: 0px 0px 6px 6px; border-bottom: 2px solid black; }
 		#navbar a { color: inherit; text-decoration: none; }
-		#main { background: #eee; position: relative; top: -40px; padding: 10px; padding-top: 40px; border: 1px solid #999; }
+		#main { background: #eee; position: relative; top: -58px; padding: 10px; padding-top: 58px; border: 1px solid #999; }
 		.ingredientlist {  }
 		span.ingredient { width: 68px; height: 68px; display: inline-block; margin: 0px; margin-right: 5px; overflow: hidden; cursor: pointer; background: url('img/background.png') top left no-repeat; position: relative; }
 		span.ingredient img { display: block; position: absolute; top: 50%; left: 50%; width: 64px; height: 64px; margin-left: -32px; margin-top: -32px; border: none; }
@@ -75,22 +75,39 @@
 			top: 12px;
 		}
 		#navbar li.mode img {
-			padding: 2px;
-			margin: 0 2px 0 2px;
-			width: 30px;
-			height: 30px;
+			width: 100%;
+			height: 100%;
 			border: none;
+			border-radius: 6px;
+		}
+		#navbar li.mode div.mode-button {
 			cursor: pointer;
+			display: inline-block;
+			position: relative;
+			margin: 0 2px;
+			width: 48px;
+			height: 48px;
 			opacity: 0.25;
 		}
-		#navbar li.mode img:hover {
+		#navbar li.mode div.mode-button:hover {
 			opacity: 0.66;
 		}
-		#navbar li.mode img.enabled {
+		#navbar li.mode div.mode-button.enabled {
 			opacity: 1;
 		}
-		#navbar li.mode img.enabled:hover {
-			opacity: 1;
+		#navbar li.mode div.mode-button.enabled:hover {
+			opacity: 0.9;
+		}
+		#navbar li.mode div.mode-button:before {
+			display: block;
+			content:'';
+			position:absolute;
+			width: 100%;
+			height: 100%;
+			-moz-box-shadow:inset 0px 0px 5px 3px #eee;
+			-webkit-box-shadow:inset 0px 0px 5px 3px #eee;
+			box-shadow: inset 0px 0px 5px 3px #eee;
+			border-radius: 5px;
 		}
 	</style>
 </head>

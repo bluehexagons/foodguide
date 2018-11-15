@@ -179,7 +179,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			for (var i = 0; i < modeTab.childNodes.length; i++) {
 				var img = modeTab.childNodes[i];
 				var mode = modes[img.dataset.mode]
-				img.className = (modeMask & mode.bit) !== 0 ? 'enabled' : '';
+				img.className = (modeMask & mode.bit) !== 0 ? 'mode-button enabled' : 'mode-button';
 
 				if (mode.multipliers && ((modeMask & mode.bit) !== 0)) {
 					for (var foodtype in mode.multipliers) {
@@ -4268,12 +4268,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	modeTab.className = 'mode';
 
 	for (var name in modes) {
-		var modeButton = makeImage('img/' + modes[name].img);
+		var modeButton = document.createElement('div');
 		modeButton.dataset.mode = name;
 		modeButton.addEventListener('click', showmode, false);
 		modeButton.addEventListener('contextmenu', togglemode, false);
 
 		modeButton.title = modes[name].name + '\nleft-click to select\nright-click to toggle';
+		modeButton.className = 'mode-button'
+		modeButton.appendChild(makeImage('img/' + modes[name].img));
 		modeTab.appendChild(modeButton);
 	}
 	setMode(modeMask);

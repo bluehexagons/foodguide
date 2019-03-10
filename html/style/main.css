@@ -1,38 +1,38 @@
-body { 
-  margin: 0px; 
+body {
+  margin: 0px;
 }
 
-#background { 
-  background-blend-mode: multiply; 
-  background: #ccc url('../img/backgroundstripes.png'); 
-  background-size: 100%; 
-  background-attachment: fixed; 
-  width: 100%; 
-  min-height: 100%; 
-  overflow: hidden; 
-  position: fixed; 
-  top: 0; 
-  z-index: -1; 
+#background {
+  background-blend-mode: multiply;
+  background: #ccc url('../img/backgroundstripes.png');
+  background-size: 100%;
+  background-attachment: fixed;
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  z-index: -1;
 }
 
-#content { 
+#content {
   width: 1000px;
   max-width: 100%;
-  margin-left: auto; 
-  margin-right: auto; 
-  font-family: sans-serif; 
+  margin-left: auto;
+  margin-right: auto;
+  font-family: sans-serif;
   padding: 23px 0;
 }
 
-a { 
-  color: #333; 
+a {
+  color: #333;
 }
 
-a:hover { 
-  color: #888; 
+a:hover {
+  color: #888;
 }
 
-#navbar { 
+#navbar {
   display: block;
   padding-left: 0;
   margin: 0;
@@ -41,437 +41,437 @@ a:hover {
   margin-left: -2px;
 }
 
-#navbar li { 
-  display: inline-block; 
-  list-style-type: none; 
-  padding-left: 0px; 
-  margin-left: 0px; 
-  border: 1px solid black; 
-  background: #ddd; 
-  cursor: pointer; 
-  margin-bottom: 8px; 
-  vertical-align: top; 
-  padding: 4px; 
+#navbar li {
+  display: inline-block;
+  list-style-type: none;
+  padding-left: 0px;
+  margin-left: 0px;
+  border: 1px solid black;
+  background: #ddd;
+  cursor: pointer;
+  margin-bottom: 8px;
+  vertical-align: top;
+  padding: 4px;
 }
 
-#navbar li.selected { 
-  font-weight: bold; 
-  background: #fff; 
-  padding-top: 8px; 
-  margin-bottom: 0px; 
-  border-radius: 0px 0px 6px 6px; 
-  border-bottom: 2px solid black; 
+#navbar li.selected {
+  font-weight: bold;
+  background: #fff;
+  padding-top: 8px;
+  margin-bottom: 0px;
+  border-radius: 0px 0px 6px 6px;
+  border-bottom: 2px solid black;
 }
 
-#navbar a { 
-  color: inherit; 
-  text-decoration: none; 
+#navbar a {
+  color: inherit;
+  text-decoration: none;
 }
 
-#main { 
-  background: #eee; 
+#main {
+  background: #eee;
   position: relative;
-  padding: 10px; 
+  padding: 10px;
   padding-top: 0;
-  border: 1px solid #999; 
+  border: 1px solid #999;
 }
 
-span.ingredient { 
-  width: 68px; 
-  height: 68px; 
-  display: inline-block; 
-  margin: 0px; 
-  margin-right: 5px; 
-  overflow: hidden; 
-  cursor: pointer; 
-  background: url('../img/background.png') top left no-repeat; 
-  position: relative; 
+span.ingredient {
+  width: 68px;
+  height: 68px;
+  display: inline-block;
+  margin: 0px;
+  margin-right: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  background: url('../img/background.png') top left no-repeat;
+  position: relative;
 }
 
-span.ingredient img { 
-  display: block; 
-  position: absolute; 
-  top: 50%; 
-  left: 50%; 
-  width: 64px; 
-  height: 64px; 
-  margin-left: -32px; 
-  margin-top: -32px; 
-  border: none; 
+span.ingredient img {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  margin-top: -32px;
+  border: none;
 }
 
-.searchselector { 
-  display: inline-block; 
-  padding: 0px 0px 0px 2px; 
-  line-height: 22px; 
-  vertical-align: bottom; 
-  border: 1px solid #999; 
-  border-right: none; 
-  height: 100%; 
-  background: #ccc; 
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); 
-  border-radius: 3px 0px 0px 3px; 
-  transition: border-bottom-left-radius 100ms ease; 
-  cursor: pointer; 
+.searchselector {
+  display: inline-block;
+  padding: 0px 0px 0px 2px;
+  line-height: 22px;
+  vertical-align: bottom;
+  border: 1px solid #999;
+  border-right: none;
+  height: 100%;
+  background: #ccc;
+  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
+  border-radius: 3px 0px 0px 3px;
+  transition: border-bottom-left-radius 100ms ease;
+  cursor: pointer;
 }
 
-.searchselector.retracted:after { 
-  content: ''; 
-  margin-left: 3px; 
-  margin-right: 2px; 
-  width: 0; 
-  height: 0; 
-  display: inline-block; 
-  border-left: 5px solid transparent; 
-  border-right: 5px solid transparent; 
-  border-top: 5px solid #444; 
-  margin-bottom: 2px; 
+.searchselector.retracted:after {
+  content: '';
+  margin-left: 3px;
+  margin-right: 2px;
+  width: 0;
+  height: 0;
+  display: inline-block;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #444;
+  margin-bottom: 2px;
 }
 
-.searchselector.extended:after { 
-  content: ''; 
-  margin-left: 3px; 
-  margin-right: 2px; 
-  width: 0; 
-  height: 0; 
-  display: inline-block; 
-  border-left: 5px solid transparent; 
-  border-right: 5px solid transparent; 
-  border-bottom: 5px solid #444; 
-  margin-bottom: 2px; 
+.searchselector.extended:after {
+  content: '';
+  margin-left: 3px;
+  margin-right: 2px;
+  width: 0;
+  height: 0;
+  display: inline-block;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #444;
+  margin-bottom: 2px;
 }
 
-.searchselector:active { 
-  background-color: #777; 
+.searchselector:active {
+  background-color: #777;
 }
 
-.searchdropdown { 
-  z-index: 2; 
-  position: absolute; 
-  height: 0px; 
-  overflow: hidden; 
-  border-radius: 0px 0px 3px 3px; 
-  transition: height 200ms ease, border-top-left-radius 100ms ease; 
-  border-top-left-radius: 3px; 
+.searchdropdown {
+  z-index: 2;
+  position: absolute;
+  height: 0px;
+  overflow: hidden;
+  border-radius: 0px 0px 3px 3px;
+  transition: height 200ms ease, border-top-left-radius 100ms ease;
+  border-top-left-radius: 3px;
 }
 
-.searchdropdown div { 
-  background: #ccc; 
-  border: 1px solid #888; 
-  border-top: none; 
-  cursor: pointer; 
-  padding: 0px 2px 0px 2px; 
+.searchdropdown div {
+  background: #ccc;
+  border: 1px solid #888;
+  border-top: none;
+  cursor: pointer;
+  padding: 0px 2px 0px 2px;
 }
 
-.ingredientpicker { 
-  border: 1px solid #888; 
-  padding: 3px; 
-  height: 12pt; 
-  border-radius: 0px 4px 4px 0px; 
+.ingredientpicker {
+  border: 1px solid #888;
+  padding: 3px;
+  height: 12pt;
+  border-radius: 0px 4px 4px 0px;
 }
 
 #results {
   overflow: scroll;
 }
 
-.ingredientpicker:hover { 
-  border: 1px solid #aaa; 
+.ingredientpicker:hover {
+  border: 1px solid #aaa;
 }
 
-.ingredientdropdown { 
-  display: block; 
+.ingredientdropdown {
+  display: block;
   overflow: scroll;
-  z-index: 1; 
+  z-index: 1;
 }
 
 .ingredientdropdown div {
   width: 1200px;
-  margin: 0px; 
-  padding: 0px; 
-  margin-bottom: 4px; 
-  text-align: justify; 
+  margin: 0px;
+  padding: 0px;
+  margin-bottom: 4px;
+  text-align: justify;
 }
 
-.ingredientdropdown div .item { 
-  border: 1px solid #bbb; 
-  font-size: 8pt; 
-  padding-top: 2px; 
-  white-space: nowrap; 
-  text-align: center; 
-  line-height: 14px; 
-  display: inline-block; 
-  vertical-align: top; 
-  padding-left: 1px; 
-  overflow: hidden; 
-  padding-right: 1px; 
-  margin: 1px; 
-  list-style-type: none; 
-  cursor: pointer; 
-  border-radius: 4px; 
-  background: #ddd; 
-  background: linear-gradient(to bottom, #dddddd 0%,#cccccc 2px,#cccccc 60%,#bbbbbb 85%,#888888 100%); 
-  background: -moz-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%); 
-  background: -webkit-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%); 
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee),color-stop(8%, #dddddd),color-stop(60%, #dddddd),color-stop(85%, #cccccc)); 
+.ingredientdropdown div .item {
+  border: 1px solid #bbb;
+  font-size: 8pt;
+  padding-top: 2px;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 14px;
+  display: inline-block;
+  vertical-align: top;
+  padding-left: 1px;
+  overflow: hidden;
+  padding-right: 1px;
+  margin: 1px;
+  list-style-type: none;
+  cursor: pointer;
+  border-radius: 4px;
+  background: #ddd;
+  background: linear-gradient(to bottom, #dddddd 0%,#cccccc 2px,#cccccc 60%,#bbbbbb 85%,#888888 100%);
+  background: -moz-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%);
+  background: -webkit-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee),color-stop(8%, #dddddd),color-stop(60%, #dddddd),color-stop(85%, #cccccc));
 }
 
-.ingredientdropdown span img { 
-  margin-left: auto; 
-  margin-right: auto; 
-  width: 20px; 
-  height: 20px; 
-  display: block; 
+.ingredientdropdown span img {
+  margin-left: auto;
+  margin-right: auto;
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
-.ingredientdropdown span:hover { 
-  background: #eee; 
-  background: linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); 
-  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); 
-  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%); 
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d8d8d8),color-stop(60%, #d8d8d8),color-stop(85%, #c8c8c8),color-stop(100%, #aaaaaa)); 
+.ingredientdropdown span:hover {
+  background: #eee;
+  background: linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
+  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
+  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d8d8d8),color-stop(60%, #d8d8d8),color-stop(85%, #c8c8c8),color-stop(100%, #aaaaaa));
 }
 
-.ingredientdropdown span:active { 
-  background: #fff; 
-  background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); 
-  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); 
-  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); 
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa)); 
+.ingredientdropdown span:active {
+  background: #fff;
+  background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
+  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
+  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa));
 }
 
-.ingredientdropdown span.selected { 
-  background: #fff; 
-  background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); 
-  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); 
-  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%); 
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa)); 
+.ingredientdropdown span.selected {
+  background: #fff;
+  background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
+  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
+  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa));
 }
 
-.ingredientdropdown span.faded { 
-  opacity: 0.5; 
+.ingredientdropdown span.faded {
+  opacity: 0.5;
 }
 
-.clearingredients { 
-  color: red; 
-  display: inline-block; 
-  padding-left: 5px; 
-  padding-right: 5px; 
-  cursor: pointer; 
-  border: 1px solid #c55; 
-  margin-left: 12pt; 
-  text-align: center; 
-  vertical-align: center; 
-  font-size: 75%; 
-  opacity: 0.4; 
+.clearingredients {
+  color: red;
+  display: inline-block;
+  padding-left: 5px;
+  padding-right: 5px;
+  cursor: pointer;
+  border: 1px solid #c55;
+  margin-left: 12pt;
+  text-align: center;
+  vertical-align: center;
+  font-size: 75%;
+  opacity: 0.4;
 }
 
-.clearingredients:hover { 
-  opacity: 1; 
+.clearingredients:hover {
+  opacity: 1;
 }
 
-h2 { 
-  padding-left: 10px; 
-  color: #444; 
-  margin-bottom: 4pt; 
+h2 {
+  padding-left: 10px;
+  color: #444;
+  margin-bottom: 4pt;
 }
 
-p { 
-  margin-top: 0pt; 
+p {
+  margin-top: 0pt;
 }
 
-table { 
-  width: 100%; 
+table {
+  width: 100%;
 }
 
-table td { 
-  border-left: 1px solid white; 
-  border-top: 1px solid white; 
-  border-bottom: 1px solid #aaa; 
-  border-right: 1px solid #aaa; 
-  background: #ddd; 
-  padding-left: 3px; 
-  padding-right: 3px; 
+table td {
+  border-left: 1px solid white;
+  border-top: 1px solid white;
+  border-bottom: 1px solid #aaa;
+  border-right: 1px solid #aaa;
+  background: #ddd;
+  padding-left: 3px;
+  padding-right: 3px;
 }
 
-td img { 
-  width: 32px; 
-  height: 32px; 
+td img {
+  width: 32px;
+  height: 32px;
 }
 
-table tr { 
-  border: 1px solid black; 
+table tr {
+  border: 1px solid black;
 }
 
-table tr.highlighted td { 
-  background: #ffb; 
-  border-bottom: 1px solid #cc3; 
-  border-right: 1px solid #cc3; 
+table tr.highlighted td {
+  background: #ffb;
+  border-bottom: 1px solid #cc3;
+  border-right: 1px solid #cc3;
 }
 
-table th { 
-  border-bottom: 2px solid black; 
+table th {
+  border-bottom: 2px solid black;
 }
 
-table.links span.link { 
-  padding-left: 2px; 
-  padding-right: 2px; 
-  padding-bottom: 1px; 
-  padding-top: 1px; 
-  display: inline-block; 
-  border: 1px solid #999; 
-  background: #ccc; 
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); 
-  border-radius: 3px; 
-  cursor: pointer; 
+table.links span.link {
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  display: inline-block;
+  border: 1px solid #999;
+  background: #ccc;
+  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
+  border-radius: 3px;
+  cursor: pointer;
 }
 
-table.links span.link:hover { 
-  opacity: 0.8; 
+table.links span.link:hover {
+  opacity: 0.8;
 }
 
-table.links span.link.left { 
-  border-top-left-radius: 0px; 
-  border-bottom-left-radius: 0px; 
-  border-left: none; 
+table.links span.link.left {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  border-left: none;
 }
 
-table.links span.link.right { 
-  border-top-right-radius: 0px; 
-  border-bottom-right-radius: 0px; 
+table.links span.link.right {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
 }
 
-table span.link.strike { 
-  text-decoration: line-through; 
-  color: #755; 
+table span.link.strike {
+  text-decoration: line-through;
+  color: #755;
 }
 
-table.links span.link.strike { 
-  border: 1px solid #bbb; 
+table.links span.link.strike {
+  border: 1px solid #bbb;
 }
 
-span.link img { 
-  width: 20px; 
-  height: 20px; 
-  vertical-align: text-bottom; 
+span.link img {
+  width: 20px;
+  height: 20px;
+  vertical-align: text-bottom;
 }
 
-#footer { 
-  padding-left: 10px; 
-  padding: 4px 10px; 
-  color: #444; 
-  text-align: center; 
-  background-color: rgba(255,255,255,0.6); 
-  border-radius: 10px; 
+#footer {
+  padding-left: 10px;
+  padding: 4px 10px;
+  color: #444;
+  text-align: center;
+  background-color: rgba(255,255,255,0.6);
+  border-radius: 10px;
 }
 
-#footer a { 
-  color: #585858; 
+#footer a {
+  color: #585858;
 }
 
-#footer a:hover { 
-  color: #777; 
+#footer a:hover {
+  color: #777;
 }
 
-button.makablebutton { 
-  font-size: 14pt; 
-  margin: 4px; 
-  padding-left: 2px; 
-  padding-right: 2px; 
-  padding-bottom: 1px; 
-  padding-top: 1px; 
-  display: inline-block; 
-  border: 1px solid #999; 
-  background: #ccc; 
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); 
-  border-radius: 3px; 
-  cursor: pointer; 
+button.makablebutton {
+  font-size: 14pt;
+  margin: 4px;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  display: inline-block;
+  border: 1px solid #999;
+  background: #ccc;
+  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
+  border-radius: 3px;
+  cursor: pointer;
 }
 
-div.recipeFilter img { 
-  opacity: 0.6; 
-  margin: 4px; 
-  padding-left: 2px; 
-  padding-right: 2px; 
-  padding-bottom: 1px; 
-  padding-top: 1px; 
-  display: inline-block; 
-  border: 1px solid #999; 
-  background: #ccc; 
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); 
-  border-radius: 3px; 
-  cursor: pointer; 
+div.recipeFilter img {
+  opacity: 0.6;
+  margin: 4px;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  display: inline-block;
+  border: 1px solid #999;
+  background: #ccc;
+  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
+  border-radius: 3px;
+  cursor: pointer;
 }
 
-div.recipeFilter img:hover { 
-  opacity: 0.8; 
+div.recipeFilter img:hover {
+  opacity: 0.8;
 }
 
-div.recipeFilter img.selected { 
-  opacity: 1; 
-  border-width: 3px; 
-  margin: 2px; 
+div.recipeFilter img.selected {
+  opacity: 1;
+  border-width: 3px;
+  margin: 2px;
 }
 
-div.recipeFilter img.excluded { 
-  opacity: 0.8; 
-  border-color: #711; 
-  border-width: 3px; 
-  margin: 2px; 
-  background: #fcc; 
+div.recipeFilter img.excluded {
+  opacity: 0.8;
+  border-color: #711;
+  border-width: 3px;
+  margin: 2px;
+  background: #fcc;
 }
 
-div.foodFilter img { 
-  width: 32px; 
-  height: 32px; 
-  opacity: 0.4; 
-  margin: 4px; 
-  padding-left: 2px; 
-  padding-right: 2px; 
-  padding-bottom: 1px; 
-  padding-top: 1px; 
-  display: inline-block; 
-  border: 1px solid #999; 
-  background: #ccc; 
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%); 
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0))); 
-  border-radius: 3px; 
-  cursor: pointer; 
+div.foodFilter img {
+  width: 32px;
+  height: 32px;
+  opacity: 0.4;
+  margin: 4px;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  display: inline-block;
+  border: 1px solid #999;
+  background: #ccc;
+  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
+  border-radius: 3px;
+  cursor: pointer;
 }
 
-div.foodFilter img:hover { 
-  opacity: 0.8; 
+div.foodFilter img:hover {
+  opacity: 0.8;
 }
 
-div.foodFilter img.selected { 
-  border-width: 3px; 
-  margin: 2px; 
-  opacity: 1; 
+div.foodFilter img.selected {
+  border-width: 3px;
+  margin: 2px;
+  opacity: 1;
 }
 
-div.foodFilter img.excluded { 
-  border-width: 3px; 
-  border-color: #711; 
-  margin: 2px; 
-  opacity: 0.8; 
-  background: #fcc; 
+div.foodFilter img.excluded {
+  border-width: 3px;
+  border-color: #711;
+  margin: 2px;
+  opacity: 0.8;
+  background: #fcc;
 }
 
-strong { 
-  color: #333; 
+strong {
+  color: #333;
 }
 
 #navbar li.mode {
@@ -529,7 +529,7 @@ strong {
   box-shadow: inset 0px 0px 5px 3px #eee;
   border-radius: 5px;
 }
-@media(max-width: 767px){
+@media(max-width: 767px) {
   .github-link {
     display: none;
   }

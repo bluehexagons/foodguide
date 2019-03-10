@@ -4259,9 +4259,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					},
 					liIntoPicker = function (item) {
 						var img = makeImage(item.img, 32),
-							li = document.createElement('span');
+						li = document.createElement('span');
+						li.classList.add("item");
 						li.appendChild(img);
-						li.appendChild(document.createTextNode(item.name));
+						name = document.createElement('span');
+						name.classList.add("text");
+						name.appendChild(document.createTextNode(item.name));
+						li.appendChild(name);
 						li.dataset.id = item.id;
 						//li.dataset.tooltip = item.name;
 						if (ingredients.indexOf(item) !== -1) {

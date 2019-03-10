@@ -4,7 +4,7 @@ body {
 
 #background { 
   background-blend-mode: multiply; 
-  background: #ccc url('img/backgroundstripes.png'); 
+  background: #ccc url('../img/backgroundstripes.png'); 
   background-size: 100%; 
   background-attachment: fixed; 
   width: 100%; 
@@ -16,10 +16,12 @@ body {
 }
 
 #content { 
-  width: 1000px; 
+  width: 1000px;
+  max-width: 100%;
   margin-left: auto; 
   margin-right: auto; 
   font-family: sans-serif; 
+  padding: 23px 0;
 }
 
 a { 
@@ -31,12 +33,12 @@ a:hover {
 }
 
 #navbar { 
-  position: relative; 
-  left: 0px; 
-  top: 0px; 
-  display: block; 
-  z-index: 1; 
-  padding-left: 0; 
+  display: block;
+  padding-left: 0;
+  margin: 0;
+  padding-bottom: 5px;
+  margin-top: -8px;
+  margin-left: -2px;
 }
 
 #navbar li { 
@@ -68,16 +70,11 @@ a:hover {
 
 #main { 
   background: #eee; 
-  position: relative; 
-  top: -58px; 
+  position: relative;
   padding: 10px; 
-  padding-top: 58px; 
+  padding-top: 0;
   border: 1px solid #999; 
 }
-
-.ingredientlist { 
-  
- }
 
 span.ingredient { 
   width: 68px; 
@@ -87,7 +84,7 @@ span.ingredient {
   margin-right: 5px; 
   overflow: hidden; 
   cursor: pointer; 
-  background: url('img/background.png') top left no-repeat; 
+  background: url('../img/background.png') top left no-repeat; 
   position: relative; 
 }
 
@@ -182,17 +179,19 @@ span.ingredient img {
 
 .ingredientdropdown { 
   display: block; 
+  overflow: scroll;
   z-index: 1; 
 }
 
-.ingredientdropdown div { 
+.ingredientdropdown div {
+  width: 1200px;
   margin: 0px; 
   padding: 0px; 
   margin-bottom: 4px; 
   text-align: justify; 
 }
 
-.ingredientdropdown div span { 
+.ingredientdropdown div .item { 
   border: 1px solid #bbb; 
   font-size: 8pt; 
   padding-top: 2px; 
@@ -472,14 +471,14 @@ strong {
 }
 
 #navbar li.mode {
-  padding: 0 0 0 4px;
+  padding: 0;
   margin: 0;
+  margin-top: 12px;
   cursor: default;
   line-height: 0;
   border: none;
   background: none;
   position: relative;
-  top: 12px;
 }
 
 #navbar li.mode img {
@@ -497,6 +496,10 @@ strong {
   width: 48px;
   height: 48px;
   opacity: 0.25;
+}
+
+#navbar li.mode div.mode-button:first-child {
+  margin-left: 0;
 }
 
 #navbar li.mode div.mode-button:hover {
@@ -521,4 +524,26 @@ strong {
   -webkit-box-shadow:inset 0px 0px 5px 3px #eee;
   box-shadow: inset 0px 0px 5px 3px #eee;
   border-radius: 5px;
+}
+@media(max-width: 767px){
+  .github-link {
+    display: none;
+  }
+
+  .ingredientdropdown div .item img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ingredientdropdown div .text {
+    display: none;
+  }
+
+  #navbar li.mode div.mode-button {
+    width: 15.4%;
+  }
+
+  #navbar .listmenu {
+    display: none
+  }
 }

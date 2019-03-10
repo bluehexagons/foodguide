@@ -1857,7 +1857,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'together'
 			},
 			royal_jelly: {
-				name: "Royal Jelly",
+				name: 'Royal Jelly',
 				sweetener: 3,
 				health: healing_large,
 				hunger: calories_small,
@@ -2635,7 +2635,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 			//Hamlet recipes
 			nettlelosange: {
-				name: "Nettle Rolls",
+				name: 'Nettle Rolls',
 				test: function(cooker, names, tags) {
 					return tags.antihistamine && tags.antihistamine >= 3;
 				},
@@ -2651,7 +2651,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			snakebonesoup: {
-				name: "Snake Bone Soup",
+				name: 'Snake Bone Soup',
 				test: function(cooker, names, tags) {
 					return tags.bone && tags.bone >= 2 && tags.meat && tags.meat >= 2;
 				},
@@ -2666,7 +2666,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			tea: {
-				name: "Tea",
+				name: 'Tea',
 				test: function(cooker, names, tags) {
 					return tags.filter && tags.filter >= 2 && tags.sweetener && !tags.meat && !tags.veggie && !tags.inedible;
 				},
@@ -2684,7 +2684,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			icedtea: {
-				name: "Iced Tea",
+				name: 'Iced Tea',
 				test: function(cooker, names, tags) {
 					return tags.filter && tags.filter >= 2 && tags.sweetener && tags.frozen;
 				},
@@ -2701,7 +2701,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			asparagussoup: {
-				name: "Asparagus Soup",
+				name: 'Asparagus Soup',
 				test: function(cooker, names, tags) {
 					return (names.asparagus || names.asparagus_cooked) && tags.veggie && tags.veggie > 1;
 				},
@@ -2716,7 +2716,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			spicyvegstinger: {
-				name: "Spicy Vegetable Stinger",
+				name: 'Spicy Vegetable Stinger',
 				test: function(cooker, names, tags) {
 					return (names.asparagus || names.asparagus_cooked || names.radish || names.radish_cooked)
 							&& tags.veggie && tags.veggie > 2 && tags.frozen && !tags.meat;
@@ -2732,7 +2732,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			feijoada: {
-				name: "Feijoada",
+				name: 'Feijoada',
 				test: function(cooker, names, tags) {
 					return tags.meat && names.jellybug === 3 || names.jellybug_cooked === 3
 							|| (names.jellybug && names.jellybug_cooked && names.jellybug + names.jellybug_cooked === 3);
@@ -2748,7 +2748,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			steamedhamsandwich: {
-				name: "Steamed Ham Sandwich",
+				name: 'Steamed Ham Sandwich',
 				test: function(cooker, names, tags) {
 					return (names.meat || names.meat_cooked) && (tags.veggie && tags.veggie >= 2) && names.foliage;
 				},
@@ -2763,7 +2763,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			hardshell_tacos: {
-				name: "Hard Shell Tacos",
+				name: 'Hard Shell Tacos',
 				test: function(cooker, names, tags) {
 					return names.weevole_carapace == 2 && tags.veggie;
 				},
@@ -2778,7 +2778,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				mode: 'hamlet'
 			},
 			gummy_cake: {
-				name: "Gummy Cake",
+				name: 'Gummy Cake',
 				test: function(cooker, names, tags) {
 					return (names.slugbug || names.slugbug_cooked) && tags.sweetener;
 				},
@@ -2792,10 +2792,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				cooktime: 2,
 				mode: 'hamlet'
 			},
-			
+
 			//Together recipes
 			jellybean: {
-				name: "Jellybeans",
+				name: 'Jellybeans',
 				test: function(cooker, names, tags) {
 					return names.royal_jelly && !tags.inedible && !tags.monster;
 				},
@@ -3495,7 +3495,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				callback = function (combination) {
 					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
 					setIngredientValues(ingredients, names, tags);
-					// console.log("callback: " + tags.bestHungerType);
+					// console.log('callback: ' + tags.bestHungerType);
 					tags.hunger = tags.bestHunger;// * statMultipliers[tags.bestHungerType];
 					tags.health = tags.bestHealth;// * statMultipliers[tags.bestHealthType];
 					tags.sanity = tags.bestSanity;// * statMultipliers[tags.bestSanityType];
@@ -4259,11 +4259,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					},
 					liIntoPicker = function (item) {
 						var img = makeImage(item.img, 32),
-						li = document.createElement('span');
-						li.classList.add("item");
+							li = document.createElement('span');
+						li.classList.add('item');
 						li.appendChild(img);
 						name = document.createElement('span');
-						name.classList.add("text");
+						name.classList.add('text');
 						name.appendChild(document.createTextNode(item.name));
 						li.appendChild(name);
 						li.dataset.id = item.id;

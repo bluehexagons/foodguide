@@ -173,6 +173,10 @@ span.ingredient img {
   border-radius: 0px 4px 4px 0px; 
 }
 
+#results {
+  overflow: scroll;
+}
+
 .ingredientpicker:hover { 
   border: 1px solid #aaa; 
 }

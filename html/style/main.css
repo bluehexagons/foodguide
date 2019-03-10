@@ -183,12 +183,10 @@ span.ingredient img {
 
 .ingredientdropdown {
   display: block;
-  overflow: scroll;
   z-index: 1;
 }
 
 .ingredientdropdown div {
-  width: 1200px;
   margin: 0px;
   padding: 0px;
   margin-bottom: 4px;
@@ -363,6 +361,7 @@ span.link img {
 
 #footer {
   padding-left: 10px;
+  margin-top: 20px;
   padding: 4px 10px;
   color: #444;
   text-align: center;
@@ -529,6 +528,12 @@ strong {
   box-shadow: inset 0px 0px 5px 3px #eee;
   border-radius: 5px;
 }
+@media(max-width: 1000px) {
+  #navbar .listmenu {
+    margin-top: 5px;
+    display: block;
+  }
+}
 @media(max-width: 767px) {
   .github-link {
     display: none;
@@ -537,6 +542,14 @@ strong {
   .ingredientdropdown div .item img {
     width: 40px;
     height: 40px;
+  }
+
+  .ingredientdropdown {
+    overflow: auto;
+  }
+
+  .ingredientdropdown div {
+    min-width: 600px;
   }
 
   .ingredientdropdown div .text {

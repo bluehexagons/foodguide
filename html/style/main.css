@@ -173,7 +173,7 @@ span.ingredient img {
   border-radius: 0px 4px 4px 0px;
 }
 
-#results {
+#results, #discoverfood, #foodlist, #recipes, #statistics {
   overflow-x: auto;
 }
 
@@ -252,22 +252,34 @@ span.ingredient img {
   opacity: 0.5;
 }
 
-.clearingredients {
-  color: red;
+.ingredientdropdown.hidetext div .text {
+  display: none;
+}
+.ingredientdropdown.hidetext div .item img {
+  width: 40px;
+  height: 40px;
+}
+
+.toggleingredients, .clearingredients {
+  color: black;
   display: inline-block;
   padding-left: 5px;
   padding-right: 5px;
   cursor: pointer;
-  border: 1px solid #c55;
+  border: 1px solid #888;
   margin-left: 12pt;
   text-align: center;
-  vertical-align: center;
+  vertical-align: middle;
   font-size: 75%;
   opacity: 0.4;
 }
-
-.clearingredients:hover {
+.toggleingredients:hover, .clearingredients:hover {
   opacity: 1;
+}
+
+.clearingredients {
+  color: red;
+  border: 1px solid #c55;
 }
 
 h2 {
@@ -539,11 +551,6 @@ strong {
     display: none;
   }
 
-  .ingredientdropdown div .item img {
-    width: 40px;
-    height: 40px;
-  }
-
   .ingredientdropdown {
     overflow: auto;
   }
@@ -552,16 +559,29 @@ strong {
     min-width: 690px;
   }
 
+  .ingredientdropdown div .item img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .toggleingredients {
+    display: none;
+  }
+
   .ingredientdropdown div .text {
     display: none;
   }
 
-  #navbar li.mode div.mode-button {
-    width: 15.4%;
-    height: 15.4%;
+  #content {
+    padding: 0;
   }
 
-  #navbar .listmenu {
-    display: none
+  #background {
+    background: none;
+  }
+
+  #navbar li.mode div.mode-button {
+    width: 15%;
+    height: 15%;
   }
 }

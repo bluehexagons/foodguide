@@ -3584,7 +3584,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		activeTab.className = 'selected';
 		activePage.style.display = 'block';
 		window.addEventListener('beforeunload', function () {
-			var obj, serialized;
+			var obj;
 			try {
 				if (window.localStorage) {
 					if (!localStorage.foodGuideState) {
@@ -4187,6 +4187,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					discover = document.getElementById('discover'),
 					makable = document.getElementById('makable'),
 					clear = document.createElement('span'),
+					toggleText = document.createElement('span'),
 					findPreviousMatching = function (el, test) {
 						var previous = el;
 						while (previous.previousSibling) {
@@ -4624,6 +4625,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 						clear.firstChild.textContent = 'clear';
 					}
 				}, false);
+				toggleText.className = 'toggleingredients enabled';
+				toggleText.addEventListener('click', function () {
+					if (toggleText.classList.contains('enabled')) {
+						toggleText.classList.remove('enabled')
+						dropdown.classList.add('hidetext')
+						toggleText.firstChild.textContent = 'Show names'
+					} else {
+						toggleText.classList.add('enabled')
+						dropdown.classList.remove('hidetext')
+						toggleText.firstChild.textContent = 'Icons only'
+					}
+				}, false);
+				toggleText.appendChild(document.createTextNode('Icons only'));
+				parent.parentNode.insertBefore(toggleText, parent);
 				parent.parentNode.insertBefore(clear, parent);
 				parent.parentNode.insertBefore(dropdown, parent);
 				picker.addEventListener('keydown', function (e) {
@@ -4747,26 +4762,27 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				updateRecipes();
 				window.addEventListener('beforeunload', function () {
 					var obj, serialized;
-					if (window.localStorage) {
-						if (!localStorage.foodGuideState) {
-							localStorage.foodGuideState = '{}';
-						}
-						obj = JSON.parse(localStorage.foodGuideState);
-						if (!obj.pickers) {
-							obj.pickers = [];
-						}
-						if (limited) {
-							serialized = [];
-							serialized = Array.prototype.map.call(slots, function (slot) {
-								var item = getSlot(slot);
-								return item ? item.id : null;
-							});
-							obj.pickers[index] = serialized;
-						} else {
-							obj.pickers[index] = slots;
-						}
-						localStorage.foodGuideState = JSON.stringify(obj);
+					if (!window.localStorage) {
+						return
 					}
+					if (!localStorage.foodGuideState) {
+						localStorage.foodGuideState = '{}';
+					}
+					obj = JSON.parse(localStorage.foodGuideState);
+					if (!obj.pickers) {
+						obj.pickers = [];
+					}
+					if (limited) {
+						serialized = [];
+						serialized = Array.prototype.map.call(slots, function (slot) {
+							var item = getSlot(slot);
+							return item ? item.id : null;
+						});
+						obj.pickers[index] = serialized;
+					} else {
+						obj.pickers[index] = slots;
+					}
+					localStorage.foodGuideState = JSON.stringify(obj);
 				});
 				modeRefreshers.push(refreshPicker);
 				modeRefreshers.push(updateRecipes);

@@ -11,3 +11,4 @@ Contributors:
   [rezecib](https://github.com/rezecib)
   [levy9527](https://github.com/levy9527)
   [brewingcode](https://github.com/brewingcode)
+  [agathasilva28](https://github.com/agathasilva28)

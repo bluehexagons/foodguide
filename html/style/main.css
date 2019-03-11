@@ -174,7 +174,7 @@ span.ingredient img {
 }
 
 #results {
-  overflow: scroll;
+  overflow-x: auto;
 }
 
 .ingredientpicker:hover {
@@ -549,7 +549,7 @@ strong {
   }
 
   .ingredientdropdown div {
-    min-width: 600px;
+    min-width: 690px;
   }
 
   .ingredientdropdown div .text {
@@ -558,6 +558,7 @@ strong {
 
   #navbar li.mode div.mode-button {
     width: 15.4%;
+    height: 15.4%;
   }
 
   #navbar .listmenu {

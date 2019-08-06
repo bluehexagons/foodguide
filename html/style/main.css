@@ -193,7 +193,7 @@ span.ingredient img {
   text-align: justify;
 }
 
-.ingredientdropdown div .item {
+.ingredientdropdown .item {
   border: 1px solid #bbb;
   font-size: 8pt;
   padding-top: 2px;
@@ -216,7 +216,7 @@ span.ingredient img {
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee),color-stop(8%, #dddddd),color-stop(60%, #dddddd),color-stop(85%, #cccccc));
 }
 
-.ingredientdropdown span img {
+.ingredientdropdown .item img {
   margin-left: auto;
   margin-right: auto;
   width: 20px;
@@ -224,7 +224,7 @@ span.ingredient img {
   display: block;
 }
 
-.ingredientdropdown span:hover {
+.ingredientdropdown .item:hover {
   background: #eee;
   background: linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
   background: -moz-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
@@ -232,7 +232,7 @@ span.ingredient img {
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d8d8d8),color-stop(60%, #d8d8d8),color-stop(85%, #c8c8c8),color-stop(100%, #aaaaaa));
 }
 
-.ingredientdropdown span:active {
+.ingredientdropdown .item:active {
   background: #fff;
   background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
   background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
@@ -240,7 +240,7 @@ span.ingredient img {
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa));
 }
 
-.ingredientdropdown span.selected {
+.ingredientdropdown .item.selected {
   background: #fff;
   background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
   background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
@@ -248,7 +248,7 @@ span.ingredient img {
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa));
 }
 
-.ingredientdropdown span.faded {
+.ingredientdropdown .item.faded {
   opacity: 0.5;
 }
 

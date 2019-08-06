@@ -4211,6 +4211,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					displaying = false,
 					appendSlot = function (id) {
 						var i, item = food[id] || recipes[id] || null;
+						if (!id) {
+							console && console.warn('ID not set');
+							return -1;
+						}
 						if (limited) {
 							for (i = 0; i < slots.length; i++) {
 								if (getSlot(slots[i]) === null) {
@@ -4236,7 +4240,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 					},
 					pickItem = function (e) {
 						var names,
-							target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target,
+							target = !e.target.dataset.id ? e.target.parentNode : e.target,
 							result = appendSlot(target.dataset.id);
 						if (result !== -1) {
 							/*dropdown.removeChild(ul);

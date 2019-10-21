@@ -1887,6 +1887,52 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_slow,
 				stack: stack_size_smallitem,
 				mode: 'together'
+			},
+			potato: {
+				name: 'Potato',
+				isveggie: true,
+				veggie: 1,
+				health: -healing_small,
+				hunger: calories_small,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			potato_cooked: {
+				name: 'Roasted Potato',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_med,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			garlic: {
+				name: 'Garlic',
+				isveggie: true,
+				veggie: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_slow,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			garlic_cooked: {
+				name: 'Roasted Garlic',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
 			}
 		},
 		//note: qty not used yet, this is for rapid summation
@@ -2835,7 +2881,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			pepperpopper: {
 				name: 'Stuffed Pepper Poppers',
 				test: function(cooker, names, tags) {
-				return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+					return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 				},
 				requirements: [NAME('pepper'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 				priority: 20,
@@ -2848,6 +2894,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: hot_food_bonus_temp,
 				temperatureduration: food_temp_long,
 				note: 'Increases temperature by 40 degrees in 15 seconds.',
+				mode: 'together'
+			},
+			mashedpotatoes: {
+				name: 'Creamy Potato Purée',
+				test: function(cooker, names, tags) {
+					return (names.potato || names.potato_cooked) && (names.potato || names.potato_cooked) >= 2 && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
+				},
+				requirements: [NAME('potato', COMPARE('>=', 2)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
+				priority: 20,
+				foodtype: 'veggie',
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_large,
+				cooktime: 1,
 				mode: 'together'
 			}
 		},

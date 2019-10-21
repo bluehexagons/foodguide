@@ -2899,7 +2899,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			mashedpotatoes: {
 				name: 'Creamy Potato Purée',
 				test: function(cooker, names, tags) {
-					return (names.potato || names.potato_cooked) && (names.potato || names.potato_cooked) >= 2 && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
+					return (names.potato || names.potato_cooked >= 2) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
 				},
 				requirements: [NAME('potato', COMPARE('>=', 2)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
 				priority: 20,

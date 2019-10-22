@@ -1933,6 +1933,52 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_smallitem,
 				mode: 'together'
+			},
+			tomato: {
+				name: 'Toma Root',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			tomato_cooked: {
+				name: 'Roasted Toma Root',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_med,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			onion: {
+				name: 'Onion',
+				isveggie: true,
+				veggie: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_slow,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			onion_cooked: {
+				name: 'Roasted Onion',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
 			}
 		},
 		//note: qty not used yet, this is for rapid summation
@@ -2909,6 +2955,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_slow,
 				sanity: sanity_large,
 				cooktime: 1,
+				mode: 'together'
+			},
+			salsa: {
+				name: 'Salsa Fresca',
+				test: function(cooker, names, tags) {
+					return (names.tomato || names.tomato_cooked) && (names.onion || names.onion_cooked) && !tags.meat && !tags.egg && !tags.inedible;
+				},
+				requirements: [NAME('tomato'), NAME('onion'), NOT(TAG('meat')), NOT(TAG('egg')), NOT(TAG('inedible'))],
+				priority: 20,
+				foodtype: 'veggie',
+				health: healing_medlarge,
+				hunger: calories_med,
+				perish: perish_slow,
+				sanity: sanity_large,
+				cooktime: 0.5,
 				mode: 'together'
 			}
 		},

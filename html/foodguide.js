@@ -2541,9 +2541,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			trailmix: {
 				name: 'Trail Mix',
 				test: function(cooker, names, tags) {
-					return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
+					return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
 				},
-				requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
+				requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), OR(NAME('berries'), NAME('berries_juicy')), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
 				priority: 10,
 				foodtype: 'veggie',
 				health: healing_medlarge,

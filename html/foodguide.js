@@ -1979,6 +1979,39 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				stack: stack_size_smallitem,
 				mode: 'together'
+			},
+			berries_juicy: {
+				name: 'Juicy Berries',
+				isfruit: true,
+				fruit: 0.5,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_two_day,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			berries_juicy_cooked: {
+				name: 'Roasted Juicy Berries',
+				isfruit: true,
+				fruit: 0.5,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_one_day,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			moonbutterflywings: {
+				name: 'Moon Moth Wings',
+				isveggie: true,
+				health: healing_medsmall,
+				hunger: calories_tiny,
+				sanity: sanity_med,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
 			}
 		},
 		//note: qty not used yet, this is for rapid summation

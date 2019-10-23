@@ -78,7 +78,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		perish_preserved = 20*total_day_time*perish_warp,
 		perish_superslow = 40*total_day_time*perish_warp,
 
-		dry_fast = total_day_time,
+		dry_superfast = 0.25*total_day_time,
+	    	dry_fast = total_day_time,
 		dry_med = 2*total_day_time,
 
 		calories_tiny = calories_per_day/8, // berries

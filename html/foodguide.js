@@ -2047,10 +2047,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			butterflymuffin: {
 				name: 'Butter Muffin',
 				test: function(cooker, names, tags) {
-					return names.butterflywings && tags.veggie && !tags.meat && !names.mandrake;
+					return (names.butterflywings || names.moonbutterflywings) && tags.veggie && !tags.meat && !names.mandrake;
 				},
 				requires: 'Butterfly Wings, veggie',
-				requirements: [NAME('butterflywings'), TAG('veggie'), NOT(TAG('meat')), NOT(SPECIFIC('mandrake'))],
+				requirements: [OR(NAME('butterflywings'), NAME('moonbutterflywings')), TAG('veggie'), NOT(TAG('meat')), NOT(SPECIFIC('mandrake'))],
 				priority: 1,
 				weight: 1,
 				foodtype: 'veggie',

@@ -53,7 +53,7 @@ food = {
 			},
 	
 	moon_tree_blossom: {
-				name: 'Moon Moth Wings',
+				name: 'Lune Blossoms',
 				uncookable: true,
 				isveggie: true,
 				decoration: 2,

@@ -2014,10 +2014,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			butterflymuffin: {
 				name: 'Butter Muffin',
 				test: function(cooker, names, tags) {
-					return names.butterflywings && !tags.meat && tags.veggie;
+					return names.butterflywings && tags.veggie && !tags.meat && !names.mandrake;
 				},
 				requires: 'Butterfly Wings, veggie',
-				requirements: [NAME('butterflywings'), NOT(TAG('meat')), TAG('veggie')],
+				requirements: [NAME('butterflywings'), TAG('veggie'), NOT(TAG('meat')), NOT(SPECIFIC('mandrake'))],
 				priority: 1,
 				weight: 1,
 				foodtype: 'veggie',
@@ -2180,9 +2180,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			baconeggs: {
 				name: 'Bacon and Eggs',
 				test: function(cooker, names, tags) {
-					return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
+					return tags.egg && tags.egg >= 2 && tags.meat && tags.meat > 1 && !tags.veggie && !tags.inedible;
 				},
-				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
+				requirements: [TAG('egg', COMPARE('>=', 2)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie')), NOT(TAG('inedible'))],
 				priority: 10,
 				foodtype: 'meat',
 				health: healing_med,

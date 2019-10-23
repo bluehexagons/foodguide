@@ -1887,6 +1887,131 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_slow,
 				stack: stack_size_smallitem,
 				mode: 'together'
+			},
+			potato: {
+				name: 'Potato',
+				isveggie: true,
+				veggie: 1,
+				health: -healing_small,
+				hunger: calories_small,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			potato_cooked: {
+				name: 'Roasted Potato',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_med,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			garlic: {
+				name: 'Garlic',
+				isveggie: true,
+				veggie: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_slow,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			garlic_cooked: {
+				name: 'Roasted Garlic',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			tomato: {
+				name: 'Toma Root',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			tomato_cooked: {
+				name: 'Roasted Toma Root',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_med,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			onion: {
+				name: 'Onion',
+				isveggie: true,
+				veggie: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_slow,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			onion_cooked: {
+				name: 'Roasted Onion',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			berries_juicy: {
+				name: 'Juicy Berries',
+				isfruit: true,
+				fruit: 0.5,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_two_day,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			berries_juicy_cooked: {
+				name: 'Roasted Juicy Berries',
+				isfruit: true,
+				fruit: 0.5,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_one_day,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			moonbutterflywings: {
+				name: 'Moon Moth Wings',
+				isveggie: true,
+				health: healing_medsmall,
+				hunger: calories_tiny,
+				sanity: sanity_med,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
 			}
 		},
 		//note: qty not used yet, this is for rapid summation
@@ -1922,10 +2047,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			butterflymuffin: {
 				name: 'Butter Muffin',
 				test: function(cooker, names, tags) {
-					return names.butterflywings && !tags.meat && tags.veggie;
+					return (names.butterflywings || names.moonbutterflywings) && tags.veggie && !tags.meat && !names.mandrake;
 				},
 				requires: 'Butterfly Wings, veggie',
-				requirements: [NAME('butterflywings'), NOT(TAG('meat')), TAG('veggie')],
+				requirements: [OR(NAME('butterflywings'), NAME('moonbutterflywings')), TAG('veggie'), NOT(TAG('meat')), NOT(SPECIFIC('mandrake'))],
 				priority: 1,
 				weight: 1,
 				foodtype: 'veggie',
@@ -2088,9 +2213,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			baconeggs: {
 				name: 'Bacon and Eggs',
 				test: function(cooker, names, tags) {
-					return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
+					return tags.egg && tags.egg >= 2 && tags.meat && tags.meat > 1 && !tags.veggie && !tags.inedible;
 				},
-				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
+				requirements: [TAG('egg', COMPARE('>=', 2)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie')), NOT(TAG('inedible'))],
 				priority: 10,
 				foodtype: 'meat',
 				health: healing_med,
@@ -2581,9 +2706,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			caviar: {
 				name: 'Caviar',
 				test: function(cooker, names, tags) {
-					return (names.roe || names.roe_cooked == 3) && tags.veggie;
+					return (names.roe || names.roe_cooked === 3) && tags.veggie && tags.veggie >= 1;
 				},
-				requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie')],
+				requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie', COMPARE('>=', 1))],
 				priority: 20,
 				foodtype: 'meat',
 				health: healing_small,
@@ -2847,6 +2972,51 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				temperature: hot_food_bonus_temp,
 				temperatureduration: food_temp_long,
 				note: 'Increases temperature by 40 degrees in 15 seconds.',
+				mode: 'together'
+			},
+			mashedpotatoes: {
+				name: 'Creamy Potato Purée',
+				test: function(cooker, names, tags) {
+					return ((names.potato >= 2|| names.potato_cooked >= 2) || ((names.potato + names.potato_cooked) >= 2)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
+				},
+				requirements: [NAME('potato', COMPARE('>=', 2)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
+				priority: 20,
+				foodtype: 'veggie',
+				health: healing_med,
+				hunger: calories_large,
+				perish: perish_slow,
+				sanity: sanity_large,
+				cooktime: 1,
+				mode: 'together'
+			},
+			salsa: {
+				name: 'Salsa Fresca',
+				test: function(cooker, names, tags) {
+					return (names.tomato || names.tomato_cooked) && (names.onion || names.onion_cooked) && !tags.meat && !tags.egg && !tags.inedible;
+				},
+				requirements: [NAME('tomato'), NAME('onion'), NOT(TAG('meat')), NOT(TAG('egg')), NOT(TAG('inedible'))],
+				priority: 20,
+				foodtype: 'veggie',
+				health: healing_medlarge,
+				hunger: calories_med,
+				perish: perish_slow,
+				sanity: sanity_large,
+				cooktime: 0.5,
+				mode: 'together'
+			},
+			potatotornado: {
+				name: 'Fancy Spiralled Tubers',
+				test: function(cooker, names, tags) {
+					return (names.potato || names.potato_cooked) && tags.inedible && tags.inedible <=2  && !tags.meat && (!tags.monster || tags.monster <= 1);
+				},
+				requirements: [NAME('potato'), TAG('inedible', COMPARE('<=', 2)), NOT(TAG('meat')), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
+				priority: 10,
+				foodtype: 'veggie',
+				health: healing_small,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_med,
+				cooktime: 0.75,
 				mode: 'together'
 			}
 		},

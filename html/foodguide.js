@@ -2882,8 +2882,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			feijoada: {
 				name: 'Feijoada',
 				test: function(cooker, names, tags) {
-					return tags.meat && names.jellybug === 3 || names.jellybug_cooked === 3
-							|| (names.jellybug && names.jellybug_cooked && names.jellybug + names.jellybug_cooked === 3);
+					return tags.meat && (names.jellybug === 3 || names.jellybug_cooked === 3 || (names.jellybug + names.jellybug_cooked === 3));
 				},
 				requirements: [TAG('meat'), NAME('jellybug', COMPARE('=', 3))],
 				priority: 30,
@@ -2960,7 +2959,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			pepperpopper: {
 				name: 'Stuffed Pepper Poppers',
 				test: function(cooker, names, tags) {
-					return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+				return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 				},
 				requirements: [NAME('pepper'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 				priority: 20,

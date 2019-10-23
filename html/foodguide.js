@@ -2572,9 +2572,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			guacamole: {
 				name: 'Guacamole',
 				test: function(cooker, names, tags) {
-					return names.mole && names.cactusmeat && !tags.fruit;
+					return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit;
 				},
-				requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
+				requirements: [SPECIFIC('mole'), OR(SPECIFIC('cactusmeat'), SPECIFIC('rock_avocado_fruit_ripe')), NOT(TAG('fruit'))],
 				priority: 10,
 				foodtype: 'meat',
 				health: healing_med,

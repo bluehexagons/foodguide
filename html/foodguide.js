@@ -2978,7 +2978,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			mashedpotatoes: {
 				name: 'Creamy Potato Purée',
 				test: function(cooker, names, tags) {
-					return (names.potato || names.potato_cooked >= 2) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
+					return ((names.potato >= 2|| names.potato_cooked >= 2) || ((names.potato + names.potato_cooked) >= 2)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
 				},
 				requirements: [NAME('potato', COMPARE('>=', 2)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
 				priority: 20,
@@ -3003,6 +3003,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_slow,
 				sanity: sanity_large,
 				cooktime: 0.5,
+				mode: 'together'
+			},
+			potatotornado: {
+				name: 'Fancy Spiralled Tubers',
+				test: function(cooker, names, tags) {
+					return (names.potato || names.potato_cooked) && tags.inedible && tags.inedible <=2  && !tags.meat && (!tags.monster || tags.monster <= 1);
+				},
+				requirements: [NAME('potato'), TAG('inedible', COMPARE('<=', 2)), NOT(TAG('meat')), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
+				priority: 10,
+				foodtype: 'veggie',
+				health: healing_small,
+				hunger: calories_large,
+				perish: perish_med,
+				sanity: sanity_med,
+				cooktime: 0.75,
 				mode: 'together'
 			}
 		},

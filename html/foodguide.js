@@ -2214,9 +2214,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			baconeggs: {
 				name: 'Bacon and Eggs',
 				test: function(cooker, names, tags) {
-					return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie && !tags.inedible;
+					return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
 				},
-				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie')), NOT(TAG('inedible'))],
+				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
 				priority: 10,
 				foodtype: 'meat',
 				health: healing_med,

@@ -2003,6 +2003,43 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				mode: 'together'
 			},
+			kelp: {
+				name: 'Kelp Fronds',
+				uncookable: true,
+				isveggie: true,
+				health: -healing_tiny,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				dry: 'kelp_dried',
+				drytime: dry_superfast,
+				mode: 'together'
+			},
+			kelp_cooked: {
+				name: 'Cooked Kelp Fronds',
+				uncookable: true,
+				isveggie: true,
+				precook: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			kelp_dried: {
+				name: 'Dried Kelp Fronds',
+				uncookable: true,
+				isveggie: true,
+				dried: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: sanity_small,
+				perish: perish_preserved,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
 			moonbutterflywings: {
 				name: 'Moon Moth Wings',
 				isveggie: true,
@@ -2011,6 +2048,40 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				hunger: calories_tiny,
 				sanity: sanity_med,
 				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			moon_tree_blossom: {
+				name: 'Lune Tree Blossom',
+				uncookable: true,
+				isveggie: true,
+				decoration: 2,
+				health: healing_tiny,
+				hunger: 0,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			rock_avocado_fruit_ripe: {
+				name: 'Ripe Stone Fruit',
+				isveggie: true,
+				veggie: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			rock_avocado_fruit_ripe_cooked: {
+				name: 'Cooked Stone Fruit',
+				isveggie: true,
+				veggie: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_two_day,
 				stack: stack_size_smallitem,
 				mode: 'together'
 			}

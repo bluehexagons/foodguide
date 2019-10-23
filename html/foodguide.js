@@ -2757,8 +2757,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			feijoada: {
 				name: 'Feijoada',
 				test: function(cooker, names, tags) {
-					return tags.meat && names.jellybug === 3 || names.jellybug_cooked === 3
-							|| (names.jellybug && names.jellybug_cooked && names.jellybug + names.jellybug_cooked === 3);
+					return tags.meat && (names.jellybug === 3 || names.jellybug_cooked === 3 || (names.jellybug + names.jellybug_cooked === 3));
 				},
 				requirements: [TAG('meat'), NAME('jellybug', COMPARE('=', 3))],
 				priority: 30,

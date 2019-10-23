@@ -2706,9 +2706,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			caviar: {
 				name: 'Caviar',
 				test: function(cooker, names, tags) {
-					return (names.roe || names.roe_cooked == 3) && tags.veggie;
+					return (names.roe || names.roe_cooked === 3) && tags.veggie && tags.veggie >= 1;
 				},
-				requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie')],
+				requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie', COMPARE('>=', 1))],
 				priority: 20,
 				foodtype: 'meat',
 				health: healing_small,

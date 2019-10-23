@@ -2006,6 +2006,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			moonbutterflywings: {
 				name: 'Moon Moth Wings',
 				isveggie: true,
+				decoration:2,
 				health: healing_medsmall,
 				hunger: calories_tiny,
 				sanity: sanity_med,
@@ -2213,9 +2214,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			baconeggs: {
 				name: 'Bacon and Eggs',
 				test: function(cooker, names, tags) {
-					return tags.egg && tags.egg >= 2 && tags.meat && tags.meat > 1 && !tags.veggie && !tags.inedible;
+					return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie && !tags.inedible;
 				},
-				requirements: [TAG('egg', COMPARE('>=', 2)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie')), NOT(TAG('inedible'))],
+				requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie')), NOT(TAG('inedible'))],
 				priority: 10,
 				foodtype: 'meat',
 				health: healing_med,
@@ -2346,9 +2347,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			waffles: {
 				name: 'Waffles',
 				test: function(cooker, names, tags) {
-					return names.butter && (names.berries || names.berries_cooked) && tags.egg;
+					return names.butter && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.egg;
 				},
-				requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
+				requirements: [SPECIFIC('butter'), OR(NAME('berries'), NAME('berries_juicy')), TAG('egg')],
 				priority: 10,
 				foodtype: 'veggie',
 				health: healing_huge,
@@ -2959,7 +2960,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			pepperpopper: {
 				name: 'Stuffed Pepper Poppers',
 				test: function(cooker, names, tags) {
-				return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+					return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 				},
 				requirements: [NAME('pepper'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 				priority: 20,
@@ -2977,7 +2978,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			mashedpotatoes: {
 				name: 'Creamy Potato Purée',
 				test: function(cooker, names, tags) {
-					return ((names.potato >= 2|| names.potato_cooked >= 2) || ((names.potato + names.potato_cooked) >= 2)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
+					return ((names.potato >= 2 || names.potato_cooked >= 2) || ((names.potato + names.potato_cooked) >= 2)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
 				},
 				requirements: [NAME('potato', COMPARE('>=', 2)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
 				priority: 20,

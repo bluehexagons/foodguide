@@ -1866,7 +1866,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				mode: 'together'
 			},
-			
+
 			//DST Turn Of Tides Additions
 			kelp: {
 				name: 'Kelp Fronds',
@@ -1949,8 +1949,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_two_day,
 				stack: stack_size_smallitem,
 				mode: 'together'
-			},				
-			
+			},
+
 			//DST Additions From Warly's Update
 			pepper: {
 				name: 'Pepper',

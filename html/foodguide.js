@@ -1838,13 +1838,38 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			//DST Ingredients
 			wormlight_lesser: {
 				name: 'Lesser Glowberry',
-				uncookable: true,
+				//uncookable = true, <- Not anymore
+				isfruit: true,
+				fruit: 0.5,
 				health: healing_small,
 				hunger: calories_small,
 				sanity: -sanity_small,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
 				note: 'Gives 22.5 seconds of light',
+				mode: 'together'
+			},
+			berries_juicy: {
+				name: 'Juicy Berries',
+				isfruit: true,
+				fruit: 0.5,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_two_day,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			berries_juicy_cooked: {
+				name: 'Roasted Juicy Berries',
+				isfruit: true,
+				fruit: 0.5,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_medsmall,
+				sanity: 0,
+				perish: perish_one_day,
+				stack: stack_size_smallitem,
 				mode: 'together'
 			},
 			phlegm: {
@@ -1920,7 +1945,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Lune Tree Blossom',
 				uncookable: true,
 				isveggie: true,
-				decoration: 2,
 				health: healing_tiny,
 				hunger: 0,
 				sanity: 0,
@@ -2068,29 +2092,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				mode: 'together'
 			},
-			berries_juicy: {
-				name: 'Juicy Berries',
-				isfruit: true,
-				fruit: 0.5,
-				health: healing_tiny,
-				hunger: calories_small,
-				sanity: 0,
-				perish: perish_two_day,
-				stack: stack_size_smallitem,
-				mode: 'together'
+			lightninggoathorn: {
+				name: 'Volt Goat Horn',
+				inedible: 1
 			},
-			berries_juicy_cooked: {
-				name: 'Roasted Juicy Berries',
-				isfruit: true,
-				fruit: 0.5,
-				precook: 1,
-				health: healing_small,
-				hunger: calories_medsmall,
-				sanity: 0,
-				perish: perish_one_day,
-				stack: stack_size_smallitem,
-				mode: 'together'
+			nightmarefuel: {
+				name: 'Nightmare Fuel',
+				inedible: 1,
+				magic: 1,
+			},
+			boneshard: {
+				name: 'Bone Shards',
+				inedible: 1,
 			}
+
 		},
 		//note: qty not used yet, this is for rapid summation
 		COMPAREString = function () { return this.op + this.qty; },
@@ -2125,10 +2140,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			butterflymuffin: {
 				name: 'Butter Muffin',
 				test: function(cooker, names, tags) {
-					return (names.butterflywings || names.moonbutterflywings) && !tags.meat && tags.veggie;
+					return names.butterflywings && !tags.meat && tags.veggie;
 				},
 				requires: 'Butterfly Wings, veggie',
-				requirements: [OR(NAME('butterflywings'), NAME('moonbutterflywings')), NOT(TAG('meat')), TAG('veggie')],
+				requirements: [NAME('butterflywings'), NOT(TAG('meat')), TAG('veggie')],
 				priority: 1,
 				weight: 1,
 				foodtype: 'veggie',
@@ -2424,9 +2439,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			waffles: {
 				name: 'Waffles',
 				test: function(cooker, names, tags) {
-					return names.butter && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.egg;
+					return names.butter && (names.berries || names.berries_cooked) && tags.egg;
 				},
-				requirements: [SPECIFIC('butter'), OR(NAME('berries'), NAME('berries_juicy')), TAG('egg')],
+				requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
 				priority: 10,
 				foodtype: 'veggie',
 				health: healing_huge,
@@ -2546,9 +2561,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			trailmix: {
 				name: 'Trail Mix',
 				test: function(cooker, names, tags) {
-					return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
+					return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
 				},
-				requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), OR(NAME('berries'), NAME('berries_juicy')), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
+				requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
 				priority: 10,
 				foodtype: 'veggie',
 				health: healing_medlarge,
@@ -2578,9 +2593,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			guacamole: {
 				name: 'Guacamole',
 				test: function(cooker, names, tags) {
-					return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit;
+					return names.mole && names.cactusmeat && !tags.fruit;
 				},
-				requirements: [SPECIFIC('mole'), OR(SPECIFIC('cactusmeat'), SPECIFIC('rock_avocado_fruit_ripe')), NOT(TAG('fruit'))],
+				requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
 				priority: 10,
 				foodtype: 'meat',
 				health: healing_med,
@@ -3055,9 +3070,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			mashedpotatoes: {
 				name: 'Creamy Potato Purée',
 				test: function(cooker, names, tags) {
-					return ((names.potato >= 2 || names.potato_cooked >= 2) || ((names.potato + names.potato_cooked) >= 2)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
+					return ((names.potato && names.potato > 1) || (names.potato_cooked && names.potato_cooked > 1) || (names.potato && names.potato_cooked)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible,
 				},
-				requirements: [NAME('potato', COMPARE('>=', 2)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
+				requirements: [NAME('potato', COMPARE('>',1)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
 				priority: 20,
 				foodtype: 'veggie',
 				health: healing_med,
@@ -3085,9 +3100,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			potatotornado: {
 				name: 'Fancy Spiralled Tubers',
 				test: function(cooker, names, tags) {
-					return (names.potato || names.potato_cooked) && tags.inedible && tags.inedible <=2  && !tags.meat && (!tags.monster || tags.monster <= 1);
+					return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2),
 				},
-				requirements: [NAME('potato'), TAG('inedible', COMPARE('<=', 2)), NOT(TAG('meat')), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
+				requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=',1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=',2)],
 				priority: 10,
 				foodtype: 'veggie',
 				health: healing_small,

@@ -77,9 +77,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		perish_slow = 15*total_day_time*perish_warp,
 		perish_preserved = 20*total_day_time*perish_warp,
 		perish_superslow = 40*total_day_time*perish_warp,
-
+		
+		dry_superfast = 0.25*total_day_time,
+		dry_veryfast = 0.5*total_day_time,
 		dry_fast = total_day_time,
 		dry_med = 2*total_day_time,
+		
 
 		calories_tiny = calories_per_day/8, // berries
 		calories_small = calories_per_day/6, // veggies
@@ -1865,6 +1868,92 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_med,
 				mode: 'together'
 			},
+			
+			//DST Turn Of Tides Additions
+			kelp: {
+				name: 'Kelp Fronds',
+				uncookable: true,
+				isveggie: true,
+				health: -healing_tiny,
+				hunger: calories_tiny,
+				sanity: -sanity_small,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				dry: 'kelp_dried',
+				drytime: dry_superfast,
+				mode: 'together'
+			},
+			kelp_cooked: {
+				name: 'Cooked Kelp Fronds',
+				uncookable: true,
+				isveggie: true,
+				precook: 1,
+				health: 0,
+				hunger: calories_tiny,
+				sanity: -sanity_tiny,
+				perish: perish_med,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			kelp_dried: {
+				name: 'Dried Kelp Fronds',
+				uncookable: true,
+				isveggie: true,
+				dried: 1,
+				health: healing_tiny,
+				hunger: calories_tiny,
+				sanity: sanity_small,
+				perish: perish_preserved,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			moonbutterflywings: {
+				name: 'Moon Moth Wings',
+				isveggie: true,
+				decoration: 2,
+				health: healing_medsmall,
+				hunger: calories_tiny,
+				sanity: sanity_med,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			moon_tree_blossom: {
+				name: 'Lune Tree Blossoms',
+				uncookable: true,
+				isveggie: true,
+				health: healing_tiny,
+				hunger: 0,
+				sanity: 0,
+				perish: perish_fast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			rock_avocado_fruit_ripe: {
+				name: 'Ripe Stone Fruit',
+				isveggie: true,
+				veggie: 1,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			rock_avocado_fruit_ripe_cooked: {
+				name: 'Cooked Stone Fruit',
+				isveggie: true,
+				veggie: 1,
+				precook: 1,
+				health: healing_small,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_two_day,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},				
+			
+			//DST Additions From Warly's Update
 			pepper: {
 				name: 'Pepper',
 				isveggie: true,

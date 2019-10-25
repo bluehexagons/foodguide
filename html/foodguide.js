@@ -2799,9 +2799,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			caviar: {
 				name: 'Caviar',
 				test: function(cooker, names, tags) {
-					return (names.roe || names.roe_cooked === 3) && tags.veggie && tags.veggie >= 1;
+					return (names.roe || names.roe_cooked === 3) && tags.veggie;
 				},
-				requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie', COMPARE('>=', 1))],
+				requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie')],
 				priority: 20,
 				foodtype: 'meat',
 				health: healing_small,
@@ -2975,7 +2975,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			feijoada: {
 				name: 'Feijoada',
 				test: function(cooker, names, tags) {
-					return tags.meat && (names.jellybug === 3 || names.jellybug_cooked === 3 || (names.jellybug + names.jellybug_cooked === 3));
+					return tags.meat && names.jellybug === 3 || names.jellybug_cooked === 3 || (names.jellybug && names.jellybug_cooked && names.jellybug + names.jellybug_cooked === 3);
 				},
 				requirements: [TAG('meat'), NAME('jellybug', COMPARE('=', 3))],
 				priority: 30,
@@ -2985,6 +2985,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fastish,
 				sanity: sanity_med,
 				cooktime: 3.5,
+				note: 'Using 3 cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs makes it so that meat is not needed, intentional or not by Klei.',
 				mode: 'hamlet'
 			},
 			steamedhamsandwich: {

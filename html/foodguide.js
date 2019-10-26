@@ -3075,7 +3075,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			mashedpotatoes: {
 				name: 'Creamy Potato Purée',
 				test: function(cooker, names, tags) {
-					return ((names.potato && names.potato > 1) || (names.potato_cooked && names.potato_cooked > 1) || (names.potato && names.potato_cooked)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible,
+					return ((names.potato && names.potato > 1) || (names.potato_cooked && names.potato_cooked > 1) || (names.potato && names.potato_cooked)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
 				},
 				requirements: [NAME('potato', COMPARE('>',1)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
 				priority: 20,
@@ -3105,7 +3105,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			potatotornado: {
 				name: 'Fancy Spiralled Tubers',
 				test: function(cooker, names, tags) {
-					return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2),
+					return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
 				},
 				requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=',1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=',2)],
 				priority: 10,

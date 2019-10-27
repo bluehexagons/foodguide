@@ -3107,7 +3107,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				test: function(cooker, names, tags) {
 					return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
 				},
-				requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=',1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=',2)],
+				requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=',1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=',2))],
 				priority: 10,
 				foodtype: 'veggie',
 				health: healing_small,

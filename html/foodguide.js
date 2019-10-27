@@ -2140,6 +2140,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			butterflymuffin: {
 				name: 'Butter Muffin',
 				test: function(cooker, names, tags) {
+					//return (names.butterflywings || names.moonbutterflywings) && !tags.meat && tags.veggie; <- For when issue #32 is sorted out
 					return names.butterflywings && !tags.meat && tags.veggie;
 				},
 				requires: 'Butterfly Wings, veggie',
@@ -2439,6 +2440,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			waffles: {
 				name: 'Waffles',
 				test: function(cooker, names, tags) {
+					//return names.butter && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.egg; <- For when issue #32 is sorted out
 					return names.butter && (names.berries || names.berries_cooked) && tags.egg;
 				},
 				requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
@@ -2561,6 +2563,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			trailmix: {
 				name: 'Trail Mix',
 				test: function(cooker, names, tags) {
+					//return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy; <- For when issue #32 is sorted out
 					return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
 				},
 				requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
@@ -2593,6 +2596,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			guacamole: {
 				name: 'Guacamole',
 				test: function(cooker, names, tags) {
+					//return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit; <- For when issue #32 is sorted out
 					return names.mole && names.cactusmeat && !tags.fruit;
 				},
 				requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
@@ -3071,7 +3075,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			mashedpotatoes: {
 				name: 'Creamy Potato Purée',
 				test: function(cooker, names, tags) {
-					return ((names.potato && names.potato > 1) || (names.potato_cooked && names.potato_cooked > 1) || (names.potato && names.potato_cooked)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible,
+					return ((names.potato && names.potato > 1) || (names.potato_cooked && names.potato_cooked > 1) || (names.potato && names.potato_cooked)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
 				},
 				requirements: [NAME('potato', COMPARE('>',1)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
 				priority: 20,
@@ -3101,7 +3105,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			potatotornado: {
 				name: 'Fancy Spiralled Tubers',
 				test: function(cooker, names, tags) {
-					return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2),
+					return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
 				},
 				requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=',1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=',2)],
 				priority: 10,

@@ -77,6 +77,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		perish_slow = 15*total_day_time*perish_warp,
 		perish_preserved = 20*total_day_time*perish_warp,
 		perish_superslow = 40*total_day_time*perish_warp,
+		
 		dry_superfast = 0.25*total_day_time,
 		dry_veryfast = 0.5*total_day_time,
 		dry_fast = total_day_time,
@@ -1822,18 +1823,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				note: 'Cures poison',
 				mode: 'hamlet'
 			},
-			// Not yet implemented
-			// whisperpod: {
-				// name: 'Magic Water',
-				// uncookable: true,
-				// health: 0,
-				// hunger: calories_tiny/2,
-				// sanity: 0,
-				// perish: perish_superslow,
-				// stack: stack_size_smallitem,
-				// cook: 'seeds_cooked',
-				// mode: 'hamlet'
-			// },
+			 whisperpod: {
+				 name: 'Magic Water',
+				 uncookable: true,
+				 health: 0,
+				 hunger: calories_tiny/2,
+				 sanity: 0,
+				 perish: perish_superslow,
+				 stack: stack_size_smallitem,
+				 cook: 'seeds_cooked',
+				 mode: 'hamlet'
+			 },
 
 			//DST Ingredients
 			wormlight_lesser: {
@@ -1895,8 +1895,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			//DST Turn Of Tides Additions
 			kelp: {
 				name: 'Kelp Fronds',
-				uncookable: true,
 				isveggie: true,
+				veggie: 0.5,
 				health: -healing_tiny,
 				hunger: calories_tiny,
 				sanity: -sanity_small,
@@ -1908,8 +1908,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			kelp_cooked: {
 				name: 'Cooked Kelp Fronds',
-				uncookable: true,
 				isveggie: true,
+				veggie: 0.5,
 				precook: 1,
 				health: 0,
 				hunger: calories_tiny,
@@ -1920,8 +1920,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			kelp_dried: {
 				name: 'Dried Kelp Fronds',
-				uncookable: true,
 				isveggie: true,
+				veggie: 0.5, 
 				dried: 1,
 				health: healing_tiny,
 				hunger: calories_tiny,
@@ -2094,18 +2094,185 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			},
 			lightninggoathorn: {
 				name: 'Volt Goat Horn',
-				inedible: 1
+				inedible: 1,
+				mode: 'together'
 			},
 			nightmarefuel: {
 				name: 'Nightmare Fuel',
 				inedible: 1,
 				magic: 1,
+				mode: 'together'
 			},
 			boneshard: {
 				name: 'Bone Shards',
 				inedible: 1,
+				mode: 'together'
+			},
+			
+			//DST Hook, Line, and Inker
+			//This replaces the fish from ponds. Waiting on Issue #32 to be resolved
+			/*
+			pondfish: {
+				name: 'Freshwater Fish',
+				ismeat: true,
+				meat: 0.5,
+				fish: 0.5,
+				health: healing_tiny,
+				hunger: calories_small,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				rot: spoiled_fish,
+				drytime: dry_fast,
+				dry: 'morsel_dried'
+			},
+			*/
+			
+			// Names are the same as SW RIP. Commented out b/c issue #32. 
+			/*
+			fishmeat_small: {
+				name: 'Fish Morsel',
+				meat: 0.5,
+				fish: 0.5,
+				health: healing_tiny,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				cook: 'fishmeat_small_cooked',
+				dry: 'smallmeat_dried',
+				drytime: dry_fast,
+				mode: 'together'
+			},
+			fishmeat_small_cooked: {
+				name: 'Cooked Fish Morsel',
+				meat: 0.5,
+				fish: 0.5,
+				health: healing_tiny,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			*/
+			fishmeat: {
+				name: 'Fish Meat',
+				meat: 1,
+				fish: 1,
+				health: healing_tiny,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				cook: 'fishmeat_cooked',
+				dry: 'meat_dried',
+				drytime: dry_fast,
+				mode: 'together'
+			},
+			fishmeat_cooked: {
+				name: 'Cooked Fish Meat',
+				meat: 1,
+				fish: 1,
+				health: healing_med,
+				hunger: calories_med,
+				sanity: 0,
+				perish: perish_superfast,
+				stack: stack_size_smallitem,
+				mode: 'together'
+			},
+			
+			//All the small ocean fish 
+			oceanfish_small_1_inv: {
+				name: 'Runty Guppy',
+				meat: 0.5,
+				fish: 0.5,
+				//cook: fishmeat_small_cooked, Issue #32
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_small_2_inv: {
+				name: 'Needlenosed Squirt',
+				meat: 0.5,
+				fish: 0.5,
+				//cook: fishmeat_small_cooked, Issue #32
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_small_3_inv: {
+				name: 'Bitty Baitfish',
+				meat: 0.5,
+				fish: 0.5,
+				//cook: fishmeat_small_cooked, Issue #32
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_small_4_inv: {
+				name: 'Smolt Fry',
+				meat: 0.5,
+				fish: 0.5,
+				//cook: fishmeat_small_cooked, Issue #32
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_small_5_inv: {
+				name: 'Popperfish',
+				veggie: 1,
+				cook: 'corn_cooked',
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			
+			//All the medium sized fish
+			oceanfish_medium_1_inv: {
+				name: 'Mudfish',
+				meat: 1,
+				fish: 1,
+				cook: fishmeat_cooked,
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_medium_2_inv: {
+				name: 'Deep Bass',
+				meat: 1,
+				fish: 1,
+				cook: fishmeat_cooked,
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_medium_3_inv: {
+				name: 'Dandy Lionfish',
+				meat: 1,
+				fish: 1,
+				cook: fishmeat_cooked,
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_medium_4_inv: {
+				name: 'Black Catfish',
+				meat: 1,
+				fish: 1,
+				cook: fishmeat_cooked,
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
+			},
+			oceanfish_medium_5_inv: {
+				name: 'Corn Cod',
+				veggie: 1,
+				cook: 'corn_cooked',
+				rot: spoiled_fish,
+				perish: perish_one_day,
+				mode: 'together'
 			}
-
 		},
 		//note: qty not used yet, this is for rapid summation
 		COMPAREString = function () { return this.op + this.qty; },
@@ -2989,7 +3156,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				perish: perish_fastish,
 				sanity: sanity_med,
 				cooktime: 3.5,
-				note: 'Using 3 cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs makes it so that meat is not needed, intentional or not by Klei.',
+				note: 'Using 3 Cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs, makes it so that meat is not needed, intentional or not by Klei.',
 				mode: 'hamlet'
 			},
 			steamedhamsandwich: {

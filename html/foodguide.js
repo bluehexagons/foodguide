@@ -2230,7 +2230,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			
 			//All the medium sized fish
 			oceanfish_medium_1_inv: {
-				name: 'Mudfish',,
+				name: 'Mudfish',
 				meat: 1,
 				fish: 1,
 				cook: fishmeat_cooked,

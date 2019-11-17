@@ -77,7 +77,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		perish_slow = 15*total_day_time*perish_warp,
 		perish_preserved = 20*total_day_time*perish_warp,
 		perish_superslow = 40*total_day_time*perish_warp,
-		
+
 		dry_superfast = 0.25*total_day_time,
 		dry_veryfast = 0.5*total_day_time,
 		dry_fast = total_day_time,
@@ -1921,7 +1921,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			kelp_dried: {
 				name: 'Dried Kelp Fronds',
 				isveggie: true,
-				veggie: 0.5, 
+				veggie: 0.5,
 				dried: 1,
 				health: healing_tiny,
 				hunger: calories_tiny,
@@ -2108,7 +2108,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				inedible: 1,
 				mode: 'together'
 			},
-			
+
 			//DST Hook, Line, and Inker
 			//This replaces the fish from ponds. Waiting on Issue #32 to be resolved
 			/*
@@ -2122,13 +2122,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				sanity: 0,
 				perish: perish_superfast,
 				stack: stack_size_smallitem,
-				rot: spoiled_fish,
+				rot: 'spoiled_fish',
 				drytime: dry_fast,
 				dry: 'morsel_dried'
 			},
 			*/
-			
-			// Names are the same as SW RIP. Commented out b/c issue #32. 
+
+			// Names are the same as SW RIP. Commented out b/c issue #32.
 			/*
 			fishmeat_small: {
 				name: 'Fish Morsel',
@@ -2181,14 +2181,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				stack: stack_size_smallitem,
 				mode: 'together'
 			},
-			
-			//All the small ocean fish 
+
+			//All the small ocean fish
 			oceanfish_small_1_inv: {
 				name: 'Runty Guppy',
 				meat: 0.5,
 				fish: 0.5,
 				//cook: fishmeat_small_cooked, Issue #32
-				rot: spoiled_fish,
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2197,7 +2197,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				fish: 0.5,
 				//cook: fishmeat_small_cooked, Issue #32
-				rot: spoiled_fish,
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2206,7 +2206,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				fish: 0.5,
 				//cook: fishmeat_small_cooked, Issue #32
-				rot: spoiled_fish,
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2215,7 +2215,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				meat: 0.5,
 				fish: 0.5,
 				//cook: fishmeat_small_cooked, Issue #32
-				rot: spoiled_fish,
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2223,18 +2223,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Popperfish',
 				veggie: 1,
 				cook: 'corn_cooked',
-				rot: spoiled_fish,
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
-			
+
 			//All the medium sized fish
 			oceanfish_medium_1_inv: {
 				name: 'Mudfish',
 				meat: 1,
 				fish: 1,
-				cook: fishmeat_cooked,
-				rot: spoiled_fish,
+				cook: 'fishmeat_cooked',
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2242,8 +2242,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Deep Bass',
 				meat: 1,
 				fish: 1,
-				cook: fishmeat_cooked,
-				rot: spoiled_fish,
+				cook: 'fishmeat_cooked',
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2251,8 +2251,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Dandy Lionfish',
 				meat: 1,
 				fish: 1,
-				cook: fishmeat_cooked,
-				rot: spoiled_fish,
+				cook: 'fishmeat_cooked',
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2260,8 +2260,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Black Catfish',
 				meat: 1,
 				fish: 1,
-				cook: fishmeat_cooked,
-				rot: spoiled_fish,
+				cook: 'fishmeat_cooked',
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			},
@@ -2269,7 +2269,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 				name: 'Corn Cod',
 				veggie: 1,
 				cook: 'corn_cooked',
-				rot: spoiled_fish,
+				rot: 'spoiled_fish',
 				perish: perish_one_day,
 				mode: 'together'
 			}

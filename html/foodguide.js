@@ -20,9 +20,47 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+import {
+	total_day_time,
+	sanity_small,
+	perish_preserved,
+	perish_fridge_mult,
+	perish_ground_mult,
+	perish_winter_mult,
+	perish_summer_mult,
+	stale_food_hunger,
+	spoiled_food_hunger,
+	stale_food_health,
+	base_cook_time,
+	defaultStatMultipliers,
+	VANILLA,
+	GIANTS,
+	SHIPWRECKED,
+	HAMLET,
+	modes
+} from './constants.js';
+import {food} from './food.js';
+import {recipes} from './recipes.js';
+
 (function () {
 	'use strict';
-	var setMode = function (mask) {
+	var stats = ['hunger', 'health', 'sanity'],
+		isStat = {
+			hunger: true,
+			health: true,
+			sanity: true
+		},
+		isBestStat = {
+			bestHunger: true,
+			bestHealth: true,
+			bestSanity: true
+		},
+		statMultipliers = defaultStatMultipliers,
+
+		modeRefreshers = [],
+		modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET,
+
+		setMode = function (mask) {
 			statMultipliers = {};
 			for (i in defaultStatMultipliers) {
 				if (defaultStatMultipliers.hasOwnProperty(i)) {

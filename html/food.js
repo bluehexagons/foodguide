@@ -1647,6 +1647,8 @@ export const food = {
 		note: 'Cures poison',
 		mode: 'hamlet'
 	},
+	// This is only found in game data and is not available while playing
+	/*
 	whisperpod: {
 		name: 'Magic Water',
 		uncookable: true,
@@ -1656,6 +1658,40 @@ export const food = {
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
 		cook: 'seeds_cooked',
+		mode: 'hamlet'
+	},
+	*/
+	bramble_bulb: {
+		name: 'Bramble Bulb',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_preserved,
+		mode: 'hamlet'
+	},
+	froglegs_poison: {
+		name: 'Poison Dartfrog Legs',
+		uncookable: true,
+		health: -healing_small,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		cook: 'froglegs_poison_cooked',
+		note: 'Poisonous',
+		mode: 'hamlet'
+	},
+	froglegs_poison_cooked: {
+		name: 'Cooked Dartfrog Legs',
+		uncookable: true,
+		precook: 1,
+		health: -healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		note: 'Poisonous',
 		mode: 'hamlet'
 	},
 

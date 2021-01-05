@@ -90,7 +90,6 @@ export const calories_per_day = 75,
 	WARLY = 1 << 4,
 	HAMLET = 1 << 5,
 
-	modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET,
 
 	modes = {
 		vanilla: {

@@ -14,3 +14,4 @@ Contributors:
   [agathasilva28](https://github.com/agathasilva28)
   [6lancmange](https://github.com/6lancmange)
   [lakhnishMonster](https://github.com/lakhnishMonster)
+  [lormico](https://github.com/lormico)

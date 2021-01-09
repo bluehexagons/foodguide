@@ -1,5 +1,6 @@
 import {
 	healing_small,
+	healing_medsmall,
 	healing_med,
 	healing_medlarge,
 	healing_large,
@@ -1113,6 +1114,68 @@ export const recipes = {
 		temperatureduration: food_temp_brief,
 		cooktime: 1,
 		note: 'Restores 30 sanity over 1 minute',
+		mode: 'together'
+	},
+
+	// Leafy Meat recipes, won't work properly in simulator until issue #32 is solved
+	leafloaf: {
+		name: 'Leafy Meatloaf',
+		test: function (cooker, names, tags) {
+			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 );
+		},
+		requirements: [NAME('plantmeat', COMPARE('>=',2))],
+		priority: 25,
+		foodtype: 'meat',
+		health: healing_medsmall,
+		hunger: calories_large,
+		perish: perish_preserved,
+		sanity: sanity_tiny,
+		cooktime: 2,
+		mode: 'together'
+	},
+	leafymeatburger: {
+		name: 'Veggie Burger',
+		test: function (cooker, names, tags) {
+			return (names.plantmeat || names.plantmeat_cooked) && (names.onion || names.onion_cooked) && tags.veggie && tags.veggie >= 2;
+		},
+		requirements: [NAME('plantmeat'), NAME('onion'), TAG('veggie', COMPARE('>=', 2))],
+		priority: 25,
+		foodtype: 'meat',
+		health: healing_medlarge,
+		hunger: calories_large,
+		perish: perish_fast,
+		sanity: sanity_large,
+		cooktime: 2,
+		mode: 'together'
+	},
+	leafymeatsouffle: {
+		name: 'Jelly Salad',
+		test: function (cooker, names, tags) {
+			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 ) && tags.sweetener && tags.sweetener >= 2;
+		},
+		requirements: [NAME('plantmeat', COMPARE('>=', 2)), TAG('sweetener', COMPARE('>=',2))],
+		priority: 50,
+		foodtype: 'meat',
+		health: 0,
+		hunger: calories_large,
+		perish: perish_fast,
+		sanity: sanity_huge,
+		cooktime: 2,
+		mode: 'together'
+	},
+	meatysalad: {
+		name: 'Beefy Greens',
+		test: function (cooker, names, tags) {
+			return (names.plantmeat || names.plantmeat_cooked) && tags.veggie && tags.veggie >= 3;
+		},
+		requirements: [NAME('plantmeat'), TAG('veggie', COMPARE('>=', 3))],
+		priority: 25,
+		foodtype: 'meat',
+		health: healing_large,
+		hunger: calories_large * 2,
+		perish: perish_fast,
+		sanity: sanity_tiny,
+		cooktime: 2,
 		mode: 'together'
 	}
 };

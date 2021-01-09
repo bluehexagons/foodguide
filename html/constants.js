@@ -59,6 +59,7 @@ export const calories_per_day = 75,
 	food_temp_brief = 5,
 	food_temp_average = 10,
 	food_temp_long = 15,
+	buff_food_temp_duration = day_time,
 
 	spoiled_health = -1,
 	spoiled_hunger = -10,

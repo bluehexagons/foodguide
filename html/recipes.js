@@ -613,7 +613,7 @@ export const recipes = {
 		mode: 'shipwrecked'
 	},
 	lobsterbisque: {
-		name: 'Lobster Bisque',
+		name: 'Wobster Bisque',
 		test: function (cooker, names, tags) {
 			return names.lobster && tags.frozen;
 		},
@@ -628,7 +628,7 @@ export const recipes = {
 		mode: 'shipwrecked'
 	},
 	lobsterdinner: {
-		name: 'Lobster Dinner',
+		name: 'Wobster Dinner',
 		test: function (cooker, names, tags) {
 			return names.lobster && names.butter && !tags.meat && !tags.frozen;
 		},

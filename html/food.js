@@ -1149,7 +1149,6 @@ export const food = {
 		jellyfish: 1,
 		monster: 1,
 		perish: perish_one_day * 1.5,
-		stack: stack_size_smallitem,
 		mode: 'shipwrecked'
 	},
 	jellyfish_dead: {
@@ -1365,6 +1364,38 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		note: '-3 heat',
+		mode: 'shipwrecked'
+	},
+	rainbowjellyfish: {
+		name: 'Rainbow Jellyfish',
+		uncookable: true,
+		perish: perish_one_day * 1.5,
+		note: 'Makes the player glow in the dark for 2 minutes',
+		mode: 'shipwrecked'
+	},
+	rainbowjellyfish_dead: {
+		name: 'Dead Rainbow Jellyfish',
+		basename: 'Rainbow Jellyfish.',
+		uncookable: true,
+		health: healing_med / 2,
+		hunger: 10,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		cook: 'rainbowjellyfish_cooked',
+		dry: 'jellyfish_dried',
+		drytime: dry_fast,
+		note: 'Makes the player glow in the dark for 2 minutes',
+		mode: 'shipwrecked'
+	},
+	rainbowjellyfish_cooked: {
+		name: 'Cooked Rainbow Jellyfish',
+		uncookable: true,
+		health: healing_med / 2,
+		hunger: calories_medsmall,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_meditem,
 		mode: 'shipwrecked'
 	},
 

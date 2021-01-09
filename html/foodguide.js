@@ -57,14 +57,15 @@ import {recipes} from './recipes.js';
 		bestHealth: true,
 		bestSanity: true
 	};
-	const statMultipliers = defaultStatMultipliers;
-
 	const modeRefreshers = [];
+
+	let statMultipliers = defaultStatMultipliers;
+
 	let modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET;
 
 	const setMode = mask => {
 		statMultipliers = {};
-		for (let i in defaultStatMultipliers) {
+		for (const i in defaultStatMultipliers) {
 			if (defaultStatMultipliers.hasOwnProperty(i)) {
 				statMultipliers[i] = defaultStatMultipliers[i];
 			}
@@ -231,7 +232,7 @@ import {recipes} from './recipes.js';
 			const item = items[i];
 			if (item !== null) {
 				names[item.id] = 1 + (names[item.id] || 0);
-				for (let k in item) {
+				for (const k in item) {
 					if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
 						let val = item[k]
 						if (isStat[k]) {
@@ -264,7 +265,8 @@ import {recipes} from './recipes.js';
 					continue;
 				}
 				for (let ii = 0; ii < recipes[i].requirements.length; ii++) {
-					if (recipes[i].requirements[ii].test(null, names, tags)) {
+					const requirement = recipes[i].requirements[ii]
+					if (requirement.test(null, names, tags)) {
 						if (!recipes[i].requirements[ii].cancel) {
 							valid = true;
 						}
@@ -318,7 +320,7 @@ import {recipes} from './recipes.js';
 		const images = {};
 		const images32 = {};
 		const canvasSupported = !!ctx;
-		const requests = [];
+		let requests = [];
 		const cacheImage = url => {
 			const renderToCache = (url, imageElement) => {
 				ctx.clearRect(0, 0, 64, 64);
@@ -358,6 +360,7 @@ import {recipes} from './recipes.js';
 			requests.push({url: url, img: img, d: d});
 		};
 		const makeImage = (url, d) => {
+			const img = new Image(d)
 			if (canvasSupported) {
 				if (images[url]) {
 					//image is cached
@@ -446,23 +449,6 @@ import {recipes} from './recipes.js';
 
 	// TODO: process the rot: entries, and add the spoiled fish
 
-	if (!document.documentElement.dataset) {
-		noDataset = true;
-		Object.defineProperty(Element.prototype, 'dataset', {
-			get: () => {
-				if (!this.ds) {
-					this.ds = {};
-					Array.prototype.forEach.call(this.attributes, item => {
-						if (item.name.indexOf('data-') === 0) {
-							this.ds[item.name.substring(5)] = item.value;
-						}
-					}, this);
-				}
-				return this.ds;
-			}
-		});
-	}
-
 	document.getElementById('stalehealth').appendChild(document.createTextNode(Math.round(stale_food_health * 1000) / 10 + '%'));
 	document.getElementById('stalehunger').appendChild(document.createTextNode(Math.round(stale_food_hunger * 1000) / 10 + '%'));
 	document.getElementById('spoiledhunger').appendChild(document.createTextNode(Math.round(spoiled_food_hunger * 1000) / 10 + '%'));
@@ -531,9 +517,10 @@ import {recipes} from './recipes.js';
 		}
 
 		for (let i = 0; i < stats.length; i++) {
-			const stat = stats[i];
-			const bestStat = f[stat] || 0;
-			const bestStatType = f.preparationType;
+			let stat = stats[i];
+			let bestStat = f[stat] || 0;
+			let bestStatType = f.preparationType;
+
 			if (f.raw) {
 				bestStat = Math.max(f.raw[stat] || 0, bestStat)
 				if (bestStat === f.raw[stat]) {
@@ -641,7 +628,7 @@ import {recipes} from './recipes.js';
 	recipes.filter = Array.prototype.filter;
 	recipes.sort = Array.prototype.sort;
 
-	recipes.byName = name => {
+	recipes.byName = function (name) {
 		let i = this.length;
 		while (i--) {
 			if (this[i].lowerName === name) {
@@ -656,7 +643,7 @@ import {recipes} from './recipes.js';
 		return n === 1 ? str : str + (plr || 's');
 	};
 
-	for (i = 0; i < food.length; i++) {
+	for (let i = 0; i < food.length; i++) {
 		const f = food[i];
 		info = f.info;
 		f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
@@ -719,7 +706,7 @@ import {recipes} from './recipes.js';
 	food.forEach = Array.prototype.forEach;
 	food.filter = Array.prototype.filter;
 	food.sort = Array.prototype.sort;
-	food.byName = name => {
+	food.byName = function (name) {
 		let i = this.length;
 		while (i--) {
 			if (this[i].lowerName === name) {
@@ -790,21 +777,30 @@ import {recipes} from './recipes.js';
 	const getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
 		const l = recipeCrunchData.test.length;
 		const built = [];
+		const desiredTime = 38;
 		let renderedTo = 0;
 		let lastTime;
-		const block = 60;
-		const desiredTime = 38;
+		let block = 60;
 		const foodFromIndex = index => {
 			return items[index];
 		};
 		const callback = combination => {
-			const ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
+			const ingredients = combination.map(foodFromIndex);
+			const names = {};
+			const tags = {};
+			const rcdTest = recipeCrunchData.test;
+			const rcdRecipes = recipeCrunchData.recipes;
+
+			let priority = null;
+			let created = null;
+			let multiple = false;
+
 			setIngredientValues(ingredients, names, tags);
 			// console.log('callback: ' + tags.bestHungerType);
 			tags.hunger = tags.bestHunger;// * statMultipliers[tags.bestHungerType];
 			tags.health = tags.bestHealth;// * statMultipliers[tags.bestHealthType];
 			tags.sanity = tags.bestSanity;// * statMultipliers[tags.bestSanityType];
-			for (i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
+			for (let i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
 				if (rcdTest[i](null, names, tags)) {
 					if (created !== null) {
 						multiple = true;
@@ -908,12 +904,12 @@ import {recipes} from './recipes.js';
 				makeImage.queue(img, img.dataset.pending, 32);
 			}
 		};
-	const cells = cellType => {
+	const cells = (cellType, ...args) => {
 		const tr = document.createElement('tr');
 
-		for (let i = 1; i < arguments.length; i++) {
+		for (let i = 0; i < args.length; i++) {
 			const td = document.createElement(cellType);
-			const cell = arguments[i];
+			const cell = args[i];
 			const celltext = cell && cell.indexOf ? cell : cell.toString();
 			let image;
 			if (cell instanceof DocumentFragment) {
@@ -966,12 +962,10 @@ import {recipes} from './recipes.js';
 			}
 		};
 		const create = (e, sort, scrollHighlight) => {
-			let oldTable;
-			let sortBy;
 			let summary;
 
 			if (sort || (e && e.target.dataset.sort !== '') || sorting) {
-				sortBy = sort || (e && e.target.dataset.sort) || sorting;
+				const sortBy = sort || (e && e.target.dataset.sort) || sorting;
 				if (hasSummary) {
 					summary = dataset.shift();
 				}
@@ -1063,7 +1057,7 @@ import {recipes} from './recipes.js';
 		};
 		table.setMaxRows = max => {
 			maxRows = max;
-			this.update();
+			table.update();
 		};
 		return table;
 	};
@@ -1222,7 +1216,7 @@ import {recipes} from './recipes.js';
 			const checkExcludes = item => {
 				return excludesIngredients.indexOf(item.id) !== -1;
 			};
-			const checkIngredient = item => {
+			const checkIngredient = function (item) {
 				return this.indexOf(food[item]) !== -1;
 				//return usesIngredients.indexOf(item.id) !== -1;
 			};
@@ -1494,16 +1488,16 @@ import {recipes} from './recipes.js';
 			const searchSelector = document.createElement('span');
 			let searchSelectorControls;
 			const dropdown = document.createElement('div');
-			const ul = document.createElement('ul');
+			let ul = document.createElement('ul');
 			const picker = pickers[i];
 			const index = i;
 			let state;
 			const from = picker.dataset.type === 'recipes' ? recipes : food;
 			const allowUncookable = !picker.dataset.cookable;
 			const parent = picker.nextSibling;
-			const slots = parent.getElementsByClassName('ingredient');
+			let slots = parent.getElementsByClassName('ingredient');
 			let limited;
-			const ingredients = [];
+			let ingredients = [];
 			let updateRecipes;
 			const suggestions = [];
 			const inventoryrecipes = [];
@@ -1589,7 +1583,7 @@ import {recipes} from './recipes.js';
 					//refreshLocation();
 				}
 			};
-			const liIntoPicker = item => {
+			const liIntoPicker = function (item) {
 				const img = makeImage(item.img, 32);
 				const li = document.createElement('span');
 				li.classList.add('item');
@@ -1688,7 +1682,7 @@ import {recipes} from './recipes.js';
 					const health = cooking[0].health;
 					const hunger = cooking[0].hunger;
 					const sanity = cooking[0].sanity;
-					const table = makeSortableTable(
+					let table = makeSortableTable(
 						{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
 						cooking,
 						item => {

@@ -11,6 +11,7 @@ import {
 	healing_large,
 	healing_huge,
 	healing_superhuge,
+	sanity_supertiny,
 	sanity_tiny,
 	sanity_small,
 	sanity_med,
@@ -1149,7 +1150,6 @@ export const food = {
 		jellyfish: 1,
 		monster: 1,
 		perish: perish_one_day * 1.5,
-		stack: stack_size_smallitem,
 		mode: 'shipwrecked'
 	},
 	jellyfish_dead: {
@@ -1365,6 +1365,38 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		note: '-3 heat',
+		mode: 'shipwrecked'
+	},
+	rainbowjellyfish: {
+		name: 'Rainbow Jellyfish',
+		uncookable: true,
+		perish: perish_one_day * 1.5,
+		note: 'Makes the player glow in the dark for 2 minutes',
+		mode: 'shipwrecked'
+	},
+	rainbowjellyfish_dead: {
+		name: 'Dead Rainbow Jellyfish',
+		basename: 'Rainbow Jellyfish.',
+		uncookable: true,
+		health: healing_med / 2,
+		hunger: 10,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		cook: 'rainbowjellyfish_cooked',
+		dry: 'jellyfish_dried',
+		drytime: dry_fast,
+		note: 'Makes the player glow in the dark for 2 minutes',
+		mode: 'shipwrecked'
+	},
+	rainbowjellyfish_cooked: {
+		name: 'Cooked Rainbow Jellyfish',
+		uncookable: true,
+		health: healing_med / 2,
+		hunger: calories_medsmall,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_meditem,
 		mode: 'shipwrecked'
 	},
 
@@ -1647,6 +1679,8 @@ export const food = {
 		note: 'Cures poison',
 		mode: 'hamlet'
 	},
+	// This is only found in game data and is not available while playing
+	/*
 	whisperpod: {
 		name: 'Magic Water',
 		uncookable: true,
@@ -1658,17 +1692,51 @@ export const food = {
 		cook: 'seeds_cooked',
 		mode: 'hamlet'
 	},
+	*/
+	bramble_bulb: {
+		name: 'Bramble Bulb',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_preserved,
+		mode: 'hamlet'
+	},
+	froglegs_poison: {
+		name: 'Poison Dartfrog Legs',
+		uncookable: true,
+		health: -healing_small,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		cook: 'froglegs_poison_cooked',
+		note: 'Poisonous',
+		mode: 'hamlet'
+	},
+	froglegs_poison_cooked: {
+		name: 'Cooked Dartfrog Legs',
+		uncookable: true,
+		precook: 1,
+		health: -healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		note: 'Poisonous',
+		mode: 'hamlet'
+	},
 
 	//DST Ingredients
 	wormlight_lesser: {
-		name: 'Lesser Glowberry',
+		name: 'Lesser Glow Berry',
 		//uncookable = true, <- Not anymore
 		isfruit: true,
 		fruit: 0.5,
 		health: healing_small,
 		hunger: calories_small,
 		sanity: -sanity_small,
-		perish: perish_superfast,
+		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Gives 22.5 seconds of light',
 		mode: 'together'
@@ -1713,6 +1781,17 @@ export const food = {
 		hunger: calories_small,
 		sanity: sanity_med,
 		perish: perish_med,
+		mode: 'together'
+	},
+	succulent_picked: {
+		name: 'Succulent',
+		uncookable: true,
+		isveggie: true,
+		health: healing_tiny,
+		hunger: 0,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
 		mode: 'together'
 	},
 
@@ -2095,6 +2174,68 @@ export const food = {
 		cook: 'corn_cooked',
 		rot: 'spoiled_fish',
 		perish: perish_one_day,
+		mode: 'together'
+	},
+
+	// DST Return of Them: Troubled Waters food
+	barnacle: {
+		name: 'Barnacles',
+		meat: 0.25,
+		fish: 0.25,
+		health: 0,
+		hunger: calories_small,
+		sanity: -sanity_tiny,
+		cook: 'barnacle_cooked',
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	barnacle_cooked: {
+		name: 'Cooked Barnacles',
+		meat: 0.25,
+		fish: 0.25,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_slow,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+
+	// DST Return of Them: Forgotten Knowledge food
+	moon_mushroom: {
+		name: 'Moon Shroom',
+		basename: 'CapMoon',
+		veggie: 0.5,
+		health: 0,
+		hunger: calories_small,
+		sanity: sanity_small,
+		cook: 'moon_mushroom_cooked',
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		note: 'Puts the player to sleep',
+		mode: 'together'
+	},
+	moon_mushroom_cooked: {
+		name: 'Cooked Moon Shroom',
+		veggie: 0.5,
+		health: 0,
+		hunger: -calories_small,
+		sanity: -sanity_small,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		note: 'Removes grogginess effect',
+		mode: 'together'
+	},
+
+	// DST Return of Them: Reap What You Sow food
+	forgetmelots: {
+		name: 'Forget-Me-Lots',
+		decoration: 1,
+		health: 0,
+		hunger: 0,
+		sanity: sanity_supertiny,
+		stack: stack_size_smallitem,
 		mode: 'together'
 	}
 };

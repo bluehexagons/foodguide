@@ -47,7 +47,7 @@ import {
 export const recipes = {
 	butterflymuffin: {
 		name: 'Butter Muffin',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			//return (names.butterflywings || names.moonbutterflywings) && !tags.meat && tags.veggie; <- For when issue #32 is sorted out
 			return names.butterflywings && !tags.meat && tags.veggie;
 		},
@@ -64,7 +64,7 @@ export const recipes = {
 	},
 	frogglebunwich: {
 		name: 'Froggle Bunwich',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.froglegs || names.froglegs_cooked) && tags.veggie;
 		},
 		requirements: [NAME('froglegs'), TAG('veggie')],
@@ -78,7 +78,7 @@ export const recipes = {
 	},
 	taffy: {
 		name: 'Taffy',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.sweetener && tags.sweetener >= 3 && !tags.meat;
 		},
 		requirements: [TAG('sweetener', COMPARE('>=', 3)), NOT(TAG('meat'))],
@@ -93,7 +93,7 @@ export const recipes = {
 	},
 	pumpkincookie: {
 		name: 'Pumpkin Cookie',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.pumpkin || names.pumpkin_cooked) && tags.sweetener && tags.sweetener >= 2;
 		},
 		requirements: [NAME('pumpkin'), TAG('sweetener', COMPARE('>=', 2))],
@@ -108,7 +108,7 @@ export const recipes = {
 	},
 	stuffedeggplant: {
 		name: 'Stuffed Eggplant',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.eggplant || names.eggplant_cooked) && tags.veggie && tags.veggie > 1;
 		},
 		requirements: [NAME('eggplant'), TAG('veggie', COMPARE('>', 1))],
@@ -124,7 +124,7 @@ export const recipes = {
 	},
 	fishsticks: {
 		name: 'Fishsticks',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.fish && names.twigs && (tags.inedible && tags.inedible <= 1);
 		},
 		requirements: [TAG('fish'), SPECIFIC('twigs'), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
@@ -138,7 +138,7 @@ export const recipes = {
 	},
 	honeynuggets: {
 		name: 'Honey Nuggets',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.honey && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 		},
 		requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
@@ -153,7 +153,7 @@ export const recipes = {
 	},
 	honeyham: {
 		name: 'Honey Ham',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.honey && tags.meat && tags.meat > 1.5 && !tags.inedible;
 		},
 		requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
@@ -170,7 +170,7 @@ export const recipes = {
 	},
 	dragonpie: {
 		name: 'Dragonpie',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.dragonfruit || names.dragonfruit_cooked) && !tags.meat;
 		},
 		requirements: [NAME('dragonfruit'), NOT(TAG('meat'))],
@@ -186,7 +186,7 @@ export const recipes = {
 	},
 	kabobs: {
 		name: 'Kabobs',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.meat && names.twigs && (!tags.monster || tags.monster <= 1) && (tags.inedible && tags.inedible <= 1);
 		},
 		requirements: [TAG('meat'), SPECIFIC('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
@@ -200,7 +200,7 @@ export const recipes = {
 	},
 	mandrakesoup: {
 		name: 'Mandrake Soup',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.mandrake;
 		},
 		requirements: [SPECIFIC('mandrake')],
@@ -214,7 +214,7 @@ export const recipes = {
 	},
 	baconeggs: {
 		name: 'Bacon and Eggs',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
 		},
 		requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
@@ -228,7 +228,7 @@ export const recipes = {
 	},
 	meatballs: {
 		name: 'Meatballs',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.meat && !tags.inedible;
 		},
 		requirements: [TAG('meat'), NOT(TAG('inedible'))],
@@ -242,7 +242,7 @@ export const recipes = {
 	},
 	bonestew: {
 		name: 'Meaty Stew',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.meat && tags.meat >= 3 && !tags.inedible;
 		},
 		requirements: [TAG('meat', COMPARE('>=', 3)), NOT(TAG('inedible'))],
@@ -258,7 +258,7 @@ export const recipes = {
 	},
 	perogies: {
 		name: 'Pierogi',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.egg && tags.meat && tags.veggie && !tags.inedible;
 		},
 		requirements: [TAG('egg'), TAG('meat'), TAG('veggie'), NOT(TAG('inedible'))],
@@ -272,7 +272,7 @@ export const recipes = {
 	},
 	turkeydinner: {
 		name: 'Turkey Dinner',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.drumstick && names.drumstick > 1 && tags.meat && tags.meat > 1 && (tags.veggie || tags.fruit);
 		},
 		requirements: [SPECIFIC('drumstick', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), OR(TAG('veggie'), TAG('fruit'))],
@@ -288,7 +288,7 @@ export const recipes = {
 	},
 	ratatouille: {
 		name: 'Ratatouille',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return !tags.meat && tags.veggie && !tags.inedible;
 		},
 		requirements: [NOT(TAG('meat')), TAG('veggie'), NOT(TAG('inedible'))],
@@ -302,7 +302,7 @@ export const recipes = {
 	},
 	jammypreserves: {
 		name: 'Fist Full of Jam',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.fruit && !tags.meat && !tags.veggie && !tags.inedible;
 		},
 		requirements: [TAG('fruit'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible'))],
@@ -316,7 +316,7 @@ export const recipes = {
 	},
 	fruitmedley: {
 		name: 'Fruit Medley',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.fruit && tags.fruit >= 3 && !tags.meat && !tags.veggie;
 		},
 		requirements: [TAG('fruit', COMPARE('>=', 3)), NOT(TAG('meat')), NOT(TAG('veggie'))],
@@ -332,7 +332,7 @@ export const recipes = {
 	},
 	fishtacos: {
 		name: 'Fish Tacos',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.fish && (names.corn || names.corn_cooked);
 		},
 		requirements: [TAG('fish'), NAME('corn')],
@@ -347,7 +347,7 @@ export const recipes = {
 	},
 	waffles: {
 		name: 'Waffles',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			//return names.butter && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.egg; <- For when issue #32 is sorted out
 			return names.butter && (names.berries || names.berries_cooked) && tags.egg;
 		},
@@ -362,7 +362,7 @@ export const recipes = {
 	},
 	monsterlasagna: {
 		name: 'Monster Lasagna',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.monster && tags.monster >= 2 && !tags.inedible;
 		},
 		requirements: [TAG('monster', COMPARE('>=', 2)), NOT(TAG('inedible'))],
@@ -376,7 +376,7 @@ export const recipes = {
 	},
 	powcake: {
 		name: 'Powdercake',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.twigs && names.honey && (names.corn || names.corn_cooked);
 		},
 		requirements: [SPECIFIC('twigs'), SPECIFIC('honey'), NAME('corn')],
@@ -391,7 +391,7 @@ export const recipes = {
 	},
 	unagi: {
 		name: 'Unagi',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.cutlichen && (names.eel || names.eel_cooked);
 		},
 		requirements: [SPECIFIC('cutlichen'), NAME('eel')],
@@ -405,7 +405,7 @@ export const recipes = {
 	},
 	wetgoop: {
 		name: 'Wet Goop',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return true;
 		},
 		requirements: [],
@@ -421,7 +421,7 @@ export const recipes = {
 	// Giants recipes
 	flowersalad: {
 		name: 'Flower Salad',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.cactusflower && tags.veggie && tags.veggie >= 2 && !tags.meat && !tags.inedible && !tags.egg && !tags.sweetener && !tags.fruit;
 		},
 		requirements: [SPECIFIC('cactusflower'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg')), NOT(TAG('sweetener')), NOT(TAG('fruit'))],
@@ -436,7 +436,7 @@ export const recipes = {
 	},
 	icecream: {
 		name: 'Ice Cream',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.frozen && tags.dairy && tags.sweetener && !tags.meat && !tags.veggie && !tags.inedible && !tags.egg;
 		},
 		requirements: [TAG('frozen'), TAG('dairy'), TAG('sweetener'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible')), NOT(TAG('egg'))],
@@ -453,7 +453,7 @@ export const recipes = {
 	},
 	watermelonicle: {
 		name: 'Melonsicle',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.watermelon && tags.frozen && names.twigs && !tags.meat && !tags.veggie && !tags.egg;
 		},
 		requirements: [SPECIFIC('watermelon'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg'))],
@@ -470,7 +470,7 @@ export const recipes = {
 	},
 	trailmix: {
 		name: 'Trail Mix',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			//return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy; <- For when issue #32 is sorted out
 			return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
 		},
@@ -486,7 +486,7 @@ export const recipes = {
 	},
 	hotchili: {
 		name: 'Spicy Chili',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.meat && tags.veggie && tags.meat >= 1.5 && tags.veggie >= 1.5;
 		},
 		requirements: [TAG('meat', COMPARE('>=', 1.5)), TAG('veggie', COMPARE('>=', 1.5))],
@@ -503,7 +503,7 @@ export const recipes = {
 	},
 	guacamole: {
 		name: 'Guacamole',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			//return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit; <- For when issue #32 is sorted out
 			return names.mole && names.cactusmeat && !tags.fruit;
 		},
@@ -521,7 +521,7 @@ export const recipes = {
 	//Shipwrecked recipes
 	californiaroll: {
 		name: 'California Roll',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.seaweed && names.seaweed === 2 && tags.fish && tags.fish >= 1;
 		},
 		requirements: [SPECIFIC('seaweed', COMPARE('=', 2)), TAG('fish', COMPARE('>=', 1))],
@@ -536,7 +536,7 @@ export const recipes = {
 	},
 	seafoodgumbo: {
 		name: 'Seafood Gumbo',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.fish && tags.fish > 2;
 		},
 		requirements: [TAG('fish', COMPARE('>', 2))],
@@ -551,7 +551,7 @@ export const recipes = {
 	},
 	bisque: {
 		name: 'Bisque',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.limpets && names.limpets === 3 && tags.frozen;
 		},
 		requirements: [SPECIFIC('limpets', COMPARE('=', 3)), TAG('frozen')],
@@ -566,7 +566,7 @@ export const recipes = {
 	},
 	ceviche: {
 		name: 'Ceviche',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.fish && tags.fish >= 2 && tags.frozen;
 		},
 		requirements: [TAG('fish', COMPARE('>=', 2)), TAG('frozen')],
@@ -583,7 +583,7 @@ export const recipes = {
 	},
 	jellyopop: {
 		name: 'Jelly-O Pop',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.jellyfish && tags.frozen && tags.inedible;
 		},
 		requirements: [TAG('jellyfish'), TAG('frozen'), TAG('inedible')],
@@ -600,7 +600,7 @@ export const recipes = {
 	},
 	bananapop: {
 		name: 'Banana Pop',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.cavebanana && tags.frozen && tags.inedible && !tags.meat && !tags.fish;
 		},
 		requirements: [SPECIFIC('cavebanana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
@@ -617,7 +617,7 @@ export const recipes = {
 	},
 	lobsterbisque: {
 		name: 'Wobster Bisque',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.lobster && tags.frozen;
 		},
 		requirements: [SPECIFIC('lobster'), TAG('frozen')],
@@ -632,7 +632,7 @@ export const recipes = {
 	},
 	lobsterdinner: {
 		name: 'Wobster Dinner',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.lobster && names.butter && !tags.meat && !tags.frozen;
 		},
 		requirements: [SPECIFIC('lobster'), SPECIFIC('butter'), NOT(TAG('meat')), NOT(TAG('frozen'))],
@@ -647,7 +647,7 @@ export const recipes = {
 	},
 	sharkfinsoup: {
 		name: 'Shark Fin Soup',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.shark_fin;
 		},
 		requirements: [SPECIFIC('shark_fin')],
@@ -663,7 +663,7 @@ export const recipes = {
 	},
 	surfnturf: {
 		name: 'Surf \'n\' Turf',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.meat && tags.meat >= 2.5 && tags.fish && tags.fish >= 1.5 && !tags.frozen;
 		},
 		requirements: [TAG('meat', COMPARE('>=', 2.5)), TAG('fish', COMPARE('>=', 1.5)), NOT(TAG('frozen'))],
@@ -678,7 +678,7 @@ export const recipes = {
 	},
 	coffee: {
 		name: 'Coffee',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.coffeebeans_cooked && (names.coffeebeans_cooked === 4 || (names.coffeebeans_cooked === 3 && (tags.dairy || tags.sweetener)));
 		},
 		requirements: [OR(SPECIFIC('coffeebeans_cooked', COMPARE('=', 4)), (AND(SPECIFIC('coffeebeans_cooked', COMPARE('=', 3)), OR(TAG('dairy'), TAG('sweetener')))))],
@@ -694,7 +694,7 @@ export const recipes = {
 	},
 	tropicalbouillabaisse: {
 		name: 'Tropical Bouillabaisse',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.fish3 || names.fish3_cooked) && (names.fish4 || names.fish4_cooked) && (names.fish5 || names.fish5_cooked) && tags.veggie;
 		},
 		requirements: [NAME('fish3'), NAME('fish4'), NAME('fish5'), TAG('veggie')],
@@ -710,7 +710,7 @@ export const recipes = {
 	},
 	caviar: {
 		name: 'Caviar',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.roe || names.roe_cooked === 3) && tags.veggie;
 		},
 		requirements: [OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3))), TAG('veggie')],
@@ -727,7 +727,7 @@ export const recipes = {
 	//Warly recipes
 	sweetpotatosouffle: {
 		name: 'Sweet Potato Souffle',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.sweet_potato && names.sweet_potato === 2 && tags.egg && tags.egg >= 2;
 		},
 		requirements: [SPECIFIC('sweet_potato', COMPARE('=', 2)), TAG('egg', COMPARE('>=', 2))],
@@ -742,7 +742,7 @@ export const recipes = {
 	},
 	monstertartare: {
 		name: 'Monster Tartare',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.monster && tags.monster >= 2 && tags.egg && tags.veggie;
 		},
 		requirements: [TAG('monster', COMPARE('>=', 2)), TAG('egg'), TAG('veggie')],
@@ -757,7 +757,7 @@ export const recipes = {
 	},
 	freshfruitcrepes: {
 		name: 'Fresh Fruit Crepes',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.fruit && tags.fruit >= 1.5 && names.butter && names.honey;
 		},
 		requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter'), SPECIFIC('honey')],
@@ -772,7 +772,7 @@ export const recipes = {
 	},
 	musselbouillabaise: {
 		name: 'Mussel Bouillabaise',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.mussel && names.mussel === 2 && tags.veggie && tags.veggie >= 2;
 		},
 		requirements: [SPECIFIC('mussel', COMPARE('=', 2)), TAG('veggie', COMPARE('>=', 2))],
@@ -789,7 +789,7 @@ export const recipes = {
 	//Hamlet recipes
 	nettlelosange: {
 		name: 'Nettle Rolls',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.antihistamine && tags.antihistamine >= 3;
 		},
 		requirements: [TAG('antihistamine', COMPARE('>=', 3))],
@@ -805,7 +805,7 @@ export const recipes = {
 	},
 	snakebonesoup: {
 		name: 'Snake Bone Soup',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.bone && tags.bone >= 2 && tags.meat && tags.meat >= 2;
 		},
 		requirements: [TAG('bone', COMPARE('>=', 2)), TAG('meat', COMPARE('>=', 2))],
@@ -820,7 +820,7 @@ export const recipes = {
 	},
 	tea: {
 		name: 'Tea',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.filter && tags.filter >= 2 && tags.sweetener && !tags.meat && !tags.veggie && !tags.inedible;
 		},
 		requirements: [TAG('filter', COMPARE('>=', 2)), TAG('sweetener'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible'))],
@@ -838,7 +838,7 @@ export const recipes = {
 	},
 	icedtea: {
 		name: 'Iced Tea',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.filter && tags.filter >= 2 && tags.sweetener && tags.frozen;
 		},
 		requirements: [TAG('filter', COMPARE('>=', 2)), TAG('sweetener'), TAG('frozen')],
@@ -855,7 +855,7 @@ export const recipes = {
 	},
 	asparagussoup: {
 		name: 'Asparagus Soup',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.asparagus || names.asparagus_cooked) && tags.veggie && tags.veggie > 1;
 		},
 		requirements: [NAME('asparagus'), TAG('veggie', COMPARE('>', 1))],
@@ -870,7 +870,7 @@ export const recipes = {
 	},
 	spicyvegstinger: {
 		name: 'Spicy Vegetable Stinger',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.asparagus || names.asparagus_cooked || names.radish || names.radish_cooked)
 				&& tags.veggie && tags.veggie > 2 && tags.frozen && !tags.meat;
 		},
@@ -886,7 +886,7 @@ export const recipes = {
 	},
 	feijoada: {
 		name: 'Feijoada',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return tags.meat && names.jellybug === 3 || names.jellybug_cooked === 3 || (names.jellybug && names.jellybug_cooked && names.jellybug + names.jellybug_cooked === 3);
 		},
 		requirements: [TAG('meat'), NAME('jellybug', COMPARE('=', 3))],
@@ -902,7 +902,7 @@ export const recipes = {
 	},
 	steamedhamsandwich: {
 		name: 'Steamed Ham Sandwich',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.meat || names.meat_cooked) && (tags.veggie && tags.veggie >= 2) && names.foliage;
 		},
 		requirements: [NAME('meat'), TAG('veggie', COMPARE('>=', 2)), SPECIFIC('foliage')],
@@ -917,7 +917,7 @@ export const recipes = {
 	},
 	hardshell_tacos: {
 		name: 'Hard Shell Tacos',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.weevole_carapace == 2 && tags.veggie;
 		},
 		requirements: [SPECIFIC('weevole_carapace', COMPARE('=', 2)), TAG('veggie')],
@@ -932,7 +932,7 @@ export const recipes = {
 	},
 	gummy_cake: {
 		name: 'Gummy Cake',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.slugbug || names.slugbug_cooked) && tags.sweetener;
 		},
 		requirements: [NAME('slugbug'), TAG('sweetener')],
@@ -949,7 +949,7 @@ export const recipes = {
 	//Together recipes
 	jellybean: {
 		name: 'Jellybeans',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.royal_jelly && !tags.inedible && !tags.monster;
 		},
 		requirements: [SPECIFIC('royal_jelly'), NOT(TAG('inedible')), NOT(TAG('monster'))],
@@ -964,7 +964,7 @@ export const recipes = {
 	},
 	pepperpopper: {
 		name: 'Stuffed Pepper Poppers',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 		},
 		requirements: [NAME('pepper'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
@@ -982,7 +982,7 @@ export const recipes = {
 	},
 	mashedpotatoes: {
 		name: 'Creamy Potato Purée',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return ((names.potato && names.potato > 1) || (names.potato_cooked && names.potato_cooked > 1) || (names.potato && names.potato_cooked)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
 		},
 		requirements: [NAME('potato', COMPARE('>', 1)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
@@ -997,7 +997,7 @@ export const recipes = {
 	},
 	salsa: {
 		name: 'Salsa Fresca',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.tomato || names.tomato_cooked) && (names.onion || names.onion_cooked) && !tags.meat && !tags.egg && !tags.inedible;
 		},
 		requirements: [NAME('tomato'), NAME('onion'), NOT(TAG('meat')), NOT(TAG('egg')), NOT(TAG('inedible'))],
@@ -1012,7 +1012,7 @@ export const recipes = {
 	},
 	potatotornado: {
 		name: 'Fancy Spiralled Tubers',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
 		},
 		requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=', 2))],
@@ -1027,7 +1027,7 @@ export const recipes = {
 	},
 	barnaclepita: {
 		name: 'Barnacle Pita',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.barnacle || names.barnacle_cooked) && tags.veggie && tags.veggie >= 0.5;
 		},
 		requirements: [NAME('barnacle'), TAG('veggie', COMPARE('>=', 0.5))],
@@ -1042,7 +1042,7 @@ export const recipes = {
 	},
 	barnaclesushi: {
 		name: 'Barnacle Nigiri',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.barnacle || names.barnacle_cooked) && (names.kelp || names.kelp_cooked) && tags.egg && tags.egg >= 1;
 		},
 		requirements: [NAME('barnacle'), NAME('kelp'), TAG('egg', COMPARE('>=', 1))],
@@ -1087,7 +1087,7 @@ export const recipes = {
 	},
 	shroomcake: {
 		name: 'Mushy Cake',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.moon_mushroom && names.red_mushroom && names.blue_mushroom && names.green_mushroom;
 		},
 		requirements: [SPECIFIC('moon_mushroom'), SPECIFIC('red_mushroom'), SPECIFIC('blue_mushroom'), SPECIFIC('green_mushroom')],
@@ -1102,7 +1102,7 @@ export const recipes = {
 	},
 	sweettea: {
 		name: 'Soothing Tea',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.forgetmelots && tags.sweetener && tags.frozen && !tags.monster && !tags.veggie && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.inedible;
 		},
 		requirements: [NAME('forgetmelots'), TAG('sweetener'), TAG('frozen'), NOT(TAG('monster')), NOT(TAG('veggie')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('inedible'))],
@@ -1122,7 +1122,7 @@ export const recipes = {
 	// Leafy Meat recipes, won't work properly in simulator until issue #32 is solved
 	leafloaf: {
 		name: 'Leafy Meatloaf',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 );
 		},
 		requirements: [NAME('plantmeat', COMPARE('>=',2))],
@@ -1137,7 +1137,7 @@ export const recipes = {
 	},
 	leafymeatburger: {
 		name: 'Veggie Burger',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.plantmeat || names.plantmeat_cooked) && (names.onion || names.onion_cooked) && tags.veggie && tags.veggie >= 2;
 		},
 		requirements: [NAME('plantmeat'), NAME('onion'), TAG('veggie', COMPARE('>=', 2))],
@@ -1152,7 +1152,7 @@ export const recipes = {
 	},
 	leafymeatsouffle: {
 		name: 'Jelly Salad',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 ) && tags.sweetener && tags.sweetener >= 2;
 		},
 		requirements: [NAME('plantmeat', COMPARE('>=', 2)), TAG('sweetener', COMPARE('>=',2))],
@@ -1167,7 +1167,7 @@ export const recipes = {
 	},
 	meatysalad: {
 		name: 'Beefy Greens',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return (names.plantmeat || names.plantmeat_cooked) && tags.veggie && tags.veggie >= 3;
 		},
 		requirements: [NAME('plantmeat'), TAG('veggie', COMPARE('>=', 3))],
@@ -1185,7 +1185,7 @@ export const recipes = {
 	/*
 	gazpacho: {
 		name: 'Asparagazpacho',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.asparagus && names.asparagus === 2 && names.ice && names.ice === 2;
 		},
 		requirements: [SPECIFIC('asparagus', COMPARE('=', 2)), SPECIFIC('ice', COMPARE('=', 2))],
@@ -1202,7 +1202,7 @@ export const recipes = {
 	},
 	bonesoup: {
 		name: 'Bone Bouillon',
-		test: function (cooker, names, tags) {
+		test: (cooker, names, tags) => {
 			return names.boneshard && names.boneshard === 2 && (names.onion || names.onion_cooked) && (tags.inedible && tags.inedible < 3);
 		},
 		requirements: [NAME('boneshard', COMPARE('=', 2)), NAME('onion'), TAG('inedible'), TAG('inedible', COMPARE('<', 3))],

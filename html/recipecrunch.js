@@ -1,19 +1,19 @@
-(function () {
+(() => {
 	'use strict';
 	var tests,
 		food,
 		priority,
-		compileTest = function (testString) {
+		compileTest = testString => {
 			if (testString[0] === '(') {
 				//if it's alredy wrapped, don't re-wrap it
 				return eval(testString);
 			}
 			return eval('(' + testString + ')');
 		},
-		isFunction = function (test) {
+		isFunction = test => {
 			return test instanceof Function;
 		},
-		receiveTests = function (e) {
+		receiveTests = e => {
 			tests = e.data.tests.map(compileTest); //.filter(isFunction);
 			food = e.data.food;
 			priority = e.data.priority;
@@ -24,7 +24,7 @@
 			//}
 			self.onmessage = receiveData;
 		},
-		receiveData = function (e) {
+		receiveData = e => {
 			var data = e.data,
 				item,
 				di,
@@ -41,4 +41,4 @@
 			}
 		};
 	self.onmessage = receiveTests;
-}());
+})();

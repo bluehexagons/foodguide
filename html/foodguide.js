@@ -42,7 +42,7 @@ import {
 import {food} from './food.js';
 import {recipes} from './recipes.js';
 
-(function () {
+(() => {
 	'use strict';
 	var stats = ['hunger', 'health', 'sanity'],
 		isStat = {
@@ -60,7 +60,7 @@ import {recipes} from './recipes.js';
 		modeRefreshers = [],
 		modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET,
 
-		setMode = function (mask) {
+		setMode = mask => {
 			statMultipliers = {};
 			for (i in defaultStatMultipliers) {
 				if (defaultStatMultipliers.hasOwnProperty(i)) {
@@ -95,7 +95,7 @@ import {recipes} from './recipes.js';
 
 		recipeCrunchData,
 		recipeCrunchString,
-		matchingNames = (function () {
+		matchingNames = (() => {
 			var name,
 				tag,
 				tagsearch = /^tag[: ]/,
@@ -111,7 +111,7 @@ import {recipes} from './recipes.js';
 				anywhere,
 				wordstarts,
 				allowUncookable = false,
-				filter = function (element) {
+				filter = element => {
 					if ((!allowUncookable && element.uncookable) || (element.modeMask & modeMask) === 0) {
 						element.match = 0;
 					} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
@@ -125,10 +125,10 @@ import {recipes} from './recipes.js';
 					}
 					return element.match;
 				},
-				tagFilter = function (element) {
+				tagFilter = element => {
 					return element.match = element[tag] + 0 || 0;
 				},
-				recipeFilter = function (element) {
+				recipeFilter = element => {
 					var i = 0, result, failed = true;
 					while (i < recipe.length) {
 						result = recipe[i].test(null, element.nameObject, element);
@@ -146,7 +146,7 @@ import {recipes} from './recipes.js';
 					}
 					return element.match = failed ? 0 : 1;
 				},
-				ingredientFilter = function (recipe) {
+				ingredientFilter = recipe => {
 					var i = 0, result, failed = true;
 					while (i < recipe.requirements.length) {
 						result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
@@ -164,13 +164,13 @@ import {recipes} from './recipes.js';
 					}
 					return recipe.match = failed ? 0 : 1;
 				},
-				exact = function (element) {
+				exact = element => {
 					return element.match = (element.lowerName === name) ? 1 : 0;
 				},
-				like = function (element) {
+				like = element => {
 					return element.match = (element.lowerName === name || (element.raw && element.raw.lowerName === name) || (element.cook && element.cook.lowerName === name)) ? 1 : 0;
 				},
-				byMatch = function (a, b) {
+				byMatch = (a, b) => {
 					var aname, bname;
 					if (a.match === b.match) {
 						aname = a.basename ? a.basename : a.name;
@@ -182,7 +182,7 @@ import {recipes} from './recipes.js';
 					}
 					return b.match - a.match;
 				};
-			return function (arr, search, includeUncookable) {
+			return (arr, search, includeUncookable) => {
 				allowUncookable = !!includeUncookable;
 				name = search.toLowerCase();
 				if (tagsearch.test(name)) {
@@ -218,8 +218,8 @@ import {recipes} from './recipes.js';
 					return arr.filter(filter).sort(byMatch);
 				}
 			};
-		}()),
-		setIngredientValues = function (items, names, tags) {
+		})(),
+		setIngredientValues = (items, names, tags) => {
 			var i, k, item;
 			for (i = 0; i < items.length; i++) {
 				item = items[i];
@@ -242,10 +242,10 @@ import {recipes} from './recipes.js';
 				}
 			}
 		},
-		getSuggestions = (function () {
+		getSuggestions = (() => {
 			var names,
 				tags;
-			return function (recipeList, items, exclude, itemComplete) {
+			return (recipeList, items, exclude, itemComplete) => {
 				var i, ii, valid;
 				recipeList.length = 0;
 				names = {};
@@ -276,12 +276,12 @@ import {recipes} from './recipes.js';
 				tags.name = 'Combined';
 				return recipeList;
 			};
-		}()),
-		getRecipes = (function () {
+		})(),
+		getRecipes = (() => {
 			var recipeList = [],
 				names,
 				tags;
-			return function (items) {
+			return items => {
 				var i;
 				recipeList.length = 0;
 				names = {};
@@ -295,7 +295,7 @@ import {recipes} from './recipes.js';
 						&& (recipes[i].modeMask & modeMask) !== 0
 						&& recipeList.push(recipes[i]);
 				}
-				recipeList.sort(function (a, b) {
+				recipeList.sort((a, b) => {
 					return b.priority - a.priority;
 				});
 				tags.img = '';
@@ -306,8 +306,8 @@ import {recipes} from './recipes.js';
 				recipeList.unshift(tags);
 				return recipeList;
 			};
-		}()),
-		makeImage = (function () {
+		})(),
+		makeImage = (() => {
 			var canvas = document.createElement('canvas'),
 				ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d'),
 				canvas32 = document.createElement('canvas'),
@@ -316,8 +316,8 @@ import {recipes} from './recipes.js';
 				images32 = {},
 				canvasSupported = !!ctx,
 				requests = [],
-				cacheImage = function (url) {
-					var renderToCache = function (url, imageElement) {
+				cacheImage = url => {
+					var renderToCache = (url, imageElement) => {
 						ctx.clearRect(0, 0, 64, 64);
 						ctx.drawImage(imageElement, 0, 0, 64, 64);
 						ctx32.clearRect(0, 0, 32, 32);
@@ -328,7 +328,7 @@ import {recipes} from './recipes.js';
 						} catch (ex) {
 							canvasSupported = false;
 						}
-						requests.filter(function (request) { return request.url === url; }).forEach(function (request) {
+						requests.filter(request => { return request.url === url; }).forEach(request => {
 							if (request.url === url) {
 								delete request.img.dataset.pending;
 								if (noDataset) {
@@ -341,20 +341,20 @@ import {recipes} from './recipes.js';
 								}
 							}
 						});
-						requests = requests.filter(function (request) { return request.url !== url; });
+						requests = requests.filter(request => { return request.url !== url; });
 					};
-					return function (e) {
+					return e => {
 						renderToCache(url, e.target);
 					}
 				},
-				queue = function (img, url, d) {
+				queue = (img, url, d) => {
 					img.dataset.pending = url;
 					if (noDataset) {
 						img.setAttribute('data-pending', url);
 					}
 					requests.push({url: url, img: img, d: d});
 				},
-				makeImage = function (url, d) {
+				makeImage = (url, d) => {
 					var img = new Image(), dummy, listener;
 					if (canvasSupported) {
 						if (images[url]) {
@@ -387,16 +387,16 @@ import {recipes} from './recipes.js';
 			canvas32.height = 32;
 			makeImage.queue = queue;
 			return makeImage;
-		}()),
-		makeLinkable = (function () {
+		})(),
+		makeLinkable = (() => {
 			var linkSearch = /\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/,
 				leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g,
 				rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g,
-				addLeftClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); },
-				addRightClass = function (a, b, c) { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); },
+				addLeftClass = (a, b, c) => { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); },
+				addRightClass = (a, b, c) => { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); },
 				titleCase = /_(\w)/g,
-				toTitleCase = function (a, b) { return ' ' + b.toUpperCase(); };
-			return function (str) {
+				toTitleCase = (a, b) => { return ' ' + b.toUpperCase(); };
+			return str => {
 				var processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass),
 					results = processed && processed.split(linkSearch),
 					fragment, i, span, url, image;
@@ -431,7 +431,7 @@ import {recipes} from './recipes.js';
 					return fragment;
 				}
 			};
-		}()),
+		})(),
 		i,
 		index = 0,
 		mainElement = document.getElementById('main'),
@@ -445,10 +445,10 @@ import {recipes} from './recipes.js';
 	if (!document.documentElement.dataset) {
 		noDataset = true;
 		Object.defineProperty(Element.prototype, 'dataset', {
-			get: function () {
+			get: () => {
 				if (!this.ds) {
 					this.ds = {};
-					Array.prototype.forEach.call(this.attributes, function (item) {
+					Array.prototype.forEach.call(this.attributes, item => {
 						if (item.name.indexOf('data-') === 0) {
 							this.ds[item.name.substring(5)] = item.value;
 						}
@@ -468,7 +468,7 @@ import {recipes} from './recipes.js';
 	document.getElementById('perishsummer').appendChild(document.createTextNode(Math.round(perish_summer_mult * 1000) / 10 + '%'));
 	document.getElementById('perishfridge').appendChild(document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'));
 	var info,
-		taggify = function (tag, name) { return '[tag:' + tag + '|' + (name || tag) + ']'; };
+		taggify = (tag, name) => { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 	for (i in food) {
 		if (food.hasOwnProperty(i)) {
 			var f = food[i];
@@ -630,7 +630,7 @@ import {recipes} from './recipes.js';
 	recipes.filter = Array.prototype.filter;
 	recipes.sort = Array.prototype.sort;
 
-	recipes.byName = function (name) {
+	recipes.byName = name => {
 		var i = this.length;
 		while (i--) {
 			if (this[i].lowerName === name) {
@@ -638,10 +638,10 @@ import {recipes} from './recipes.js';
 			}
 		}
 	};
-	var reduceRecipeButton = function (a, b) {
+	var reduceRecipeButton = (a, b) => {
 		return a + '[recipe:' + b.name + '|' + b.img + ']';
 	};
-	var pl = function (str, n, plr) {
+	var pl = (str, n, plr) => {
 		return n === 1 ? str : str + (plr || 's');
 	};
 
@@ -672,7 +672,7 @@ import {recipes} from './recipes.js';
 		f.info = info.join('; ');
 		if (!f.uncookable) {
 			f.recipes = [];
-			recipes.forEach(function (recipe) {
+			recipes.forEach(recipe => {
 				var qualifies = false, r = recipe.requirements, i = r.length;
 				while (i--) {
 					if (r[i].test(null, f.nameObject, f)) {
@@ -705,7 +705,7 @@ import {recipes} from './recipes.js';
 	food.forEach = Array.prototype.forEach;
 	food.filter = Array.prototype.filter;
 	food.sort = Array.prototype.sort;
-	food.byName = function (name) {
+	food.byName = name => {
 		var i = this.length;
 		while (i--) {
 			if (this[i].lowerName === name) {
@@ -715,9 +715,9 @@ import {recipes} from './recipes.js';
 	};
 
 	var usefulTags = ['id', 'health', 'hunger', 'fruit', 'veggie', 'meat', 'egg', 'fish', 'magic', 'decoration', 'inedible', 'monster', 'sweetener', 'fat', 'dairy'],
-		combinationGenerator = function (length, callback, startPos) {
+		combinationGenerator = (length, callback, startPos) => {
 			var size = 4, index = 1, current = startPos || [0, 0, 0, 0], check, max = 0, iter = 0;
-			return function (batch) {
+			return batch => {
 				var overflow;
 				while (batch-- && index <= length) {
 					callback(current);
@@ -746,9 +746,9 @@ import {recipes} from './recipes.js';
 			};
 		};
 	recipeCrunchData = {};
-	/* recipeCrunchData.food = food.filter(function (item) {
+	/* recipeCrunchData.food = food.filter(item => {
 			return !item.uncookable && !item.skip && (item.ideal || (!item.cook && (!item.raw || !item.raw.ideal)));
-		}).map(function (item) {
+		}).map(item => {
 			var f = {}, t = usefulTags.length;
 			while (t--) {
 				if (item.hasOwnProperty(usefulTags[t])) {
@@ -757,25 +757,25 @@ import {recipes} from './recipes.js';
 			}
 			return f;
 		}); */ // this isn't currently used for some reason?
-	recipeCrunchData.recipes = recipes.filter(function (item) {
+	recipeCrunchData.recipes = recipes.filter(item => {
 			return !item.trash;
-		}).sort(function (a, b) {
+		}).sort((a, b) => {
 			return b.priority - a.priority;
 		});
-	recipeCrunchData.test = recipeCrunchData.recipes.map(function (a) { return a.test; })
-	recipeCrunchData.tests = recipeCrunchData.recipes.map(function (a) { return a.test.toString(); })
-	recipeCrunchData.priority = recipeCrunchData.recipes.map(function (a) { return a.priority; });
-	var getRealRecipesFromCollection = function (items, mainCallback, chunkCallback, endCallback) {
+	recipeCrunchData.test = recipeCrunchData.recipes.map(a => { return a.test; })
+	recipeCrunchData.tests = recipeCrunchData.recipes.map(a => { return a.test.toString(); })
+	recipeCrunchData.priority = recipeCrunchData.recipes.map(a => { return a.priority; });
+	var getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
 			var l = recipeCrunchData.test.length,
 				built = [],
 				renderedTo = 0,
 				lastTime,
 				block = 60,
 				desiredTime = 38,
-				foodFromIndex = function (index) {
+				foodFromIndex = index => {
 					return items[index];
 				},
-				callback = function (combination) {
+				callback = combination => {
 					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
 					setIngredientValues(ingredients, names, tags);
 					// console.log('callback: ' + tags.bestHungerType);
@@ -795,7 +795,7 @@ import {recipes} from './recipes.js';
 					}
 				},
 				getCombinations = combinationGenerator(items.length, callback),
-				computeNextBlock = function () {
+				computeNextBlock = () => {
 					var end = false,
 						start = Date.now();
 					if (getCombinations(block)) {
@@ -820,7 +820,7 @@ import {recipes} from './recipes.js';
 	//recipeCrunchString = JSON.stringify(recipeCrunchData); //recipeCrunch might also be used for multithreading later
 
 	var setTab;
-	(function () {
+	(() => {
 		var navtabs = navbar.getElementsByTagName('li'),
 			tabs = {},
 			elements = {},
@@ -828,11 +828,11 @@ import {recipes} from './recipes.js';
 			activeIndex = 0,
 			activePage,
 			activeTab,
-			showTab = function (e) {
+			showTab = e => {
 				setTab(e.target.dataset.tab);
 			},
 			navtab;
-		setTab = function (tabID) {
+		setTab = tabID => {
 			activeTab.className = '';
 			activeTab = tabs[tabID];
 			activePage.style.display = 'none';
@@ -846,7 +846,7 @@ import {recipes} from './recipes.js';
 				tabs[navtab.dataset.tab] = navtab;
 				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
 				elements[navtab.dataset.tab].style.display = 'none';
-				navtab.addEventListener('selectstart', function (e) { e.preventDefault(); }, false);
+				navtab.addEventListener('selectstart', e => { e.preventDefault(); }, false);
 				navtab.addEventListener('click', showTab, false);
 			}
 		}
@@ -866,7 +866,7 @@ import {recipes} from './recipes.js';
 		}
 		activeTab.className = 'selected';
 		activePage.style.display = 'block';
-		window.addEventListener('beforeunload', function () {
+		window.addEventListener('beforeunload', () => {
 			var obj;
 			try {
 				if (window.localStorage) {
@@ -882,14 +882,14 @@ import {recipes} from './recipes.js';
 				console && console.warn('Unable to access localStorage', err);
 			}
 		});
-	}());
+	})();
 
-	var queue = function (img) {
+	var queue = img => {
 			if (img.dataset.pending) {
 				makeImage.queue(img, img.dataset.pending, 32);
 			}
 		},
-		cells = function (cellType) {
+		cells = cellType => {
 			var i, td, image, tr = document.createElement('tr'), cell, celltext;
 			for (i = 1; i < arguments.length; i++) {
 				td = document.createElement(cellType);
@@ -921,9 +921,9 @@ import {recipes} from './recipes.js';
 			node.appendChild(text);
 			return node;
 		};
-	var makeSortableTable = function (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) {
+	var makeSortableTable = (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) => {
 		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight, rows,
-			generateAndHighlight = function (item, index, array) {
+			generateAndHighlight = (item, index, array) => {
 				var row;
 				if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
 					row = rowGenerator(item);
@@ -938,7 +938,7 @@ import {recipes} from './recipes.js';
 					rows++;
 				}
 			},
-			create = function (e, sort, scrollHighlight) {
+			create = (e, sort, scrollHighlight) => {
 				var tr, th, oldTable, sortBy, summary, links, i;
 				if (sort || (e && e.target.dataset.sort !== '') || sorting) {
 					sortBy = sort || (e && e.target.dataset.sort) || sorting;
@@ -946,7 +946,7 @@ import {recipes} from './recipes.js';
 						summary = dataset.shift();
 					}
 					if (sortBy === 'name') {
-						dataset.sort(function (a, b) {
+						dataset.sort((a, b) => {
 							var aname = a.basename ? a.basename : a.name,
 								bname = b.basename ? b.basename : b.name;
 							if (aname !== bname) {
@@ -955,7 +955,7 @@ import {recipes} from './recipes.js';
 							return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
 						});
 					} else {
-						dataset.sort(function (a, b) {
+						dataset.sort((a, b) => {
 							var sa = a[sortBy], sb = b[sortBy];
 							return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
 						});
@@ -1005,7 +1005,7 @@ import {recipes} from './recipes.js';
 				dataset.forEach(generateAndHighlight);
 				if (linkCallback) {
 					table.className = 'links';
-					Array.prototype.forEach.call(table.getElementsByClassName('link'), function (element) {
+					Array.prototype.forEach.call(table.getElementsByClassName('link'), element => {
 						element.addEventListener('click', linkCallback, false);
 					});
 				}
@@ -1025,17 +1025,17 @@ import {recipes} from './recipes.js';
 		} else {
 			create();
 		}
-		table.update = function (scrollHighlight) {
+		table.update = scrollHighlight => {
 			create(null, null, scrollHighlight);
 		};
-		table.setMaxRows = function (max) {
+		table.setMaxRows = max => {
 			maxRows = max;
 			this.update();
 		};
 		return table;
 	};
 
-	var sign = function (n) {
+	var sign = n => {
 			if (isNaN(n)) {
 				return '';
 			}
@@ -1044,14 +1044,14 @@ import {recipes} from './recipes.js';
 				return n > 0 ? '+' + n : n
 			}
 		},
-		rawpct = function (base, val) {
+		rawpct = (base, val) => {
 			return base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0;
 		},
-		pct = function (base, val) {
+		pct = (base, val) => {
 			var result = !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
 			return result.indexOf('Infinity') === -1 ? result : ' (' + sign(val - base) + ')';
 		};
-	var makeFoodRow = function (item) {
+	var makeFoodRow = item => {
 		var mult = statMultipliers[item.preparationType],
 			health = sign(item.health * mult),
 			hunger = sign(item.hunger * mult),
@@ -1070,7 +1070,7 @@ import {recipes} from './recipes.js';
 		}
 		return cells('td', item.img ? item.img : '', wikiaHref(item.name), health, hunger, sanity, isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
-	var makeRecipeRow = function (item, health, hunger, sanity) {
+	var makeRecipeRow = (item, health, hunger, sanity) => {
 		var mult = statMultipliers[item.preparationType] || 1,
 			ihealth = item.health * mult,
 			ihunger = item.hunger * mult,
@@ -1078,11 +1078,11 @@ import {recipes} from './recipes.js';
 		return cells('td', item.img ? item.img : '', wikiaHref(item.name), sign(ihealth) + pct(health, ihealth), sign(ihunger) + pct(hunger, ihunger), isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
 	};
 	// food list, recipe list
-	(function () {
+	(() => {
 		var foodHighlight,
 			foodHighlighted = [],
 			recipeHighlighted = [],
-			setFoodHighlight = function (e) {
+			setFoodHighlight = e => {
 				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
 				if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
 					setTab('crockpot');
@@ -1102,7 +1102,7 @@ import {recipes} from './recipes.js';
 					foodTable.update(true);
 				}
 			},
-			setRecipeHighlight = function (e) {
+			setRecipeHighlight = e => {
 				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
 				var modename = name.substring(name.indexOf(':') + 1);
 				if (!!modes[modename]) {
@@ -1115,13 +1115,13 @@ import {recipes} from './recipes.js';
 					foodTable.update(true);
 				}
 			},
-			testFoodHighlight = function (item) {
+			testFoodHighlight = item => {
 				return foodHighlighted.indexOf(item) !== -1;
 			},
-			testRecipeHighlight = function (item) {
+			testRecipeHighlight = item => {
 				return recipeHighlighted.indexOf(item) !== -1;
 			},
-			testmode = function (item) {
+			testmode = item => {
 				return (item.modeMask & modeMask) !== 0;
 			},
 			foodTable = makeSortableTable(
@@ -1146,21 +1146,21 @@ import {recipes} from './recipes.js';
 			);
 		foodElement.appendChild(foodTable);
 		recipesElement.appendChild(recipeTable);
-		modeRefreshers.push(function () {
+		modeRefreshers.push(() => {
 			foodTable.update();
 			recipeTable.update();
 		});
-	}());
+	})();
 
 	// statistics analyzer
-	var ingredientToIcon = function (a, b) {
+	var ingredientToIcon = (a, b) => {
 			return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
 		},
-		makeRecipeGrinder = function (ingredients) {
+		makeRecipeGrinder = ingredients => {
 			var makableButton = document.createElement('button');
 			makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
 			makableButton.className = 'makablebutton';
-			makableButton.addEventListener('click', function () {
+			makableButton.addEventListener('click', () => {
 				var idealIngredients = [],
 					i = ingredients ? ingredients.length : null,
 					selectedRecipe,
@@ -1182,14 +1182,14 @@ import {recipes} from './recipes.js';
 					made,
 					makableDiv,
 					makableTable,
-					checkExcludes = function (item) {
+					checkExcludes = item => {
 						return excludesIngredients.indexOf(item.id) !== -1;
 					},
-					checkIngredient = function (item) {
+					checkIngredient = item => {
 						return this.indexOf(food[item]) !== -1;
 						//return usesIngredients.indexOf(item.id) !== -1;
 					},
-					toggleFilter = function (e) {
+					toggleFilter = e => {
 						if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
 							excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
 						}
@@ -1202,7 +1202,7 @@ import {recipes} from './recipes.js';
 						}
 						makableTable.update();
 					},
-					toggleExclude = function (e) {
+					toggleExclude = e => {
 						if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
 							usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
 						}
@@ -1218,7 +1218,7 @@ import {recipes} from './recipes.js';
 					},
 					excludedRecipes = [],
 					excludedRecipesElements = [],
-					setRecipe = function (e) {
+					setRecipe = e => {
 						if (selectedRecipeElement) {
 							selectedRecipeElement.className = '';
 						}
@@ -1237,7 +1237,7 @@ import {recipes} from './recipes.js';
 						}
 						makableTable.update();
 					},
-					excludeRecipe = function (e) {
+					excludeRecipe = e => {
 						if (selectedRecipeElement) {
 							selectedRecipeElement.className = '';
 							selectedRecipeElement = null;
@@ -1291,7 +1291,7 @@ import {recipes} from './recipes.js';
 				makableTable = makeSortableTable(
 					{'': '', 'Name': 'name', 'Health': 'health', 'Health+:Health gained compared to ingredients': 'healthpls', 'Hunger': 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
 					made,
-					function (data) {
+					data => {
 						var item = data.recipe,
 							health = data.tags.health,
 							hunger = data.tags.hunger;
@@ -1303,7 +1303,7 @@ import {recipes} from './recipes.js';
 					false,
 					null,
 					null,
-					function (data) {
+					data => {
 						return (!selectedRecipe || data.recipe.name === selectedRecipe) && (excludedRecipes.length === 0 || excludedRecipes.indexOf(data.recipe.name) === -1) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
 					},
 					0,
@@ -1320,7 +1320,7 @@ import {recipes} from './recipes.js';
 				makableDiv.appendChild(makableRecipe);
 				makableFilter = document.createElement('div');
 				makableFilter.className = 'foodFilter';
-				idealIngredients.forEach(function (item) {
+				idealIngredients.forEach(item => {
 					var img = makeImage(item.img, 32);
 					img.dataset.id = item.id;
 					img.addEventListener('click', toggleFilter, false);
@@ -1338,7 +1338,7 @@ import {recipes} from './recipes.js';
 				makableDiv.appendChild(makableTable);
 				makableButton.parentNode.replaceChild(makableDiv, makableButton);
 				makableDiv.appendChild(makableFootnote);
-				getRealRecipesFromCollection(idealIngredients, function (data) { //row update
+				getRealRecipesFromCollection(idealIngredients, data => { //row update
 					var i, img;
 					if (makableRecipes.indexOf(data.recipe.name) === -1) {
 						for (i = 0; i < makableRecipes.length; i++) {
@@ -1373,7 +1373,7 @@ import {recipes} from './recipes.js';
 						data.perish = data.recipe.perish;
 					}
 					made.push(data);
-				}, function () { //chunk update
+				}, () => { //chunk update
 					/*
 					//this code provided updates to the table while the data was being crunched
 					//there wasn't much point since it wasn't really usable until it was done calculating things anyway
@@ -1396,7 +1396,7 @@ import {recipes} from './recipes.js';
 					}*/
 					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
 					//makableTable.update();
-				}, function () { //computation finished
+				}, () => { //computation finished
 					makableTable.setMaxRows(30);
 					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude recipes or ingredients.';
 				});
@@ -1404,8 +1404,8 @@ import {recipes} from './recipes.js';
 			return makableButton;
 		};
 	document.getElementById('statistics').appendChild(makeRecipeGrinder());
-	var highest = function (array, property) {
-		return array.reduce(function (previous, current) {
+	var highest = (array, property) => {
+		return array.reduce((previous, current) => {
 			return Math.max(previous, current[property] || 0);
 		}, -100000);
 	};
@@ -1413,7 +1413,7 @@ import {recipes} from './recipes.js';
 	window.food = food;
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;
-	var setSlot = function (slotElement, item) {
+	var setSlot = (slotElement, item) => {
 			if (item !== null) {
 				slotElement.dataset.id = item.id;
 			} else {
@@ -1438,15 +1438,15 @@ import {recipes} from './recipes.js';
 			}
 			slotElement.title = item ? item.name : '';
 		},
-		getSlot = function (slotElement) {
+		getSlot = slotElement => {
 			return slotElement && (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null);
 		};
 
-	(function () {
+	(() => {
 		var pickers = document.getElementsByClassName('ingredientpicker'),
 			i = pickers.length;
 		while (i--) {
-			(function () {
+			(() => {
 				var searchSelector = document.createElement('span'),
 					searchSelectorControls,
 					dropdown = document.createElement('div'),
@@ -1471,7 +1471,7 @@ import {recipes} from './recipes.js';
 					makable = document.getElementById('makable'),
 					clear = document.createElement('span'),
 					toggleText = document.createElement('span'),
-					findPreviousMatching = function (el, test) {
+					findPreviousMatching = (el, test) => {
 						var previous = el;
 						while (previous.previousSibling) {
 							previous = previous.previousSibling;
@@ -1481,7 +1481,7 @@ import {recipes} from './recipes.js';
 						}
 						return null;
 					},
-					findNextMatching = function (el, test) {
+					findNextMatching = (el, test) => {
 						var next = el;
 						while (next.nextSibling) {
 							next = next.nextSibling;
@@ -1492,7 +1492,7 @@ import {recipes} from './recipes.js';
 						return null;
 					},
 					displaying = false,
-					appendSlot = function (id) {
+					appendSlot = id => {
 						var i, item = food[id] || recipes[id] || null;
 						if (!id) {
 							console && console.warn('ID not set');
@@ -1521,7 +1521,7 @@ import {recipes} from './recipes.js';
 							return 1;
 						}
 					},
-					pickItem = function (e) {
+					pickItem = e => {
 						var names,
 							target = !e.target.dataset.id ? e.target.parentNode : e.target,
 							result = appendSlot(target.dataset.id);
@@ -1545,7 +1545,7 @@ import {recipes} from './recipes.js';
 							//refreshLocation();
 						}
 					},
-					liIntoPicker = function (item) {
+					liIntoPicker = item => {
 						var img = makeImage(item.img, 32),
 							li = document.createElement('span');
 						li.classList.add('item');
@@ -1566,7 +1566,7 @@ import {recipes} from './recipes.js';
 							this.appendChild(document.createElement('br'));
 						}*/
 					},
-					updateFaded = function (el) {
+					updateFaded = el => {
 						if (ingredients.indexOf(food[el.dataset.id]) !== -1) {
 							if (!el.style.opacity) {
 								el.style.opacity = 0.5;
@@ -1577,7 +1577,7 @@ import {recipes} from './recipes.js';
 							}
 						}
 					},
-					removeSlot = function (e) {
+					removeSlot = e => {
 						var i, target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
 						if (limited) {
 							if (getSlot(target) !== null) {
@@ -1595,7 +1595,7 @@ import {recipes} from './recipes.js';
 							return slots[i] || null;
 						}
 					},
-					refreshLocation = function () {
+					refreshLocation = () => {
 						/*if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
 							//to the left
 							dropdown.style.left = -dropdown.offsetWidth + 'px';
@@ -1610,7 +1610,7 @@ import {recipes} from './recipes.js';
 							dropdown.style.top = picker.offsetTop + 'px';
 						}*/
 					},
-					refreshPicker = function () {
+					refreshPicker = () => {
 						var names;
 						searchSelectorControls.splitTag();
 						names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
@@ -1622,7 +1622,7 @@ import {recipes} from './recipes.js';
 						//refreshLocation();
 						selected = null;
 					},
-					searchFor = function (e) {
+					searchFor = e => {
 						var name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link,
 							matches = matchingNames(from, name, allowUncookable);
 						if (matches.length === 1) {
@@ -1637,11 +1637,11 @@ import {recipes} from './recipes.js';
 
 				if (parent.id === 'ingredients') {
 					//simulator
-					updateRecipes = function () {
+					updateRecipes = () => {
 						var cooking,
 							health, hunger, sanity,
 							table;
-						ingredients = Array.prototype.map.call(slots, function (slot) {
+						ingredients = Array.prototype.map.call(slots, slot => {
 							return getSlot(slot);
 						});
 						cooking = getRecipes(ingredients);
@@ -1651,13 +1651,13 @@ import {recipes} from './recipes.js';
 						table = makeSortableTable(
 							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
 							cooking,
-							function (item) {
+							item => {
 								return makeRecipeRow(item, health, hunger, sanity);
 							},
 							'priority',
 							true,
 							searchFor,
-							function (item, array) {
+							(item, array) => {
 								return array.length > 0 && item.priority === highest(array, 'priority');
 							}
 						);
@@ -1676,7 +1676,7 @@ import {recipes} from './recipes.js';
 								table = makeSortableTable(
 									{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
 									suggestions,
-									function (item) {
+									item => {
 										return makeRecipeRow(item, health, hunger, sanity);
 									},
 									'priority',
@@ -1690,10 +1690,10 @@ import {recipes} from './recipes.js';
 					};
 				} else if (parent.id === 'inventory') {
 					//discovery
-					updateRecipes = function () {
+					updateRecipes = () => {
 						var foodTable,
 							table;
-						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), function (slot) {
+						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), slot => {
 							return getSlot(slot);
 						});
 						if (discoverfood.firstChild) {
@@ -1731,7 +1731,7 @@ import {recipes} from './recipes.js';
 				}
 				if (slots.length !== 0) {
 					limited = true;
-					Array.prototype.forEach.call(slots, function (slot) {
+					Array.prototype.forEach.call(slots, slot => {
 						setSlot(slot, null);
 						slot.addEventListener('click', removeSlot, false);
 					});
@@ -1743,7 +1743,7 @@ import {recipes} from './recipes.js';
 					if (window.localStorage && localStorage.foodGuideState) {
 						state = JSON.parse(localStorage.foodGuideState).pickers;
 						if (state && state[index]) {
-							state[index].forEach(function (id) {
+							state[index].forEach(id => {
 								if (food[id]) {
 									appendSlot(id);
 								}
@@ -1756,14 +1756,14 @@ import {recipes} from './recipes.js';
 				loaded = true;
 				searchSelector.className = 'searchselector retracted';
 				searchSelector.appendChild(document.createTextNode('name'));
-				searchSelectorControls = (function () {
+				searchSelectorControls = (() => {
 					var dropdown = document.createElement('div'),
 						extended = false,
 						extendedHeight = null,
 						searchTypes = [{title: 'name', prefix: '', placeholder: 'Filter ingredients'}, {title: 'tag', prefix: 'tag:', placeholder: 'Meat, veggie, fruit, egg, monster...'}, {title: 'recipe', prefix: 'recipe:', placeholder: 'Find ingredients used in a recipe'}],
 						selectedType = searchTypes[0],
 						retractTimer = null,
-						retract = function () {
+						retract = () => {
 							extended = false;
 							dropdown.style.height = '0px';
 							searchSelector.style.borderBottomLeftRadius = '3px';
@@ -1774,7 +1774,7 @@ import {recipes} from './recipes.js';
 							}
 							searchSelector.className = 'searchselector retracted';
 						},
-						extend = function () {
+						extend = () => {
 							if (extendedHeight === null) {
 								dropdown.style.height = 'auto';
 								dropdown.style.left = searchSelector.offsetLeft;
@@ -1794,28 +1794,28 @@ import {recipes} from './recipes.js';
 							}
 							searchSelector.className = 'searchselector extended';
 						},
-						setSearchType = function (searchType) {
+						setSearchType = searchType => {
 							selectedType = searchType;
 							picker.placeholder = selectedType.placeholder;
 							searchSelector.firstChild.textContent = selectedType.title;
 						},
-						setSearchTypeFromClick = function (e) {
+						setSearchTypeFromClick = e => {
 							setSearchType(searchTypes[e.target.dataset.typeIndex]);
 							refreshPicker();
 							retract();
 						},
 						tagsplit = /: */,
 						controls = {
-							getTag: function () {
+							getTag: () => {
 								return selectedType.title;
 							},
-							setSearchType: function (index) {
+							setSearchType: index => {
 								setSearchType(searchTypes[index]);
 							},
-							getSearch: function () {
+							getSearch: () => {
 								return selectedType.prefix + picker.value;
 							},
-							splitTag: function () {
+							splitTag: () => {
 								var i,
 									parts = picker.value.split(tagsplit),
 									tag,
@@ -1833,39 +1833,39 @@ import {recipes} from './recipes.js';
 								}
 							}
 						};
-					searchSelector.addEventListener('click', function () {
+					searchSelector.addEventListener('click', () => {
 						if (extended) {
 							retract();
 						} else {
 							extend();
 						}
 					}, false);
-					searchSelector.addEventListener('selectstart', function (e) { e.preventDefault(); }, false);
-					searchSelector.addEventListener('mouseout', function () {
+					searchSelector.addEventListener('selectstart', e => { e.preventDefault(); }, false);
+					searchSelector.addEventListener('mouseout', () => {
 						if (retractTimer !== null) {
 							clearTimeout(retractTimer);
 						}
 						retractTimer = setTimeout(retract, 500);
 					}, false);
-					searchSelector.addEventListener('mouseover', function () {
+					searchSelector.addEventListener('mouseover', () => {
 						if (retractTimer !== null) {
 							clearTimeout(retractTimer);
 							retractTimer = null;
 						}
 					}, false);
-					dropdown.addEventListener('mouseout', function () {
+					dropdown.addEventListener('mouseout', () => {
 						if (retractTimer !== null) {
 							clearTimeout(retractTimer);
 						}
 						retractTimer = setTimeout(retract, 500);
 					}, false);
-					dropdown.addEventListener('mouseover', function () {
+					dropdown.addEventListener('mouseover', () => {
 						if (retractTimer !== null) {
 							clearTimeout(retractTimer);
 							retractTimer = null;
 						}
 					}, false);
-					searchTypes.forEach(function (searchType, index) {
+					searchTypes.forEach((searchType, index) => {
 						var element = document.createElement('div');
 						element.appendChild(document.createTextNode(searchType.title));
 						element.dataset.typeIndex = index;
@@ -1877,21 +1877,21 @@ import {recipes} from './recipes.js';
 					dropdown.className = 'searchdropdown';
 					picker.parentNode.insertBefore(dropdown, picker);
 					return controls;
-				}());
+				})();
 				dropdown.className = 'ingredientdropdown';
 				dropdown.appendChild(ul);
-				dropdown.addEventListener('mousedown', function (e) { e.preventDefault(); }, false);
-				(function () {
+				dropdown.addEventListener('mousedown', e => { e.preventDefault(); }, false);
+				(() => {
 					var names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
 					dropdown.removeChild(ul);
 					ul = document.createElement('div');
 					ul.dataset.length = 0;
 					names.forEach(liIntoPicker, ul);
 					dropdown.appendChild(ul);
-				}());
+				})();
 				clear.className = 'clearingredients';
 				clear.appendChild(document.createTextNode('clear'));
-				clear.addEventListener('click', function () {
+				clear.addEventListener('click', () => {
 					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
 						while (getSlot(parent.firstChild)) {
 							removeSlot({ target: parent.firstChild });
@@ -1902,18 +1902,18 @@ import {recipes} from './recipes.js';
 						refreshPicker();
 					}
 				}, false);
-				clear.addEventListener('mouseover', function () {
+				clear.addEventListener('mouseover', () => {
 					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
 						clear.firstChild.textContent = 'clear chosen ingredients';
 					}
 				}, false);
-				clear.addEventListener('mouseout', function () {
+				clear.addEventListener('mouseout', () => {
 					if (clear.firstChild.textContent !== 'clear') {
 						clear.firstChild.textContent = 'clear';
 					}
 				}, false);
 				toggleText.className = 'toggleingredients enabled';
-				toggleText.addEventListener('click', function () {
+				toggleText.addEventListener('click', () => {
 					if (toggleText.classList.contains('enabled')) {
 						toggleText.classList.remove('enabled')
 						dropdown.classList.add('hidetext')
@@ -1928,7 +1928,7 @@ import {recipes} from './recipes.js';
 				parent.parentNode.insertBefore(toggleText, parent);
 				parent.parentNode.insertBefore(clear, parent);
 				parent.parentNode.insertBefore(dropdown, parent);
-				picker.addEventListener('keydown', function (e) {
+				picker.addEventListener('keydown', e => {
 					var movement = [16, 17, 37, 38, 39, 40, 13],
 						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i, find;
 					if (movement.indexOf(e.keyCode) !== -1) {
@@ -1955,7 +1955,7 @@ import {recipes} from './recipes.js';
 									if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
 										selected = selected.previousSibling;
 									} else {
-										find = findNextMatching(selected, function (el) {
+										find = findNextMatching(selected, el => {
 											//separate this out
 											return el.offsetTop !== selected.offsetTop;
 										});
@@ -1972,7 +1972,7 @@ import {recipes} from './recipes.js';
 									if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
 										selected = selected.nextSibling;
 									} else {
-										find = findPreviousMatching(selected, function (el) {
+										find = findPreviousMatching(selected, el => {
 											//separate this out
 											return el.offsetTop !== selected.offsetTop;
 										});
@@ -1986,11 +1986,11 @@ import {recipes} from './recipes.js';
 										coords = (selected.offsetLeft + selected.offsetWidth / 2);
 									}
 								} else if (e.keyCode === up) {
-									find = findPreviousMatching(selected, function (el) {
+									find = findPreviousMatching(selected, el => {
 										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
 									});
 									if (!find) {
-										find = findPreviousMatching(ul.lastChild, function (el) {
+										find = findPreviousMatching(ul.lastChild, el => {
 											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
 										});
 									}
@@ -2000,11 +2000,11 @@ import {recipes} from './recipes.js';
 										selected = ul.firstChild;
 									}
 								} else if (e.keyCode === down) {
-									find = findNextMatching(selected, function (el) {
+									find = findNextMatching(selected, el => {
 										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
 									});
 									if (!find) {
-										find = findNextMatching(ul.firstChild, function (el) {
+										find = findNextMatching(ul.firstChild, el => {
 											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
 										});
 									}
@@ -2026,7 +2026,7 @@ import {recipes} from './recipes.js';
 						}
 					}
 				}, false);
-				picker.addEventListener('keyup', function (e) {
+				picker.addEventListener('keyup', e => {
 					var movement = [16, 17, 37, 38, 39, 40, 13],
 						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i;
 					current = selected;
@@ -2036,18 +2036,18 @@ import {recipes} from './recipes.js';
 						e.preventDefault();
 					}
 				}, false);
-				picker.addEventListener('focus', function () {
+				picker.addEventListener('focus', () => {
 					if (!displaying) {
 						displaying = true;
 					}
 				}, false);
-				picker.addEventListener('blur', function () {
+				picker.addEventListener('blur', () => {
 					if (displaying) {
 						displaying = false;
 					}
 				}, false);
 				updateRecipes();
-				window.addEventListener('beforeunload', function () {
+				window.addEventListener('beforeunload', () => {
 					var obj, serialized;
 					if (!window.localStorage) {
 						return
@@ -2061,7 +2061,7 @@ import {recipes} from './recipes.js';
 					}
 					if (limited) {
 						serialized = [];
-						serialized = Array.prototype.map.call(slots, function (slot) {
+						serialized = Array.prototype.map.call(slots, slot => {
 							var item = getSlot(slot);
 							return item ? item.id : null;
 						});
@@ -2073,11 +2073,11 @@ import {recipes} from './recipes.js';
 				});
 				modeRefreshers.push(refreshPicker);
 				modeRefreshers.push(updateRecipes);
-			}());
+			})();
 		}
-	}())
+	})()
 
-	var showmode = function (e) {
+	var showmode = e => {
 		setMode(modes[e.target.dataset.mode].mask);
 	};
 	var togglemode = function(e) {
@@ -2100,4 +2100,4 @@ import {recipes} from './recipes.js';
 		modeTab.appendChild(modeButton);
 	}
 	setMode(modeMask);
-}());
+})();

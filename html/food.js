@@ -1728,14 +1728,14 @@ export const food = {
 
 	//DST Ingredients
 	wormlight_lesser: {
-		name: 'Lesser Glowberry',
+		name: 'Lesser Glow Berry',
 		//uncookable = true, <- Not anymore
 		isfruit: true,
 		fruit: 0.5,
 		health: healing_small,
 		hunger: calories_small,
 		sanity: -sanity_small,
-		perish: perish_superfast,
+		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Gives 22.5 seconds of light',
 		mode: 'together'
@@ -1780,6 +1780,17 @@ export const food = {
 		hunger: calories_small,
 		sanity: sanity_med,
 		perish: perish_med,
+		mode: 'together'
+	},
+	succulent_picked: {
+		name: 'Succulent',
+		uncookable: true,
+		isveggie: true,
+		health: healing_tiny,
+		hunger: 0,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
 		mode: 'together'
 	},
 
@@ -2162,6 +2173,57 @@ export const food = {
 		cook: 'corn_cooked',
 		rot: 'spoiled_fish',
 		perish: perish_one_day,
+		mode: 'together'
+	},
+
+	// DST Return of Them: Troubled Waters food
+	barnacle: {
+		name: 'Barnacles',
+		meat: 0.25,
+		fish: 0.25,
+		health: 0,
+		hunger: calories_small,
+		sanity: -sanity_tiny,
+		cook: 'barnacle_cooked',
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	barnacle_cooked: {
+		name: 'Cooked Barnacles',
+		meat: 0.25,
+		fish: 0.25,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_slow,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+
+	// DST Return of Them: Forgotten Knowledge food
+	moon_mushroom: {
+		name: 'Moon Shroom',
+		basename: 'CapMoon',
+		veggie: 0.5,
+		health: 0,
+		hunger: calories_small,
+		sanity: sanity_small,
+		cook: 'moon_mushroom_cooked',
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		note: 'Puts the player to sleep',
+		mode: 'together'
+	},
+	moon_mushroom_cooked: {
+		name: 'Cooked Moon Shroom',
+		veggie: 0.5,
+		health: 0,
+		hunger: -calories_small,
+		sanity: -sanity_small,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		note: 'Removes grogginess effect',
 		mode: 'together'
 	}
 };

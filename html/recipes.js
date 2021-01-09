@@ -1021,5 +1021,80 @@ export const recipes = {
 		sanity: sanity_med,
 		cooktime: 0.75,
 		mode: 'together'
+	},
+	barnaclepita: {
+		name: 'Barnacle Pita',
+		test: function (cooker, names, tags) {
+			return (names.barnacle || names.barnacle_cooked) && tags.veggie && tags.veggie >= 0.5;
+		},
+		requirements: [NAME('barnacle'), TAG('veggie', COMPARE('>=', 0.5))],
+		priority: 25,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_large,
+		perish: perish_slow,
+		sanity: sanity_tiny,
+		cooktime: 2,
+		mode: 'together'
+	},
+	barnaclesushi: {
+		name: 'Barnacle Nigiri',
+		test: function (cooker, names, tags) {
+			return (names.barnacle || names.barnacle_cooked) && (names.kelp || names.kelp_cooked) && tags.egg && tags.egg >= 1;
+		},
+		requirements: [NAME('barnacle'), NAME('kelp'), TAG('egg', COMPARE('>=', 1))],
+		priority: 30,
+		foodtype: 'meat',
+		health: healing_large,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_tiny,
+		cooktime: 0.5,
+		mode: 'together'
+	},
+	barnaclinguine: {
+		name: 'Barnacle Linguine',
+		test: function(cooker, names, tags) {
+			return ((names.barnacle || 0) + (names.barnacle_cooked || 0) >= 2 ) && tags.veggie && tags.veggie >= 2;
+		},
+		requirements: [NAME('barnacle', COMPARE('>=', 2)), TAG('veggie', COMPARE('>=', 2))],
+		priority: 30,
+		foodtype: 'meat',
+		health: healing_med / 2,
+		hunger: calories_large * 2,
+		perish: perish_fast,
+		sanity: healing_med,
+		cooktime: 2,
+		mode: 'together'
+	},
+	barnaclestuffedfishhead: {
+		name: 'Stuffed Fish Heads',
+		test: function(cooker, names, tags) {
+			return (names.barnacle || names.barnacle_cooked) && tags.fish && tags.fish >= 1.25;
+		},
+		requirements: [NAME('barnacle'), TAG('fish', COMPARE('>=', 1.25))],
+		priority: 25,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_large * 2,
+		perish: perish_superfast,
+		sanity: 0,
+		cooktime: 2,
+		mode: 'together'
+	},
+	shroomcake: {
+		name: 'Mushy Cake',
+		test: function (cooker, names, tags) {
+			return names.moon_mushroom && names.red_mushroom && names.blue_mushroom && names.green_mushroom;
+		},
+		requirements: [SPECIFIC('moon_mushroom'), SPECIFIC('red_mushroom'), SPECIFIC('blue_mushroom'), SPECIFIC('green_mushroom')],
+		priority: 30,
+		foodtype: 'goodies',
+		health: 0,
+		hunger: calories_med,
+		sanity: sanity_small,
+		perish: perish_slow,
+		cooktime: 1,
+		mode: 'together'
 	}
 };

@@ -11,6 +11,7 @@ import {
 	healing_large,
 	healing_huge,
 	healing_superhuge,
+	sanity_supertiny,
 	sanity_tiny,
 	sanity_small,
 	sanity_med,
@@ -2224,6 +2225,17 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Removes grogginess effect',
+		mode: 'together'
+	},
+
+	// DST Return of Them: Reap What You Sow food
+	forgetmelots: {
+		name: 'Forget-Me-Lots',
+		decoration: 1,
+		health: 0,
+		hunger: 0,
+		sanity: sanity_supertiny,
+		stack: stack_size_smallitem,
 		mode: 'together'
 	}
 };

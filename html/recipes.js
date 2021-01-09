@@ -1096,5 +1096,23 @@ export const recipes = {
 		perish: perish_slow,
 		cooktime: 1,
 		mode: 'together'
+	},
+	sweettea: {
+		name: 'Soothing Tea',
+		test: function (cooker, names, tags) {
+			return names.forgetmelots && tags.sweetener && tags.frozen && !tags.monster && !tags.veggie && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.inedible;
+		},
+		requirements: [NAME('forgetmelots'), TAG('sweetener'), TAG('frozen'), NOT(TAG('monster')), NOT(TAG('veggie')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('inedible'))],
+		priority: 1,
+		foodtype: 'goodies',
+		health: healing_small,
+		hunger: 0,
+		sanity: sanity_med,
+		perish: perish_superfast,
+		temperature: hot_food_bonus_temp,
+		temperatureduration: food_temp_brief,
+		cooktime: 1,
+		note: 'Restores 30 sanity over 1 minute',
+		mode: 'together'
 	}
 };

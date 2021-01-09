@@ -1,3 +1,5 @@
+'use strict';
+
 /*
 Makes use of no third-party code (for better or worse)
 
@@ -20,6 +22,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
 import {
 	total_day_time,
 	sanity_small,
@@ -43,402 +46,403 @@ import {food} from './food.js';
 import {recipes} from './recipes.js';
 
 (() => {
-	'use strict';
-	var stats = ['hunger', 'health', 'sanity'],
-		isStat = {
-			hunger: true,
-			health: true,
-			sanity: true
-		},
-		isBestStat = {
-			bestHunger: true,
-			bestHealth: true,
-			bestSanity: true
-		},
-		statMultipliers = defaultStatMultipliers,
+	const stats = ['hunger', 'health', 'sanity'];
+	const isStat = {
+		hunger: true,
+		health: true,
+		sanity: true
+	};
+	const isBestStat = {
+		bestHunger: true,
+		bestHealth: true,
+		bestSanity: true
+	};
+	const statMultipliers = defaultStatMultipliers;
 
-		modeRefreshers = [],
-		modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET,
+	const modeRefreshers = [];
+	let modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET;
 
-		setMode = mask => {
-			statMultipliers = {};
-			for (i in defaultStatMultipliers) {
-				if (defaultStatMultipliers.hasOwnProperty(i)) {
-					statMultipliers[i] = defaultStatMultipliers[i];
+	const setMode = mask => {
+		statMultipliers = {};
+		for (let i in defaultStatMultipliers) {
+			if (defaultStatMultipliers.hasOwnProperty(i)) {
+				statMultipliers[i] = defaultStatMultipliers[i];
+			}
+		}
+		modeMask = mask;
+		for (let i = 0; i < modeTab.childNodes.length; i++) {
+			const img = modeTab.childNodes[i];
+			const mode = modes[img.dataset.mode]
+			img.className = (modeMask & mode.bit) !== 0 ? 'mode-button enabled' : 'mode-button';
+
+			if (mode.multipliers && ((modeMask & mode.bit) !== 0)) {
+				for (const foodtype in mode.multipliers) {
+					if (mode.multipliers.hasOwnProperty(foodtype)) {
+						statMultipliers[foodtype] *= mode.multipliers[foodtype];
+					}
 				}
 			}
-			modeMask = mask;
-			for (var i = 0; i < modeTab.childNodes.length; i++) {
-				var img = modeTab.childNodes[i];
-				var mode = modes[img.dataset.mode]
-				img.className = (modeMask & mode.bit) !== 0 ? 'mode-button enabled' : 'mode-button';
+		}
+		for (let i = 0; i < modeRefreshers.length; i++) {
+			modeRefreshers[i]();
+		}
+		const modeOrder = ['together', 'hamlet', 'shipwrecked', 'giants', 'vanilla']
+		for (let i = 0; i < modeOrder.length; i++) {
+			if ((modeMask & modes[modeOrder[i]].bit) !== 0) {
+				document.getElementById('background').style['background-color'] = modes[modeOrder[i]].color;
+				return;
+			}
+		}
+	};
 
-				if (mode.multipliers && ((modeMask & mode.bit) !== 0)) {
-					for (var foodtype in mode.multipliers) {
-						if (mode.multipliers.hasOwnProperty(foodtype)) {
-							statMultipliers[foodtype] *= mode.multipliers[foodtype];
-						}
-					}
-				}
-			}
-			for (var i = 0; i < modeRefreshers.length; i++) {
-				modeRefreshers[i]();
-			}
-			var modeOrder = ['together', 'hamlet', 'shipwrecked', 'giants', 'vanilla']
-			for (var i = 0; i < modeOrder.length; i++) {
-				if ((modeMask & modes[modeOrder[i]].bit) !== 0) {
-					document.getElementById('background').style['background-color'] = modes[modeOrder[i]].color;
-					return;
-				}
-			}
-		},
+	let recipeCrunchData;
 
-		recipeCrunchData,
-		recipeCrunchString,
-		matchingNames = (() => {
-			var name,
-				tag,
-				tagsearch = /^tag[: ]/,
-				tagsplit = /^tag:? */,
-				tagnotsearch = /^tagnot[: ]/,
-				tagnotsplit = /^tagnot:? */,
-				recipe,
-				recipesearch = /^recipe[: ]/,
-				recipesplit = /^recipe:? */,
-				ingredient,
-				ingredientsearch = /^ingredient[: ]/,
-				ingredientsplit = /^ingredient:? */,
-				anywhere,
-				wordstarts,
-				allowUncookable = false,
-				filter = element => {
-					if ((!allowUncookable && element.uncookable) || (element.modeMask & modeMask) === 0) {
-						element.match = 0;
-					} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
-						element.match = 3;
-					} else if (wordstarts.test(element.lowerName) === 0) {
-						element.match = 2;
-					} else if (anywhere.test(element.lowerName)) {
-						element.match = 1;
-					} else {
-						element.match = 0;
+	let matchingNames = (() => {
+		const tagsearch = /^tag[: ]/;
+		const tagsplit = /^tag:? */;
+		const tagnotsearch = /^tagnot[: ]/;
+		const tagnotsplit = /^tagnot:? */;
+		const recipesearch = /^recipe[: ]/;
+		const recipesplit = /^recipe:? */;
+		const ingredientsearch = /^ingredient[: ]/;
+		const ingredientsplit = /^ingredient:? */;
+
+		let name;
+		let tag;
+		let recipe;
+		let ingredient;
+		let allowUncookable = false;
+		let anywhere;
+		let wordstarts;
+
+		const filter = element => {
+			if ((!allowUncookable && element.uncookable) || (element.modeMask & modeMask) === 0) {
+				element.match = 0;
+			} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
+				element.match = 3;
+			} else if (wordstarts.test(element.lowerName) === 0) {
+				element.match = 2;
+			} else if (anywhere.test(element.lowerName)) {
+				element.match = 1;
+			} else {
+				element.match = 0;
+			}
+			return element.match;
+		};
+		const tagFilter = element => {
+			return element.match = element[tag] + 0 || 0;
+		};
+		const recipeFilter = element => {
+			let i = 0;
+			let failed = true;
+			while (i < recipe.length) {
+				const result = recipe[i].test(null, element.nameObject, element);
+				if (recipe[i].cancel) {
+					if (!result) {
+						failed = true;
+						break;
 					}
-					return element.match;
-				},
-				tagFilter = element => {
-					return element.match = element[tag] + 0 || 0;
-				},
-				recipeFilter = element => {
-					var i = 0, result, failed = true;
-					while (i < recipe.length) {
-						result = recipe[i].test(null, element.nameObject, element);
-						if (recipe[i].cancel) {
-							if (!result) {
-								failed = true;
-								break;
-							}
-						} else {
-							if (result) {
-								failed = false;
-							}
-						}
-						i++;
-					}
-					return element.match = failed ? 0 : 1;
-				},
-				ingredientFilter = recipe => {
-					var i = 0, result, failed = true;
-					while (i < recipe.requirements.length) {
-						result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
-						if (recipe.requirements[i].cancel) {
-							if (!result) {
-								failed = true;
-								break;
-							}
-						} else {
-							if (result) {
-								failed = false;
-							}
-						}
-						i++;
-					}
-					return recipe.match = failed ? 0 : 1;
-				},
-				exact = element => {
-					return element.match = (element.lowerName === name) ? 1 : 0;
-				},
-				like = element => {
-					return element.match = (element.lowerName === name || (element.raw && element.raw.lowerName === name) || (element.cook && element.cook.lowerName === name)) ? 1 : 0;
-				},
-				byMatch = (a, b) => {
-					var aname, bname;
-					if (a.match === b.match) {
-						aname = a.basename ? a.basename : a.name;
-						bname = b.basename ? b.basename : b.name;
-						if (aname !== bname) {
-							return aname > bname ? 1 : aname < bname ? -1 : 0;
-						}
-						return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
-					}
-					return b.match - a.match;
-				};
-			return (arr, search, includeUncookable) => {
-				allowUncookable = !!includeUncookable;
-				name = search.toLowerCase();
-				if (tagsearch.test(name)) {
-					tag = name.split(tagsplit)[1];
-					return arr.filter(tagFilter).sort(byMatch);
-				} else if (tagnotsearch.test(name)) {
-					tag = name.split(tagnotsplit)[1];
-					return arr.filter(function(element){ return !tagFilter(element); }).sort(byMatch);
-				} else if (recipesearch.test(name)) {
-					recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
-					if (recipe) {
-						recipe = recipe.requirements;
-						return arr.filter(recipeFilter).sort(byMatch);
-					} else {
-						return [];
-					}
-				} else if (ingredientsearch.test(name)) {
-					ingredient = food.byName(name.split(ingredientsplit)[1].toLowerCase());
-					if (ingredient) {
-						return arr.filter(ingredientFilter).sort(byMatch);
-					} else {
-						return [];
-					}
-				} else if (name.indexOf('*') === 0) {
-					name = name.substring(1);
-					return arr.filter(exact).sort(byMatch);
-				} else if (name.indexOf('~') === 0) {
-					name = name.substring(1);
-					return arr.filter(like).sort(byMatch);
 				} else {
-					wordstarts = new RegExp('\\b' + name + '.*');
-					anywhere = new RegExp('\\b' + name.split('').join('.*') + '.*');
-					return arr.filter(filter).sort(byMatch);
+					if (result) {
+						failed = false;
+					}
 				}
-			};
-		})(),
-		setIngredientValues = (items, names, tags) => {
-			var i, k, item;
-			for (i = 0; i < items.length; i++) {
-				item = items[i];
-				if (item !== null) {
-					names[item.id] = 1 + (names[item.id] || 0);
-					for (k in item) {
-						if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
-							var val = item[k]
-							if (isStat[k]) {
-								val *= statMultipliers[item.preparationType];
-							}
-							else if(isBestStat[k]) {
-								val *= statMultipliers[item[k+'Type']];
-							}
-							tags[k] = val + (tags[k] || 0);
-						} else if (k === 'perish') {
-							tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
+				i++;
+			}
+			return element.match = failed ? 0 : 1;
+		};
+		const ingredientFilter = recipe => {
+			let i = 0;
+			let failed = true;
+
+			while (i < recipe.requirements.length) {
+				const result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
+				if (recipe.requirements[i].cancel) {
+					if (!result) {
+						failed = true;
+						break;
+					}
+				} else {
+					if (result) {
+						failed = false;
+					}
+				}
+				i++;
+			}
+			return recipe.match = failed ? 0 : 1;
+		};
+		const exact = element => {
+			return element.match = (element.lowerName === name) ? 1 : 0;
+		};
+		const like = element => {
+			return element.match = (element.lowerName === name || (element.raw && element.raw.lowerName === name) || (element.cook && element.cook.lowerName === name)) ? 1 : 0;
+		};
+		const byMatch = (a, b) => {
+			if (a.match === b.match) {
+				const aname = a.basename ? a.basename : a.name;
+				const bname = b.basename ? b.basename : b.name;
+				if (aname !== bname) {
+					return aname > bname ? 1 : aname < bname ? -1 : 0;
+				}
+				return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
+			}
+			return b.match - a.match;
+		};
+		return (arr, search, includeUncookable) => {
+			allowUncookable = !!includeUncookable;
+			name = search.toLowerCase();
+			if (tagsearch.test(name)) {
+				tag = name.split(tagsplit)[1];
+				return arr.filter(tagFilter).sort(byMatch);
+			} else if (tagnotsearch.test(name)) {
+				tag = name.split(tagnotsplit)[1];
+				return arr.filter(element => { return !tagFilter(element); }).sort(byMatch);
+			} else if (recipesearch.test(name)) {
+				recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
+				if (recipe) {
+					recipe = recipe.requirements;
+					return arr.filter(recipeFilter).sort(byMatch);
+				} else {
+					return [];
+				}
+			} else if (ingredientsearch.test(name)) {
+				ingredient = food.byName(name.split(ingredientsplit)[1].toLowerCase());
+				if (ingredient) {
+					return arr.filter(ingredientFilter).sort(byMatch);
+				} else {
+					return [];
+				}
+			} else if (name.indexOf('*') === 0) {
+				name = name.substring(1);
+				return arr.filter(exact).sort(byMatch);
+			} else if (name.indexOf('~') === 0) {
+				name = name.substring(1);
+				return arr.filter(like).sort(byMatch);
+			} else {
+				wordstarts = new RegExp('\\b' + name + '.*');
+				anywhere = new RegExp('\\b' + name.split('').join('.*') + '.*');
+				return arr.filter(filter).sort(byMatch);
+			}
+		};
+	})();
+
+	const setIngredientValues = (items, names, tags) => {
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i];
+			if (item !== null) {
+				names[item.id] = 1 + (names[item.id] || 0);
+				for (let k in item) {
+					if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
+						let val = item[k]
+						if (isStat[k]) {
+							val *= statMultipliers[item.preparationType];
 						}
+						else if (isBestStat[k]) {
+							val *= statMultipliers[item[k+'Type']];
+						}
+						tags[k] = val + (tags[k] || 0);
+					} else if (k === 'perish') {
+						tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
 					}
 				}
 			}
-		},
-		getSuggestions = (() => {
-			var names,
-				tags;
-			return (recipeList, items, exclude, itemComplete) => {
-				var i, ii, valid;
-				recipeList.length = 0;
-				names = {};
-				tags = {};
-				setIngredientValues(items, names, tags);
-				tags.hunger = tags.bestHunger;
-				tags.health = tags.bestHealth;
-				tags.sanity = tags.bestSanity;
-				outer: for (i = 0; i < recipes.length; i++) {
-					valid = false;
-					if ((recipes[i].modeMask & modeMask) === 0) {
-						continue;
+		}
+	};
+
+	const getSuggestions = (() => {
+		return (recipeList, items, exclude, itemComplete) => {
+			recipeList.length = 0;
+			const names = {};
+			const tags = {};
+			setIngredientValues(items, names, tags);
+			tags.hunger = tags.bestHunger;
+			tags.health = tags.bestHealth;
+			tags.sanity = tags.bestSanity;
+			outer: for (let i = 0; i < recipes.length; i++) {
+				let valid = false;
+				if ((recipes[i].modeMask & modeMask) === 0) {
+					continue;
+				}
+				for (let ii = 0; ii < recipes[i].requirements.length; ii++) {
+					if (recipes[i].requirements[ii].test(null, names, tags)) {
+						if (!recipes[i].requirements[ii].cancel) {
+							valid = true;
+						}
+					} else if (!itemComplete && recipes[i].requirements[ii].cancel) {
+						continue outer;
+					} else if (itemComplete && !recipes[i].requirements[ii].cancel) {
+						continue outer;
 					}
-					for (ii = 0; ii < recipes[i].requirements.length; ii++) {
-						if (recipes[i].requirements[ii].test(null, names, tags)) {
-							if (!recipes[i].requirements[ii].cancel) {
-								valid = true;
-							}
-						} else if (!itemComplete && recipes[i].requirements[ii].cancel) {
-							continue outer;
-						} else if (itemComplete && !recipes[i].requirements[ii].cancel) {
-							continue outer;
+				}
+				valid && (!exclude || exclude.indexOf(recipes[i]) === -1) && recipeList.push(recipes[i]);
+			}
+			tags.img = '';
+			tags.name = 'Combined';
+			return recipeList;
+		};
+	})();
+
+	const getRecipes = (() => {
+		const recipeList = [];
+		return items => {
+			const names = {};
+			const tags = {};
+			recipeList.length = 0;
+			setIngredientValues(items, names, tags);
+			tags.hunger = tags.bestHunger;
+			tags.health = tags.bestHealth;
+			tags.sanity = tags.bestSanity;
+			for (let i = 0; i < recipes.length; i++) {
+				recipes[i].test(null, names, tags)
+					&& (recipes[i].modeMask & modeMask) !== 0
+					&& recipeList.push(recipes[i]);
+			}
+			recipeList.sort((a, b) => {
+				return b.priority - a.priority;
+			});
+			tags.img = '';
+			tags.name = 'Combined';
+			tags.priority = ' ';
+			tags.perish = 0;
+			tags.cooktime = 0;
+			recipeList.unshift(tags);
+			return recipeList;
+		};
+	})();
+
+	const makeImage = (() => {
+		const canvas = document.createElement('canvas');
+		const ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d');
+		const canvas32 = document.createElement('canvas');
+		const ctx32 = canvas32.getContext && canvas32.getContext('2d');
+		const images = {};
+		const images32 = {};
+		const canvasSupported = !!ctx;
+		const requests = [];
+		const cacheImage = url => {
+			const renderToCache = (url, imageElement) => {
+				ctx.clearRect(0, 0, 64, 64);
+				ctx.drawImage(imageElement, 0, 0, 64, 64);
+				ctx32.clearRect(0, 0, 32, 32);
+				ctx32.drawImage(imageElement, 0, 0, 32, 32);
+				try {
+					images[url] = canvas.toDataURL();
+					images32[url] = canvas32.toDataURL();
+				} catch (ex) {
+					canvasSupported = false;
+				}
+				requests.filter(request => { return request.url === url; }).forEach(request => {
+					if (request.url === url) {
+						delete request.img.dataset.pending;
+						if (noDataset) {
+							request.img.removeAttribute('data-pending');
+						}
+						if (request.d === 32) {
+							request.img.src = images32[url] || url;
+						} else {
+							request.img.src = images[url] || url;
 						}
 					}
-					valid && (!exclude || exclude.indexOf(recipes[i]) === -1) && recipeList.push(recipes[i]);
-				}
-				tags.img = '';
-				tags.name = 'Combined';
-				return recipeList;
-			};
-		})(),
-		getRecipes = (() => {
-			var recipeList = [],
-				names,
-				tags;
-			return items => {
-				var i;
-				recipeList.length = 0;
-				names = {};
-				tags = {};
-				setIngredientValues(items, names, tags);
-				tags.hunger = tags.bestHunger;
-				tags.health = tags.bestHealth;
-				tags.sanity = tags.bestSanity;
-				for (i = 0; i < recipes.length; i++) {
-					recipes[i].test(null, names, tags)
-						&& (recipes[i].modeMask & modeMask) !== 0
-						&& recipeList.push(recipes[i]);
-				}
-				recipeList.sort((a, b) => {
-					return b.priority - a.priority;
 				});
-				tags.img = '';
-				tags.name = 'Combined';
-				tags.priority = ' ';
-				tags.perish = 0;
-				tags.cooktime = 0;
-				recipeList.unshift(tags);
-				return recipeList;
+				requests = requests.filter(request => { return request.url !== url; });
 			};
-		})(),
-		makeImage = (() => {
-			var canvas = document.createElement('canvas'),
-				ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d'),
-				canvas32 = document.createElement('canvas'),
-				ctx32 = canvas32.getContext && canvas32.getContext('2d'),
-				images = {},
-				images32 = {},
-				canvasSupported = !!ctx,
-				requests = [],
-				cacheImage = url => {
-					var renderToCache = (url, imageElement) => {
-						ctx.clearRect(0, 0, 64, 64);
-						ctx.drawImage(imageElement, 0, 0, 64, 64);
-						ctx32.clearRect(0, 0, 32, 32);
-						ctx32.drawImage(imageElement, 0, 0, 32, 32);
-						try {
-							images[url] = canvas.toDataURL();
-							images32[url] = canvas32.toDataURL();
-						} catch (ex) {
-							canvasSupported = false;
-						}
-						requests.filter(request => { return request.url === url; }).forEach(request => {
-							if (request.url === url) {
-								delete request.img.dataset.pending;
-								if (noDataset) {
-									request.img.removeAttribute('data-pending');
-								}
-								if (request.d === 32) {
-									request.img.src = images32[url] || url;
-								} else {
-									request.img.src = images[url] || url;
-								}
-							}
-						});
-						requests = requests.filter(request => { return request.url !== url; });
-					};
-					return e => {
-						renderToCache(url, e.target);
-					}
-				},
-				queue = (img, url, d) => {
-					img.dataset.pending = url;
-					if (noDataset) {
-						img.setAttribute('data-pending', url);
-					}
-					requests.push({url: url, img: img, d: d});
-				},
-				makeImage = (url, d) => {
-					var img = new Image(), dummy, listener;
-					if (canvasSupported) {
-						if (images[url]) {
-							//image is cached
-							if (d === 32) {
-								img.src = images32[url];
-							} else {
-								img.src = images[url];
-							}
-						} else if (images[url] === null) {
-							//image is waiting to be loaded
-							queue(img, url, d);
-						} else {
-							//image has not been cached
-							images[url] = null;
-							dummy = new Image();
-							dummy.addEventListener('load', cacheImage(url), false);
-							dummy.src = url;
-							queue(img, url, d);
-						}
+			return e => {
+				renderToCache(url, e.target);
+			}
+		};
+		const queue = (img, url, d) => {
+			img.dataset.pending = url;
+			if (noDataset) {
+				img.setAttribute('data-pending', url);
+			}
+			requests.push({url: url, img: img, d: d});
+		};
+		const makeImage = (url, d) => {
+			if (canvasSupported) {
+				if (images[url]) {
+					//image is cached
+					if (d === 32) {
+						img.src = images32[url];
 					} else {
-						//if we can't cache the images with canvas, just do it normally
-						img.src = url;
+						img.src = images[url];
 					}
-					return img;
-				};
-			canvas.width = 64;
-			canvas.height = 64;
-			canvas32.width = 32;
-			canvas32.height = 32;
-			makeImage.queue = queue;
-			return makeImage;
-		})(),
-		makeLinkable = (() => {
-			var linkSearch = /\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/,
-				leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g,
-				rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g,
-				addLeftClass = (a, b, c) => { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); },
-				addRightClass = (a, b, c) => { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); },
-				titleCase = /_(\w)/g,
-				toTitleCase = (a, b) => { return ' ' + b.toUpperCase(); };
-			return str => {
-				var processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass),
-					results = processed && processed.split(linkSearch),
-					fragment, i, span, url, image;
-				if (!results || results.length === 1) {
-					return processed;
+				} else if (images[url] === null) {
+					//image is waiting to be loaded
+					queue(img, url, d);
 				} else {
-					fragment = document.createDocumentFragment();
-					fragment.appendChild(document.createTextNode(results[0]));
-					for (i = 1; i < results.length; i += 4) {
-						if (results[i] === '' && results[i + 1] === '') {
-							fragment.appendChild(document.createElement('br'));
-						} else {
-							span = document.createElement('span');
-							span.className = results[i + 2] === '' ? 'link' : 'link ' + results[i + 2]; //IE doesn't support classList, too lazy to come up with a polyfill
-							span.dataset.link = results[i];
-							if (noDataset) {
-								span.setAttribute('data-link', results[i]);
-							}
-							if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
-								span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
-								url = results[i + 1].split(' ')[0];
-								image = makeImage(url, 32);
-								image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
-								span.appendChild(image);
-							} else {
-								span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
-							}
-							fragment.appendChild(span);
-						}
-						fragment.appendChild(document.createTextNode(results[i + 3]));
-					}
-					return fragment;
+					//image has not been cached
+					images[url] = null;
+					const dummy = new Image();
+					dummy.addEventListener('load', cacheImage(url), false);
+					dummy.src = url;
+					queue(img, url, d);
 				}
-			};
-		})(),
-		i,
-		index = 0,
-		mainElement = document.getElementById('main'),
-		foodElement = document.getElementById('food'),
-		recipesElement = document.getElementById('recipes'),
-		fragment, navbar = document.getElementById('navbar'),
-		noDataset = false;
+			} else {
+				//if we can't cache the images with canvas, just do it normally
+				img.src = url;
+			}
+			return img;
+		};
+		canvas.width = 64;
+		canvas.height = 64;
+		canvas32.width = 32;
+		canvas32.height = 32;
+		makeImage.queue = queue;
+		return makeImage;
+	})();
+	const makeLinkable = (() => {
+		const linkSearch = /\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/;
+		const leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g;
+		const rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g;
+		const addLeftClass = (_a, b, c) => { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); };
+		const addRightClass = (_a, b, c) => { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); };
+		const titleCase = /_(\w)/g;
+		const toTitleCase = (_a, b) => { return ' ' + b.toUpperCase(); };
+
+		return str => {
+			const processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass);
+			const results = processed && processed.split(linkSearch);
+
+			if (!results || results.length === 1) {
+				return processed;
+			} else {
+				const fragment = document.createDocumentFragment();
+				fragment.appendChild(document.createTextNode(results[0]));
+				for (let i = 1; i < results.length; i += 4) {
+					if (results[i] === '' && results[i + 1] === '') {
+						fragment.appendChild(document.createElement('br'));
+					} else {
+						const span = document.createElement('span');
+						span.className = results[i + 2] === '' ? 'link' : 'link ' + results[i + 2]; //IE doesn't support classList, too lazy to come up with a polyfill
+						span.dataset.link = results[i];
+						if (noDataset) {
+							span.setAttribute('data-link', results[i]);
+						}
+						if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
+							span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
+							const url = results[i + 1].split(' ')[0];
+							const image = makeImage(url, 32);
+							image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
+							span.appendChild(image);
+						} else {
+							span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
+						}
+						fragment.appendChild(span);
+					}
+					fragment.appendChild(document.createTextNode(results[i + 3]));
+				}
+				return fragment;
+			}
+		};
+	})();
+
+	const mainElement = document.getElementById('main');
+	const foodElement = document.getElementById('food');
+	const recipesElement = document.getElementById('recipes');
+	const navbar = document.getElementById('navbar');
+	let noDataset = false;
+	let info;
+	const taggify = (tag, name) => { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 
 	// TODO: process the rot: entries, and add the spoiled fish
 
@@ -458,7 +462,7 @@ import {recipes} from './recipes.js';
 			}
 		});
 	}
-	//var info = [];
+
 	document.getElementById('stalehealth').appendChild(document.createTextNode(Math.round(stale_food_health * 1000) / 10 + '%'));
 	document.getElementById('stalehunger').appendChild(document.createTextNode(Math.round(stale_food_hunger * 1000) / 10 + '%'));
 	document.getElementById('spoiledhunger').appendChild(document.createTextNode(Math.round(spoiled_food_hunger * 1000) / 10 + '%'));
@@ -467,186 +471,193 @@ import {recipes} from './recipes.js';
 	document.getElementById('perishwinter').appendChild(document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'));
 	document.getElementById('perishsummer').appendChild(document.createTextNode(Math.round(perish_summer_mult * 1000) / 10 + '%'));
 	document.getElementById('perishfridge').appendChild(document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'));
-	var info,
-		taggify = (tag, name) => { return '[tag:' + tag + '|' + (name || tag) + ']'; };
-	for (i in food) {
-		if (food.hasOwnProperty(i)) {
-			var f = food[i];
-			f.match = 0;
-			f.lowerName = f.name.toLowerCase();
-			f.id = i;
-			f.nameObject = {};
-			f.nameObject[i] = 1;
-			f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
-			f.preparationType = f.preparationType || 'raw';
-			if (food[i + '_cooked']) {
-				f.cook = food[i + '_cooked'];
+
+	let foodCount = 0
+	for (const i in food) {
+		if (!food.hasOwnProperty(i)) {
+			continue;
+		}
+
+		const f = food[i];
+		f.match = 0;
+		f.lowerName = f.name.toLowerCase();
+		f.id = i;
+		f.nameObject = {};
+		f.nameObject[i] = 1;
+		f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
+		f.preparationType = f.preparationType || 'raw';
+		if (food[i + '_cooked']) {
+			f.cook = food[i + '_cooked'];
+		}
+		if (typeof f.cook === 'string') {
+			f.cook = food[f.cook];
+		}
+		if (f.cook && !f.cook.raw) {
+			f.cook.raw = f;
+			f.cook.cooked = true;
+			if (!f.cook.basename) {
+				f.cook.basename = (f.basename || f.name) + '.';
 			}
-			if (typeof f.cook === 'string') {
-				f.cook = food[f.cook];
+		}
+		if (typeof f.raw === 'string') {
+			f.raw = food[f.raw];
+			f.cooked = true;
+			if (!f.basename) {
+				f.basename = (f.raw.basename || f.raw.name) + '.';
 			}
-			if (f.cook && !f.cook.raw) {
-				f.cook.raw = f;
-				f.cook.cooked = true;
-				if (!f.cook.basename) {
-					f.cook.basename = (f.basename || f.name) + '.';
-				}
+		}
+		if (typeof f.dry === 'string') {
+			f.dry = food[f.dry];
+		}
+		if (f.dry && !f.dry.wet) {
+			f.dry.wet = f;
+			f.dry.rackdried = true;
+			if (!f.dry.basename) {
+				f.dry.basename = (f.basename || f.name) + '..';
 			}
-			if (typeof f.raw === 'string') {
-				f.raw = food[f.raw];
-				f.cooked = true;
-				if (!f.basename) {
-					f.basename = (f.raw.basename || f.raw.name) + '.';
-				}
+		}
+		if (typeof f.wet === 'string') {
+			f.rackdried = true;
+			f.wet = food[f.wet];
+			if (!f.basename) {
+				f.basename = (f.wet.basename || f.wet.name) + '..';
 			}
-			if (typeof f.dry === 'string') {
-				f.dry = food[f.dry];
-			}
-			if (f.dry && !f.dry.wet) {
-				f.dry.wet = f;
-				f.dry.rackdried = true;
-				if (!f.dry.basename) {
-					f.dry.basename = (f.basename || f.name) + '..';
-				}
-			}
-			if (typeof f.wet === 'string') {
-				f.rackdried = true;
-				f.wet = food[f.wet];
-				if (!f.basename) {
-					f.basename = (f.wet.basename || f.wet.name) + '..';
+		}
+		if (f.cook) {
+			f.cook.preparationType = 'cooked';
+		}
+		if (f.dry) {
+			f.dry.preparationType = 'dried';
+		}
+
+		for (let i = 0; i < stats.length; i++) {
+			const stat = stats[i];
+			const bestStat = f[stat] || 0;
+			const bestStatType = f.preparationType;
+			if (f.raw) {
+				bestStat = Math.max(f.raw[stat] || 0, bestStat)
+				if (bestStat === f.raw[stat]) {
+					bestStatType = 'raw';
 				}
 			}
 			if (f.cook) {
-				f.cook.preparationType = 'cooked';
-			}
-			if (f.dry) {
-				f.dry.preparationType = 'dried';
-			}
-
-			for (var i = 0; i < stats.length; i++) {
-				var stat = stats[i];
-				var bestStat = f[stat] || 0;
-				var bestStatType = f.preparationType;
-				if (f.raw) {
-					bestStat = Math.max(f.raw[stat] || 0, bestStat)
-					if (bestStat === f.raw[stat]) {
-						bestStatType = 'raw';
-					}
+				bestStat = Math.max(f.cook[stat] || 0, bestStat)
+				if (bestStat === f.cook[stat]) {
+					bestStatType = 'cooked';
 				}
-				if (f.cook) {
-					bestStat = Math.max(f.cook[stat] || 0, bestStat)
-					if (bestStat === f.cook[stat]) {
-						bestStatType = 'cooked';
-					}
-				}
-				stat = stat.charAt(0).toUpperCase() + stat.slice(1);
-				f['best' + stat] = bestStat;
-				f['best' + stat + 'Type'] = bestStatType;
-				// console.log('best' + stat + 'Type');
 			}
-			// var bestHealth = f.health || 0;
-			// var bestHunger = f.hunger || 0;
-			// var bestSanity = f.sanity || 0;
-			// if (f.cook) {
-			// 	bestHealth = Math.max(f.cook.health || 0, bestHealth);
-			// 	bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
-			// 	bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
-			// }
-			// if (f.raw) {
-			// 	bestHealth = Math.max(f.raw.health || 0, bestHealth);
-			// 	bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
-			// 	bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
-			// }
-			// f.bestHealth = bestHealth;
-			// f.bestHunger = bestHunger;
-			// f.bestSanity = bestSanity;
-
-			f.info = [];
-			info = f.info;
-			f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
-			f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
-			f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : '\xd7' + f.meat));
-			f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : '\xd7' + f.egg));
-			f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : '\xd7' + f.fish));
-			f.magic && info.push(taggify('magic'));
-			f.decoration && info.push(taggify('decoration'));
-			f.inedible && info.push(taggify('inedible'));
-			f.monster && info.push(taggify('monster', 'monster food'));
-			f.sweetener && info.push(taggify('sweetener'));
-			f.fat && info.push(taggify('fat'));
-			f.dairy && info.push(taggify('dairy'));
-			f.jellyfish && info.push(taggify('jellyfish'));
-			f.antihistamine && info.push(taggify('antihistamine'));
-			f.filter && info.push(taggify('filter'));
-			f.bug && info.push(taggify('bug'));
-			f.bone && info.push(taggify('bone'));
-			f.comment && info.push(f.comment);
-			food[index++] = f;
+			stat = stat.charAt(0).toUpperCase() + stat.slice(1);
+			f['best' + stat] = bestStat;
+			f['best' + stat + 'Type'] = bestStatType;
+			// console.log('best' + stat + 'Type');
 		}
+
+		// const bestHealth = f.health || 0;
+		// const bestHunger = f.hunger || 0;
+		// const bestSanity = f.sanity || 0;
+		// if (f.cook) {
+		// 	bestHealth = Math.max(f.cook.health || 0, bestHealth);
+		// 	bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
+		// 	bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
+		// }
+		// if (f.raw) {
+		// 	bestHealth = Math.max(f.raw.health || 0, bestHealth);
+		// 	bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
+		// 	bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
+		// }
+		// f.bestHealth = bestHealth;
+		// f.bestHunger = bestHunger;
+		// f.bestSanity = bestSanity;
+
+		f.info = [];
+		info = f.info;
+		f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
+		f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
+		f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : '\xd7' + f.meat));
+		f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : '\xd7' + f.egg));
+		f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : '\xd7' + f.fish));
+		f.magic && info.push(taggify('magic'));
+		f.decoration && info.push(taggify('decoration'));
+		f.inedible && info.push(taggify('inedible'));
+		f.monster && info.push(taggify('monster', 'monster food'));
+		f.sweetener && info.push(taggify('sweetener'));
+		f.fat && info.push(taggify('fat'));
+		f.dairy && info.push(taggify('dairy'));
+		f.jellyfish && info.push(taggify('jellyfish'));
+		f.antihistamine && info.push(taggify('antihistamine'));
+		f.filter && info.push(taggify('filter'));
+		f.bug && info.push(taggify('bug'));
+		f.bone && info.push(taggify('bone'));
+		f.comment && info.push(f.comment);
+		food[foodCount++] = f;
 	}
-	food.length = index;
-	index = 0;
-	for (i in recipes) {
-		if (recipes.hasOwnProperty(i)) {
-			recipes[i].match = 0;
-			recipes[i].name = recipes[i].name || i;
-			recipes[i].id = i;
-			recipes[i].lowerName = recipes[i].name.toLowerCase();
-			recipes[i].weight = recipes[i].weight || 1;
-			recipes[i].priority = recipes[i].priority || 0;
-			recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
-			if (recipes[i].requirements) {
-				recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].mode ? ('; [tag:' + recipes[i].mode + '|img/' + modes[recipes[i].mode].img + ']') : ''));
-			}
-			if (recipes[i].mode) {
-				recipes[i][recipes[i].mode] = true;
+
+	food.length = foodCount;
+
+	let recipeCount = 0
+	for (const i in recipes) {
+		if (!recipes.hasOwnProperty(i)) {
+			continue;
+		}
+		recipes[i].match = 0;
+		recipes[i].name = recipes[i].name || i;
+		recipes[i].id = i;
+		recipes[i].lowerName = recipes[i].name.toLowerCase();
+		recipes[i].weight = recipes[i].weight || 1;
+		recipes[i].priority = recipes[i].priority || 0;
+		recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
+		if (recipes[i].requirements) {
+			recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].mode ? ('; [tag:' + recipes[i].mode + '|img/' + modes[recipes[i].mode].img + ']') : ''));
+		}
+		if (recipes[i].mode) {
+			recipes[i][recipes[i].mode] = true;
+		} else {
+			recipes[i].vanilla = true;
+			recipes[i].mode = 'vanilla';
+		}
+		recipes[i].modeMask = modes[recipes[i].mode].bit;
+		if (recipes[i].temperature) {
+			if (recipes[i].note) {
+				recipes[i].note += '; ';
 			} else {
-				recipes[i].vanilla = true;
-				recipes[i].mode = 'vanilla';
+				recipes[i].note = '';
 			}
-			recipes[i].modeMask = modes[recipes[i].mode].bit;
-			if (recipes[i].temperature) {
-				if (recipes[i].note) {
-					recipes[i].note += '; ';
-				} else {
-					recipes[i].note = '';
-				}
-				recipes[i].note += 'Provides ' + recipes[i].temperature + ' heat for ' + recipes[i].temperatureduration + ' seconds';
-			}
-			if (recipes[i].temperaturebump) {
-				if (recipes[i].note) {
-					recipes[i].note += '; ';
-				} else {
-					recipes[i].note = '';
-				}
-				recipes[i].note += recipes[i].temperature + ' heat when consumed';
-			}
-			recipes[i].preparationType = 'recipe';
-			recipes[index++] = recipes[i];
+			recipes[i].note += 'Provides ' + recipes[i].temperature + ' heat for ' + recipes[i].temperatureduration + ' seconds';
 		}
+		if (recipes[i].temperaturebump) {
+			if (recipes[i].note) {
+				recipes[i].note += '; ';
+			} else {
+				recipes[i].note = '';
+			}
+			recipes[i].note += recipes[i].temperature + ' heat when consumed';
+		}
+		recipes[i].preparationType = 'recipe';
+		recipes[recipeCount++] = recipes[i];
 	}
-	recipes.length = index;
+
+	recipes.length = recipeCount;
 	recipes.forEach = Array.prototype.forEach;
 	recipes.filter = Array.prototype.filter;
 	recipes.sort = Array.prototype.sort;
 
 	recipes.byName = name => {
-		var i = this.length;
+		let i = this.length;
 		while (i--) {
 			if (this[i].lowerName === name) {
 				return this[i];
 			}
 		}
 	};
-	var reduceRecipeButton = (a, b) => {
+	const reduceRecipeButton = (a, b) => {
 		return a + '[recipe:' + b.name + '|' + b.img + ']';
 	};
-	var pl = (str, n, plr) => {
+	const pl = (str, n, plr) => {
 		return n === 1 ? str : str + (plr || 's');
 	};
 
 	for (i = 0; i < food.length; i++) {
-		var f = food[i];
+		const f = food[i];
 		info = f.info;
 		f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
 		if (f.cook) {
@@ -673,7 +684,10 @@ import {recipes} from './recipes.js';
 		if (!f.uncookable) {
 			f.recipes = [];
 			recipes.forEach(recipe => {
-				var qualifies = false, r = recipe.requirements, i = r.length;
+				const r = recipe.requirements
+				let qualifies = false
+				let i = r.length;
+
 				while (i--) {
 					if (r[i].test(null, f.nameObject, f)) {
 						if (!r[i].cancel && !qualifies) {
@@ -706,7 +720,7 @@ import {recipes} from './recipes.js';
 	food.filter = Array.prototype.filter;
 	food.sort = Array.prototype.sort;
 	food.byName = name => {
-		var i = this.length;
+		let i = this.length;
 		while (i--) {
 			if (this[i].lowerName === name) {
 				return this[i];
@@ -714,125 +728,130 @@ import {recipes} from './recipes.js';
 		}
 	};
 
-	var usefulTags = ['id', 'health', 'hunger', 'fruit', 'veggie', 'meat', 'egg', 'fish', 'magic', 'decoration', 'inedible', 'monster', 'sweetener', 'fat', 'dairy'],
-		combinationGenerator = (length, callback, startPos) => {
-			var size = 4, index = 1, current = startPos || [0, 0, 0, 0], check, max = 0, iter = 0;
-			return batch => {
-				var overflow;
-				while (batch-- && index <= length) {
-					callback(current);
-					current[0]++;
-					overflow = 0;
-					while (current[overflow] >= length) {
-						overflow++;
-						current[overflow]++;
-					}
-					check = size;
-					max = 0;
-					while (check--) {
-						if (current[check] >= length) {
-							current[check] = max;
-						} else if (current[check] > max) {
-							max = current[check];
-						}
-					}
-					if (overflow === size) {
-						return false;
-						break; //in case I copy and paste this for some reason and forget I need to get out of the loop
-					}
-					iter++;
+	const combinationGenerator = (length, callback, startPos) => {
+		const size = 4
+		const index = 1
+		const current = startPos || [0, 0, 0, 0]
+
+		return batch => {
+			while (batch-- && index <= length) {
+				callback(current);
+				current[0]++;
+				let overflow = 0;
+				while (current[overflow] >= length) {
+					overflow++;
+					current[overflow]++;
 				}
-				return true;
-			};
+				let check = size;
+				let max = 0;
+				while (check--) {
+					if (current[check] >= length) {
+						current[check] = max;
+					} else if (current[check] > max) {
+						max = current[check];
+					}
+				}
+				if (overflow === size) {
+					return false;
+				}
+			}
+			return true;
 		};
+	};
 	recipeCrunchData = {};
-	/* recipeCrunchData.food = food.filter(item => {
+
+	/*
+		// this isn't currently used for some reason?
+		const usefulTags = ['id', 'health', 'hunger', 'fruit', 'veggie', 'meat', 'egg', 'fish', 'magic', 'decoration', 'inedible', 'monster', 'sweetener', 'fat', 'dairy'];
+		recipeCrunchData.food = food.filter(item => {
 			return !item.uncookable && !item.skip && (item.ideal || (!item.cook && (!item.raw || !item.raw.ideal)));
 		}).map(item => {
-			var f = {}, t = usefulTags.length;
+			const f = {}
+			let t = usefulTags.length;
 			while (t--) {
 				if (item.hasOwnProperty(usefulTags[t])) {
 					f[usefulTags[t]] = item[usefulTags[t]];
 				}
 			}
 			return f;
-		}); */ // this isn't currently used for some reason?
-	recipeCrunchData.recipes = recipes.filter(item => {
-			return !item.trash;
-		}).sort((a, b) => {
-			return b.priority - a.priority;
 		});
+	*/
+
+	recipeCrunchData.recipes = recipes.filter(item => {
+		return !item.trash;
+	}).sort((a, b) => {
+		return b.priority - a.priority;
+	});
+
 	recipeCrunchData.test = recipeCrunchData.recipes.map(a => { return a.test; })
 	recipeCrunchData.tests = recipeCrunchData.recipes.map(a => { return a.test.toString(); })
 	recipeCrunchData.priority = recipeCrunchData.recipes.map(a => { return a.priority; });
-	var getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
-			var l = recipeCrunchData.test.length,
-				built = [],
-				renderedTo = 0,
-				lastTime,
-				block = 60,
-				desiredTime = 38,
-				foodFromIndex = index => {
-					return items[index];
-				},
-				callback = combination => {
-					var ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
-					setIngredientValues(ingredients, names, tags);
-					// console.log('callback: ' + tags.bestHungerType);
-					tags.hunger = tags.bestHunger;// * statMultipliers[tags.bestHungerType];
-					tags.health = tags.bestHealth;// * statMultipliers[tags.bestHealthType];
-					tags.sanity = tags.bestSanity;// * statMultipliers[tags.bestSanityType];
-					for (i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
-						if (rcdTest[i](null, names, tags)) {
-							if (created !== null) {
-								multiple = true;
-								created.multiple = true;
-							}
-							created = { recipe: rcdRecipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger }, multiple: multiple };
-							built.push(created);
-							priority = rcdRecipes[i].priority;
-						}
-					}
-				},
-				getCombinations = combinationGenerator(items.length, callback),
-				computeNextBlock = () => {
-					var end = false,
-						start = Date.now();
-					if (getCombinations(block)) {
-						setTimeout(computeNextBlock, 0);
-					} else {
-						end = true;
-					}
-					for (; renderedTo < built.length && built[renderedTo]; renderedTo++) {
-						mainCallback(built[renderedTo]);
-					}
-					if (lastTime !== Date.now() - start) {
-						lastTime = Date.now() - start + 1;
-						block = desiredTime / lastTime * block + 1 | 0;
-					}
-					chunkCallback && chunkCallback();
-					end && endCallback && endCallback();
-				};
-			computeNextBlock();
-		};
-	//console.log(recipeCrunchData);
-	//delete recipeCrunchData.recipes;
-	//recipeCrunchString = JSON.stringify(recipeCrunchData); //recipeCrunch might also be used for multithreading later
 
-	var setTab;
+	const getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
+		const l = recipeCrunchData.test.length;
+		const built = [];
+		let renderedTo = 0;
+		let lastTime;
+		const block = 60;
+		const desiredTime = 38;
+		const foodFromIndex = index => {
+			return items[index];
+		};
+		const callback = combination => {
+			const ingredients = combination.map(foodFromIndex), i, priority = null, names = {}, tags = {}, created = null, multiple = false, rcdTest = recipeCrunchData.test, rcdRecipes = recipeCrunchData.recipes;
+			setIngredientValues(ingredients, names, tags);
+			// console.log('callback: ' + tags.bestHungerType);
+			tags.hunger = tags.bestHunger;// * statMultipliers[tags.bestHungerType];
+			tags.health = tags.bestHealth;// * statMultipliers[tags.bestHealthType];
+			tags.sanity = tags.bestSanity;// * statMultipliers[tags.bestSanityType];
+			for (i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
+				if (rcdTest[i](null, names, tags)) {
+					if (created !== null) {
+						multiple = true;
+						created.multiple = true;
+					}
+					created = { recipe: rcdRecipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger }, multiple: multiple };
+					built.push(created);
+					priority = rcdRecipes[i].priority;
+				}
+			}
+		};
+		const getCombinations = combinationGenerator(items.length, callback);
+		const computeNextBlock = () => {
+			const start = Date.now();
+			let end = false;
+
+			if (getCombinations(block)) {
+				setTimeout(computeNextBlock, 0);
+			} else {
+				end = true;
+			}
+			for (; renderedTo < built.length && built[renderedTo]; renderedTo++) {
+				mainCallback(built[renderedTo]);
+			}
+			if (lastTime !== Date.now() - start) {
+				lastTime = Date.now() - start + 1;
+				block = desiredTime / lastTime * block + 1 | 0;
+			}
+			chunkCallback && chunkCallback();
+			end && endCallback && endCallback();
+		};
+
+		computeNextBlock();
+	};
+
+	let setTab;
 	(() => {
-		var navtabs = navbar.getElementsByTagName('li'),
-			tabs = {},
-			elements = {},
-			storage,
-			activeIndex = 0,
-			activePage,
-			activeTab,
-			showTab = e => {
-				setTab(e.target.dataset.tab);
-			},
-			navtab;
-		setTab = tabID => {
+		const navtabs = navbar.getElementsByTagName('li');
+		const tabs = {};
+		const elements = {};
+		let activePage;
+		let activeTab;
+
+		const showTab = e => {
+			setTab(e.target.dataset.tab);
+		};
+		const setTab = tabID => {
 			activeTab.className = '';
 			activeTab = tabs[tabID];
 			activePage.style.display = 'none';
@@ -840,8 +859,8 @@ import {recipes} from './recipes.js';
 			activeTab.className = 'selected';
 			activePage.style.display = 'block';
 		};
-		for (i = 0; i < navtabs.length; i++) {
-			navtab = navtabs[i];
+		for (let i = 0; i < navtabs.length; i++) {
+			const navtab = navtabs[i];
 			if (navtab.dataset.tab) {
 				tabs[navtab.dataset.tab] = navtab;
 				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
@@ -854,7 +873,7 @@ import {recipes} from './recipes.js';
 		activePage = elements['simulator'];
 		try {
 			if (window.localStorage && localStorage.foodGuideState) {
-				storage = JSON.parse(localStorage.foodGuideState);
+				const storage = JSON.parse(localStorage.foodGuideState);
 				if (storage.activeTab && tabs[storage.activeTab]) {
 					activeTab = tabs[storage.activeTab];
 					activePage = elements[storage.activeTab];
@@ -867,7 +886,7 @@ import {recipes} from './recipes.js';
 		activeTab.className = 'selected';
 		activePage.style.display = 'block';
 		window.addEventListener('beforeunload', () => {
-			var obj;
+			let obj;
 			try {
 				if (window.localStorage) {
 					if (!localStorage.foodGuideState) {
@@ -884,142 +903,156 @@ import {recipes} from './recipes.js';
 		});
 	})();
 
-	var queue = img => {
+	const queue = img => {
 			if (img.dataset.pending) {
 				makeImage.queue(img, img.dataset.pending, 32);
 			}
-		},
-		cells = cellType => {
-			var i, td, image, tr = document.createElement('tr'), cell, celltext;
-			for (i = 1; i < arguments.length; i++) {
-				td = document.createElement(cellType);
-				cell = arguments[i],
-				celltext = cell && cell.indexOf ? cell : cell.toString();
-				if (cell instanceof DocumentFragment) {
-					td.appendChild(cell.cloneNode(true));
-					Array.prototype.forEach.call(td.getElementsByTagName('img'), queue);
-				} else if (celltext.indexOf('img/') === 0) {
-					image = makeImage(celltext);
-					td.appendChild(image);
-				} else if (cell && cell.nodeType && cell.nodeType === 1) {
-					td.appendChild(cell);
-				} else {
-					td.appendChild(document.createTextNode(celltext));
-				}
-				tr.appendChild(td);
+		};
+	const cells = cellType => {
+		const tr = document.createElement('tr');
+
+		for (let i = 1; i < arguments.length; i++) {
+			const td = document.createElement(cellType);
+			const cell = arguments[i];
+			const celltext = cell && cell.indexOf ? cell : cell.toString();
+			let image;
+			if (cell instanceof DocumentFragment) {
+				td.appendChild(cell.cloneNode(true));
+				Array.prototype.forEach.call(td.getElementsByTagName('img'), queue);
+			} else if (celltext.indexOf('img/') === 0) {
+				image = makeImage(celltext);
+				td.appendChild(image);
+			} else if (cell && cell.nodeType && cell.nodeType === 1) {
+				td.appendChild(cell);
+			} else {
+				td.appendChild(document.createTextNode(celltext));
 			}
-			return tr;
-		},
-		wikiaHref = function(name) {
+			tr.appendChild(td);
+		}
+		return tr;
+	};
+	const wikiaHref = name => {
 			if (name && name === 'Combined') {
 				return name;
 			}
-			var node = document.createElement('a');
+			const node = document.createElement('a');
 			node.setAttribute('target', '_blank');
 			node.setAttribute('href', 'http://dontstarve.wikia.com/wiki/' + name.replace(/\s/g, '_'));
-			var text = document.createTextNode(name);
+			const text = document.createTextNode(name);
 			node.appendChild(text);
 			return node;
 		};
-	var makeSortableTable = (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) => {
-		var table, header, sorting, invertSort = false, firstHighlight, lastHighlight, rows,
-			generateAndHighlight = (item, index, array) => {
-				var row;
-				if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
-					row = rowGenerator(item);
-					if (highlightCallback && highlightCallback(item, array)) {
-						row.className = 'highlighted';
-						if (!firstHighlight) {
-							firstHighlight = row;
-						}
-						lastHighlight = row;
+	const makeSortableTable = (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) => {
+		let table;
+		let header;
+		let sorting;
+		let invertSort = false;
+		let firstHighlight;
+		let lastHighlight;
+		let rows;
+
+		const generateAndHighlight = (item, index, array) => {
+			if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
+				const row = rowGenerator(item);
+				if (highlightCallback && highlightCallback(item, array)) {
+					row.className = 'highlighted';
+					if (!firstHighlight) {
+						firstHighlight = row;
 					}
-					table.appendChild(row);
-					rows++;
+					lastHighlight = row;
 				}
-			},
-			create = (e, sort, scrollHighlight) => {
-				var tr, th, oldTable, sortBy, summary, links, i;
-				if (sort || (e && e.target.dataset.sort !== '') || sorting) {
-					sortBy = sort || (e && e.target.dataset.sort) || sorting;
-					if (hasSummary) {
-						summary = dataset.shift();
-					}
-					if (sortBy === 'name') {
-						dataset.sort((a, b) => {
-							var aname = a.basename ? a.basename : a.name,
-								bname = b.basename ? b.basename : b.name;
-							if (aname !== bname) {
-								return aname > bname ? 1 : aname < bname ? -1 : 0;
-							}
-							return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
-						});
-					} else {
-						dataset.sort((a, b) => {
-							var sa = a[sortBy], sb = b[sortBy];
-							return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
-						});
-					}
-					if (sort || e) {
-						if (sorting === sortBy) {
-							invertSort = !invertSort;
-						} else {
-							sorting = sortBy;
-							invertSort = false;
-						}
-					}
-					if (invertSort) {
-						dataset.reverse();
-					}
-					if (hasSummary) {
-						dataset.unshift(summary);
-					}
+				table.appendChild(row);
+				rows++;
+			}
+		};
+		const create = (e, sort, scrollHighlight) => {
+			let oldTable;
+			let sortBy;
+			let summary;
+
+			if (sort || (e && e.target.dataset.sort !== '') || sorting) {
+				sortBy = sort || (e && e.target.dataset.sort) || sorting;
+				if (hasSummary) {
+					summary = dataset.shift();
 				}
-				tr = document.createElement('tr');
-				for (header in headers) {
-					th = document.createElement('th');
-					if (header.indexOf(':') === -1) {
-						th.appendChild(document.createTextNode(header));
-					} else {
-						th.appendChild(document.createTextNode(header.split(':')[0]));
-						th.title = header.split(':')[1];
-					}
-					if (headers[header]) {
-						if (headers[header] === sorting) {
-							th.style.background = invertSort ? '#555' : '#ccc';
-							th.style.color = invertSort ? '#ccc' : '#555';
-							th.style.borderRadius = '4px';
+				if (sortBy === 'name') {
+					dataset.sort((a, b) => {
+						const aname = a.basename ? a.basename : a.name;
+						const bname = b.basename ? b.basename : b.name;
+
+						if (aname !== bname) {
+							return aname > bname ? 1 : aname < bname ? -1 : 0;
 						}
-						th.style.cursor = 'pointer';
-						th.dataset.sort = headers[header];
-						th.addEventListener('click', create, false);
-					}
-					tr.appendChild(th);
-				}
-				oldTable = table;
-				table = document.createElement('table');
-				table.appendChild(tr);
-				firstHighlight = null;
-				lastHighlight = null;
-				rows = 0;
-				dataset.forEach(generateAndHighlight);
-				if (linkCallback) {
-					table.className = 'links';
-					Array.prototype.forEach.call(table.getElementsByClassName('link'), element => {
-						element.addEventListener('click', linkCallback, false);
+						return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
+					});
+				} else {
+					dataset.sort((a, b) => {
+						const sa = a[sortBy];
+						const sb = b[sortBy];
+						return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
 					});
 				}
-				if (oldTable) {
-					oldTable.parentNode.replaceChild(table, oldTable);
-				}
-				if (scrollHighlight) {
-					if (firstHighlight && firstHighlight.offsetTop + table.offsetTop + mainElement.offsetTop + firstHighlight.offsetHeight > window.scrollY + window.innerHeight) {
-						firstHighlight.scrollIntoView(true);
-					} else if (lastHighlight && lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop < window.scrollY) {
-						lastHighlight.scrollIntoView(false);
+				if (sort || e) {
+					if (sorting === sortBy) {
+						invertSort = !invertSort;
+					} else {
+						sorting = sortBy;
+						invertSort = false;
 					}
 				}
-			};
+				if (invertSort) {
+					dataset.reverse();
+				}
+				if (hasSummary) {
+					dataset.unshift(summary);
+				}
+			}
+			const tr = document.createElement('tr');
+			for (const header in headers) {
+				const th = document.createElement('th');
+				if (header.indexOf(':') === -1) {
+					th.appendChild(document.createTextNode(header));
+				} else {
+					th.appendChild(document.createTextNode(header.split(':')[0]));
+					th.title = header.split(':')[1];
+				}
+				if (headers[header]) {
+					if (headers[header] === sorting) {
+						th.style.background = invertSort ? '#555' : '#ccc';
+						th.style.color = invertSort ? '#ccc' : '#555';
+						th.style.borderRadius = '4px';
+					}
+					th.style.cursor = 'pointer';
+					th.dataset.sort = headers[header];
+					th.addEventListener('click', create, false);
+				}
+				tr.appendChild(th);
+			}
+			const oldTable = table;
+			table = document.createElement('table');
+			table.appendChild(tr);
+			firstHighlight = null;
+			lastHighlight = null;
+			rows = 0;
+			dataset.forEach(generateAndHighlight);
+			if (linkCallback) {
+				table.className = 'links';
+				Array.prototype.forEach.call(table.getElementsByClassName('link'), element => {
+					element.addEventListener('click', linkCallback, false);
+				});
+			}
+			if (oldTable) {
+				oldTable.parentNode.replaceChild(table, oldTable);
+			}
+			if (scrollHighlight) {
+				if (firstHighlight && firstHighlight.offsetTop + table.offsetTop + mainElement.offsetTop + firstHighlight.offsetHeight > window.scrollY + window.innerHeight) {
+					firstHighlight.scrollIntoView(true);
+				} else if (lastHighlight && lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop < window.scrollY) {
+					lastHighlight.scrollIntoView(false);
+				}
+			}
+		};
+
 		if (defaultSort) {
 			create(null, defaultSort);
 		} else {
@@ -1035,29 +1068,31 @@ import {recipes} from './recipes.js';
 		return table;
 	};
 
-	var sign = n => {
-			if (isNaN(n)) {
-				return '';
-			}
-			else {
-				n = parseFloat(parseFloat(n).toFixed(4));
-				return n > 0 ? '+' + n : n
-			}
-		},
-		rawpct = (base, val) => {
-			return base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0;
-		},
-		pct = (base, val) => {
-			var result = !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
-			return result.indexOf('Infinity') === -1 ? result : ' (' + sign(val - base) + ')';
-		};
-	var makeFoodRow = item => {
-		var mult = statMultipliers[item.preparationType],
-			health = sign(item.health * mult),
-			hunger = sign(item.hunger * mult),
-			sanity = isNaN(item.sanity) ? '' : (item.sanity * mult);
+	const sign = n => {
+		if (isNaN(n)) {
+			return '';
+		}
+		else {
+			n = parseFloat(parseFloat(n).toFixed(4));
+			return n > 0 ? '+' + n : n
+		}
+	};
+	const rawpct = (base, val) => {
+		return base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0;
+	};
+	const pct = (base, val) => {
+		const result = !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
+		return result.indexOf('Infinity') === -1 ? result : ' (' + sign(val - base) + ')';
+	};
+
+	const makeFoodRow = item => {
+		const mult = statMultipliers[item.preparationType];
+		let health = sign(item.health * mult);
+		let hunger = sign(item.hunger * mult);
+		let sanity = isNaN(item.sanity) ? '' : (item.sanity * mult);
+
 		if (item.cook) {
-			var cookmult = statMultipliers[item.cook.preparationType]
+			const cookmult = statMultipliers[item.cook.preparationType]
 			if (item.cook.health !== (item.health || 0)) {
 				health += ' (' + sign((item.cook.health * cookmult) - (health || 0)) + ')';
 			}
@@ -1070,80 +1105,82 @@ import {recipes} from './recipes.js';
 		}
 		return cells('td', item.img ? item.img : '', wikiaHref(item.name), health, hunger, sanity, isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), item.info || '');
 	};
-	var makeRecipeRow = (item, health, hunger, sanity) => {
-		var mult = statMultipliers[item.preparationType] || 1,
-			ihealth = item.health * mult,
-			ihunger = item.hunger * mult,
-			isanity = item.sanity * mult;
+
+	const makeRecipeRow = (item, health, hunger, sanity) => {
+		const mult = statMultipliers[item.preparationType] || 1;
+		const ihealth = item.health * mult;
+		const ihunger = item.hunger * mult;
+		const isanity = item.sanity * mult;
 		return cells('td', item.img ? item.img : '', wikiaHref(item.name), sign(ihealth) + pct(health, ihealth), sign(ihunger) + pct(hunger, ihunger), isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity), isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time), (item.cooktime * base_cook_time + 0.5 | 0) + ' secs', item.priority || '0', item.requires || '', item.note || '');
 	};
+
 	// food list, recipe list
 	(() => {
-		var foodHighlight,
-			foodHighlighted = [],
-			recipeHighlighted = [],
-			setFoodHighlight = e => {
-				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
-				if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
-					setTab('crockpot');
-					if (name.substring(0, 7) === 'recipe:') {
-						name = '*' + name.substring(7);
-					}
-					recipeHighlighted = matchingNames(recipes, name);
-					recipeTable.update(true);
-				} else {
-					if (foodHighlight !== name) {
-						foodHighlight = name;
-						foodHighlighted = matchingNames(food, name);
-					} else {
-						foodHighlight = '';
-						foodHighlighted.length = 0;
-					}
-					foodTable.update(true);
+		let foodHighlight;
+		let foodHighlighted = [];
+		let recipeHighlighted = [];
+		const setFoodHighlight = e => {
+			let name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+			if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
+				setTab('crockpot');
+				if (name.substring(0, 7) === 'recipe:') {
+					name = '*' + name.substring(7);
 				}
-			},
-			setRecipeHighlight = e => {
-				var name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
-				var modename = name.substring(name.indexOf(':') + 1);
-				if (!!modes[modename]) {
-					recipeHighlighted = matchingNames(recipes, name);
-					recipeTable.update(true);
-				} else {
-					setTab('foodlist');
+				recipeHighlighted = matchingNames(recipes, name);
+				recipeTable.update(true);
+			} else {
+				if (foodHighlight !== name) {
 					foodHighlight = name;
 					foodHighlighted = matchingNames(food, name);
-					foodTable.update(true);
+				} else {
+					foodHighlight = '';
+					foodHighlighted.length = 0;
 				}
-			},
-			testFoodHighlight = item => {
-				return foodHighlighted.indexOf(item) !== -1;
-			},
-			testRecipeHighlight = item => {
-				return recipeHighlighted.indexOf(item) !== -1;
-			},
-			testmode = item => {
-				return (item.modeMask & modeMask) !== 0;
-			},
-			foodTable = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
-				Array.prototype.slice.call(food),
-				makeFoodRow,
-				'name',
-				false,
-				setFoodHighlight,
-				testFoodHighlight,
-				testmode
-			),
-			recipeTable = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
-				Array.prototype.slice.call(recipes),
-				makeRecipeRow,
-				'name',
-				false,
-				setRecipeHighlight,
-				testRecipeHighlight,
-				testmode
-			);
+				foodTable.update(true);
+			}
+		};
+		const setRecipeHighlight = e => {
+			const name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+			const modename = name.substring(name.indexOf(':') + 1);
+			if (!!modes[modename]) {
+				recipeHighlighted = matchingNames(recipes, name);
+				recipeTable.update(true);
+			} else {
+				setTab('foodlist');
+				foodHighlight = name;
+				foodHighlighted = matchingNames(food, name);
+				foodTable.update(true);
+			}
+		};
+		const testFoodHighlight = item => {
+			return foodHighlighted.indexOf(item) !== -1;
+		};
+		const testRecipeHighlight = item => {
+			return recipeHighlighted.indexOf(item) !== -1;
+		};
+		const testmode = item => {
+			return (item.modeMask & modeMask) !== 0;
+		};
+		const foodTable = makeSortableTable(
+			{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
+			Array.prototype.slice.call(food),
+			makeFoodRow,
+			'name',
+			false,
+			setFoodHighlight,
+			testFoodHighlight,
+			testmode
+		);
+		const recipeTable = makeSortableTable(
+			{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
+			Array.prototype.slice.call(recipes),
+			makeRecipeRow,
+			'name',
+			false,
+			setRecipeHighlight,
+			testRecipeHighlight,
+			testmode
+		);
 		foodElement.appendChild(foodTable);
 		recipesElement.appendChild(recipeTable);
 		modeRefreshers.push(() => {
@@ -1153,258 +1190,265 @@ import {recipes} from './recipes.js';
 	})();
 
 	// statistics analyzer
-	var ingredientToIcon = (a, b) => {
-			return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
-		},
-		makeRecipeGrinder = ingredients => {
-			var makableButton = document.createElement('button');
-			makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
-			makableButton.className = 'makablebutton';
-			makableButton.addEventListener('click', () => {
-				var idealIngredients = [],
-					i = ingredients ? ingredients.length : null,
-					selectedRecipe,
-					selectedRecipeElement,
-					addedRecipes = 0,
-					makableRecipes = [],
-					makableRecipe,
-					makableSummary,
-					makableFootnote,
-					splitCommaSpace = /, */,
-					makableFilter,
-					customFilter = null,
-					customFilterHolder,
-					customFilterInput,
-					usesIngredients = [],
-					excludesIngredients = [],
-					makableApply,
-					option,
-					made,
-					makableDiv,
-					makableTable,
-					checkExcludes = item => {
-						return excludesIngredients.indexOf(item.id) !== -1;
-					},
-					checkIngredient = item => {
-						return this.indexOf(food[item]) !== -1;
-						//return usesIngredients.indexOf(item.id) !== -1;
-					},
-					toggleFilter = e => {
-						if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
-							excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
-						}
-						if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
-							usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
-							e.target.className = '';
-						} else {
-							usesIngredients.push(e.target.dataset.id);
-							e.target.className = 'selected';
-						}
-						makableTable.update();
-					},
-					toggleExclude = e => {
-						if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
-							usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
-						}
-						if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
-							excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
-							e.target.className = '';
-						} else {
-							excludesIngredients.push(e.target.dataset.id);
-							e.target.className = 'excluded';
-						}
-						makableTable.update();
-						e.preventDefault();
-					},
-					excludedRecipes = [],
-					excludedRecipesElements = [],
-					setRecipe = e => {
-						if (selectedRecipeElement) {
-							selectedRecipeElement.className = '';
-						}
-						for (var i = 0; i < excludedRecipesElements.length; i++) {
-							excludedRecipesElements[i].className = '';
-						}
-						excludedRecipes.length = 0;
-						excludedRecipesElements.length = 0;
-						if (selectedRecipe === e.target.dataset.recipe) {
-							selectedRecipeElement = null;
-							selectedRecipe = null;
-						} else {
-							selectedRecipe = e.target.dataset.recipe;
-							selectedRecipeElement = e.target;
-							e.target.className = 'selected';
-						}
-						makableTable.update();
-					},
-					excludeRecipe = e => {
-						if (selectedRecipeElement) {
-							selectedRecipeElement.className = '';
-							selectedRecipeElement = null;
-							selectedRecipe = null;
-						}
+	const ingredientToIcon = (a, b) => {
+		return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
+	};
+	const makeRecipeGrinder = ingredients => {
+		const makableButton = document.createElement('button');
+		makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
+		makableButton.className = 'makablebutton';
+		makableButton.addEventListener('click', () => {
+			const idealIngredients = [];
+			const makableRecipes = [];
+			const usesIngredients = [];
+			const excludesIngredients = [];
+			const excludedRecipes = [];
+			const excludedRecipesElements = [];
 
-						var index = excludedRecipesElements.indexOf(e.target);
-						if (index !== -1) {
-							excludedRecipes.splice(index, 1);
-							excludedRecipesElements.splice(index, 1);
-							e.target.className = '';
-						} else {
-							excludedRecipes.push(e.target.dataset.recipe);
-							excludedRecipesElements.push(e.target);
-							e.target.className = 'excluded';
-						}
-						makableTable.update();
-						e.preventDefault();
-					};
-				//TODO: optimize so much around this
-				if (i === null) {
-					i = food.length;
-					ingredients = food;
+			let i = ingredients ? ingredients.length : null;
+			let selectedRecipe;
+			let selectedRecipeElement;
+			// let addedRecipes = 0;
+			let makableRecipe;
+			let makableSummary;
+			let makableFootnote;
+			let makableFilter;
+			let customFilterHolder;
+			let customFilterInput;
+			let made;
+			let makableDiv;
+			let makableTable;
+
+			const checkExcludes = item => {
+				return excludesIngredients.indexOf(item.id) !== -1;
+			};
+			const checkIngredient = item => {
+				return this.indexOf(food[item]) !== -1;
+				//return usesIngredients.indexOf(item.id) !== -1;
+			};
+			const toggleFilter = e => {
+				if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+					excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
 				}
-				while (i--) {
-					if (!ingredients[i].skip) {
-						if (!ingredients[i].uncookable && (!ingredients[i].cooked || ingredients[i].ideal) && (!ingredients[i].rackdried || ingredients[i].ideal) && idealIngredients.indexOf(ingredients[i]) === -1) {
-							idealIngredients.push(ingredients[i]);
-						}
-					} else {
-						if (ingredients[i].cook && !ingredients[i].cook.uncookable && !ingredients[i].cook.skip && idealIngredients.indexOf(ingredients[i].cook) === -1) {
-							idealIngredients.push(ingredients[i].cook);
-						} else if (ingredients[i].dry && !ingredients[i].dry.uncookable && !ingredients[i].dry.skip && idealIngredients.indexOf(ingredients[i].dry) === -1) {
-							idealIngredients.push(ingredients[i].dry);
-						}
-					}
-					if (ingredients[i].cooked && !ingredients[i].raw.uncookable && !ingredients[i].raw.skip && idealIngredients.indexOf(ingredients[i].raw) === -1) {
-						idealIngredients.push(ingredients[i].raw);
-					}
-					if (ingredients[i].rackdried && !ingredients[i].wet.uncookable && !ingredients[i].wet.skip && idealIngredients.indexOf(ingredients[i].wet) === -1) {
-						idealIngredients.push(ingredients[i].wet);
-					}
-					/* if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
-						idealIngredients.push(ingredients[i].cook);
-					}
-					if (!ingredients[i].uncookable && (ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
+				if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+					usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+					e.target.className = '';
+				} else {
+					usesIngredients.push(e.target.dataset.id);
+					e.target.className = 'selected';
+				}
+				makableTable.update();
+			};
+			const toggleExclude = e => {
+				if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
+					usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+				}
+				if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
+					excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+					e.target.className = '';
+				} else {
+					excludesIngredients.push(e.target.dataset.id);
+					e.target.className = 'excluded';
+				}
+				makableTable.update();
+				e.preventDefault();
+			};
+			const setRecipe = e => {
+				if (selectedRecipeElement) {
+					selectedRecipeElement.className = '';
+				}
+				for (let i = 0; i < excludedRecipesElements.length; i++) {
+					excludedRecipesElements[i].className = '';
+				}
+				excludedRecipes.length = 0;
+				excludedRecipesElements.length = 0;
+				if (selectedRecipe === e.target.dataset.recipe) {
+					selectedRecipeElement = null;
+					selectedRecipe = null;
+				} else {
+					selectedRecipe = e.target.dataset.recipe;
+					selectedRecipeElement = e.target;
+					e.target.className = 'selected';
+				}
+				makableTable.update();
+			};
+			const excludeRecipe = e => {
+				if (selectedRecipeElement) {
+					selectedRecipeElement.className = '';
+					selectedRecipeElement = null;
+					selectedRecipe = null;
+				}
+
+				const index = excludedRecipesElements.indexOf(e.target);
+				if (index !== -1) {
+					excludedRecipes.splice(index, 1);
+					excludedRecipesElements.splice(index, 1);
+					e.target.className = '';
+				} else {
+					excludedRecipes.push(e.target.dataset.recipe);
+					excludedRecipesElements.push(e.target);
+					e.target.className = 'excluded';
+				}
+				makableTable.update();
+				e.preventDefault();
+			};
+
+			//TODO: optimize so much around this
+			if (i === null) {
+				i = food.length;
+				ingredients = food;
+			}
+			while (i--) {
+				if (!ingredients[i].skip) {
+					if (!ingredients[i].uncookable && (!ingredients[i].cooked || ingredients[i].ideal) && (!ingredients[i].rackdried || ingredients[i].ideal) && idealIngredients.indexOf(ingredients[i]) === -1) {
 						idealIngredients.push(ingredients[i]);
-					} */
+					}
+				} else {
+					if (ingredients[i].cook && !ingredients[i].cook.uncookable && !ingredients[i].cook.skip && idealIngredients.indexOf(ingredients[i].cook) === -1) {
+						idealIngredients.push(ingredients[i].cook);
+					} else if (ingredients[i].dry && !ingredients[i].dry.uncookable && !ingredients[i].dry.skip && idealIngredients.indexOf(ingredients[i].dry) === -1) {
+						idealIngredients.push(ingredients[i].dry);
+					}
 				}
-				made = [];
-				makableTable = makeSortableTable(
-					{'': '', 'Name': 'name', 'Health': 'health', 'Health+:Health gained compared to ingredients': 'healthpls', 'Hunger': 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
-					made,
-					data => {
-						var item = data.recipe,
-							health = data.tags.health,
-							hunger = data.tags.hunger;
+				if (ingredients[i].cooked && !ingredients[i].raw.uncookable && !ingredients[i].raw.skip && idealIngredients.indexOf(ingredients[i].raw) === -1) {
+					idealIngredients.push(ingredients[i].raw);
+				}
+				if (ingredients[i].rackdried && !ingredients[i].wet.uncookable && !ingredients[i].wet.skip && idealIngredients.indexOf(ingredients[i].wet) === -1) {
+					idealIngredients.push(ingredients[i].wet);
+				}
+				/* if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
+					idealIngredients.push(ingredients[i].cook);
+				}
+				if (!ingredients[i].uncookable && (ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
+					idealIngredients.push(ingredients[i]);
+				} */
+			}
+			made = [];
+			makableTable = makeSortableTable(
+				{'': '', 'Name': 'name', 'Health': 'health', 'Health+:Health gained compared to ingredients': 'healthpls', 'Hunger': 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
+				made,
+				data => {
+					const item = data.recipe;
 
-						return cells('td', item.img ? item.img : '', item.name, sign(item.health), sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)', sign(item.hunger), sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
-							makeLinkable(data.ingredients.reduce(ingredientToIcon, '') + (data.multiple ? '*' : '')));
-					},
-					'hungerpls',
-					false,
-					null,
-					null,
-					data => {
-						return (!selectedRecipe || data.recipe.name === selectedRecipe) && (excludedRecipes.length === 0 || excludedRecipes.indexOf(data.recipe.name) === -1) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
-					},
-					0,
-					15
-				);
-				makableDiv = document.createElement('div');
-				makableSummary = document.createElement('div');
-				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
-				makableFootnote = document.createElement('div');
-				makableFootnote.appendChild(document.createTextNode('* combination has multiple possible results'));
-				makableDiv.appendChild(makableSummary);
-				makableRecipe = document.createElement('div');
-				makableRecipe.className = 'recipeFilter';
-				makableDiv.appendChild(makableRecipe);
-				makableFilter = document.createElement('div');
-				makableFilter.className = 'foodFilter';
-				idealIngredients.forEach(item => {
-					var img = makeImage(item.img, 32);
-					img.dataset.id = item.id;
-					img.addEventListener('click', toggleFilter, false);
-					img.addEventListener('contextmenu', toggleExclude, false);
-					img.title = item.name;
-					makableFilter.appendChild(img);
-				});
-				makableDiv.appendChild(makableFilter);
-				customFilterHolder = document.createElement('div');
-				customFilterInput = document.createElement('input');
-				customFilterInput.type = 'text';
-				customFilterInput.placeholder = 'use custom filter';
-				customFilterInput.className = 'customFilterInput';
-				customFilterHolder.appendChild(customFilterInput);
-				makableDiv.appendChild(makableTable);
-				makableButton.parentNode.replaceChild(makableDiv, makableButton);
-				makableDiv.appendChild(makableFootnote);
-				getRealRecipesFromCollection(idealIngredients, data => { //row update
-					var i, img;
-					if (makableRecipes.indexOf(data.recipe.name) === -1) {
-						for (i = 0; i < makableRecipes.length; i++) {
-							if (data.recipe.name < makableRecipes[i]) {
-								break;
-							}
-						}
-						makableRecipes.splice(i, 0, data.recipe.name);
-						img = makeImage(recipes.byName(makableRecipes[i].toLowerCase()).img);
-						//TODO: optimize
-						img.dataset.recipe = makableRecipes[i];
-						img.addEventListener('click', setRecipe, false);
-						img.addEventListener('contextmenu', excludeRecipe, false);
-						img.title = data.recipe.name;
-						if (i < makableRecipe.childNodes.length) {
-							makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
-						} else {
-							makableRecipe.appendChild(img);
+					return cells(
+						'td',
+						item.img ? item.img : '',
+						item.name,
+						sign(item.health),
+						sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)',
+						sign(item.hunger),
+						sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
+						makeLinkable(data.ingredients.reduce(ingredientToIcon, '') + (data.multiple ? '*' : ''))
+					);
+				},
+				'hungerpls',
+				false,
+				null,
+				null,
+				data => {
+					return (!selectedRecipe || data.recipe.name === selectedRecipe) && (excludedRecipes.length === 0 || excludedRecipes.indexOf(data.recipe.name) === -1) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
+				},
+				0,
+				15
+			);
+
+			makableDiv = document.createElement('div');
+			makableSummary = document.createElement('div');
+			makableSummary.appendChild(document.createTextNode('Computing combinations..'));
+			makableFootnote = document.createElement('div');
+			makableFootnote.appendChild(document.createTextNode('* combination has multiple possible results'));
+			makableDiv.appendChild(makableSummary);
+			makableRecipe = document.createElement('div');
+			makableRecipe.className = 'recipeFilter';
+			makableDiv.appendChild(makableRecipe);
+			makableFilter = document.createElement('div');
+			makableFilter.className = 'foodFilter';
+			idealIngredients.forEach(item => {
+				const img = makeImage(item.img, 32);
+				img.dataset.id = item.id;
+				img.addEventListener('click', toggleFilter, false);
+				img.addEventListener('contextmenu', toggleExclude, false);
+				img.title = item.name;
+				makableFilter.appendChild(img);
+			});
+			makableDiv.appendChild(makableFilter);
+			customFilterHolder = document.createElement('div');
+			customFilterInput = document.createElement('input');
+			customFilterInput.type = 'text';
+			customFilterInput.placeholder = 'use custom filter';
+			customFilterInput.className = 'customFilterInput';
+			customFilterHolder.appendChild(customFilterInput);
+			makableDiv.appendChild(makableTable);
+			makableButton.parentNode.replaceChild(makableDiv, makableButton);
+			makableDiv.appendChild(makableFootnote);
+			getRealRecipesFromCollection(idealIngredients, data => { //row update
+				if (makableRecipes.indexOf(data.recipe.name) === -1) {
+					let i = 0;
+					for (i = 0; i < makableRecipes.length; i++) {
+						if (data.recipe.name < makableRecipes[i]) {
+							break;
 						}
 					}
-					if (!data.name) {
-						data.name = data.recipe.name;
-						data.health = data.recipe.health;
-						data.ihealth = data.tags.health;
-						data.healthpls = data.recipe.health - data.ihealth;
-						data.hunger = data.recipe.hunger;
-						data.ihunger = data.tags.hunger;
-						data.hungerpls = data.recipe.hunger - data.ihunger;
-						data.healthpct = rawpct(data.ihealth, data.recipe.health);
-						data.hungerpct = rawpct(data.ihunger, data.recipe.hunger);
-						data.sanity = data.recipe.sanity;
-						data.perish = data.recipe.perish;
-					}
-					made.push(data);
-				}, () => { //chunk update
-					/*
-					//this code provided updates to the table while the data was being crunched
-					//there wasn't much point since it wasn't really usable until it was done calculating things anyway
-					var l = makableRecipes.length, img;
-					while (addedRecipes < l) {
-						img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);
-						//TODO: optimize
-						img.dataset.recipe = makableRecipes[addedRecipes];
-						img.addEventListener('click', setRecipe, false);
+					makableRecipes.splice(i, 0, data.recipe.name);
+					const img = makeImage(recipes.byName(makableRecipes[i].toLowerCase()).img);
+					//TODO: optimize
+					img.dataset.recipe = makableRecipes[i];
+					img.addEventListener('click', setRecipe, false);
+					img.addEventListener('contextmenu', excludeRecipe, false);
+					img.title = data.recipe.name;
+					if (i < makableRecipe.childNodes.length) {
+						makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
+					} else {
 						makableRecipe.appendChild(img);
-						addedRecipes++;
-						makableRecipes.sort();
-						if (selectedRecipe !== makableRecipes[0]) {
-							selectedRecipe = makableRecipes[0];
-							selectedRecipeElement = makableRecipe.firstChild;
-							makableRecipe.firstChild.className = 'selected';
-						}
-						makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
-						makableTable.update();
-					}*/
-					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
-					//makableTable.update();
-				}, () => { //computation finished
-					makableTable.setMaxRows(30);
-					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude recipes or ingredients.';
-				});
-			}, false);
-			return makableButton;
-		};
+					}
+				}
+				if (!data.name) {
+					data.name = data.recipe.name;
+					data.health = data.recipe.health;
+					data.ihealth = data.tags.health;
+					data.healthpls = data.recipe.health - data.ihealth;
+					data.hunger = data.recipe.hunger;
+					data.ihunger = data.tags.hunger;
+					data.hungerpls = data.recipe.hunger - data.ihunger;
+					data.healthpct = rawpct(data.ihealth, data.recipe.health);
+					data.hungerpct = rawpct(data.ihunger, data.recipe.hunger);
+					data.sanity = data.recipe.sanity;
+					data.perish = data.recipe.perish;
+				}
+				made.push(data);
+			}, () => { // chunk update
+
+				/*
+				// this code provided updates to the table while the data was being crunched
+				// there wasn't much point since it wasn't really usable until it was done calculating things anyway
+				const l = makableRecipes.length;
+				while (addedRecipes < l) {
+					const img = makeImage(recipes.byName(makableRecipes[addedRecipes].toLowerCase()).img);
+					//TODO: optimize
+					img.dataset.recipe = makableRecipes[addedRecipes];
+					img.addEventListener('click', setRecipe, false);
+					makableRecipe.appendChild(img);
+					addedRecipes++;
+					makableRecipes.sort();
+					if (selectedRecipe !== makableRecipes[0]) {
+						selectedRecipe = makableRecipes[0];
+						selectedRecipeElement = makableRecipe.firstChild;
+						makableRecipe.firstChild.className = 'selected';
+					}
+					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
+					makableTable.update();
+				}*/
+				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
+				//makableTable.update();
+			}, () => { //computation finished
+				makableTable.setMaxRows(30);
+				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude recipes or ingredients.';
+			});
+		}, false);
+		return makableButton;
+	};
 	document.getElementById('statistics').appendChild(makeRecipeGrinder());
-	var highest = (array, property) => {
+	const highest = (array, property) => {
 		return array.reduce((previous, current) => {
 			return Math.max(previous, current[property] || 0);
 		}, -100000);
@@ -1413,683 +1457,679 @@ import {recipes} from './recipes.js';
 	window.food = food;
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;
-	var setSlot = (slotElement, item) => {
-			if (item !== null) {
-				slotElement.dataset.id = item.id;
+	const setSlot = (slotElement, item) => {
+		if (item !== null) {
+			slotElement.dataset.id = item.id;
+		} else {
+			if (slotElement.nextSibling && getSlot(slotElement.nextSibling) !== null) {
+				setSlot(slotElement, getSlot(slotElement.nextSibling));
+				setSlot(slotElement.nextSibling, null);
+				return;
 			} else {
-				if (slotElement.nextSibling && getSlot(slotElement.nextSibling) !== null) {
-					setSlot(slotElement, getSlot(slotElement.nextSibling));
-					setSlot(slotElement.nextSibling, null);
-					return;
-				} else {
-					slotElement.dataset.id = null;
-				}
+				slotElement.dataset.id = null;
 			}
-			if (item !== null) {
-				if (slotElement.firstChild) {
-					slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
-				} else {
-					slotElement.appendChild(makeImage(item.img));
-				}
+		}
+		if (item !== null) {
+			if (slotElement.firstChild) {
+				slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
 			} else {
-				if (slotElement.firstChild) {
-					slotElement.removeChild(slotElement.firstChild);
-				}
+				slotElement.appendChild(makeImage(item.img));
 			}
-			slotElement.title = item ? item.name : '';
-		},
-		getSlot = slotElement => {
-			return slotElement && (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null);
-		};
+		} else {
+			if (slotElement.firstChild) {
+				slotElement.removeChild(slotElement.firstChild);
+			}
+		}
+		slotElement.title = item ? item.name : '';
+	};
+	const getSlot = slotElement => {
+		return slotElement && (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null);
+	};
 
 	(() => {
-		var pickers = document.getElementsByClassName('ingredientpicker'),
-			i = pickers.length;
+		const pickers = document.getElementsByClassName('ingredientpicker');
+		let i = pickers.length;
+
 		while (i--) {
-			(() => {
-				var searchSelector = document.createElement('span'),
-					searchSelectorControls,
-					dropdown = document.createElement('div'),
-					ul = document.createElement('ul'),
-					picker = pickers[i],
-					index = i,
-					state,
-					from = picker.dataset.type === 'recipes' ? recipes : food,
-					allowUncookable = !picker.dataset.cookable,
-					parent = picker.nextSibling,
-					slots = parent.getElementsByClassName('ingredient'),
-					limited,
-					ingredients = [],
-					updateRecipes,
-					suggestions = [],
-					inventoryrecipes = [],
-					selected = null,
-					loaded = false,
-					results = document.getElementById('results'),
-					discoverfood = document.getElementById('discoverfood'),
-					discover = document.getElementById('discover'),
-					makable = document.getElementById('makable'),
-					clear = document.createElement('span'),
-					toggleText = document.createElement('span'),
-					findPreviousMatching = (el, test) => {
-						var previous = el;
-						while (previous.previousSibling) {
-							previous = previous.previousSibling;
-							if (test(previous)) {
-								return previous;
-							}
-						}
-						return null;
-					},
-					findNextMatching = (el, test) => {
-						var next = el;
-						while (next.nextSibling) {
-							next = next.nextSibling;
-							if (test(next)) {
-								return next;
-							}
-						}
-						return null;
-					},
-					displaying = false,
-					appendSlot = id => {
-						var i, item = food[id] || recipes[id] || null;
-						if (!id) {
-							console && console.warn('ID not set');
-							return -1;
-						}
-						if (limited) {
-							for (i = 0; i < slots.length; i++) {
-								if (getSlot(slots[i]) === null) {
-									setSlot(slots[i], item);
-									loaded && updateRecipes();
-									return i;
-								}
-							}
-							return -1;
-						} else {
-							if (slots.indexOf(id) === -1) {
-								slots.push(id);
-								i = document.createElement('span');
-								i.className = 'ingredient';
-								setSlot(i, item);
-								i.addEventListener('click', removeSlot, false);
-								parent.appendChild(i);
-								loaded && updateRecipes();
-								return 1;
-							}
-							return 1;
-						}
-					},
-					pickItem = e => {
-						var names,
-							target = !e.target.dataset.id ? e.target.parentNode : e.target,
-							result = appendSlot(target.dataset.id);
-						if (result !== -1) {
-							/*dropdown.removeChild(ul);
-							ul = document.createElement('div');
-							names = matchingNames(from, '', allowUncookable);
-							ul.dataset.length = 0;
-							names.forEach(liIntoPicker, ul);
-							dropdown.appendChild(ul);
-							if (ul.firstChild) {
-								ul.firstChild.className = 'selected';
-							}
-							picker.value = '';*/
-							/*if (result < slots.length - 1 || !limited) {
-								//picker.focus();
-							} else {
-								//picker.blur();
-							}*/
-							e && e.preventDefault && e.preventDefault();
-							//refreshLocation();
-						}
-					},
-					liIntoPicker = item => {
-						var img = makeImage(item.img, 32),
-							li = document.createElement('span');
-						li.classList.add('item');
-						li.appendChild(img);
-						name = document.createElement('span');
-						name.classList.add('text');
-						name.appendChild(document.createTextNode(item.name));
-						li.appendChild(name);
-						li.dataset.id = item.id;
-						//li.dataset.tooltip = item.name;
-						if (ingredients.indexOf(item) !== -1) {
-							li.style.opacity = 0.5;
-						}
-						li.addEventListener('mousedown', pickItem, false);
-						this.appendChild(li);
-						this.dataset.length++;
-						/*if (this.dataset.length % 10 === 0) {
-							this.appendChild(document.createElement('br'));
-						}*/
-					},
-					updateFaded = el => {
-						if (ingredients.indexOf(food[el.dataset.id]) !== -1) {
-							if (!el.style.opacity) {
-								el.style.opacity = 0.5;
-							}
-						} else {
-							if (el.style.opacity) {
-								el.style.removeProperty('opacity');
-							}
-						}
-					},
-					removeSlot = e => {
-						var i, target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
-						if (limited) {
-							if (getSlot(target) !== null) {
-								setSlot(target, null);
-								updateRecipes();
-								return target.dataset.id;
-							} else {
-								//picker.focus();
-							}
-						} else {
-							i = slots.indexOf(target.dataset.id);
-							slots.splice(i, 1);
-							parent.removeChild(target);
-							updateRecipes();
-							return slots[i] || null;
-						}
-					},
-					refreshLocation = () => {
-						/*if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
-							//to the left
-							dropdown.style.left = -dropdown.offsetWidth + 'px';
-							dropdown.style.top = picker.offsetTop + 'px';
-						} else if (mainElement.offsetLeft + picker.offsetLeft + picker.offsetWidth + dropdown.offsetWidth > window.innerWidth) {
-							//below
-							dropdown.style.left = picker.offsetLeft + 'px';
-							dropdown.style.top = picker.offsetTop + picker.offsetHeight + 'px';
-						} else {
-							//to the right
-							dropdown.style.left = picker.offsetLeft + picker.offsetWidth + 'px';
-							dropdown.style.top = picker.offsetTop + 'px';
-						}*/
-					},
-					refreshPicker = () => {
-						var names;
-						searchSelectorControls.splitTag();
-						names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
-						dropdown.removeChild(ul);
-						ul = document.createElement('div');
-						ul.dataset.length = 0;
-						names.forEach(liIntoPicker, ul);
-						dropdown.appendChild(ul);
-						//refreshLocation();
-						selected = null;
-					},
-					searchFor = e => {
-						var name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link,
-							matches = matchingNames(from, name, allowUncookable);
-						if (matches.length === 1) {
-							appendSlot(matches[0].id);
-						} else {
-							picker.value = name;
-							refreshPicker();
-							//picker.focus();
-						}
-					},
-					coords;
+			const searchSelector = document.createElement('span');
+			let searchSelectorControls;
+			const dropdown = document.createElement('div');
+			const ul = document.createElement('ul');
+			const picker = pickers[i];
+			const index = i;
+			let state;
+			const from = picker.dataset.type === 'recipes' ? recipes : food;
+			const allowUncookable = !picker.dataset.cookable;
+			const parent = picker.nextSibling;
+			const slots = parent.getElementsByClassName('ingredient');
+			let limited;
+			const ingredients = [];
+			let updateRecipes;
+			const suggestions = [];
+			const inventoryrecipes = [];
+			let selected = null;
+			let loaded = false;
+			const results = document.getElementById('results');
+			const discoverfood = document.getElementById('discoverfood');
+			const discover = document.getElementById('discover');
+			const makable = document.getElementById('makable');
+			const clear = document.createElement('span');
+			const toggleText = document.createElement('span');
 
-				if (parent.id === 'ingredients') {
-					//simulator
-					updateRecipes = () => {
-						var cooking,
-							health, hunger, sanity,
-							table;
-						ingredients = Array.prototype.map.call(slots, slot => {
-							return getSlot(slot);
-						});
-						cooking = getRecipes(ingredients);
-						health = cooking[0].health;
-						hunger = cooking[0].hunger;
-						sanity = cooking[0].sanity;
-						table = makeSortableTable(
-							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
-							cooking,
-							item => {
-								return makeRecipeRow(item, health, hunger, sanity);
-							},
-							'priority',
-							true,
-							searchFor,
-							(item, array) => {
-								return array.length > 0 && item.priority === highest(array, 'priority');
-							}
-						);
-						if (results.firstChild) {
-							results.removeChild(results.firstChild);
-						}
-						if (results.firstChild) {
-							results.removeChild(results.firstChild);
-							results.removeChild(results.firstChild);
-						}
-						results.appendChild(table);
-						if (ingredients[0] !== null) {
-							getSuggestions(suggestions, ingredients, cooking);
-							if (suggestions.length > 0) {
-								results.appendChild(document.createTextNode('Add more ingredients to make:'));
-								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
-									suggestions,
-									item => {
-										return makeRecipeRow(item, health, hunger, sanity);
-									},
-									'priority',
-									false,
-									searchFor
-								);
-								results.appendChild(table);
-							}
-						}
-						ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
-					};
-				} else if (parent.id === 'inventory') {
-					//discovery
-					updateRecipes = () => {
-						var foodTable,
-							table;
-						ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), slot => {
-							return getSlot(slot);
-						});
-						if (discoverfood.firstChild) {
-							discoverfood.removeChild(discoverfood.firstChild);
-						}
-						if (discover.firstChild) {
-							discover.removeChild(discover.firstChild);
-						}
-						if (makable.firstChild) {
-							makable.removeChild(makable.firstChild);
-						}
-						if (ingredients.length > 0) {
-							foodTable = makeSortableTable(
-								{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
-								ingredients,
-								makeFoodRow,
-								'name'
-							);
-							discoverfood.appendChild(foodTable);
-							getSuggestions(inventoryrecipes, ingredients, null, true);
-							if (inventoryrecipes.length > 0) {
-								table = makeSortableTable(
-									{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
-									inventoryrecipes,
-									makeRecipeRow,
-									'name'
-								)
-								discover.appendChild(table);
-
-								makable.appendChild(makeRecipeGrinder(ingredients));
-							}
-						}
-						ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
-					};
+			const findPreviousMatching = (el, test) => {
+				let previous = el;
+				while (previous.previousSibling) {
+					previous = previous.previousSibling;
+					if (test(previous)) {
+						return previous;
+					}
 				}
-				if (slots.length !== 0) {
-					limited = true;
-					Array.prototype.forEach.call(slots, slot => {
-						setSlot(slot, null);
-						slot.addEventListener('click', removeSlot, false);
-					});
-				} else {
-					slots = [];
-					limited = false;
+				return null;
+			};
+			const findNextMatching = (el, test) => {
+				let next = el;
+				while (next.nextSibling) {
+					next = next.nextSibling;
+					if (test(next)) {
+						return next;
+					}
 				}
-				try {
-					if (window.localStorage && localStorage.foodGuideState) {
-						state = JSON.parse(localStorage.foodGuideState).pickers;
-						if (state && state[index]) {
-							state[index].forEach(id => {
-								if (food[id]) {
-									appendSlot(id);
-								}
-							});
+				return null;
+			};
+			let displaying = false;
+			const appendSlot = id => {
+				const item = food[id] || recipes[id] || null;
+				if (!id) {
+					console && console.warn('ID not set');
+					return -1;
+				}
+				if (limited) {
+					for (let i = 0; i < slots.length; i++) {
+						if (getSlot(slots[i]) === null) {
+							setSlot(slots[i], item);
+							loaded && updateRecipes();
+							return i;
 						}
 					}
-				} catch (err) {
-					console && console.warn('Unable to access localStorage', err);
+					return -1;
+				} else {
+					if (slots.indexOf(id) === -1) {
+						slots.push(id);
+						const i = document.createElement('span');
+						i.className = 'ingredient';
+						setSlot(i, item);
+						i.addEventListener('click', removeSlot, false);
+						parent.appendChild(i);
+						loaded && updateRecipes();
+						return 1;
+					}
+					return 1;
 				}
-				loaded = true;
-				searchSelector.className = 'searchselector retracted';
-				searchSelector.appendChild(document.createTextNode('name'));
-				searchSelectorControls = (() => {
-					var dropdown = document.createElement('div'),
-						extended = false,
-						extendedHeight = null,
-						searchTypes = [{title: 'name', prefix: '', placeholder: 'Filter ingredients'}, {title: 'tag', prefix: 'tag:', placeholder: 'Meat, veggie, fruit, egg, monster...'}, {title: 'recipe', prefix: 'recipe:', placeholder: 'Find ingredients used in a recipe'}],
-						selectedType = searchTypes[0],
-						retractTimer = null,
-						retract = () => {
-							extended = false;
-							dropdown.style.height = '0px';
-							searchSelector.style.borderBottomLeftRadius = '3px';
-							dropdown.style.borderTopLeftRadius = '3px';
-							if (retractTimer !== null) {
-								clearTimeout(retractTimer);
-								retractTimer = null;
-							}
-							searchSelector.className = 'searchselector retracted';
-						},
-						extend = () => {
-							if (extendedHeight === null) {
-								dropdown.style.height = 'auto';
-								dropdown.style.left = searchSelector.offsetLeft;
-								dropdown.style.top = searchSelector.offsetTop + searchSelector.offsetHeight;
-								extendedHeight = dropdown.offsetHeight + 'px';
-								dropdown.style.height = '0px';
-							}
-							extended = true;
-							dropdown.style.height = extendedHeight;
-							searchSelector.style.borderBottomLeftRadius = '0px';
-							dropdown.style.borderTopLeftRadius = '0px';
-							dropdown.style.width = 'auto';
-							dropdown.style.width = Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1) + 'px';
-							if (retractTimer !== null) {
-								clearTimeout(retractTimer);
-								retractTimer = null;
-							}
-							searchSelector.className = 'searchselector extended';
-						},
-						setSearchType = searchType => {
-							selectedType = searchType;
-							picker.placeholder = selectedType.placeholder;
-							searchSelector.firstChild.textContent = selectedType.title;
-						},
-						setSearchTypeFromClick = e => {
-							setSearchType(searchTypes[e.target.dataset.typeIndex]);
-							refreshPicker();
-							retract();
-						},
-						tagsplit = /: */,
-						controls = {
-							getTag: () => {
-								return selectedType.title;
-							},
-							setSearchType: index => {
-								setSearchType(searchTypes[index]);
-							},
-							getSearch: () => {
-								return selectedType.prefix + picker.value;
-							},
-							splitTag: () => {
-								var i,
-									parts = picker.value.split(tagsplit),
-									tag,
-									name;
-								if (parts.length === 2) {
-									tag = parts[0].toLowerCase() + ':';
-									name = parts[1];
-									for (i = 0; i < searchTypes.length; i++) {
-										if (tag === searchTypes[i].prefix) {
-											setSearchType(searchTypes[i]);
-											picker.value = name;
-											break;
-										}
-									}
-								}
-							}
-						};
-					searchSelector.addEventListener('click', () => {
-						if (extended) {
-							retract();
-						} else {
-							extend();
-						}
-					}, false);
-					searchSelector.addEventListener('selectstart', e => { e.preventDefault(); }, false);
-					searchSelector.addEventListener('mouseout', () => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-						}
-						retractTimer = setTimeout(retract, 500);
-					}, false);
-					searchSelector.addEventListener('mouseover', () => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-							retractTimer = null;
-						}
-					}, false);
-					dropdown.addEventListener('mouseout', () => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-						}
-						retractTimer = setTimeout(retract, 500);
-					}, false);
-					dropdown.addEventListener('mouseover', () => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-							retractTimer = null;
-						}
-					}, false);
-					searchTypes.forEach((searchType, index) => {
-						var element = document.createElement('div');
-						element.appendChild(document.createTextNode(searchType.title));
-						element.dataset.typeIndex = index;
-						element.addEventListener('click', setSearchTypeFromClick, false);
-						searchType.element = element;
-						dropdown.appendChild(element);
-					});
-					picker.parentNode.insertBefore(searchSelector, picker);
-					dropdown.className = 'searchdropdown';
-					picker.parentNode.insertBefore(dropdown, picker);
-					return controls;
-				})();
-				dropdown.className = 'ingredientdropdown';
-				dropdown.appendChild(ul);
-				dropdown.addEventListener('mousedown', e => { e.preventDefault(); }, false);
-				(() => {
-					var names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
-					dropdown.removeChild(ul);
+			};
+			const pickItem = e => {
+				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
+				const result = appendSlot(target.dataset.id);
+				if (result !== -1) {
+					/*dropdown.removeChild(ul);
 					ul = document.createElement('div');
+					names = matchingNames(from, '', allowUncookable);
 					ul.dataset.length = 0;
 					names.forEach(liIntoPicker, ul);
 					dropdown.appendChild(ul);
-				})();
-				clear.className = 'clearingredients';
-				clear.appendChild(document.createTextNode('clear'));
-				clear.addEventListener('click', () => {
-					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
-						while (getSlot(parent.firstChild)) {
-							removeSlot({ target: parent.firstChild });
+					if (ul.firstChild) {
+						ul.firstChild.className = 'selected';
+					}
+					picker.value = '';*/
+					/*if (result < slots.length - 1 || !limited) {
+						//picker.focus();
+					} else {
+						//picker.blur();
+					}*/
+					e && e.preventDefault && e.preventDefault();
+					//refreshLocation();
+				}
+			};
+			const liIntoPicker = item => {
+				const img = makeImage(item.img, 32);
+				const li = document.createElement('span');
+				li.classList.add('item');
+				li.appendChild(img);
+				const name = document.createElement('span');
+				name.classList.add('text');
+				name.appendChild(document.createTextNode(item.name));
+				li.appendChild(name);
+				li.dataset.id = item.id;
+				//li.dataset.tooltip = item.name;
+				if (ingredients.indexOf(item) !== -1) {
+					li.style.opacity = 0.5;
+				}
+				li.addEventListener('mousedown', pickItem, false);
+				this.appendChild(li);
+				this.dataset.length++;
+				/*if (this.dataset.length % 10 === 0) {
+					this.appendChild(document.createElement('br'));
+				}*/
+			};
+			const updateFaded = el => {
+				if (ingredients.indexOf(food[el.dataset.id]) !== -1) {
+					if (!el.style.opacity) {
+						el.style.opacity = 0.5;
+					}
+				} else {
+					if (el.style.opacity) {
+						el.style.removeProperty('opacity');
+					}
+				}
+			};
+			const removeSlot = e => {
+				const target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
+				if (limited) {
+					if (getSlot(target) !== null) {
+						setSlot(target, null);
+						updateRecipes();
+						return target.dataset.id;
+					} else {
+						//picker.focus();
+					}
+				} else {
+					const i = slots.indexOf(target.dataset.id);
+					slots.splice(i, 1);
+					parent.removeChild(target);
+					updateRecipes();
+					return slots[i] || null;
+				}
+			};
+			/* const refreshLocation = () => {
+				if (mainElement.offsetLeft - dropdown.offsetWidth > 0) {
+					//to the left
+					dropdown.style.left = -dropdown.offsetWidth + 'px';
+					dropdown.style.top = picker.offsetTop + 'px';
+				} else if (mainElement.offsetLeft + picker.offsetLeft + picker.offsetWidth + dropdown.offsetWidth > window.innerWidth) {
+					//below
+					dropdown.style.left = picker.offsetLeft + 'px';
+					dropdown.style.top = picker.offsetTop + picker.offsetHeight + 'px';
+				} else {
+					//to the right
+					dropdown.style.left = picker.offsetLeft + picker.offsetWidth + 'px';
+					dropdown.style.top = picker.offsetTop + 'px';
+				}
+			}; */
+			const refreshPicker = () => {
+				searchSelectorControls.splitTag();
+				const names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+				dropdown.removeChild(ul);
+				ul = document.createElement('div');
+				ul.dataset.length = 0;
+				names.forEach(liIntoPicker, ul);
+				dropdown.appendChild(ul);
+				//refreshLocation();
+				selected = null;
+			};
+			const searchFor = e => {
+				const name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				const matches = matchingNames(from, name, allowUncookable);
+				if (matches.length === 1) {
+					appendSlot(matches[0].id);
+				} else {
+					picker.value = name;
+					refreshPicker();
+					//picker.focus();
+				}
+			};
+			let coords;
+
+			if (parent.id === 'ingredients') {
+				//simulator
+				updateRecipes = () => {
+					ingredients = Array.prototype.map.call(slots, slot => {
+						return getSlot(slot);
+					});
+					const cooking = getRecipes(ingredients);
+					const health = cooking[0].health;
+					const hunger = cooking[0].hunger;
+					const sanity = cooking[0].sanity;
+					const table = makeSortableTable(
+						{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
+						cooking,
+						item => {
+							return makeRecipeRow(item, health, hunger, sanity);
+						},
+						'priority',
+						true,
+						searchFor,
+						(item, array) => {
+							return array.length > 0 && item.priority === highest(array, 'priority');
+						}
+					);
+					if (results.firstChild) {
+						results.removeChild(results.firstChild);
+					}
+					if (results.firstChild) {
+						results.removeChild(results.firstChild);
+						results.removeChild(results.firstChild);
+					}
+					results.appendChild(table);
+					if (ingredients[0] !== null) {
+						getSuggestions(suggestions, ingredients, cooking);
+						if (suggestions.length > 0) {
+							results.appendChild(document.createTextNode('Add more ingredients to make:'));
+							table = makeSortableTable(
+								{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
+								suggestions,
+								item => {
+									return makeRecipeRow(item, health, hunger, sanity);
+								},
+								'priority',
+								false,
+								searchFor
+							);
+							results.appendChild(table);
+						}
+					}
+					ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
+				};
+			} else if (parent.id === 'inventory') {
+				//discovery
+				updateRecipes = () => {
+					ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), slot => {
+						return getSlot(slot);
+					});
+
+					if (discoverfood.firstChild) {
+						discoverfood.removeChild(discoverfood.firstChild);
+					}
+					if (discover.firstChild) {
+						discover.removeChild(discover.firstChild);
+					}
+					if (makable.firstChild) {
+						makable.removeChild(makable.firstChild);
+					}
+					if (ingredients.length > 0) {
+						const foodTable = makeSortableTable(
+							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': ''},
+							ingredients,
+							makeFoodRow,
+							'name'
+						);
+						discoverfood.appendChild(foodTable);
+						getSuggestions(inventoryrecipes, ingredients, null, true);
+						if (inventoryrecipes.length > 0) {
+							const table = makeSortableTable(
+								{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : ''},
+								inventoryrecipes,
+								makeRecipeRow,
+								'name'
+							)
+							discover.appendChild(table);
+
+							makable.appendChild(makeRecipeGrinder(ingredients));
+						}
+					}
+					ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
+				};
+			}
+			if (slots.length !== 0) {
+				limited = true;
+				Array.prototype.forEach.call(slots, slot => {
+					setSlot(slot, null);
+					slot.addEventListener('click', removeSlot, false);
+				});
+			} else {
+				slots = [];
+				limited = false;
+			}
+			try {
+				if (window.localStorage && localStorage.foodGuideState) {
+					state = JSON.parse(localStorage.foodGuideState).pickers;
+					if (state && state[index]) {
+						state[index].forEach(id => {
+							if (food[id]) {
+								appendSlot(id);
+							}
+						});
+					}
+				}
+			} catch (err) {
+				console && console.warn('Unable to access localStorage', err);
+			}
+			loaded = true;
+			searchSelector.className = 'searchselector retracted';
+			searchSelector.appendChild(document.createTextNode('name'));
+			searchSelectorControls = (() => {
+				const dropdown = document.createElement('div');
+				let extended = false;
+				let extendedHeight = null;
+				const searchTypes = [{title: 'name', prefix: '', placeholder: 'Filter ingredients'}, {title: 'tag', prefix: 'tag:', placeholder: 'Meat, veggie, fruit, egg, monster...'}, {title: 'recipe', prefix: 'recipe:', placeholder: 'Find ingredients used in a recipe'}];
+				let selectedType = searchTypes[0];
+				let retractTimer = null;
+				const retract = () => {
+					extended = false;
+					dropdown.style.height = '0px';
+					searchSelector.style.borderBottomLeftRadius = '3px';
+					dropdown.style.borderTopLeftRadius = '3px';
+					if (retractTimer !== null) {
+						clearTimeout(retractTimer);
+						retractTimer = null;
+					}
+					searchSelector.className = 'searchselector retracted';
+				};
+				const extend = () => {
+					if (extendedHeight === null) {
+						dropdown.style.height = 'auto';
+						dropdown.style.left = searchSelector.offsetLeft;
+						dropdown.style.top = searchSelector.offsetTop + searchSelector.offsetHeight;
+						extendedHeight = dropdown.offsetHeight + 'px';
+						dropdown.style.height = '0px';
+					}
+					extended = true;
+					dropdown.style.height = extendedHeight;
+					searchSelector.style.borderBottomLeftRadius = '0px';
+					dropdown.style.borderTopLeftRadius = '0px';
+					dropdown.style.width = 'auto';
+					dropdown.style.width = Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1) + 'px';
+					if (retractTimer !== null) {
+						clearTimeout(retractTimer);
+						retractTimer = null;
+					}
+					searchSelector.className = 'searchselector extended';
+				};
+				const setSearchType = searchType => {
+					selectedType = searchType;
+					picker.placeholder = selectedType.placeholder;
+					searchSelector.firstChild.textContent = selectedType.title;
+				};
+				const setSearchTypeFromClick = e => {
+					setSearchType(searchTypes[e.target.dataset.typeIndex]);
+					refreshPicker();
+					retract();
+				};
+				const tagsplit = /: */;
+				const controls = {
+					getTag: () => {
+						return selectedType.title;
+					},
+					setSearchType: index => {
+						setSearchType(searchTypes[index]);
+					},
+					getSearch: () => {
+						return selectedType.prefix + picker.value;
+					},
+					splitTag: () => {
+						const parts = picker.value.split(tagsplit);
+
+						if (parts.length === 2) {
+							const tag = parts[0].toLowerCase() + ':';
+							const name = parts[1];
+							for (let i = 0; i < searchTypes.length; i++) {
+								if (tag === searchTypes[i].prefix) {
+									setSearchType(searchTypes[i]);
+									picker.value = name;
+									break;
+								}
+							}
+						}
+					}
+				};
+
+				searchSelector.addEventListener('click', () => {
+					if (extended) {
+						retract();
+					} else {
+						extend();
+					}
+				}, false);
+				searchSelector.addEventListener('selectstart', e => { e.preventDefault(); }, false);
+				searchSelector.addEventListener('mouseout', () => {
+					if (retractTimer !== null) {
+						clearTimeout(retractTimer);
+					}
+					retractTimer = setTimeout(retract, 500);
+				}, false);
+				searchSelector.addEventListener('mouseover', () => {
+					if (retractTimer !== null) {
+						clearTimeout(retractTimer);
+						retractTimer = null;
+					}
+				}, false);
+				dropdown.addEventListener('mouseout', () => {
+					if (retractTimer !== null) {
+						clearTimeout(retractTimer);
+					}
+					retractTimer = setTimeout(retract, 500);
+				}, false);
+				dropdown.addEventListener('mouseover', () => {
+					if (retractTimer !== null) {
+						clearTimeout(retractTimer);
+						retractTimer = null;
+					}
+				}, false);
+				searchTypes.forEach((searchType, index) => {
+					const element = document.createElement('div');
+					element.appendChild(document.createTextNode(searchType.title));
+					element.dataset.typeIndex = index;
+					element.addEventListener('click', setSearchTypeFromClick, false);
+					searchType.element = element;
+					dropdown.appendChild(element);
+				});
+				picker.parentNode.insertBefore(searchSelector, picker);
+				dropdown.className = 'searchdropdown';
+				picker.parentNode.insertBefore(dropdown, picker);
+				return controls;
+			})();
+			dropdown.className = 'ingredientdropdown';
+			dropdown.appendChild(ul);
+			dropdown.addEventListener('mousedown', e => { e.preventDefault(); }, false);
+			(() => {
+				const names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+				dropdown.removeChild(ul);
+				ul = document.createElement('div');
+				ul.dataset.length = 0;
+				names.forEach(liIntoPicker, ul);
+				dropdown.appendChild(ul);
+			})();
+			clear.className = 'clearingredients';
+			clear.appendChild(document.createTextNode('clear'));
+			clear.addEventListener('click', () => {
+				if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
+					while (getSlot(parent.firstChild)) {
+						removeSlot({ target: parent.firstChild });
+					}
+				} else {
+					picker.value = '';
+					searchSelectorControls.setSearchType(0);
+					refreshPicker();
+				}
+			}, false);
+			clear.addEventListener('mouseover', () => {
+				if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
+					clear.firstChild.textContent = 'clear chosen ingredients';
+				}
+			}, false);
+			clear.addEventListener('mouseout', () => {
+				if (clear.firstChild.textContent !== 'clear') {
+					clear.firstChild.textContent = 'clear';
+				}
+			}, false);
+			toggleText.className = 'toggleingredients enabled';
+			toggleText.addEventListener('click', () => {
+				if (toggleText.classList.contains('enabled')) {
+					toggleText.classList.remove('enabled')
+					dropdown.classList.add('hidetext')
+					toggleText.firstChild.textContent = 'Show names'
+				} else {
+					toggleText.classList.add('enabled')
+					dropdown.classList.remove('hidetext')
+					toggleText.firstChild.textContent = 'Icons only'
+				}
+			}, false);
+			toggleText.appendChild(document.createTextNode('Icons only'));
+			parent.parentNode.insertBefore(toggleText, parent);
+			parent.parentNode.insertBefore(clear, parent);
+			parent.parentNode.insertBefore(dropdown, parent);
+			picker.addEventListener('keydown', e => {
+				let find;
+				if (movement.indexOf(e.keyCode) !== -1) {
+					const current = selected;
+					if (e.keyCode === enter) {
+						if (selected === null) {
+							selected = ul.firstChild || null;
+						}
+						if (selected !== null) {
+							pickItem({target: selected});
 						}
 					} else {
-						picker.value = '';
-						searchSelectorControls.setSearchType(0);
-						refreshPicker();
-					}
-				}, false);
-				clear.addEventListener('mouseover', () => {
-					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
-						clear.firstChild.textContent = 'clear chosen ingredients';
-					}
-				}, false);
-				clear.addEventListener('mouseout', () => {
-					if (clear.firstChild.textContent !== 'clear') {
-						clear.firstChild.textContent = 'clear';
-					}
-				}, false);
-				toggleText.className = 'toggleingredients enabled';
-				toggleText.addEventListener('click', () => {
-					if (toggleText.classList.contains('enabled')) {
-						toggleText.classList.remove('enabled')
-						dropdown.classList.add('hidetext')
-						toggleText.firstChild.textContent = 'Show names'
-					} else {
-						toggleText.classList.add('enabled')
-						dropdown.classList.remove('hidetext')
-						toggleText.firstChild.textContent = 'Icons only'
-					}
-				}, false);
-				toggleText.appendChild(document.createTextNode('Icons only'));
-				parent.parentNode.insertBefore(toggleText, parent);
-				parent.parentNode.insertBefore(clear, parent);
-				parent.parentNode.insertBefore(dropdown, parent);
-				picker.addEventListener('keydown', e => {
-					var movement = [16, 17, 37, 38, 39, 40, 13],
-						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i, find;
-					if (movement.indexOf(e.keyCode) !== -1) {
-						current = selected;
-						if (e.keyCode === enter) {
-							if (selected === null) {
-								selected = ul.firstChild || null;
-							}
-							if (selected !== null) {
-								pickItem({target: selected});
+						if (selected === null) {
+							if (e.keyCode === down) {
+								selected = ul.childNodes[1] || ul.firstChild || null;
+								if (selected !== null) {
+									coords = (selected.offsetLeft + selected.offsetWidth / 2);
+									e.preventDefault();
+								}
 							}
 						} else {
-							if (selected === null) {
-								if (e.keyCode === down) {
-									selected = ul.childNodes[1] || ul.firstChild || null;
-									if (selected !== null) {
-										coords = (selected.offsetLeft + selected.offsetWidth / 2);
-										e.preventDefault();
-									}
-								}
-							} else {
-								e.preventDefault();
-								if (e.keyCode === left) {
-									if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
-										selected = selected.previousSibling;
-									} else {
-										find = findNextMatching(selected, el => {
-											//separate this out
-											return el.offsetTop !== selected.offsetTop;
-										});
-										if (find) {
-											selected = find.previousSibling;
-										} else {
-											selected = ul.lastChild;
-										}
-									}
-									if (selected !== null) {
-										coords = (selected.offsetLeft + selected.offsetWidth / 2);
-									}
-								} else if (e.keyCode === right) {
-									if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
-										selected = selected.nextSibling;
-									} else {
-										find = findPreviousMatching(selected, el => {
-											//separate this out
-											return el.offsetTop !== selected.offsetTop;
-										});
-										if (find) {
-											selected = find.nextSibling;
-										} else {
-											selected = ul.firstChild;
-										}
-									}
-									if (selected !== null) {
-										coords = (selected.offsetLeft + selected.offsetWidth / 2);
-									}
-								} else if (e.keyCode === up) {
-									find = findPreviousMatching(selected, el => {
-										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-									});
-									if (!find) {
-										find = findPreviousMatching(ul.lastChild, el => {
-											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-										});
-									}
-									if (find) {
-										selected = find;
-									} else {
-										selected = ul.firstChild;
-									}
-								} else if (e.keyCode === down) {
+							e.preventDefault();
+							if (e.keyCode === left) {
+								if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
+									selected = selected.previousSibling;
+								} else {
 									find = findNextMatching(selected, el => {
-										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+										//separate this out
+										return el.offsetTop !== selected.offsetTop;
 									});
-									if (!find) {
-										find = findNextMatching(ul.firstChild, el => {
-											return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-										});
-									}
 									if (find) {
-										selected = find;
+										selected = find.previousSibling;
 									} else {
 										selected = ul.lastChild;
 									}
 								}
+								if (selected !== null) {
+									coords = (selected.offsetLeft + selected.offsetWidth / 2);
+								}
+							} else if (e.keyCode === right) {
+								if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
+									selected = selected.nextSibling;
+								} else {
+									find = findPreviousMatching(selected, el => {
+										//separate this out
+										return el.offsetTop !== selected.offsetTop;
+									});
+									if (find) {
+										selected = find.nextSibling;
+									} else {
+										selected = ul.firstChild;
+									}
+								}
+								if (selected !== null) {
+									coords = (selected.offsetLeft + selected.offsetWidth / 2);
+								}
+							} else if (e.keyCode === up) {
+								find = findPreviousMatching(selected, el => {
+									return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+								});
+								if (!find) {
+									find = findPreviousMatching(ul.lastChild, el => {
+										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+									});
+								}
+								if (find) {
+									selected = find;
+								} else {
+									selected = ul.firstChild;
+								}
+							} else if (e.keyCode === down) {
+								find = findNextMatching(selected, el => {
+									return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+								});
+								if (!find) {
+									find = findNextMatching(ul.firstChild, el => {
+										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+									});
+								}
+								if (find) {
+									selected = find;
+								} else {
+									selected = ul.lastChild;
+								}
 							}
 						}
-						if (selected !== current) {
-							if (current !== null) {
-								current.className = '';
-							}
-							if (selected !== null) {
-								selected.className = 'selected';
-							}
+					}
+					if (selected !== current) {
+						if (current !== null) {
+							current.className = '';
+						}
+						if (selected !== null) {
+							selected.className = 'selected';
 						}
 					}
-				}, false);
-				picker.addEventListener('keyup', e => {
-					var movement = [16, 17, 37, 38, 39, 40, 13],
-						up = 38, left = 37, down = 40, right = 39, enter = 13, current, items, i;
-					current = selected;
-					if (movement.indexOf(e.keyCode) === -1) {
-						refreshPicker();
-					} else if (selected !== null) {
-						e.preventDefault();
-					}
-				}, false);
-				picker.addEventListener('focus', () => {
-					if (!displaying) {
-						displaying = true;
-					}
-				}, false);
-				picker.addEventListener('blur', () => {
-					if (displaying) {
-						displaying = false;
-					}
-				}, false);
-				updateRecipes();
-				window.addEventListener('beforeunload', () => {
-					var obj, serialized;
-					if (!window.localStorage) {
-						return
-					}
-					if (!localStorage.foodGuideState) {
-						localStorage.foodGuideState = '{}';
-					}
-					obj = JSON.parse(localStorage.foodGuideState);
-					if (!obj.pickers) {
-						obj.pickers = [];
-					}
-					if (limited) {
-						serialized = [];
-						serialized = Array.prototype.map.call(slots, slot => {
-							var item = getSlot(slot);
-							return item ? item.id : null;
-						});
-						obj.pickers[index] = serialized;
-					} else {
-						obj.pickers[index] = slots;
-					}
-					localStorage.foodGuideState = JSON.stringify(obj);
-				});
-				modeRefreshers.push(refreshPicker);
-				modeRefreshers.push(updateRecipes);
-			})();
+				}
+			}, false);
+			const up = 38
+			const left = 37
+			const down = 40
+			const right = 39
+			const enter = 13;
+			const movement = [16, 17, up, right, down, left, enter];
+			picker.addEventListener('keyup', e => {
+				// let items;
+				// let i;
+				// const current = selected;
+				if (movement.indexOf(e.keyCode) === -1) {
+					refreshPicker();
+				} else if (selected !== null) {
+					e.preventDefault();
+				}
+			}, false);
+			picker.addEventListener('focus', () => {
+				if (!displaying) {
+					displaying = true;
+				}
+			}, false);
+			picker.addEventListener('blur', () => {
+				if (displaying) {
+					displaying = false;
+				}
+			}, false);
+			updateRecipes();
+			window.addEventListener('beforeunload', () => {
+				if (!window.localStorage) {
+					return
+				}
+				if (!localStorage.foodGuideState) {
+					localStorage.foodGuideState = '{}';
+				}
+				const obj = JSON.parse(localStorage.foodGuideState);
+				if (!obj.pickers) {
+					obj.pickers = [];
+				}
+				if (limited) {
+					const serialized = Array.prototype.map.call(slots, slot => {
+						const item = getSlot(slot);
+						return item ? item.id : null;
+					});
+					obj.pickers[index] = serialized;
+				} else {
+					obj.pickers[index] = slots;
+				}
+				localStorage.foodGuideState = JSON.stringify(obj);
+			});
+			modeRefreshers.push(refreshPicker);
+			modeRefreshers.push(updateRecipes);
 		}
 	})()
 
-	var showmode = e => {
+	const showmode = e => {
 		setMode(modes[e.target.dataset.mode].mask);
 	};
-	var togglemode = function(e) {
+	const togglemode = e => {
 		setMode(modeMask ^ modes[e.target.dataset.mode].bit);
 		e.preventDefault();
 	}
-	var modeTab = document.createElement('li');
+	const modeTab = document.createElement('li');
 	navbar.insertBefore(modeTab, navbar.firstChild);
 	modeTab.className = 'mode';
 
-	for (var name in modes) {
-		var modeButton = document.createElement('div');
+	for (const name in modes) {
+		const modeButton = document.createElement('div');
 		modeButton.dataset.mode = name;
 		modeButton.addEventListener('click', showmode, false);
 		modeButton.addEventListener('contextmenu', togglemode, false);

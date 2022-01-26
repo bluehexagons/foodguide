@@ -28,6 +28,7 @@ import {
 	calories_huge,
 	calories_superhuge,
 	hot_food_bonus_temp,
+	hot_food_bonus_temp_small,
 	cold_food_bonus_temp,
 	food_temp_brief,
 	food_temp_average,
@@ -225,20 +226,6 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: sanity_tiny,
 		cooktime: 2
-	},
-	bunnystew: {
-		name: 'Bunny Stew',
-		test: (cooker, names, tags) => {
-			return tags.meat < 1 && !tags.inedible && names.ice && names.ice >= 2;
-		},
-		requirements: [TAG('meat'), TAG('ice'), NOT(TAG('inedible'))],
-		priority: 1,
-		foodtype: 'meat',
-		health: healing_med,
-		hunger: calories_large,
-		perish: perish_med,
-		sanity: sanity_tiny,
-		cooktime: 0.5
 	},
 	meatballs: {
 		name: 'Meatballs',
@@ -974,6 +961,24 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 2.5,
 		note: 'Recipe produces 3; heals 120 health over 2 minutes',
+		mode: 'together'
+	},
+	bunnystew: {
+		name: 'Bunny Stew',
+		test: (cooker, names, tags) => {
+			return tags.meat < 1 && !tags.inedible && names.ice && names.ice >= 2;
+		},
+		requirements: [TAG('meat'), TAG('ice'), NOT(TAG('inedible'))],
+		priority: 1,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_tiny,
+		cooktime: 0.5,
+		temperature: hot_food_bonus_temp_small,
+		temperatureduration: food_temp_brief,
+		note: 'Increases temperature by 5 degrees in 5 seconds.',
 		mode: 'together'
 	},
 	pepperpopper: {

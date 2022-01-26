@@ -55,6 +55,7 @@ export const calories_per_day = 75,
 	calories_superhuge = calories_per_day * 2, // crockpot foods?
 
 	hot_food_bonus_temp = 40,
+	hot_food_bonus_temp_small = 5,
 	cold_food_bonus_temp = -40,
 	food_temp_brief = 5,
 	food_temp_average = 10,

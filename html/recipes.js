@@ -226,6 +226,20 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 2
 	},
+	bunnystew: {
+		name: 'Bunny Stew',
+		test: (cooker, names, tags) => {
+			return tags.meat < 1 && !tags.inedible && names.ice && names.ice >= 2;
+		},
+		requirements: [TAG('meat'), TAG('ice'), NOT(TAG('inedible'))],
+		priority: 1,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_tiny,
+		cooktime: 0.5
+	},
 	meatballs: {
 		name: 'Meatballs',
 		test: (cooker, names, tags) => {

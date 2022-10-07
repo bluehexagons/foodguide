@@ -601,9 +601,13 @@ export const recipes = {
 	bananapop: {
 		name: 'Banana Pop',
 		test: (cooker, names, tags) => {
-			return names.cavebanana && tags.frozen && tags.inedible && !tags.meat && !tags.fish;
+			return names.cave_banana && tags.frozen && tags.inedible && !tags.meat && !tags.fish;
+			//DST recipe, idk if the inedible part is necessary, but this is how it's presented in preparedfoods.lua, commented out due to issue #32
+			//return (names.cave_banana || names.cave_banana_cooked) && tags.frozen && names.twigs && !tags.meat && !tags.fish && (tags.inedible && tags.inedible <= 2);
 		},
-		requirements: [SPECIFIC('cavebanana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
+		requirements: [SPECIFIC('cave_banana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
+		//DST:
+		//requirements: [NAME('cave_banana'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('fish')), TAG('inedible', COMPARE('<=', 2))],
 		priority: 20,
 		foodtype: 'veggie',
 		health: healing_med,
@@ -1116,6 +1120,122 @@ export const recipes = {
 		temperatureduration: food_temp_brief,
 		cooktime: 1,
 		note: 'Restores 30 sanity over 1 minute',
+		mode: 'together'
+	},
+	koalefig_trunk: {
+		name: 'Fig-Stuffed Trunk',
+		test: (cooker, names, tags) => {
+			return (names.trunk_summer || names.trunk_cooked || names.trunk_winter) && (names.fig || names.fig_cooked);
+		},
+		requirements: [NAME('trunk_summer'), NAME('fig')],
+		priority: 40,
+		foodtype: 'meat',
+		health: healing_huge,
+		hunger: calories_large + calories_medsmall,
+		sanity: 0,
+		perish: perish_med,
+		cooktime: 2,
+		mode: 'together'
+	},
+	figatoni: {
+		name: 'Figatoni',
+		test: (cooker, names, tags) => {
+			return (names.fig || names.fig_cooked) && tags.veggie && tags.veggie >= 2 && !tags.meat;
+		},
+		requirements: [NAME('fig'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat'))],
+		priority: 30,
+		foodtype: 'veggie',
+		health: healing_medlarge,
+		hunger: calories_large + calories_medsmall,
+		sanity: sanity_med,
+		perish: perish_fast,
+		cooktime: 2,
+		mode: 'together'
+	},
+	figkabab: {
+		name: 'Figkabab',
+		test: (cooker, names, tags) => {
+			return (names.fig || names.fig_cooked) && names.twigs && tags.meat && tags.meat >= 1 && (!tags.monster || tags.monster <= 1);
+		},
+		requirements: [NAME('fig'), SPECIFIC('twigs'), TAG('meat', COMPARE('>=', 1)), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
+		priority: 30,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_med,
+		sanity: sanity_med,
+		perish: perish_slow,
+		temperature: hot_food_bonus_temp,
+		temperatureduration: food_temp_long,
+		note: 
+		cooktime: 1,
+		mode: 'together'
+	},
+	frognewton: {
+		name: 'Figgy Frogwich',
+		test: (cooker, names, tags) => {
+			return (names.fig || names.fig_cooked) && (names.froglegs || names.froglegs_cooked);
+		},
+		requirements: [NAME('fig'), NAME('froglegs')],
+		priority: 1,
+		foodtype: 'meat',
+		health: healing_medsmall,
+		hunger: calories_medsmall,
+		sanity: sanity_small,
+		perish: perish_slow,
+		cooktime: 1,
+		mode: 'together'
+	},
+	frozenbananadaiquiri: {
+		name: 'Frozen Banana Daiquiri',
+		test: (cooker, names, tags) => {
+			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1);
+		},
+		requirements: [NAME('cave_banana'), TAG('frozen, COMPARE('>=', 1))],
+		priority: 1,
+		foodtype: 'goodies',
+		health: healing_medlarge,
+		hunger: calories_medsmall,
+		sanity: sanity_med,
+		perish: perish_slow,
+		temperature: cold_food_bonus_temp,
+		temperatureduration: food_temp_long,
+		note: 'Lowers temperature by 15 degrees over 15 seconds',
+		cooktime: 1,
+		mode: 'together'
+	},
+	bunnystew: {
+		name: 'Bunny Stew',
+		test: (cooker, names, tags) => {
+			return (tags.meat && tags.meat < 1) && (tags.frozen && tags.frozen >= 2) && !tags.inedible;
+		},
+		requirements: [TAG('meat', COMPARE('<', 1)), TAG('frozen', COMPARE('>=', 2)), NOT(TAG('inedible'))],
+		priority: 1,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_large,
+		sanity: sanity_tiny,
+		perish: perish_med,
+		temperature: hot_food_bonus_temp,
+		temperatureduration: food_temp_brief,
+		note: 'Raises temperature by 5 degrees over 5 seconds',
+		cooktime: 0.5,
+		mode: 'together'
+	},
+	bananajuice: {
+		name: 'Banana Shake',
+		test: (cooker, names, tags) => {
+	//I'm not sure how to write this recipe, but I noticed leafymeatsouffle has the same pattern, so I'm copying it. as I understand, this is to ensure that you have to use two of the ingredient, but one can be raw and one cooked
+	//this is the preparedfoods.lua version: return ((names.cave_banana or 0) + (names.cave_banana_cooked or 0) >= 2)
+			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2);
+		},
+		requirements: [NAME('cave_banana', COMPARE('>=', 2))],
+		priority: 1,
+		foodtype: 'veggie',
+		health: healing_medsmall,
+		hunger: calories_med,
+		sanity: sanity_large,
+		perish: perish_slow,
+		cooktime: 0.5,
 		mode: 'together'
 	},
 

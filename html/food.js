@@ -439,6 +439,8 @@ export const food = {
 		stack: stack_size_smallitem,
 		drytime: dry_med,
 		dry: 'morsel_dried',
+		//mode: 'together',
+		//meat: 0.5,
 		uncookable: true
 	},
 	batwing_cooked: {
@@ -448,6 +450,8 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: 0,
 		perish: perish_med,
+		//mode: 'together',
+		//meat: 0.5,
 		uncookable: true
 	},
 	minotaurhorn: {
@@ -607,7 +611,7 @@ export const food = {
 		name: 'Twigs',
 		inedible: 1
 	},
-	cavebanana: {
+	cave_banana: {
 		//Shipwrecked calls them bananas, less confusing to go with that one (instead of Cave Banana)
 		name: 'Banana',
 		ideal: true,
@@ -618,7 +622,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med
 	},
-	cavebanana_cooked: {
+	cave_banana_cooked: {
 		name: 'Cooked Banana',
 		isfruit: true,
 		fruit: 1,
@@ -2237,5 +2241,28 @@ export const food = {
 		sanity: sanity_supertiny,
 		stack: stack_size_smallitem,
 		mode: 'together'
+	},
+	
+	// DST Return of Them: Waterlogged beta
+	fig: {
+		name: 'Fig',
+		isfruit: true,
+		fruit: 0.5,
+		health: 0,
+		hunger: calories_small,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_smallitem
+	},
+	fig_cooked: {
+		name: 'Cooked Fig',
+		isfruit: true,
+		fruit: 0.5,
+		precook: 1,
+		health: healing_tiny,
+		hunger: calories_medsmall,
+		perish: perish_superfast,
+		sanity: 0,
+		stack: stack_size_smallitem
 	}
 };

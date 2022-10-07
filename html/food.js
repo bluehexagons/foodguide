@@ -2264,5 +2264,41 @@ export const food = {
 		perish: perish_superfast,
 		sanity: 0,
 		stack: stack_size_smallitem
+	},
+	batnose: {
+		name: 'Naked Nostrils',
+		ismeat: true,
+		meat: 0.5,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		cook: 'batnose_cooked',
+		//idk why the guide uses "morsel" 'cause the prefab name is "smallmeat"
+		//dry: 'smallmeat_dried',
+		dry: 'morsel_dried',
+		drytime: 'dry_med',
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	batnose_cooked: {
+		name: 'Charred Nostrils',
+		raw: 'batnose',
+		ismeat: true,
+		meat: 0.5,
+		precook: 1,
+		health: healing_medsmall,
+		hunger: calories_medsmall,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	//I don't know how to add this as an ingredient – afaik it's not edible on its own, it's a crafted item only needed for cooking Amberosia. decoration value according to fandom wiki, wasn't able to find it in game files
+	/*
+	refined_dust: {
+		name: "Collected Dust",
+		decoration: 2
 	}
+	*/
 };

@@ -1190,7 +1190,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1);
 		},
-		requirements: [NAME('cave_banana'), TAG('frozen, COMPARE('>=', 1))],
+		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1))],
 		priority: 1,
 		foodtype: 'goodies',
 		health: healing_medlarge,

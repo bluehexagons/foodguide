@@ -1166,7 +1166,6 @@ export const recipes = {
 		perish: perish_slow,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
-		note: 
 		cooktime: 1,
 		mode: 'together'
 	},

@@ -1237,7 +1237,23 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-
+	//A Little Drama update
+	justeggs: {
+		name: 
+		test: (cooker, names, tags) => {
+			return 
+		},
+      		requirements:
+		priority: 0,
+		foodtype: 'meat',
+		health: healing_small,
+		hunger: calories_small * 4,
+		perishtime: perish_med,
+		sanity = TUNING.SANITY_TINY,
+		cooktime: 0.5,
+		mode: 'together'
+	},
+		
 	// Leafy Meat recipes, won't work properly in simulator until issue #32 is solved
 	leafloaf: {
 		name: 'Leafy Meatloaf',

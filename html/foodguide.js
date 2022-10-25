@@ -576,6 +576,7 @@ import {recipes} from './recipes.js';
 		f.bug && info.push(taggify('bug'));
 		f.bone && info.push(taggify('bone'));
 		f.comment && info.push(f.comment);
+		f.roughage && info.push(taggify('roughage'));
 		food[foodCount++] = f;
 	}
 

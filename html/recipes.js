@@ -1187,9 +1187,9 @@ export const recipes = {
 	frozenbananadaiquiri: {
 		name: 'Frozen Banana Daiquiri',
 		test: (cooker, names, tags) => {
-			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1);
+			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1) && !tags.meat && !tags.fish;
 		},
-		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1))],
+		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('meat'))],
 		priority: 1,
 		foodtype: 'goodies',
 		health: healing_medlarge,
@@ -1225,9 +1225,9 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 	//I'm not sure how to write this recipe, but I noticed leafymeatsouffle has the same pattern, so I'm copying it. as I understand, this is to ensure that you have to use two of the ingredient, but one can be raw and one cooked
 	//this is the preparedfoods.lua version: return ((names.cave_banana or 0) + (names.cave_banana_cooked or 0) >= 2)
-			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2);
+			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2) && !tags.meat && !tags.fish && !tags.monster;
 		},
-		requirements: [NAME('cave_banana', COMPARE('>=', 2))],
+		requirements: [NAME('cave_banana', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('monster'))],
 		priority: 1,
 		foodtype: 'veggie',
 		health: healing_medsmall,
@@ -1237,7 +1237,88 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-
+	//A Little Drama update
+	justeggs: {
+		name: 'Plain Omelette',
+		test: (cooker, names, tags) => {
+			return tags.egg && tags.egg >= 3;
+		},
+      		requirements: [TAG('egg', COMPARE('>=', 4))],
+		priority: 0,
+		foodtype: 'meat',
+		health: healing_small,
+		hunger: calories_small * 4,
+		perishtime: perish_med,
+		sanity: sanity_tiny,
+		cooktime: 0.5,
+		mode: 'together'
+	},
+	veggieomlet: {
+		name: 'Breakfast Skillet',
+		test: (cooker, names, tags) => {
+			return (tags.egg && tags.egg >= 1) && (tags.veggie && tags.veggie >= 1) && !tags.meat && !tags.dairy;
+		},
+      		requirements: [TAG('egg', COMPARE('>=', 1)), TAG('veggie', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('dairy'))],
+		priority: 1,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_large,
+		perishtime: perish_preserved,
+		sanity: sanity_tiny,
+		cooktime: 1,
+		mode: 'together'
+	},
+	talleggs: {
+		name: 'Tall Scotch Eggs',
+		test: (cooker, names, tags) => {
+			return names.tallbirdegg && tags.veggie && tags.veggie >=1;
+		},
+      		requirements: [SPECIFIC('tallbirdegg'), TAG('veggie', COMPARE('>=', 1))],
+		priority: 10,
+		foodtype: 'meat',
+		health: healing_huge,
+		hunger: calories_superhuge,
+		perishtime: perish_slow,
+		sanity: sanity_tiny,
+		cooktime: 2,
+		note: 'Requires uncooked Tallbird Egg',
+		mode: 'together'
+	},
+	//food for Beefalo
+	beefalofeed: {
+		name: 'Steamed Twigs',
+		test: (cooker, names, tags) => {
+			return tags.inedible && !tags.monster && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.magic;
+		},
+      		requirements: [TAG('inedible'), NOT(TAG('monster')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('magic'))],
+		priority: -5,
+		foodtype: 'roughage', //I think that's a new one, does it need defining somewhere else or smth?
+		//secondaryfoodtype: 'wood',
+		health: healing_medlarge / 2,
+		hunger: calories_morehuge,
+		perishtime: perish_preserved,
+		sanity: 0,
+		cooktime: 0.5,
+		note: 'Cannot be eaten by the player, only given to Beefalo',
+		mode: 'together'
+	},
+	beefalotreat: {
+		name: 'Beefalo Treats',
+		test: (cooker, names, tags) => {
+			return tags.inedible && tags.seed && names.forgetmelots && !tags.monster && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.magic;
+		},
+      		requirements: [TAG('inedible'), TAG('seed'), NAME('forgetmelots'), NOT(TAG('monster')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('magic'))],
+		priority: -4,
+		foodtype: 'roughage',
+		health: healing_morehuge,
+		hunger: calories_med,
+		perishtime: perish_preserved,
+		sanity: 0,
+		cooktime: 2,
+		note: 'Cannot be eaten by the player, only given to Beefalo',
+		mode: 'together'
+	},
+		
 	// Leafy Meat recipes, won't work properly in simulator until issue #32 is solved
 	leafloaf: {
 		name: 'Leafy Meatloaf',

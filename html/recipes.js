@@ -1187,9 +1187,9 @@ export const recipes = {
 	frozenbananadaiquiri: {
 		name: 'Frozen Banana Daiquiri',
 		test: (cooker, names, tags) => {
-			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1);
+			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1) && !tags.meat && !tags.fish;
 		},
-		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1))],
+		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('meat'))],
 		priority: 1,
 		foodtype: 'goodies',
 		health: healing_medlarge,
@@ -1225,9 +1225,9 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 	//I'm not sure how to write this recipe, but I noticed leafymeatsouffle has the same pattern, so I'm copying it. as I understand, this is to ensure that you have to use two of the ingredient, but one can be raw and one cooked
 	//this is the preparedfoods.lua version: return ((names.cave_banana or 0) + (names.cave_banana_cooked or 0) >= 2)
-			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2);
+			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2) && !tags.meat && !tags.fish && !tags.monster;
 		},
-		requirements: [NAME('cave_banana', COMPARE('>=', 2))],
+		requirements: [NAME('cave_banana', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('monster'))],
 		priority: 1,
 		foodtype: 'veggie',
 		health: healing_medsmall,

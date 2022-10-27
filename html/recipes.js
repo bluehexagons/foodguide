@@ -441,7 +441,7 @@ export const recipes = {
 		},
 		requirements: [TAG('frozen'), TAG('dairy'), TAG('sweetener'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible')), NOT(TAG('egg'))],
 		priority: 10,
-		foodtype: 'veggie',
+		foodtype: 'goodies',
 		health: 0,
 		hunger: calories_med,
 		perish: perish_superfast,
@@ -1080,7 +1080,7 @@ export const recipes = {
 			return (names.barnacle || names.barnacle_cooked) && tags.fish && tags.fish >= 1.25;
 		},
 		requirements: [NAME('barnacle'), TAG('fish', COMPARE('>=', 1.25))],
-		priority: 25,
+		priority: 26,
 		foodtype: 'meat',
 		health: healing_med,
 		hunger: calories_large * 2,
@@ -1190,7 +1190,7 @@ export const recipes = {
 			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1) && !tags.meat && !tags.fish;
 		},
 		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('meat'))],
-		priority: 1,
+		priority: 2,
 		foodtype: 'goodies',
 		health: healing_medlarge,
 		hunger: calories_medsmall,
@@ -1341,7 +1341,7 @@ export const recipes = {
 			return (names.plantmeat || names.plantmeat_cooked) && (names.onion || names.onion_cooked) && tags.veggie && tags.veggie >= 2;
 		},
 		requirements: [NAME('plantmeat'), NAME('onion'), TAG('veggie', COMPARE('>=', 2))],
-		priority: 25,
+		priority: 26,
 		foodtype: 'meat',
 		health: healing_medlarge,
 		hunger: calories_large,

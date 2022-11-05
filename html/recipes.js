@@ -48,7 +48,7 @@ export const recipes = {
 	butterflymuffin: {
 		name: 'Butter Muffin',
 		test: (cooker, names, tags) => {
-			//return (names.butterflywings || names.moonbutterflywings) && !tags.meat && tags.veggie; <- For when issue #32 is sorted out
+			// return (names.butterflywings || names.moonbutterflywings) && !tags.meat && tags.veggie; <- For when issue #32 is sorted out
 			return names.butterflywings && !tags.meat && tags.veggie;
 		},
 		requires: 'Butterfly Wings, veggie',
@@ -348,7 +348,7 @@ export const recipes = {
 	waffles: {
 		name: 'Waffles',
 		test: (cooker, names, tags) => {
-			//return names.butter && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.egg; <- For when issue #32 is sorted out
+			// return names.butter && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.egg; <- For when issue #32 is sorted out
 			return names.butter && (names.berries || names.berries_cooked) && tags.egg;
 		},
 		requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
@@ -471,7 +471,7 @@ export const recipes = {
 	trailmix: {
 		name: 'Trail Mix',
 		test: (cooker, names, tags) => {
-			//return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy; <- For when issue #32 is sorted out
+			// return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy; <- For when issue #32 is sorted out
 			return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
 		},
 		requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
@@ -504,7 +504,7 @@ export const recipes = {
 	guacamole: {
 		name: 'Guacamole',
 		test: (cooker, names, tags) => {
-			//return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit; <- For when issue #32 is sorted out
+			// return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit; <- For when issue #32 is sorted out
 			return names.mole && names.cactusmeat && !tags.fruit;
 		},
 		requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
@@ -518,7 +518,7 @@ export const recipes = {
 		mode: 'giants'
 	},
 
-	//Shipwrecked recipes
+	// Shipwrecked recipes
 	californiaroll: {
 		name: 'California Roll',
 		test: (cooker, names, tags) => {
@@ -602,12 +602,12 @@ export const recipes = {
 		name: 'Banana Pop',
 		test: (cooker, names, tags) => {
 			return names.cave_banana && tags.frozen && tags.inedible && !tags.meat && !tags.fish;
-			//DST recipe, idk if the inedible part is necessary, but this is how it's presented in preparedfoods.lua, commented out due to issue #32
-			//return (names.cave_banana || names.cave_banana_cooked) && tags.frozen && names.twigs && !tags.meat && !tags.fish && (tags.inedible && tags.inedible <= 2);
+			// DST recipe, idk if the inedible part is necessary, but this is how it's presented in preparedfoods.lua, commented out due to issue #32
+			// return (names.cave_banana || names.cave_banana_cooked) && tags.frozen && names.twigs && !tags.meat && !tags.fish && (tags.inedible && tags.inedible <= 2);
 		},
 		requirements: [SPECIFIC('cave_banana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
-		//DST:
-		//requirements: [NAME('cave_banana'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('fish')), TAG('inedible', COMPARE('<=', 2))],
+		// DST:
+		// requirements: [NAME('cave_banana'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('fish')), TAG('inedible', COMPARE('<=', 2))],
 		priority: 20,
 		foodtype: 'veggie',
 		health: healing_med,
@@ -728,7 +728,7 @@ export const recipes = {
 		mode: 'shipwrecked'
 	},
 
-	//Warly recipes
+	// Warly recipes
 	sweetpotatosouffle: {
 		name: 'Sweet Potato Souffle',
 		test: (cooker, names, tags) => {
@@ -790,7 +790,7 @@ export const recipes = {
 		mode: 'warly'
 	},
 
-	//Hamlet recipes
+	// Hamlet recipes
 	nettlelosange: {
 		name: 'Nettle Rolls',
 		test: (cooker, names, tags) => {
@@ -950,7 +950,7 @@ export const recipes = {
 		mode: 'hamlet'
 	},
 
-	//Together recipes
+	// Together recipes
 	jellybean: {
 		name: 'Jellybeans',
 		test: (cooker, names, tags) => {
@@ -1223,8 +1223,6 @@ export const recipes = {
 	bananajuice: {
 		name: 'Banana Shake',
 		test: (cooker, names, tags) => {
-	//I'm not sure how to write this recipe, but I noticed leafymeatsouffle has the same pattern, so I'm copying it. as I understand, this is to ensure that you have to use two of the ingredient, but one can be raw and one cooked
-	//this is the preparedfoods.lua version: return ((names.cave_banana or 0) + (names.cave_banana_cooked or 0) >= 2)
 			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2) && !tags.meat && !tags.fish && !tags.monster;
 		},
 		requirements: [NAME('cave_banana', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('monster'))],
@@ -1237,7 +1235,7 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-	//A Little Drama update
+	// A Little Drama update
 	justeggs: {
 		name: 'Plain Omelette',
 		test: (cooker, names, tags) => {
@@ -1284,7 +1282,7 @@ export const recipes = {
 		note: 'Requires uncooked Tallbird Egg',
 		mode: 'together'
 	},
-	//food for Beefalo
+	// food for Beefalo
 	beefalofeed: {
 		name: 'Steamed Twigs',
 		test: (cooker, names, tags) => {
@@ -1292,8 +1290,8 @@ export const recipes = {
 		},
       		requirements: [TAG('inedible'), NOT(TAG('monster')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('magic'))],
 		priority: -5,
-		foodtype: 'roughage', //I think that's a new one, does it need defining somewhere else or smth?
-		//secondaryfoodtype: 'wood',
+		foodtype: 'roughage',
+		// secondaryfoodtype: 'wood',
 		health: healing_medlarge / 2,
 		hunger: calories_morehuge,
 		perishtime: perish_preserved,
@@ -1529,7 +1527,7 @@ export const recipes = {
 	}
 	*/
 	
-	//preparednonfoods – not dishes, but made in crock pot
+	// preparednonfoods – not dishes, but made in crock pot
 	batnosehat: {
 		name: 'Milkmade Hat',
 		test: (cooker, names, tags) => {

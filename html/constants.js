@@ -52,6 +52,7 @@ export const calories_per_day = 75,
 	calories_med = calories_per_day / 3, // meat
 	calories_large = calories_per_day / 2, // cooked meat
 	calories_huge = calories_per_day, // crockpot foods?
+        calories_morehuge = 100, // todo: make this the same logic as game data
 	calories_superhuge = calories_per_day * 2, // crockpot foods?
 
 	hot_food_bonus_temp = 40,

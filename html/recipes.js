@@ -26,6 +26,7 @@ import {
 	calories_med,
 	calories_large,
 	calories_huge,
+	calories_morehuge,
 	calories_superhuge,
 	hot_food_bonus_temp,
 	cold_food_bonus_temp,

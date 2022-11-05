@@ -6,6 +6,7 @@ import {
 	healing_medlarge,
 	healing_large,
 	healing_huge,
+	healing_morehuge,
 	healing_superhuge,
 	sanity_tiny,
 	sanity_small,
@@ -1317,7 +1318,7 @@ export const recipes = {
 		note: 'Cannot be eaten by the player, only given to Beefalo',
 		mode: 'together'
 	},
-		
+
 	// Leafy Meat recipes, won't work properly in simulator until issue #32 is solved
 	leafloaf: {
 		name: 'Leafy Meatloaf',
@@ -1527,7 +1528,7 @@ export const recipes = {
 		mode: 'warly' //+ 'together'
 	}
 	*/
-	
+
 	// preparednonfoods – not dishes, but made in crock pot
 	batnosehat: {
 		name: 'Milkmade Hat',
@@ -1541,15 +1542,16 @@ export const recipes = {
 		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute',
 		mode: 'together'
 	},
-	dustmeringue: {
-		name: 'Amberosia',
-		test: (cooker, names, tags) => {
-			return names.refined_dust;
-		},
-		requirements: [NAME('refined_dust')],
-		priority: 100,
-		cooktime: 2,
-		note: 'Used to feed Dust Moths, cannot be eaten by the player',
-		mode: 'together'
-	}
+	// TODO: refined dust is not added yet
+	// dustmeringue: {
+	// 	name: 'Amberosia',
+	// 	test: (cooker, names, tags) => {
+	// 		return names.refined_dust;
+	// 	},
+	// 	requirements: [NAME('refined_dust')],
+	// 	priority: 100,
+	// 	cooktime: 2,
+	// 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
+	// 	mode: 'together'
+	// }
 };

@@ -439,6 +439,8 @@ export const food = {
 		stack: stack_size_smallitem,
 		drytime: dry_med,
 		dry: 'morsel_dried',
+		//mode: 'together',
+		//meat: 0.5,
 		uncookable: true
 	},
 	batwing_cooked: {
@@ -448,6 +450,8 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: 0,
 		perish: perish_med,
+		//mode: 'together',
+		//meat: 0.5,
 		uncookable: true
 	},
 	minotaurhorn: {
@@ -607,7 +611,7 @@ export const food = {
 		name: 'Twigs',
 		inedible: 1
 	},
-	cavebanana: {
+	cave_banana: {
 		//Shipwrecked calls them bananas, less confusing to go with that one (instead of Cave Banana)
 		name: 'Banana',
 		ideal: true,
@@ -618,7 +622,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med
 	},
-	cavebanana_cooked: {
+	cave_banana_cooked: {
 		name: 'Cooked Banana',
 		isfruit: true,
 		fruit: 1,
@@ -2237,5 +2241,64 @@ export const food = {
 		sanity: sanity_supertiny,
 		stack: stack_size_smallitem,
 		mode: 'together'
+	},
+	
+	// DST Return of Them: Waterlogged beta
+	fig: {
+		name: 'Fig',
+		isfruit: true,
+		fruit: 0.5,
+		health: 0,
+		hunger: calories_small,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_smallitem
+	},
+	fig_cooked: {
+		name: 'Cooked Fig',
+		isfruit: true,
+		fruit: 0.5,
+		precook: 1,
+		health: healing_tiny,
+		hunger: calories_medsmall,
+		perish: perish_superfast,
+		sanity: 0,
+		stack: stack_size_smallitem
+	},
+	batnose: {
+		name: 'Naked Nostrils',
+		ismeat: true,
+		meat: 0.5,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		cook: 'batnose_cooked',
+		//idk why the guide uses "morsel" 'cause the prefab name is "smallmeat"
+		//dry: 'smallmeat_dried',
+		dry: 'morsel_dried',
+		drytime: 'dry_med',
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	batnose_cooked: {
+		name: 'Charred Nostrils',
+		raw: 'batnose',
+		ismeat: true,
+		meat: 0.5,
+		precook: 1,
+		health: healing_medsmall,
+		hunger: calories_medsmall,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	//I don't know how to add this as an ingredient – afaik it's not edible on its own, it's a crafted item only needed for cooking Amberosia. decoration value according to fandom wiki, wasn't able to find it in game files
+	/*
+	refined_dust: {
+		name: "Collected Dust",
+		decoration: 2
 	}
+	*/
 };

@@ -848,7 +848,7 @@ import {recipes} from './recipes.js';
 		const showTab = e => {
 			setTab(e.target.dataset.tab);
 		};
-		const setTab = tabID => {
+		setTab = tabID => {
 			activeTab.className = '';
 			activeTab = tabs[tabID];
 			activePage.style.display = 'none';

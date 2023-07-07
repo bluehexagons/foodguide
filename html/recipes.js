@@ -1380,6 +1380,22 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'together'
 	},
+	vegstinger: {
+		name: 'Vegetable Stinger',
+		test: (cooker, names, tags) => {
+			return (names.asparagus || names.asparagus_cooked || names.tomato || names.tomato_cooked) && tags.veggie && tags.veggie > 2 && tags.frozen && !tags.meat && !tags.inedible && !tags.egg;
+		},
+		requirements: [OR(NAME('tomato'), NAME('asparagus')), TAG('veggie', COMPARE('>', 2)), TAG('frozen'), NOT(TAG('meat')), NOT(TAG('egg')), NOT(TAG('inedible'))],
+		priority: 15,
+		foodtype: 'veggie',
+		health: healing_small,
+		hunger: calories_med,
+		perish: perish_slow,
+		sanity: sanity_large,
+		cooktime: 0.5,
+		note: 'Winona\'s favorite dish (+15 hunger for her)',
+		mode: 'together'
+	},
 
 	// Warly DST recipes, waiting for issue #32 to be solved
 	/*

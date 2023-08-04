@@ -2625,7 +2625,7 @@ export const food = {
 		note: 'Gives 22.5 seconds of light',
 		mode: 'together'
 	},
-	berries_juicy: {
+	berries_juicy_dst: {
 		name: 'Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2636,7 +2636,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	berries_juicy_cooked: {
+	berries_juicy_cooked_dst: {
 		name: 'Roasted Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,

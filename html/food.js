@@ -1752,15 +1752,15 @@ export const food = {
 //	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
 //--------------------------------------------------------------------------------\\
 	
-	/* REMOVE AFTER UPLOADING SECTION DIVIDERS
-	acorn: {
+
+	acorn_dst: {
 		name: 'Birchnut',
 		uncookable: true,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	acorn_cooked: {
+	acorn_cooked_dst: {
 		name: 'Roasted Birchnut',
 		ideal: true,
 		seed: 1,
@@ -1769,9 +1769,9 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	butter: {
+	butter_dst: {
 		name: 'Butter',
 		fat: 1,
 		dairy: 1,
@@ -1779,9 +1779,10 @@ export const food = {
 		hunger: calories_med,
 		sanity: 0,
 		perish: perish_superslow,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	butterflywings: {
+	butterflywings_dst: {
 		name: 'Butterfly Wings',
 		isveggie: true,
 		decoration: 2,
@@ -1789,9 +1790,10 @@ export const food = {
 		hunger: calories_tiny,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	cactusflower: {
+	cactusflower_dst: {
 		name: 'Cactus Flower',
 		veggie: 0.5,
 		hunger: calories_small,
@@ -1799,16 +1801,17 @@ export const food = {
 		sanity: sanity_tiny,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	deerclopseyeball: {
+	deerclopseyeball_dst: {
 		name: 'Deerclops Eyeball',
 		uncookable: true,
 		health: healing_huge,
 		hunger: calories_huge,
-		sanity: -sanity_med
+		sanity: -sanity_med,
+		mode: 'together'
 	},
-	bird_egg: {
+	bird_egg_dst: {
 		name: 'Egg',
 		egg: 1,
 		health: 0,
@@ -1816,9 +1819,10 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		rot: 'rottenegg'
+		rot: 'rottenegg_dst',
+		mode: 'together'
 	},
-	bird_egg_cooked: {
+	bird_egg_cooked_dst: {
 		name: 'Cooked Egg',
 		egg: 1,
 		precook: 1,
@@ -1826,26 +1830,29 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	rottenegg: {
+	rottenegg_dst: {
 		name: 'Rotten Egg',
 		uncookable: true,
 		health: spoiled_health,
 		hunger: spoiled_hunger,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	cutlichen: {
+	cutlichen_dst: {
 		name: 'Lichen',
 		isveggie: true,
 		veggie: 1,
 		health: healing_small,
 		hunger: calories_small,
 		sanity: -sanity_tiny,
-		perish: perish_two_day
+		perish: perish_two_day,
+		mode: 'together'
 	},
-	eel: {
+	eel_dst: {
 		name: 'Eel',
 		ismeat: true,
 		meat: 0.5,
@@ -1855,44 +1862,21 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		dry: 'morsel_dried',
-		drytime: dry_fast
+		//dry: 'morsel_dried',
+		drytime: dry_fast,
+		mode: 'together'
 	},
-	eel_cooked: {
+	eel_cooked_dst: {
 		name: 'Cooked Eel',
 		ismeat: true,
 		health: healing_medsmall,
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
-	},
-	fish: {
-		name: 'Fish',
-		ismeat: true,
-		meat: 0.5,
-		fish: 1,
-		health: healing_tiny,
-		hunger: calories_small,
-		sanity: 0,
-		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		drytime: dry_fast,
-		dry: 'morsel_dried'
+		mode: 'together'
 	},
-	fish_cooked: {
-		name: 'Cooked Fish',
-		ismeat: true,
-		meat: 0.5,
-		fish: 1,
-		precook: 1,
-		health: healing_tiny,
-		hunger: calories_small,
-		sanity: 0,
-		perish: perish_fast,
-		stack: stack_size_smallitem
-	},
-	froglegs: {
+	froglegs_dst: {
 		name: 'Frog Legs',
 		ismeat: true,
 		meat: 0.5,
@@ -1900,9 +1884,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_fast,
 		sanity: -sanity_small,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	froglegs_cooked: {
+	froglegs_cooked_dst: {
 		name: 'Cooked Frog Legs',
 		ismeat: true,
 		meat: 0.5,
@@ -1911,8 +1896,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
+	/*FIRST BATCH ABOVE
 	//Pre-Hamlet foliage could be eaten but wasn't an ingredient
 	// foliage: {
 	// name: 'Foliage',
@@ -2579,7 +2566,7 @@ export const food = {
 		mode: 'giants'
 	},
 	
-	REMOVE AFTER UPLOADING SECTION DIVIDERS */
+	REMOVE AFTER COMPLETING BATCH */
 	
 	wormlight_lesser: {
 		name: 'Lesser Glow Berry',

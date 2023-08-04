@@ -1455,6 +1455,23 @@ export const recipes = {
 		note: 'Recipe produces 3; heals 120 health over 2 minutes',
 		mode: 'together'
 	},
+	//Warly's Addition to DST
+	//
+	asparagussoup_dst: {
+		name: 'Asparagus Soup',
+		test: (cooker, names, tags) => {
+			return (names.asparagus_dst || names.asparagus_cooked_dst) && tags.veggie && tags.veggie > 2 and !tags.meat and !tags.inedible;
+		},
+		requirements: [NAME('asparagus'), TAG('veggie', COMPARE('>', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
+		priority: 10,
+		foodtype: 'veggie',
+		health: healing_med,
+		hunger: calories_medsmall,
+		perish: perish_slow,
+		sanity: sanity_tiny,
+		cooktime: 0.5,
+		mode: 'together'
+	},
 	vegstinger: {
 		name: 'Vegetable Stinger',
 		test: (cooker, names, tags) => {

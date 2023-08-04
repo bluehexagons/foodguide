@@ -1471,6 +1471,7 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
+	//adding _dst doesn't seem needed in recipes.js but kept for identification purposes
 	asparagussoup_dst: {
 		name: 'Asparagus Soup',
 		test: (cooker, names, tags) => {
@@ -1911,19 +1912,18 @@ export const recipes = {
 		cooktime: 2,
 		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute',
 		mode: 'together'
-	},
-	// TODO: refined dust is not added yet
-	// dustmeringue: {
-	// 	name: 'Amberosia',
-	// 	test: (cooker, names, tags) => {
-	// 		return names.refined_dust;
-	// 	},
-	// 	requirements: [NAME('refined_dust')],
-	// 	priority: 100,
-	// 	cooktime: 2,
-	// 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
-	// 	mode: 'together'
-	// }
+	},	
+	dustmeringue: {
+	 	name: 'Amberosia',
+	 	test: (cooker, names, tags) => {
+	 		return names.refined_dust;
+	 	},
+	 	requirements: [NAME('refined_dust')],
+	 	priority: 100,
+	 	cooktime: 2,
+	 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
+	 	mode: 'together'
+	 }
 	
 //--------------------------------------------------------------------------------\\	
 //	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\

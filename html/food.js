@@ -2680,7 +2680,7 @@ export const food = {
 	},
 
 	//DST Turn Of Tides Additions
-	kelp: {
+	kelp_dst: {
 		name: 'Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,

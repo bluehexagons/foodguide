@@ -2693,7 +2693,7 @@ export const food = {
 		//drytime: dry_superfast,
 		mode: 'together'
 	},
-	kelp_cooked_dst: {
+	kelp_cooked: {
 		name: 'Cooked Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,
@@ -2705,7 +2705,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	kelp_dried_dst: {
+	kelp_dried: {
 		name: 'Dried Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,

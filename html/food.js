@@ -2338,9 +2338,8 @@ export const food = {
 		inedible: 1,
 		mode: 'together'
 	},
-	/*3RD BATCH OF FOODS ABOVE
-	cave_banana: {
-		//Shipwrecked calls them bananas, less confusing to go with that one (instead of Cave Banana)
+
+	cave_banana_dst: {
 		name: 'Banana',
 		ideal: true,
 		isfruit: true,
@@ -2348,9 +2347,10 @@ export const food = {
 		health: healing_tiny,
 		hunger: calories_small,
 		sanity: 0,
-		perish: perish_med
+		perish: perish_med,
+		mode: 'together'
 	},
-	cave_banana_cooked: {
+	cave_banana_cooked_dst: {
 		name: 'Cooked Banana',
 		isfruit: true,
 		fruit: 1,
@@ -2358,9 +2358,10 @@ export const food = {
 		health: healing_small,
 		hunger: calories_small,
 		sanity: 0,
-		perish: perish_fast
+		perish: perish_fast,
+		mode: 'together'
 	},
-	carrot: {
+	carrot_dst: {
 		name: 'Carrot',
 		isveggie: true,
 		veggie: 1,
@@ -2368,9 +2369,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	carrot_cooked: {
+	carrot_cooked_dst: {
 		name: 'Roasted Carrot',
 		isveggie: true,
 		veggie: 1,
@@ -2379,9 +2381,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	corn: {
+	corn_dst: {
 		name: 'Corn',
 		ideal: true,
 		isveggie: true,
@@ -2390,9 +2393,10 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	corn_cooked: {
+	corn_cooked_dst: {
 		name: 'Popcorn',
 		isveggie: true,
 		veggie: 1,
@@ -2401,9 +2405,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_slow,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	pumpkin: {
+	pumpkin_dst: {
 		name: 'Pumpkin',
 		isveggie: true,
 		veggie: 1,
@@ -2411,9 +2416,10 @@ export const food = {
 		hunger: calories_large,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	pumpkin_cooked: {
+	pumpkin_cooked_dst: {
 		name: 'Hot Pumpkin',
 		isveggie: true,
 		veggie: 1,
@@ -2422,9 +2428,10 @@ export const food = {
 		hunger: calories_large,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	eggplant: {
+	eggplant_dst: {
 		name: 'Eggplant',
 		isveggie: true,
 		veggie: 1,
@@ -2432,9 +2439,10 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	eggplant_cooked: {
+	eggplant_cooked_dst: {
 		name: 'Braised Eggplant',
 		isveggie: true,
 		veggie: 1,
@@ -2443,9 +2451,10 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	durian: {
+	durian_dst: {
 		name: 'Durian',
 		isfruit: true,
 		monster: 1,
@@ -2454,9 +2463,10 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_med,
 		sanity: -sanity_tiny,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	durian_cooked: {
+	durian_cooked_dst: {
 		name: 'Extra Smelly Durian',
 		isfruit: true,
 		monster: 1,
@@ -2466,9 +2476,10 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_fast,
 		sanity: -sanity_tiny,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	pomegranate: {
+	pomegranate_dst: {
 		name: 'Pomegranate',
 		isfruit: true,
 		fruit: 1,
@@ -2476,9 +2487,10 @@ export const food = {
 		hunger: calories_tiny,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	pomegranate_cooked: {
+	pomegranate_cooked_dst: {
 		name: 'Sliced Pomegranate',
 		isfruit: true,
 		fruit: 1,
@@ -2487,9 +2499,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	dragonfruit: {
+	dragonfruit_dst: {
 		name: 'Dragon Fruit',
 		isfruit: true,
 		fruit: 1,
@@ -2497,9 +2510,10 @@ export const food = {
 		hunger: calories_tiny,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	dragonfruit_cooked: {
+	dragonfruit_cooked_dst: {
 		name: 'Prepared Dragon Fruit',
 		isfruit: true,
 		fruit: 1,
@@ -2508,9 +2522,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	berries: {
+	berries_dst: {
 		name: 'Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2518,9 +2533,10 @@ export const food = {
 		hunger: calories_tiny,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	berries_cooked: {
+	berries_cooked_dst: {
 		name: 'Roasted Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2529,9 +2545,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	cactusmeat: {
+	cactusmeat_dst: {
 		name: 'Cactus Flesh',
 		ideal: true,
 		veggie: 1,
@@ -2540,9 +2557,9 @@ export const food = {
 		perish: perish_med,
 		sanity: -sanity_tiny,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	cactusmeat_cooked: {
+	cactusmeat_cooked_dst: {
 		name: 'Cooked Cactus Flesh',
 		veggie: 1,
 		hunger: calories_small,
@@ -2551,9 +2568,9 @@ export const food = {
 		sanity: sanity_med,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	watermelon: {
+	watermelon_dst: {
 		name: 'Watermelon',
 		fruit: 1,
 		ideal: true,
@@ -2562,9 +2579,9 @@ export const food = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	watermelon_cooked: {
+	watermelon_cooked_dst: {
 		name: 'Grilled Watermelon',
 		fruit: 1,
 		hunger: calories_small,
@@ -2573,28 +2590,28 @@ export const food = {
 		sanity: sanity_tiny * 1.5,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	wormlight: {
+	wormlight_dst: {
 		name: 'Glow Berry',
-		uncookable: true,
 		health: healing_medsmall + healing_small,
 		hunger: calories_medsmall,
 		sanity: -sanity_small,
 		perish: perish_med,
-		note: 'Gives 90 seconds of light'
+		note: 'Gives 90 seconds of light',
+		mode: 'together'
 	},
-	glommerfuel: {
+	glommerfuel_dst: {
 		name: 'Glommer\'s Goop',
 		uncookable: true,
 		health: healing_large,
 		hunger: calories_tiny,
 		sanity: -sanity_huge,
-		mode: 'giants'
+		mode: 'together'
 	},
 	
-	REMOVE AFTER COMPLETING BATCH */
-	
+
+	/*4TH BATCH OF FOODS ABOVE. This food below already exists but needs reformating.
 	wormlight_lesser: {
 		name: 'Lesser Glow Berry',
 		//uncookable = true, <- Not anymore
@@ -2878,6 +2895,7 @@ export const food = {
 		inedible: 1,
 		mode: 'together'
 	},
+	*/
 
 	//DST Hook, Line, and Inker
 	//This replaces the fish from ponds. Waiting on Issue #32 to be resolved

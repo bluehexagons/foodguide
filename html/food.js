@@ -2613,7 +2613,7 @@ export const food = {
 	
 	//FINAL BATCH OF DS TO DST FOODS ABOVE
 	
-	wormlight_lesser: {
+	wormlight_lesser_dst: {
 		name: 'Lesser Glow Berry',
 		isfruit: true,
 		fruit: 0.5,

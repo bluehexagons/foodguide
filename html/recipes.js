@@ -1867,7 +1867,36 @@ export const recipes = {
 		mode: 'together'
 	},
 
-	// Warly DST recipes, waiting for issue #32 to be solved
+	// preparednonfoods – not dishes, but made in crock pot
+	batnosehat: {
+		name: 'Milkmade Hat',
+		test: (cooker, names, tags) => {
+			return names.batnose && names.kelp && (tags.dairy && tags.dairy >= 1);
+		},
+		requirements: [NAME('batnose'), NAME('kelp'), TAG('dairy', COMPARE ('>=', 1))],
+		priority: 55,
+		perish: perish_slow,
+		cooktime: 2,
+		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute',
+		mode: 'together'
+	},
+	// TODO: refined dust is not added yet
+	// dustmeringue: {
+	// 	name: 'Amberosia',
+	// 	test: (cooker, names, tags) => {
+	// 		return names.refined_dust;
+	// 	},
+	// 	requirements: [NAME('refined_dust')],
+	// 	priority: 100,
+	// 	cooktime: 2,
+	// 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
+	// 	mode: 'together'
+	// }
+	
+//--------------------------------------------------------------------------------\\	
+//	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\
+//--------------------------------------------------------------------------------\\
+
 	/*
 	gazpacho: {
 		name: 'Asparagazpacho',
@@ -2015,29 +2044,5 @@ export const recipes = {
 	}
 	*/
 
-	// preparednonfoods – not dishes, but made in crock pot
-	batnosehat: {
-		name: 'Milkmade Hat',
-		test: (cooker, names, tags) => {
-			return names.batnose && names.kelp && (tags.dairy && tags.dairy >= 1);
-		},
-		requirements: [NAME('batnose'), NAME('kelp'), TAG('dairy', COMPARE ('>=', 1))],
-		priority: 55,
-		perish: perish_slow,
-		cooktime: 2,
-		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute',
-		mode: 'together'
-	},
-	// TODO: refined dust is not added yet
-	// dustmeringue: {
-	// 	name: 'Amberosia',
-	// 	test: (cooker, names, tags) => {
-	// 		return names.refined_dust;
-	// 	},
-	// 	requirements: [NAME('refined_dust')],
-	// 	priority: 100,
-	// 	cooktime: 2,
-	// 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
-	// 	mode: 'together'
-	// }
+	
 };

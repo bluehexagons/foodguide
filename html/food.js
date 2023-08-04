@@ -2658,7 +2658,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	royal_jelly: {
+	royal_jelly_dst: {
 		name: 'Royal Jelly',
 		sweetener: 3,
 		health: healing_large,

@@ -1752,8 +1752,7 @@ export const food = {
 //	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
 //--------------------------------------------------------------------------------\\
 	
-//PORTED INGREDIENTS FROM DS + RoG
-//PORTED INGREDIENTS GET THE DST SUFFIX TO DIFFERENTIATE FROM THE DS VERSION OF THE INGREDIENT SO THAT THE PROPER DATA SHOWS UP\\
+//PORTED INGREDIENTS FROM DS + DLC's GET THE DST SUFFIX TO DIFFERENTIATE FROM THE DS VERSION OF THE INGREDIENT\\
 
 	acorn_dst: {
 		name: 'Birchnut',
@@ -2772,28 +2771,6 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 	},
 
 	//DST Additions From Warly's Update
-	asparagus_dst: {
-		name: 'Asparagus',
-		isveggie: true,
-		veggie: 1,
-		health: healing_small,
-		hunger: calories_small,
-		sanity: 0,
-		perish: perish_fast,
-		stack: stack_size_smallitem,
-		mode: 'together'
-	},
-	asparagus_cooked_dst: {
-		name: 'Cooked Asparagus',
-		isveggie: true,
-		veggie: 1,
-		health: healing_small,
-		hunger: calories_med,
-		sanity: 0,
-		perish: perish_superfast,
-		stack: stack_size_smallitem,
-		mode: 'together'
-	},
 	pepper: {
 		name: 'Pepper',
 		isveggie: true,

@@ -1438,21 +1438,6 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'giants'
 	},
-	asparagussoup: {
-		name: 'Asparagus Soup',
-		test: (cooker, names, tags) => {
-			return (names.asparagus || names.asparagus_cooked) && tags.veggie && tags.veggie > 1;
-		},
-		requirements: [NAME('asparagus'), TAG('veggie', COMPARE('>', 1))],
-		priority: 10,
-		foodtype: 'veggie',
-		health: healing_med,
-		hunger: calories_medsmall,
-		perish: perish_slow,
-		sanity: sanity_tiny,
-		cooktime: 0.5,
-		mode: 'hamlet'
-	},
 	REMOVE AFTER UPLOADING SECTION DIVIDERS*/
 	jellybean: {
 		name: 'Jellybeans',
@@ -1530,22 +1515,6 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 0.75,
-		mode: 'together'
-	},
-	vegstinger: {
-		name: 'Vegetable Stinger',
-		test: (cooker, names, tags) => {
-			return (names.asparagus_dst || names.asparagus_cooked_dst || names.tomato || names.tomato_cooked)
-				&& tags.veggie && tags.veggie > 2 && tags.frozen && !tags.meat && !tags.inedible && !tags.egg;
-		},
-		requirements: [OR(NAME('asparagus'), NAME('tomato')), TAG('veggie', COMPARE('>', 2)), TAG('frozen'), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg'))],
-		priority: 15,
-		foodtype: 'veggie',
-		health: healing_small,
-		hunger: calories_med,
-		perish: perish_slow,
-		sanity: sanity_large,
-		cooktime: 0.5,
 		mode: 'together'
 	},
 	barnaclepita: {

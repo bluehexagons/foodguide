@@ -1535,7 +1535,7 @@ export const recipes = {
 	barnaclesushi: {
 		name: 'Barnacle Nigiri',
 		test: (cooker, names, tags) => {
-			return (names.barnacle || names.barnacle_cooked) && (names.kelp_dst || names.kelp_cooked) && tags.egg && tags.egg >= 1;
+			return (names.barnacle || names.barnacle_cooked) && (names.kelp_dst || names.kelp_cooked_dst) && tags.egg && tags.egg >= 1;
 		},
 		requirements: [NAME('barnacle'), NAME('kelp'), TAG('egg', COMPARE('>=', 1))],
 		priority: 30,

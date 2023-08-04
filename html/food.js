@@ -2972,6 +2972,7 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 	},
 
 	//All the small ocean fish
+	//Don't add what they rot or cook into, it seems to break the simulator.
 	oceanfish_small_1_inv: {
 		name: 'Runty Guppy',
 		meat: 0.5,
@@ -3003,6 +3004,34 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 	oceanfish_small_5_inv: {
 		name: 'Popperfish',
 		veggie: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_6_inv: {
+		name: 'Fallounder',
+		meat: 0.5,
+		fish: 0.5,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_7_inv: {
+		name: 'Bloomfin Tuna',
+		meat: 0.5,
+		fish: 0.5,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_8_inv: {
+		name: 'Scorching Sunfish',
+		meat: 0.5,
+		fish: 0.5,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_9_inv: {
+		name: 'Spittlefish',
+		meat: 0.5,
+		fish: 0.5,
 		perish: perish_one_day,
 		mode: 'together'
 	},

@@ -3236,11 +3236,11 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	//I don't know how to add this as an ingredient – afaik it's not edible on its own, it's a crafted item only needed for cooking Amberosia. decoration value according to fandom wiki, wasn't able to find it in game files
-	/*
+
 	refined_dust: {
 		name: "Collected Dust",
-		decoration: 2
+		decoration: 2,
+		mode: 'together'
 	}
-	*/
+
 };

@@ -1471,6 +1471,21 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
+	asparagussoup: {
+		name: 'Asparagus Soup',
+		test: (cooker, names, tags) => {
+			return (names.asparagus_dst || names.asparagus_cooked_dst) && tags.veggie && tags.veggie > 2 && !tags.meat && !tags.inedible;
+		},
+		requirements: [NAME('asparagus'), TAG('veggie', COMPARE('>', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
+		priority: 10,
+		foodtype: 'veggie',
+		health: healing_med,
+		hunger: calories_medsmall,
+		perish: perish_slow,
+		sanity: sanity_tiny,
+		cooktime: 0.5,
+		mode: 'together'
+	},
 	pepperpopper: {
 		name: 'Stuffed Pepper Poppers',
 		test: (cooker, names, tags) => {

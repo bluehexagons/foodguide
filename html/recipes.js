@@ -1471,7 +1471,7 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-	asparagussoup: {
+	asparagussoup_dst: {
 		name: 'Asparagus Soup',
 		test: (cooker, names, tags) => {
 			return (names.asparagus_dst || names.asparagus_cooked_dst) && tags.veggie && tags.veggie > 2 && !tags.meat && !tags.inedible;

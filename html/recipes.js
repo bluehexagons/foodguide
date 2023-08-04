@@ -1439,6 +1439,7 @@ export const recipes = {
 		mode: 'giants'
 	},
 	REMOVE AFTER UPLOADING SECTION DIVIDERS*/
+
 	jellybean: {
 		name: 'Jellybeans',
 		test: (cooker, names, tags) => {
@@ -1452,6 +1453,22 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 2.5,
 		note: 'Recipe produces 3; heals 120 health over 2 minutes',
+		mode: 'together'
+	},
+	vegstinger: {
+		name: 'Vegetable Stinger',
+		test: (cooker, names, tags) => {
+			return (names.asparagus_dst || names.asparagus_cooked_dst || names.tomato || names.tomato_cooked)
+				&& tags.veggie && tags.veggie > 2 && tags.frozen && !tags.meat && !tags.inedible && !tags.egg;
+		},
+		requirements: [OR(NAME('asparagus'), NAME('tomato')), TAG('veggie', COMPARE('>', 2)), TAG('frozen'), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg'))],
+		priority: 15,
+		foodtype: 'veggie',
+		health: healing_small,
+		hunger: calories_med,
+		perish: perish_slow,
+		sanity: sanity_large,
+		cooktime: 0.5,
 		mode: 'together'
 	},
 	pepperpopper: {

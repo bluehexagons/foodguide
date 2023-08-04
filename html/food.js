@@ -2915,7 +2915,8 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		drytime: dry_fast,
-		dry: 'morsel_dried_dst'
+		dry: 'morsel_dried_dst',
+		mode: 'together'
 	},
 	//_dst because it's ported from SW but added in this update
 	fishmeat_small_dst: {

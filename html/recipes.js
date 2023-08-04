@@ -1912,18 +1912,17 @@ export const recipes = {
 		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute',
 		mode: 'together'
 	},
-	// TODO: refined dust is not added yet
-	// dustmeringue: {
-	// 	name: 'Amberosia',
-	// 	test: (cooker, names, tags) => {
-	// 		return names.refined_dust;
-	// 	},
-	// 	requirements: [NAME('refined_dust')],
-	// 	priority: 100,
-	// 	cooktime: 2,
-	// 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
-	// 	mode: 'together'
-	// }
+	dustmeringue: {
+	 	name: 'Amberosia',
+	 	test: (cooker, names, tags) => {
+	 		return names.refined_dust;
+	 	},
+	 	requirements: [NAME('refined_dust')],
+	 	priority: 100,
+	 	cooktime: 2,
+	 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
+	 	mode: 'together'
+	 },
 	
 //--------------------------------------------------------------------------------\\	
 //	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\

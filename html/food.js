@@ -3071,6 +3071,35 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		perish: perish_one_day,
 		mode: 'together'
 	},
+	oceanfish_medium_6_inv: {
+		name: 'Dappled Koi',
+		meat: 1,
+		fish: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_medium_7_inv: {
+		name: 'Golden Koi',
+		meat: 1,
+		fish: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},	
+	oceanfish_medium_8_inv: {
+		name: 'Golden Koi',
+		meat: 1,
+		fish: 1,
+		frozen: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},	
+	oceanfish_medium_9_inv: {
+		name: 'Sweetish Fish',
+		meat: 1,
+		fish: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},	
 
 	// DST Return of Them: Troubled Waters food
 	barnacle: {

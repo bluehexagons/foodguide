@@ -2625,7 +2625,7 @@ export const food = {
 		note: 'Gives 22.5 seconds of light',
 		mode: 'together'
 	},
-	berries_juicy_dst: {
+	berries_juicy: {
 		name: 'Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2636,7 +2636,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	berries_juicy_cooked_dst: {
+	berries_juicy_cooked: {
 		name: 'Roasted Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2648,7 +2648,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	phlegm_dst: {
+	phlegm: {
 		name: 'Phlegm',
 		uncookable: true,
 		health: 0,
@@ -2658,7 +2658,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	royal_jelly_dst: {
+	royal_jelly: {
 		name: 'Royal Jelly',
 		sweetener: 3,
 		health: healing_large,
@@ -2667,7 +2667,7 @@ export const food = {
 		perish: perish_med,
 		mode: 'together'
 	},
-	succulent_picked_dst: {
+	succulent_picked: {
 		name: 'Succulent',
 		uncookable: true,
 		isveggie: true,

@@ -1535,7 +1535,7 @@ export const recipes = {
 	barnaclesushi: {
 		name: 'Barnacle Nigiri',
 		test: (cooker, names, tags) => {
-			return (names.barnacle || names.barnacle_cooked) && (names.kelp || names.kelp_cooked) && tags.egg && tags.egg >= 1;
+			return (names.barnacle || names.barnacle_cooked) && (names.kelp_dst || names.kelp_cooked) && tags.egg && tags.egg >= 1;
 		},
 		requirements: [NAME('barnacle'), NAME('kelp'), TAG('egg', COMPARE('>=', 1))],
 		priority: 30,
@@ -1871,7 +1871,7 @@ export const recipes = {
 	batnosehat: {
 		name: 'Milkmade Hat',
 		test: (cooker, names, tags) => {
-			return names.batnose && names.kelp && (tags.dairy && tags.dairy >= 1);
+			return names.batnose && names.kelp_dst && (tags.dairy && tags.dairy >= 1);
 		},
 		requirements: [NAME('batnose'), NAME('kelp'), TAG('dairy', COMPARE ('>=', 1))],
 		priority: 55,

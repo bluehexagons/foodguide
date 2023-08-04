@@ -2719,7 +2719,6 @@ export const food = {
 	},
 	moonbutterflywings: {
 		name: 'Moon Moth Wings',
-		isveggie: true,
 		decoration: 2,
 		health: healing_medsmall,
 		hunger: calories_tiny,

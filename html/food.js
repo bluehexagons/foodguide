@@ -2667,7 +2667,7 @@ export const food = {
 		perish: perish_med,
 		mode: 'together'
 	},
-	succulent_picked: {
+	succulent_picked_dst: {
 		name: 'Succulent',
 		uncookable: true,
 		isveggie: true,

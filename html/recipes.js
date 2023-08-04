@@ -1439,6 +1439,7 @@ export const recipes = {
 		mode: 'giants'
 	},
 	REMOVE AFTER UPLOADING SECTION DIVIDERS*/
+	/*
 	jellybean: {
 		name: 'Jellybeans',
 		test: (cooker, names, tags) => {
@@ -1892,7 +1893,7 @@ export const recipes = {
 	// 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
 	// 	mode: 'together'
 	// }
-	
+	*/
 //--------------------------------------------------------------------------------\\	
 //	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\
 //--------------------------------------------------------------------------------\\

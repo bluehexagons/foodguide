@@ -1457,7 +1457,7 @@ export const recipes = {
 	pepperpopper: {
 		name: 'Stuffed Pepper Poppers',
 		test: (cooker, names, tags) => {
-			return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+			return (names.pepper_dst || names.pepper_cooked_dst) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 		},
 		requirements: [NAME('pepper'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 		priority: 20,
@@ -1475,7 +1475,7 @@ export const recipes = {
 	mashedpotatoes: {
 		name: 'Creamy Potato Purée',
 		test: (cooker, names, tags) => {
-			return ((names.potato && names.potato > 1) || (names.potato_cooked && names.potato_cooked > 1) || (names.potato && names.potato_cooked)) && (names.garlic || names.garlic_cooked) && !tags.meat && !tags.inedible;
+			return ((names.potato_dst && names.potato_dst > 1) || (names.potato_cooked_dst && names.potato_cooked_dst > 1) || (names.potato_dst && names.potato_cooked_dst)) && (names.garlic_dst || names.garlic_cooked_dst) && !tags.meat && !tags.inedible;
 		},
 		requirements: [NAME('potato', COMPARE('>', 1)), NAME('garlic'), NOT(TAG('meat')), NOT(TAG('inedible'))],
 		priority: 20,
@@ -1490,7 +1490,7 @@ export const recipes = {
 	salsa: {
 		name: 'Salsa Fresca',
 		test: (cooker, names, tags) => {
-			return (names.tomato || names.tomato_cooked) && (names.onion || names.onion_cooked) && !tags.meat && !tags.egg && !tags.inedible;
+			return (names.tomato_dst || names.tomato_cooked_dst) && (names.onion_dst || names.onion_cooked_dst) && !tags.meat && !tags.egg && !tags.inedible;
 		},
 		requirements: [NAME('tomato'), NAME('onion'), NOT(TAG('meat')), NOT(TAG('egg')), NOT(TAG('inedible'))],
 		priority: 20,
@@ -1505,7 +1505,7 @@ export const recipes = {
 	potatotornado: {
 		name: 'Fancy Spiralled Tubers',
 		test: (cooker, names, tags) => {
-			return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
+			return (names.potato_dst || names.potato_cooked_dst) && names.twigs_dst && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
 		},
 		requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=', 2))],
 		priority: 10,
@@ -1520,7 +1520,7 @@ export const recipes = {
 	barnaclepita: {
 		name: 'Barnacle Pita',
 		test: (cooker, names, tags) => {
-			return (names.barnacle || names.barnacle_cooked) && tags.veggie && tags.veggie >= 0.5;
+			return (names.barnacle_dst || names.barnacle_cooked_dst) && tags.veggie && tags.veggie >= 0.5;
 		},
 		requirements: [NAME('barnacle'), TAG('veggie', COMPARE('>=', 0.5))],
 		priority: 25,
@@ -1535,7 +1535,7 @@ export const recipes = {
 	barnaclesushi: {
 		name: 'Barnacle Nigiri',
 		test: (cooker, names, tags) => {
-			return (names.barnacle || names.barnacle_cooked) && (names.kelp || names.kelp_cooked) && tags.egg && tags.egg >= 1;
+			return (names.barnacle_dst || names.barnacle_cooked_dst) && (names.kelp_dst || names.kelp_cooked_dst) && tags.egg && tags.egg >= 1;
 		},
 		requirements: [NAME('barnacle'), NAME('kelp'), TAG('egg', COMPARE('>=', 1))],
 		priority: 30,
@@ -1550,7 +1550,7 @@ export const recipes = {
 	barnaclinguine: {
 		name: 'Barnacle Linguine',
 		test: (cooker, names, tags) => {
-			return ((names.barnacle || 0) + (names.barnacle_cooked || 0) >= 2 ) && tags.veggie && tags.veggie >= 2;
+			return ((names.barnacle_dst || 0) + (names.barnacle_cooked_dst || 0) >= 2 ) && tags.veggie && tags.veggie >= 2;
 		},
 		requirements: [NAME('barnacle', COMPARE('>=', 2)), TAG('veggie', COMPARE('>=', 2))],
 		priority: 30,
@@ -1565,7 +1565,7 @@ export const recipes = {
 	barnaclestuffedfishhead: {
 		name: 'Stuffed Fish Heads',
 		test: (cooker, names, tags) => {
-			return (names.barnacle || names.barnacle_cooked) && tags.fish && tags.fish >= 1.25;
+			return (names.barnacle_dst || names.barnacle_cooked_dst) && tags.fish && tags.fish >= 1.25;
 		},
 		requirements: [NAME('barnacle'), TAG('fish', COMPARE('>=', 1.25))],
 		priority: 26,
@@ -1580,9 +1580,9 @@ export const recipes = {
 	shroomcake: {
 		name: 'Mushy Cake',
 		test: (cooker, names, tags) => {
-			return names.moon_mushroom && names.red_mushroom && names.blue_mushroom && names.green_mushroom;
+			return names.moon_mushroom_dst && names.red_mushroom_dst && names.blue_mushroom_dst && names.green_mushroom_dst;
 		},
-		requirements: [SPECIFIC('moon_mushroom'), SPECIFIC('red_mushroom'), SPECIFIC('blue_mushroom'), SPECIFIC('green_mushroom')],
+		requirements: [SPECIFIC('moon_mushroom_dst'), SPECIFIC('red_mushroom_dst'), SPECIFIC('blue_mushroom_dst'), SPECIFIC('green_mushroom_dst')],
 		priority: 30,
 		foodtype: 'goodies',
 		health: 0,
@@ -1595,9 +1595,9 @@ export const recipes = {
 	sweettea: {
 		name: 'Soothing Tea',
 		test: (cooker, names, tags) => {
-			return names.forgetmelots && tags.sweetener && tags.frozen && !tags.monster && !tags.veggie && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.inedible;
+			return names.forgetmelots_dst && tags.sweetener && tags.frozen && !tags.monster && !tags.veggie && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.inedible;
 		},
-		requirements: [NAME('forgetmelots'), TAG('sweetener'), TAG('frozen'), NOT(TAG('monster')), NOT(TAG('veggie')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('inedible'))],
+		requirements: [NAME('forgetmelots_dst'), TAG('sweetener'), TAG('frozen'), NOT(TAG('monster')), NOT(TAG('veggie')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('inedible'))],
 		priority: 1,
 		foodtype: 'goodies',
 		health: healing_small,
@@ -1613,7 +1613,7 @@ export const recipes = {
 	koalefig_trunk: {
 		name: 'Fig-Stuffed Trunk',
 		test: (cooker, names, tags) => {
-			return (names.trunk_summer || names.trunk_cooked || names.trunk_winter) && (names.fig || names.fig_cooked);
+			return (names.trunk_summer_dst || names.trunk_cooked_dst || names.trunk_winter_dst) && (names.fig || names.fig_cooked);
 		},
 		requirements: [NAME('trunk_summer'), NAME('fig')],
 		priority: 40,
@@ -1628,7 +1628,7 @@ export const recipes = {
 	figatoni: {
 		name: 'Figatoni',
 		test: (cooker, names, tags) => {
-			return (names.fig || names.fig_cooked) && tags.veggie && tags.veggie >= 2 && !tags.meat;
+			return (names.fig_dst || names.fig_cooked_dst) && tags.veggie && tags.veggie >= 2 && !tags.meat;
 		},
 		requirements: [NAME('fig'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat'))],
 		priority: 30,
@@ -1643,9 +1643,9 @@ export const recipes = {
 	figkabab: {
 		name: 'Figkabab',
 		test: (cooker, names, tags) => {
-			return (names.fig || names.fig_cooked) && names.twigs && tags.meat && tags.meat >= 1 && (!tags.monster || tags.monster <= 1);
+			return (names.fig_dst || names.fig_cooked_dst) && names.twigs_dst && tags.meat && tags.meat >= 1 && (!tags.monster || tags.monster <= 1);
 		},
-		requirements: [NAME('fig'), SPECIFIC('twigs'), TAG('meat', COMPARE('>=', 1)), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
+		requirements: [NAME('fig'), SPECIFIC('twigs_dst'), TAG('meat', COMPARE('>=', 1)), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
 		priority: 30,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1660,7 +1660,7 @@ export const recipes = {
 	frognewton: {
 		name: 'Figgy Frogwich',
 		test: (cooker, names, tags) => {
-			return (names.fig || names.fig_cooked) && (names.froglegs || names.froglegs_cooked);
+			return (names.fig_dst || names.fig_cooked_dst) && (names.froglegs_dst || names.froglegs_cooked_dst);
 		},
 		requirements: [NAME('fig'), NAME('froglegs')],
 		priority: 1,
@@ -1675,9 +1675,9 @@ export const recipes = {
 	frozenbananadaiquiri: {
 		name: 'Frozen Banana Daiquiri',
 		test: (cooker, names, tags) => {
-			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1) && !tags.meat && !tags.fish;
+			return (names.cave_banana_dst || names.cave_banana_cooked_dst) && (tags.frozen && tags.frozen >=1) && !tags.meat && !tags.fish;
 		},
-		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('meat'))],
+		requirements: [NAME('cave_banana_dst'), TAG('frozen', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('meat'))],
 		priority: 2,
 		foodtype: 'goodies',
 		health: healing_medlarge,
@@ -1711,7 +1711,7 @@ export const recipes = {
 	bananajuice: {
 		name: 'Banana Shake',
 		test: (cooker, names, tags) => {
-			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2) && !tags.meat && !tags.fish && !tags.monster;
+			return ((names.cave_banana_dst || 0) + (names.cave_banana_cooked_dst || 0) >= 2) && !tags.meat && !tags.fish && !tags.monster;
 		},
 		requirements: [NAME('cave_banana', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('monster'))],
 		priority: 1,
@@ -1729,7 +1729,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.egg >= 3;
 		},
-      		requirements: [TAG('egg', COMPARE('>=', 4))],
+      		requirements: [TAG('egg', COMPARE('>=', 3))],
 		priority: 0,
 		foodtype: 'meat',
 		health: healing_small,
@@ -1757,9 +1757,9 @@ export const recipes = {
 	talleggs: {
 		name: 'Tall Scotch Eggs',
 		test: (cooker, names, tags) => {
-			return names.tallbirdegg && tags.veggie && tags.veggie >=1;
+			return names.tallbirdegg_dst && tags.veggie && tags.veggie >=1;
 		},
-      		requirements: [SPECIFIC('tallbirdegg'), TAG('veggie', COMPARE('>=', 1))],
+      		requirements: [SPECIFIC('tallbirdegg_dst'), TAG('veggie', COMPARE('>=', 1))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_huge,
@@ -1809,7 +1809,7 @@ export const recipes = {
 	leafloaf: {
 		name: 'Leafy Meatloaf',
 		test: (cooker, names, tags) => {
-			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 );
+			return ((names.plantmeat_dst || 0) + (names.plantmeat_cooked_dst || 0) >= 2 );
 		},
 		requirements: [NAME('plantmeat', COMPARE('>=',2))],
 		priority: 25,
@@ -1824,7 +1824,7 @@ export const recipes = {
 	leafymeatburger: {
 		name: 'Veggie Burger',
 		test: (cooker, names, tags) => {
-			return (names.plantmeat || names.plantmeat_cooked) && (names.onion || names.onion_cooked) && tags.veggie && tags.veggie >= 2;
+			return (names.plantmeat_dst || names.plantmeat_cooked_dst) && (names.onion_dst || names.onion_cooked_dst) && tags.veggie && tags.veggie >= 2;
 		},
 		requirements: [NAME('plantmeat'), NAME('onion'), TAG('veggie', COMPARE('>=', 2))],
 		priority: 26,
@@ -1839,7 +1839,7 @@ export const recipes = {
 	leafymeatsouffle: {
 		name: 'Jelly Salad',
 		test: (cooker, names, tags) => {
-			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 ) && tags.sweetener && tags.sweetener >= 2;
+			return ((names.plantmeat_dst || 0) + (names.plantmeat_cooked_dst || 0) >= 2 ) && tags.sweetener && tags.sweetener >= 2;
 		},
 		requirements: [NAME('plantmeat', COMPARE('>=', 2)), TAG('sweetener', COMPARE('>=',2))],
 		priority: 50,
@@ -1854,7 +1854,7 @@ export const recipes = {
 	meatysalad: {
 		name: 'Beefy Greens',
 		test: (cooker, names, tags) => {
-			return (names.plantmeat || names.plantmeat_cooked) && tags.veggie && tags.veggie >= 3;
+			return (names.plantmeat_dst || names.plantmeat_cooked_dst) && tags.veggie && tags.veggie >= 3;
 		},
 		requirements: [NAME('plantmeat'), TAG('veggie', COMPARE('>=', 3))],
 		priority: 25,
@@ -1871,7 +1871,7 @@ export const recipes = {
 	batnosehat: {
 		name: 'Milkmade Hat',
 		test: (cooker, names, tags) => {
-			return names.batnose && names.kelp && (tags.dairy && tags.dairy >= 1);
+			return names.batnose_dst && names.kelp_dst && (tags.dairy && tags.dairy >= 1);
 		},
 		requirements: [NAME('batnose'), NAME('kelp'), TAG('dairy', COMPARE ('>=', 1))],
 		priority: 55,

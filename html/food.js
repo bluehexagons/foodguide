@@ -2957,7 +2957,7 @@ export const food = {
 		drytime: dry_fast,
 		mode: 'together'
 	},
-	fishmeat_cooked_dst: {
+	fishmeat_cooked_dst_dst: {
 		name: 'Cooked Fish Meat',
 		meat: 1,
 		fish: 1,

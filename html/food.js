@@ -2771,6 +2771,28 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 	},
 
 	//DST Additions From Warly's Update
+	asparagus_dst: {
+		name: 'Asparagus',
+		isveggie: true,
+		veggie: 1,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	asparagus_cooked_dst: {
+		name: 'Cooked Asparagus',
+		isveggie: true,
+		veggie: 1,
+		health: healing_small,
+		hunger: calories_med,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
 	pepper: {
 		name: 'Pepper',
 		isveggie: true,
@@ -3086,7 +3108,7 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		mode: 'together'
 	},	
 	oceanfish_medium_8_inv: {
-		name: 'Golden Koi',
+		name: 'Ice Bream',
 		meat: 1,
 		fish: 1,
 		frozen: 1,

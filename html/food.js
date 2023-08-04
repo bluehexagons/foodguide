@@ -2648,7 +2648,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	phlegm: {
+	phlegm_dst: {
 		name: 'Phlegm',
 		uncookable: true,
 		health: 0,

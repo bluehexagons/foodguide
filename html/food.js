@@ -1899,18 +1899,18 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	/*FIRST BATCH ABOVE
-	//Pre-Hamlet foliage could be eaten but wasn't an ingredient
-	// foliage: {
-	// name: 'Foliage',
-	// uncookable: true,
-	// health: healing_tiny,
-	// hunger: 0,
-	// sanity: 0,
-	// perish: perish_fast,
-	// stack: stack_size_smallitem
-	// },
-	goatmilk: {
+
+	foliage_dst: {
+	 name: 'Foliage',
+	 uncookable: true,
+	 health: healing_tiny,
+	 hunger: 0,
+	 sanity: 0,
+	 perish: perish_fast,
+	 stack: stack_size_smallitem,
+	 mode: 'together'
+	},
+	goatmilk_dst: {
 		name: 'Electric Milk',
 		dairy: 1,
 		health: healing_small,
@@ -1918,22 +1918,24 @@ export const food = {
 		sanity: sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	honey: {
+	honey_dst: {
 		name: 'Honey',
 		sweetener: true,
 		health: healing_small,
 		hunger: calories_tiny,
 		sanity: 0,
 		perish: perish_superslow,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	honeycomb: {
+	honeycomb_dst: {
 		name: 'Honeycomb',
-		sweetener: true
+		sweetener: true,
+		mode: 'together'
 	},
-	ice: {
+	ice_dst: {
 		name: 'Ice',
 		frozen: 1,
 		health: healing_tiny / 2,
@@ -1941,27 +1943,29 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	lightbulb: {
+	lightbulb_dst: {
 		name: 'Light Bulb',
 		health: healing_tiny,
 		hunger: 0,
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		uncookable: true
+		uncookable: true,
+		mode: 'together'
 	},
-	mandrake: {
+	mandrake_dst: {
 		name: 'Mandrake',
 		veggie: 1,
 		magic: 1,
 		health: healing_huge,
 		hunger: calories_huge,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	mandrake_cooked: {
+	mandrake_cooked_dst: {
 		name: 'Cooked Mandrake',
 		uncookable: true,
 		veggie: 1,
@@ -1970,36 +1974,39 @@ export const food = {
 		health: healing_superhuge,
 		hunger: calories_superhuge,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	mole: {
+	mole_dst: {
 		name: 'Moleworm',
 		// inedible: true,
 		ideal: true,
 		meat: 0.5,
 		perish: total_day_time * 2,
 		cook: 'morsel_cooked',
-		mode: 'giants'
+		mode: 'together'
 	},
-	plantmeat: {
+	plantmeat_dst: {
 		name: 'Leafy Meat',
 		uncookable: true,
 		health: 0,
 		hunger: calories_small,
 		sanity: -sanity_small,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	plantmeat_cooked: {
+	plantmeat_cooked_dst: {
 		name: 'Cooked Leafy Meat',
 		uncookable: true,
 		health: healing_tiny,
 		hunger: calories_medsmall,
 		sanity: 0,
 		perish: perish_med,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	monstermeat: {
+	monstermeat_dst: {
 		name: 'Monster Meat',
 		ismeat: true,
 		meat: 1,
@@ -2010,9 +2017,10 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_meditem,
 		dry: 'monstermeat_dried',
-		drytime: dry_fast
+		drytime: dry_fast,
+		mode: 'together'
 	},
-	monstermeat_cooked: {
+	monstermeat_cooked_dst: {
 		name: 'Cooked Monster Meat',
 		ismeat: true,
 		meat: 1,
@@ -2022,9 +2030,10 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: -sanity_small,
 		perish: perish_slow,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	monstermeat_dried: {
+	monstermeat_dried_dst: {
 		name: 'Monster Jerky',
 		ismeat: true,
 		meat: 1,
@@ -2034,9 +2043,10 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: -sanity_tiny,
 		perish: perish_preserved,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	meat: {
+	meat_dst: {
 		name: 'Meat',
 		ismeat: true,
 		meat: 1,
@@ -2045,10 +2055,11 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_fast,
 		stack: stack_size_meditem,
-		dry: 'meat_dried',
-		drytime: dry_med
+		dry: 'meat_dried_dst',
+		drytime: dry_med,
+		mode: 'together'
 	},
-	meat_cooked: {
+	meat_cooked_dst: {
 		name: 'Cooked Meat',
 		ismeat: true,
 		meat: 1,
@@ -2057,9 +2068,10 @@ export const food = {
 		hunger: calories_med,
 		sanity: 0,
 		perish: perish_med,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
-	meat_dried: {
+	meat_dried_dst: {
 		name: 'Jerky',
 		ismeat: true,
 		meat: 1,
@@ -2068,8 +2080,10 @@ export const food = {
 		hunger: calories_med,
 		sanity: sanity_med,
 		perish: perish_preserved,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
+		mode: 'together'
 	},
+	/*SECOND PATCH ABOVE
 	morsel: {
 		name: 'Morsel',
 		ismeat: true,

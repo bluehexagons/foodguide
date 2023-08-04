@@ -2525,8 +2525,8 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	/*4TH BATCH OF FOODS ABOVE
-	berries: {
+	
+	berries_dst: {
 		name: 'Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2534,9 +2534,10 @@ export const food = {
 		hunger: calories_tiny,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	berries_cooked: {
+	berries_cooked_dst: {
 		name: 'Roasted Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2545,9 +2546,10 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
-	cactusmeat: {
+	cactusmeat_dst: {
 		name: 'Cactus Flesh',
 		ideal: true,
 		veggie: 1,
@@ -2556,9 +2558,9 @@ export const food = {
 		perish: perish_med,
 		sanity: -sanity_tiny,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	cactusmeat_cooked: {
+	cactusmeat_cooked_dst: {
 		name: 'Cooked Cactus Flesh',
 		veggie: 1,
 		hunger: calories_small,
@@ -2567,9 +2569,9 @@ export const food = {
 		sanity: sanity_med,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	watermelon: {
+	watermelon_dst: {
 		name: 'Watermelon',
 		fruit: 1,
 		ideal: true,
@@ -2578,9 +2580,9 @@ export const food = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	watermelon_cooked: {
+	watermelon_cooked_dst: {
 		name: 'Grilled Watermelon',
 		fruit: 1,
 		hunger: calories_small,
@@ -2589,27 +2591,27 @@ export const food = {
 		sanity: sanity_tiny * 1.5,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'together'
 	},
-	wormlight: {
+	wormlight_dst: {
 		name: 'Glow Berry',
-		uncookable: true,
 		health: healing_medsmall + healing_small,
 		hunger: calories_medsmall,
 		sanity: -sanity_small,
 		perish: perish_med,
-		note: 'Gives 90 seconds of light'
+		note: 'Gives 90 seconds of light',
+		mode: 'together'
 	},
-	glommerfuel: {
+	glommerfuel_dst: {
 		name: 'Glommer\'s Goop',
 		uncookable: true,
 		health: healing_large,
 		hunger: calories_tiny,
 		sanity: -sanity_huge,
-		mode: 'giants'
+		mode: 'together'
 	},
 	
-	REMOVE AFTER COMPLETING BATCH */
+	//FINAL BATCH OF DS TO DST FOODS ABOVE
 	
 	wormlight_lesser: {
 		name: 'Lesser Glow Berry',

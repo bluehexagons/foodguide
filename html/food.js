@@ -1752,6 +1752,7 @@ export const food = {
 //	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
 //--------------------------------------------------------------------------------\\
 	
+
 	acorn_dst: {
 		name: 'Birchnut',
 		uncookable: true,
@@ -1898,6 +1899,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
+
 	foliage_dst: {
 	 name: 'Foliage',
 	 uncookable: true,
@@ -2079,6 +2081,7 @@ export const food = {
 		stack: stack_size_meditem,
 		mode: 'together'
 	},
+
 	morsel_dst: {
 		name: 'Morsel',
 		ismeat: true,
@@ -2335,6 +2338,7 @@ export const food = {
 		inedible: 1,
 		mode: 'together'
 	},
+
 	cave_banana_dst: {
 		name: 'Banana',
 		ideal: true,
@@ -2521,6 +2525,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
+	
 	berries_dst: {
 		name: 'Berries',
 		isfruit: true,
@@ -2606,8 +2611,9 @@ export const food = {
 		mode: 'together'
 	},
 	
-
-	wormlight_lesser_dst: {
+	//FINAL BATCH OF DS TO DST FOODS ABOVE
+	
+	wormlight_lesser: {
 		name: 'Lesser Glow Berry',
 		isfruit: true,
 		fruit: 0.5,
@@ -2619,7 +2625,7 @@ export const food = {
 		note: 'Gives 22.5 seconds of light',
 		mode: 'together'
 	},
-	berries_juicy_dst: {
+	berries_juicy: {
 		name: 'Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2630,7 +2636,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	berries_juicy_cooked_dst: {
+	berries_juicy_cooked: {
 		name: 'Roasted Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2642,7 +2648,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	phlegm_dst: {
+	phlegm: {
 		name: 'Phlegm',
 		uncookable: true,
 		health: 0,
@@ -2652,7 +2658,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	royal_jelly_dst: {
+	royal_jelly: {
 		name: 'Royal Jelly',
 		sweetener: 3,
 		health: healing_large,
@@ -2661,7 +2667,7 @@ export const food = {
 		perish: perish_med,
 		mode: 'together'
 	},
-	succulent_picked_dst: {
+	succulent_picked: {
 		name: 'Succulent',
 		uncookable: true,
 		isveggie: true,
@@ -2674,7 +2680,7 @@ export const food = {
 	},
 
 	//DST Turn Of Tides Additions
-	kelp_dst: {
+	kelp: {
 		name: 'Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,
@@ -2683,11 +2689,11 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		dry: 'kelp_dried_dst',
+		dry: 'kelp_dried',
 		drytime: dry_superfast,
 		mode: 'together'
 	},
-	kelp_cooked_dst: {
+	kelp_cooked: {
 		name: 'Cooked Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,
@@ -2699,7 +2705,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	kelp_dried_dst: {
+	kelp_dried: {
 		name: 'Dried Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,
@@ -2711,7 +2717,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	moonbutterflywings_dst: {
+	moonbutterflywings: {
 		name: 'Moon Moth Wings',
 		isveggie: true,
 		decoration: 2,
@@ -2722,7 +2728,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	moon_tree_blossom_dst: {
+	moon_tree_blossom: {
 		name: 'Lune Tree Blossom',
 		uncookable: true,
 		isveggie: true,
@@ -2733,7 +2739,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	rock_avocado_fruit_ripe_dst: {
+	rock_avocado_fruit_ripe: {
 		name: 'Ripe Stone Fruit',
 		isveggie: true,
 		veggie: 1,
@@ -2744,7 +2750,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	rock_avocado_fruit_ripe_cooked_dst: {
+	rock_avocado_fruit_ripe_cooked: {
 		name: 'Cooked Stone Fruit',
 		isveggie: true,
 		veggie: 1,
@@ -2756,9 +2762,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	
-	//FIRST BATCH OF _dst SUFFIX TO EXISTING FOODS ABOVE
-	
+
 	//DST Additions From Warly's Update
 	pepper: {
 		name: 'Pepper',

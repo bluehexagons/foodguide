@@ -141,7 +141,7 @@ export const calories_per_day = 75,
 			name: 'Warly Hamlet',
 			img: 'warlyHAM.png',
 			bit: WARLYHAM,
-			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLYHAM,
+			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
 			multipliers: {
 				raw: 0.7,
 				dried: 0.8,

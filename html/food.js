@@ -2689,8 +2689,8 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		dry: 'kelp_dried',
-		drytime: dry_superfast,
+		//dry: 'kelp_dried',
+		//drytime: dry_superfast,
 		mode: 'together'
 	},
 	kelp_cooked: {

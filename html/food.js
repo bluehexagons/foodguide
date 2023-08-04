@@ -2904,8 +2904,6 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 	},
 
 	//DST Hook, Line, and Inker
-	//This replaces the fish from ponds. Waiting on Issue #32 to be resolved
-	/*
 	pondfish: {
 		name: 'Freshwater Fish',
 		ismeat: true,
@@ -2916,15 +2914,11 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		rot: 'spoiled_fish',
 		drytime: dry_fast,
-		dry: 'morsel_dried'
+		dry: 'morsel_dried_dst'
 	},
-	*/
-
-	// Names are the same as SW RIP. Commented out b/c issue #32.
-	/*
-	fishmeat_small: {
+	//_dst because it's ported from SW but added in this update
+	fishmeat_small_dst: {
 		name: 'Fish Morsel',
 		meat: 0.5,
 		fish: 0.5,
@@ -2933,12 +2927,13 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		cook: 'fishmeat_small_cooked',
-		dry: 'smallmeat_dried',
+		cook: 'fishmeat_small_cooked_dst',
+		dry: 'morsel_dried_dst',
 		drytime: dry_fast,
 		mode: 'together'
 	},
-	fishmeat_small_cooked: {
+	//_dst because it's ported from SW but added in this update
+	fishmeat_small_cooked_dst: {
 		name: 'Cooked Fish Morsel',
 		meat: 0.5,
 		fish: 0.5,
@@ -2949,7 +2944,6 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	*/
 	fishmeat: {
 		name: 'Fish Meat',
 		meat: 1,

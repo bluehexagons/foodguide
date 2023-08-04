@@ -2976,8 +2976,8 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		name: 'Runty Guppy',
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
+		cook: fishmeat_small_cooked_dst,
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -2985,8 +2985,8 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		name: 'Needlenosed Squirt',
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
+		cook: fishmeat_small_cooked_dst,
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -2994,8 +2994,8 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		name: 'Bitty Baitfish',
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
+		cook: fishmeat_small_cooked_dst,
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -3003,16 +3003,16 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		name: 'Smolt Fry',
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
+		cook: fishmeat_small_cooked_dst,
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_small_5_inv: {
 		name: 'Popperfish',
 		veggie: 1,
-		cook: 'corn_cooked',
-		rot: 'spoiled_fish',
+		cook: 'corn_cooked_dst',
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -3023,7 +3023,7 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		meat: 1,
 		fish: 1,
 		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -3032,7 +3032,7 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		meat: 1,
 		fish: 1,
 		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -3041,7 +3041,7 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		meat: 1,
 		fish: 1,
 		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -3050,7 +3050,7 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		meat: 1,
 		fish: 1,
 		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -3058,7 +3058,7 @@ However, if I do the same for kelp and rename it to kelp_dst, it breaks.
 		name: 'Corn Cod',
 		veggie: 1,
 		cook: 'corn_cooked',
-		rot: 'spoiled_fish',
+		rot: 'fishmeat_small_dst',
 		perish: perish_one_day,
 		mode: 'together'
 	},

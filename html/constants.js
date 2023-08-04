@@ -125,13 +125,6 @@ export const calories_per_day = 75,
 			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
 			color: '#ffdf93'
 		},
-		together: {
-			name: 'Don\'t Starve Together',
-			img: 'together.png',
-			bit: TOGETHER,
-			mask: TOGETHER,
-			color: '#c0c0c0'
-		},
 		warly: {
 			name: 'Warly Shipwrecked',
 			img: 'warly.png',
@@ -155,6 +148,13 @@ export const calories_per_day = 75,
 				cooked: 0.9,
 				recipe: 1.2
 			},
+		},
+		together: {
+			name: 'Don\'t Starve Together',
+			img: 'together.png',
+			bit: TOGETHER,
+			mask: TOGETHER,
+			color: '#c0c0c0'
 		},
 		warlydst: {
 			name: 'Warly Don\'t Starve Together',

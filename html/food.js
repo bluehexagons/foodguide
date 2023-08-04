@@ -2613,7 +2613,7 @@ export const food = {
 	
 	//FINAL BATCH OF DS TO DST FOODS ABOVE
 	
-	wormlight_lesser: {
+	wormlight_lesser_dst: {
 		name: 'Lesser Glow Berry',
 		isfruit: true,
 		fruit: 0.5,
@@ -2625,7 +2625,7 @@ export const food = {
 		note: 'Gives 22.5 seconds of light',
 		mode: 'together'
 	},
-	berries_juicy: {
+	berries_juicy_dst: {
 		name: 'Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2636,7 +2636,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	berries_juicy_cooked: {
+	berries_juicy_cooked_dst: {
 		name: 'Roasted Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2648,7 +2648,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	phlegm: {
+	phlegm_dst: {
 		name: 'Phlegm',
 		uncookable: true,
 		health: 0,
@@ -2658,7 +2658,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	royal_jelly: {
+	royal_jelly_dst: {
 		name: 'Royal Jelly',
 		sweetener: 3,
 		health: healing_large,
@@ -2667,7 +2667,7 @@ export const food = {
 		perish: perish_med,
 		mode: 'together'
 	},
-	succulent_picked: {
+	succulent_picked_dst: {
 		name: 'Succulent',
 		uncookable: true,
 		isveggie: true,
@@ -2680,7 +2680,7 @@ export const food = {
 	},
 
 	//DST Turn Of Tides Additions
-	kelp: {
+	kelp_dst: {
 		name: 'Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,
@@ -2693,7 +2693,7 @@ export const food = {
 		drytime: dry_superfast,
 		mode: 'together'
 	},
-	kelp_cooked: {
+	kelp_cooked_dst: {
 		name: 'Cooked Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,
@@ -2705,7 +2705,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	kelp_dried: {
+	kelp_dried_dst: {
 		name: 'Dried Kelp Fronds',
 		isveggie: true,
 		veggie: 0.5,
@@ -2717,7 +2717,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	moonbutterflywings: {
+	moonbutterflywings_dst: {
 		name: 'Moon Moth Wings',
 		isveggie: true,
 		decoration: 2,
@@ -2728,6 +2728,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
+	//Adding _dst suffix to ones above
 	moon_tree_blossom: {
 		name: 'Lune Tree Blossom',
 		uncookable: true,

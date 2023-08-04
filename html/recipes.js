@@ -1442,9 +1442,9 @@ export const recipes = {
 	jellybean: {
 		name: 'Jellybeans',
 		test: (cooker, names, tags) => {
-			return names.royal_jelly_dst && !tags.inedible && !tags.monster;
+			return names.royal_jelly && !tags.inedible && !tags.monster;
 		},
-		requirements: [SPECIFIC('royal_jelly_dst'), NOT(TAG('inedible')), NOT(TAG('monster'))],
+		requirements: [SPECIFIC('royal_jelly'), NOT(TAG('inedible')), NOT(TAG('monster'))],
 		priority: 12,
 		foodtype: 'goodies',
 		health: 2,

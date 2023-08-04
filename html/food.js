@@ -1752,6 +1752,7 @@ export const food = {
 //	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
 //--------------------------------------------------------------------------------\\
 	
+//PORTED INGREDIENTS FROM DS + DLC's GET THE DST SUFFIX TO DIFFERENTIATE FROM THE DS VERSION OF THE INGREDIENT\\
 
 	acorn_dst: {
 		name: 'Birchnut',
@@ -2611,9 +2612,15 @@ export const food = {
 		mode: 'together'
 	},
 	
-	//FINAL BATCH OF DS TO DST FOODS ABOVE
+//DST EXCLUSIVE INGREDIENTS DO NOT GET THE 'dst' SUFFIX\\
 	
-	wormlight_lesser_dst: {
+/*
+I (lakhnish) tried to add the 'dst' suffix to some ingredients below (i.e. kelp) and the simulator would break for reasons I don't understand.
+For example: jellybeans has a specific for royal_jelly_dst and this the recipe needed to reflect the new name.
+However, if I do the same for kelp and rename it to kelp_dst, it breaks.
+*/
+	
+	wormlight_lesser: {
 		name: 'Lesser Glow Berry',
 		isfruit: true,
 		fruit: 0.5,
@@ -2625,7 +2632,7 @@ export const food = {
 		note: 'Gives 22.5 seconds of light',
 		mode: 'together'
 	},
-	berries_juicy_dst: {
+	berries_juicy: {
 		name: 'Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2636,7 +2643,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	berries_juicy_cooked_dst: {
+	berries_juicy_cooked: {
 		name: 'Roasted Juicy Berries',
 		isfruit: true,
 		fruit: 0.5,
@@ -2648,7 +2655,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	phlegm_dst: {
+	phlegm: {
 		name: 'Phlegm',
 		uncookable: true,
 		health: 0,
@@ -2658,7 +2665,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	royal_jelly_dst: {
+	royal_jelly: {
 		name: 'Royal Jelly',
 		sweetener: 3,
 		health: healing_large,

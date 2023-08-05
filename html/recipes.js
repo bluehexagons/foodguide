@@ -2096,14 +2096,13 @@ export const recipes = {
 		cooktime: 2,
 		note: 'Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn\'t apply to existing electrical weapons.',
 		mode: 'warlydst'
-	}
-	/* Skip this, work on it later.
+	},
 	glowberrymousse: {
 		name: 'Glow Berry Mousse',
 		test: (cooker, names, tags) => {
-			return (names.wormlight || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
+			return (names.wormlight_dst || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
 		},
-		requirements: [OR(SPECIFIC('wormlight'),SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
+		requirements: [OR(SPECIFIC('wormlight_dst'),SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_small,
@@ -2130,7 +2129,6 @@ export const recipes = {
 		note: 'Sets the player\s wetness to 0 and grants the player wetness immunity for 5 minutes',
 		mode: 'warlydst'
 	},
-	*/
 	dragonchilisalad: {
 		name: 'Hot Dragon Chili Salad',
 		test: (cooker, names, tags) => {

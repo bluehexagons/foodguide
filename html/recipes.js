@@ -1276,13 +1276,13 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	fishtacos: {
+
+	fishtacos_dst: {
 		name: 'Fish Tacos',
 		test: (cooker, names, tags) => {
-			return tags.fish && (names.corn || names.corn_cooked);
+			return tags.fish && (names.corn_dst || names.corn_cooked_dst || names.oceanfish_small_5_inv || names.oceanfish_medium_5_inv);
 		},
-		requirements: [TAG('fish'), NAME('corn')],
+		requirements: [TAG('fish'), OR(NAME('corn_dst'), OR(NAME('oceanfish_small_5_inv'), NAME('oceanfish_medium_5_inv')))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1290,24 +1290,26 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		tags: ['monstermeat']
+		tags: ['monstermeat'],
+		mode: 'together'
 	},
-	waffles: {
+		/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
+	waffles_dst: {
 		name: 'Waffles',
 		test: (cooker, names, tags) => {
-			// return names.butter && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.egg; <- For when issue #32 is sorted out
-			return names.butter && (names.berries || names.berries_cooked) && tags.egg;
+			return names.butter_dst && (names.berries_dst || names.berries_cooked_dst || names.berries_juicy || names.berries_juicy_cooked) && tags.egg;
 		},
-		requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
+		requirements: [SPECIFIC('butter_dst'), NAME('berries'), TAG('egg')],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_huge,
 		hunger: calories_large,
 		perish: perish_fast,
 		sanity: sanity_tiny,
-		cooktime: 0.5
+		cooktime: 0.5,
+		mode: 'together'
 	},
-	monsterlasagna: {
+	monsterlasagna_dst: {
 		name: 'Monster Lasagna',
 		test: (cooker, names, tags) => {
 			return tags.monster && tags.monster >= 2 && !tags.inedible;
@@ -1319,14 +1321,15 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_fast,
 		sanity: -sanity_medlarge,
-		cooktime: 0.5
+		cooktime: 0.5,
+		mode: 'together'
 	},
-	powcake: {
+	powcake_dst: {
 		name: 'Powdercake',
 		test: (cooker, names, tags) => {
-			return names.twigs && names.honey && (names.corn || names.corn_cooked);
+			return names.twigs_dst && names.honey_dst && (names.corn_dst || names.corn_cooked_dst);
 		},
-		requirements: [SPECIFIC('twigs'), SPECIFIC('honey'), NAME('corn')],
+		requirements: [SPECIFIC('twigs_dst'), SPECIFIC('honey_dst'), NAME('corn')],
 		priority: 10,
 		foodtype: 'veggie',
 		health: -healing_small,
@@ -1334,23 +1337,25 @@ export const recipes = {
 		perish: 9000000,
 		sanity: 0,
 		cooktime: 0.5,
-		tags: ['honeyed']
+		tags: ['honeyed'],
+		mode: 'together'
 	},
-	unagi: {
+	unagi_dst: {
 		name: 'Unagi',
 		test: (cooker, names, tags) => {
-			return names.cutlichen && (names.eel || names.eel_cooked);
+			return names.cutlichen_dst && (names.eel_dst || names.eel_cooked_dst);
 		},
-		requirements: [SPECIFIC('cutlichen'), NAME('eel')],
+		requirements: [SPECIFIC('cutlichen_dst'), NAME('eel')],
 		priority: 20,
 		foodtype: 'veggie',
 		health: healing_med,
 		hunger: calories_medsmall,
 		perish: perish_med,
 		sanity: sanity_tiny,
-		cooktime: 0.5
+		cooktime: 0.5,
+		mode: 'together'
 	},
-	wetgoop: {
+	wetgoop_dst: {
 		name: 'Wet Goop',
 		test: (cooker, names, tags) => {
 			return true;
@@ -1362,7 +1367,8 @@ export const recipes = {
 		hunger: 0,
 		perish: perish_fast,
 		sanity: 0,
-		cooktime: 0.25
+		cooktime: 0.25,
+		mode: 'together'
 	},
 
 	// Giants recipes

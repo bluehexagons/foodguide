@@ -1066,13 +1066,13 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'together'
 	},
-	/* ABOVE IS 1ST BATCH OF RECIPE PORTING
-	honeynuggets: {
+	
+	honeynuggets_dst: {
 		name: 'Honey Nuggets',
 		test: (cooker, names, tags) => {
-			return names.honey && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+			return names.honey_dst && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 		},
-		requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
+		requirements: [SPECIFIC('honey_dst'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 		priority: 2,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1080,14 +1080,15 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
+		mode: 'together'
 	},
-	honeyham: {
+	honeyham_dst: {
 		name: 'Honey Ham',
 		test: (cooker, names, tags) => {
-			return names.honey && tags.meat && tags.meat > 1.5 && !tags.inedible;
+			return names.honey_dst && tags.meat && tags.meat > 1.5 && !tags.inedible;
 		},
-		requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
+		requirements: [SPECIFIC('honey_dst'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
 		priority: 2,
 		foodtype: 'meat',
 		health: healing_medlarge,
@@ -1097,12 +1098,13 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
+		mode: 'together'
 	},
-	dragonpie: {
+	dragonpie_dst: {
 		name: 'Dragonpie',
 		test: (cooker, names, tags) => {
-			return (names.dragonfruit || names.dragonfruit_cooked) && !tags.meat;
+			return (names.dragonfruit_dst || names.dragonfruit_cooked_dst) && !tags.meat;
 		},
 		requirements: [NAME('dragonfruit'), NOT(TAG('meat'))],
 		priority: 1,
@@ -1113,8 +1115,10 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
-		cooktime: 2
+		cooktime: 2,
+		mode: 'together'
 	},
+	/* ABOVE IS 1ST BATCH OF RECIPE PORTING
 	kabobs: {
 		name: 'Kabobs',
 		test: (cooker, names, tags) => {

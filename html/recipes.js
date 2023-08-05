@@ -2080,8 +2080,7 @@ export const recipes = {
 		cooktime: 2,
 		note: 'The player\'s health and sanity percentage values are swapped',
 		mode: 'warlydst'
-	},
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
+	},	
 	voltgoatjelly: {
 		name: 'Volt Goat Chaud Froid',
 		test: (cooker, names, tags) => {
@@ -2095,9 +2094,10 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 2,
-		note: 'All damage caused becomes electrical damage',
+		note: 'Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn\'t apply to existing electrical weapons.',
 		mode: 'warlydst'
 	}
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	glowberrymousse: {
 		name: 'Glow Berry Mousse',
 		test: (cooker, names, tags) => {

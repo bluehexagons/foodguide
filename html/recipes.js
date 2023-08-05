@@ -1414,8 +1414,7 @@ export const recipes = {
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
 		mode: 'together'
-	},	
-	
+	},		
 	trailmix_dst: {
 		name: 'Trail Mix',
 		test: (cooker, names, tags) => {
@@ -1432,8 +1431,8 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	hotchili: {
+
+	hotchili_dst: {
 		name: 'Spicy Chili',
 		test: (cooker, names, tags) => {
 			return tags.meat && tags.veggie && tags.meat >= 1.5 && tags.veggie >= 1.5;
@@ -1448,8 +1447,9 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'together'
 	},
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	guacamole: {
 		name: 'Guacamole',
 		test: (cooker, names, tags) => {

@@ -1017,7 +1017,6 @@ export const recipes = {
 		tags: ['honeyed'],
 		mode: 'together'
 	},
-
 	pumpkincookie_dst: {
 		name: 'Pumpkin Cookie',
 		test: (cooker, names, tags) => {
@@ -1066,7 +1065,6 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'together'
 	},
-	
 	honeynuggets_dst: {
 		name: 'Honey Nuggets',
 		test: (cooker, names, tags) => {
@@ -1118,7 +1116,6 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'together'
 	},
-
 	kabobs_dst: {
 		name: 'Kabobs',
 		test: (cooker, names, tags) => {
@@ -1211,7 +1208,6 @@ export const recipes = {
 		cooktime: 1,
 		mode: 'together'
 	},
-
 	turkeydinner_dst: {
 		name: 'Turkey Dinner',
 		test: (cooker, names, tags) => {
@@ -1276,7 +1272,6 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-
 	fishtacos_dst: {
 		name: 'Fish Tacos',
 		test: (cooker, names, tags) => {
@@ -1293,7 +1288,7 @@ export const recipes = {
 		tags: ['monstermeat'],
 		mode: 'together'
 	},
-		/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
+
 	waffles_dst: {
 		name: 'Waffles',
 		test: (cooker, names, tags) => {
@@ -1327,9 +1322,9 @@ export const recipes = {
 	powcake_dst: {
 		name: 'Powdercake',
 		test: (cooker, names, tags) => {
-			return names.twigs_dst && names.honey_dst && (names.corn_dst || names.corn_cooked_dst);
+			return names.twigs_dst && names.honey_dst && (names.corn_dst || names.corn_cooked_dst || names.oceanfish_small_5_inv || names.oceanfish_medium_5_inv);
 		},
-		requirements: [SPECIFIC('twigs_dst'), SPECIFIC('honey_dst'), NAME('corn')],
+		requirements: [SPECIFIC('twigs_dst'), SPECIFIC('honey_dst'), OR(NAME('corn_dst'), OR(NAME('oceanfish_small_5_inv'), NAME('oceanfish_medium_5_inv')))],
 		priority: 10,
 		foodtype: 'veggie',
 		health: -healing_small,
@@ -1343,9 +1338,9 @@ export const recipes = {
 	unagi_dst: {
 		name: 'Unagi',
 		test: (cooker, names, tags) => {
-			return names.cutlichen_dst && (names.eel_dst || names.eel_cooked_dst);
+			return (names.cutlichen_dst || names.kelp_dst || names.kelp_cooked_dst || names.kelp_dried_dst) && (names.eel_dst || names.eel_cooked_dst);
 		},
-		requirements: [SPECIFIC('cutlichen_dst'), NAME('eel')],
+		requirements: [OR(SPECIFIC('cutlichen_dst'), OR(SPECIFIC('kelp_dst'), OR(SPECIFIC('kelp_cooked_dst'), SPECIFIC('kelp_dried_dst')))), NAME('eel')],
 		priority: 20,
 		foodtype: 'veggie',
 		health: healing_med,
@@ -1370,7 +1365,7 @@ export const recipes = {
 		cooktime: 0.25,
 		mode: 'together'
 	},
-
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	// Giants recipes
 	flowersalad: {
 		name: 'Flower Salad',

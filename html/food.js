@@ -2611,8 +2611,8 @@ export const food = {
 		mode: 'together'
 	},
 	//Lobsters exist in both games but were difficult to port. 
-	//For simplicity's sake, the prefab name for lobsters in DST will be referred to as wobster.
-	// Their display name will have DST added to it since their image name is the same as SW
+	// For simplicity's sake, the prefab name for lobsters in DST will be referred to as wobster.
+	// Their display name will have DST added to it due to a conflict since their image name is the same as SW
 	wobster: {
 		name: 'Wobster DST',
 		//inedible: true,
@@ -2648,8 +2648,8 @@ export const food = {
 	
 /*
 I (lakhnish) tried to add the 'dst' suffix to some ingredients below (i.e. kelp) and the simulator would break for reasons I don't understand.
-For example: jellybeans has a specific for royal_jelly_dst and this the recipe needed to reflect the new name.
-However, if I do the same for kelp and rename it to kelp_dst, it breaks.
+For example: the Jelly Beans recipe has a specific for Royal Jelly and needed the prefabname to match royal_jelly_dst in order for the simulator to actually load. 
+However, if I do the same for kelp and rename it to kelp_dst, the simulator would stop loading entirely and idk why.
 */
 	
 	wormlight_lesser: {

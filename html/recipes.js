@@ -962,12 +962,12 @@ export const recipes = {
 	},
 
 //--------------------------------------------------------------------------------\\	
-//	                       DON'T STARVE TOGETHER RECIPES                          \\
+//	                   DON'T STARVE TOGETHER PORTED RECIPES                       \\
 //--------------------------------------------------------------------------------\\
 	
-	//_dst isn't needed for the recipe names but is added for identification purposes so people know they are looking at the right recipe
-	//NOTE: For ingredients that were ported from DS + DLC to DST in foods.js, make sure to use their variable name (which has _dst to it) for the correct data
-	//It's annoying that I couldn't make all dst ingredients have the _dst suffix, but at least many issues with this program gets resolved.
+	//KEEP IN MIND THAT PORTED INGREDIENTS FROM DS + DLCs ARE TO HAVE _dst ADDED TO THE END TO ENSURE THAT THE PROPER INGREDIENT DATA IS BEING USED
+	//_dst isn't needed for the recipe names but is added for identification purposes so people know they are looking at the right recipe, as some recipes are different in DST
+	//It's annoying that I couldn't make all dst ingredients have the _dst suffix, but at least the many issues with this program gets resolved.
 	
 	butterflymuffin_dst: {
 		name: 'Butter Muffin',
@@ -1288,7 +1288,6 @@ export const recipes = {
 		tags: ['monstermeat'],
 		mode: 'together'
 	},
-
 	waffles_dst: {
 		name: 'Waffles',
 		test: (cooker, names, tags) => {
@@ -1335,7 +1334,6 @@ export const recipes = {
 		tags: ['honeyed'],
 		mode: 'together'
 	},
-	
 	unagi_dst: {
 		name: 'Unagi',
 		test: (cooker, names, tags) => {
@@ -1431,7 +1429,6 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-
 	hotchili_dst: {
 		name: 'Spicy Chili',
 		test: (cooker, names, tags) => {
@@ -1514,7 +1511,6 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-
 	lobsterbisque_dst: {
 		name: 'Wobster Bisque',
 		test: (cooker, names, tags) => {
@@ -1545,8 +1541,7 @@ export const recipes = {
 		cooktime: 1,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	seafoodgumbo: {
+	seafoodgumbo_dst: {
 		name: 'Seafood Gumbo',
 		test: (cooker, names, tags) => {
 			return tags.fish && tags.fish > 2;
@@ -1559,9 +1554,9 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_medlarge,
 		cooktime: 1,
-		mode: 'shipwrecked'
+		mode: 'together'
 	},
-	surfnturf: {
+	surfnturf_dst: {
 		name: 'Surf \'n\' Turf',
 		test: (cooker, names, tags) => {
 			return tags.meat && tags.meat >= 2.5 && tags.fish && tags.fish >= 1.5 && !tags.frozen;
@@ -1574,12 +1569,14 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_large,
 		cooktime: 1,
-		mode: 'shipwrecked'
+		mode: 'together'
 	},
 	
-	
-	
-	REMOVE AFTER COMPLETING RECIPE PORTING*/
+//--------------------------------------------------------------------------------\\	
+//	                 DON'T STARVE TOGETHER EXCLUSIVE RECIPES                      \\
+//--------------------------------------------------------------------------------\\
+
+//KEEP IN MIND THAT PORTED INGREDIENTS FROM DS + DLCs ARE TO HAVE _dst ADDED TO THE END TO ENSURE THAT THE PROPER INGREDIENT DATA IS BEING USED
 
 	jellybean: {
 		name: 'Jellybeans',
@@ -1977,8 +1974,6 @@ export const recipes = {
 		note: 'Cannot be eaten by the player, only given to Beefalo',
 		mode: 'together'
 	},
-
-	// Leafy Meat recipes, won't work properly in simulator until issue #32 is solved
 	leafloaf: {
 		name: 'Leafy Meatloaf',
 		test: (cooker, names, tags) => {

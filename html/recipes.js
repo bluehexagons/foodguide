@@ -2143,25 +2143,24 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		perish: perish_slow,
 		cooktime: 0.75,
-		note: 'Sets and keeps the player\s temperature to 40 for 5 minutes',
+		note: 'Increases and keeps the player\'s temperature to 40 below ambient for 5 minutes',
 		mode: 'warlydst'
 	},
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	gazpacho: {
 		name: 'Asparagazpacho',
 		test: (cooker, names, tags) => {
-			return names.asparagus && names.asparagus === 2 && names.ice && names.ice === 2;
+			return ((names.asparagus_dst || 0) + (names.asparagus_cooked_dst || 0) >=2) && (tags.frozen && tags.frozen >=2);
 		},
-		requirements: [SPECIFIC('asparagus', COMPARE('=', 2)), SPECIFIC('ice', COMPARE('=', 2))],
+		requirements: [NAME('asparagus', COMPARE('>=', 2)), TAG('frozen', COMPARE('>=', 2))],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_small,
 		hunger: calories_med,
 		sanity: sanity_small,
 		temperature: cold_food_bonus_temp,
-		temperatureduration: buff_food_temp_duration,  // Varies from season to season
 		perish: perish_slow,
 		cooktime: 0.5,
+		note: 'Decreases and keeps the player\'s temperature to 20 below ambient for 5 minutes',
 		mode: 'warlydst'
 	},
 	potatosouffle: {
@@ -2182,24 +2181,24 @@ export const recipes = {
 	monstertartare: {
 		name: 'Monster Tartare',
 		test: (cooker, names, tags) => {
-			return tags.monster && tags.monster >= 2 && tags.egg && tags.veggie;
+			return tags.monster && tags.monster >= 2 && !tags.inedible;
 		},
-		requirements: [TAG('monster', COMPARE('>=', 2)), TAG('egg'), TAG('veggie')],
+		requirements: [TAG('monster', COMPARE('>=', 2)), NOT(TAG('inedible'))],
 		priority: 30,
 		foodtype: 'meat',
-		health: healing_small,
-		hunger: calories_large,
+		health: -healing_med,
+		hunger: calories_small*5,
 		perish: perish_med,
-		sanity: sanity_small,
-		cooktime: 2,
+		sanity: -sanity_medlarge,
+		cooktime: 0.5,
 		mode: 'warlydst'
 	},
 	freshfruitcrepes: {
 		name: 'Fresh Fruit Crepes',
 		test: (cooker, names, tags) => {
-			return tags.fruit && tags.fruit >= 1.5 && names.butter && names.honey;
+			return tags.fruit && tags.fruit >= 1.5 && names.butter_dst && names.honey_dst;
 		},
-		requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter'), SPECIFIC('honey')],
+		requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter_dst'), SPECIFIC('honey_dst')],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_huge,
@@ -2212,9 +2211,9 @@ export const recipes = {
 	bonesoup: {
 		name: 'Bone Bouillon',
 		test: (cooker, names, tags) => {
-			return names.boneshard && names.boneshard === 2 && (names.onion || names.onion_cooked) && (tags.inedible && tags.inedible < 3);
+			return names.boneshard && names.boneshard == 2 && (names.onion || names.onion_cooked) && (tags.inedible && tags.inedible < 3);
 		},
-		requirements: [NAME('boneshard', COMPARE('=', 2)), NAME('onion'), TAG('inedible'), TAG('inedible', COMPARE('<', 3))],
+		requirements: [NAME('boneshard', COMPARE('=', 2)), NAME('onion'), TAG('inedible', COMPARE('<', 3))],
 		priority: 30,
 		foodtype: 'meat',
 		health: healing_medsmall * 4,
@@ -2240,8 +2239,7 @@ export const recipes = {
 		mode: 'warlydst'
 	},
 	
-	
-	*/
+
 
 	
 };

@@ -2111,10 +2111,9 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_small,
 		cooktime: 1,
-		note: 'Gives 600 seconds of light',
+		note: 'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry',
 		mode: 'warlydst'
 	},
-	*/
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
 		test: (cooker, names, tags) => {
@@ -2131,11 +2130,11 @@ export const recipes = {
 		note: 'Sets the player\s wetness to 0 and grants the player wetness immunity for 5 minutes',
 		mode: 'warlydst'
 	},
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
+	*/
 	dragonchilisalad: {
 		name: 'Hot Dragon Chili Salad',
 		test: (cooker, names, tags) => {
-			return (names.dragonfruit || names.dragonfruit_cooked) && (names.pepper || names.pepper_cooked) && !tags.meat && !tags.inedible && !tags.egg;
+			return (names.dragonfruit_dst || names.dragonfruit_cooked_dst) && (names.pepper || names.pepper_cooked) && !tags.meat && !tags.inedible && !tags.egg;
 		},
 		requirements: [NAME('dragonfruit'), NAME('pepper'), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg'))],
 		priority: 30,
@@ -2144,12 +2143,12 @@ export const recipes = {
 		hunger: calories_med,
 		sanity: sanity_small,
 		temperature: hot_food_bonus_temp,
-		temperatureduration: buff_food_temp_duration,  // Varies from season to season
-		// nochill: true, ?
 		perish: perish_slow,
 		cooktime: 0.75,
+		note: 'Sets and keeps the player\s temperature to 40 for 5 minutes',
 		mode: 'warlydst'
 	},
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	gazpacho: {
 		name: 'Asparagazpacho',
 		test: (cooker, names, tags) => {

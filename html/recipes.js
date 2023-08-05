@@ -1339,7 +1339,7 @@ export const recipes = {
 	unagi_dst: {
 		name: 'Unagi',
 		test: (cooker, names, tags) => {
-			return (names.cutlichen_dst || names.kelp_dst || names.kelp_cooked_dst || names.kelp_dried_dst) && (names.eel_dst || names.eel_cooked_dst);
+			return (names.cutlichen_dst || names.kelp || names.kelp_cooked || names.kelp_dried) && (names.eel_dst || names.eel_cooked_dst);
 		},
 		requirements: [OR(NAME('cutlichen'),NAME('kelp')), NAME('eel')],
 		priority: 20,
@@ -1482,13 +1482,13 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-		/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
+
 	californiaroll_dst: {
 		name: 'California Roll',
 		test: (cooker, names, tags) => {
-			return names.seaweed && names.seaweed === 2 && tags.fish && tags.fish >= 1;
+			return ((names.kelp || 0) + (names.kelp_cooked || 0) + (names.kelp_dried ||0)) == 2 && tags.fish && tags.fish >= 1;
 		},
-		requirements: [SPECIFIC('seaweed', COMPARE('=', 2)), TAG('fish', COMPARE('>=', 1))],
+		requirements: [NAME('kelp', COMPARE('=', 2)), TAG('fish', COMPARE('>=', 1))],
 		priority: 20,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1498,6 +1498,7 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	ceviche_dst: {
 		name: 'Ceviche',
 		test: (cooker, names, tags) => {

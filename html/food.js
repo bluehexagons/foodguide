@@ -2610,6 +2610,39 @@ export const food = {
 		sanity: -sanity_huge,
 		mode: 'together'
 	},
+	//Lobsters exist in both games but were difficult to port. 
+	//For simplicity's sake, the prefab name for lobsters in DST will be referred to as wobster.
+	// Their display name will have DST added to it since their image name is the same as SW
+	wobster: {
+		name: 'Wobster DST',
+		//inedible: true,
+		meat: 1,
+		fish: 1,
+		perish: total_day_time * 4,
+		mode: 'together'
+	},
+	wobster_dead: {
+		name: 'Dead Wobster DST',
+		basename: 'Wobster.',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_largeitem,
+		cook: 'wobster_cooked',
+		mode: 'together'
+	},
+	wobster_cooked: {
+		name: 'Delicious Wobster DST',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
 	
 //DST EXCLUSIVE INGREDIENTS DO NOT GET THE 'dst' SUFFIX\\
 	

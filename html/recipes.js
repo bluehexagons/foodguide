@@ -1482,7 +1482,6 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-
 	californiaroll_dst: {
 		name: 'California Roll',
 		test: (cooker, names, tags) => {
@@ -1498,7 +1497,6 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	ceviche_dst: {
 		name: 'Ceviche',
 		test: (cooker, names, tags) => {
@@ -1517,12 +1515,12 @@ export const recipes = {
 		mode: 'together'
 	},
 
-	lobsterbisque: {
+	lobsterbisque_dst: {
 		name: 'Wobster Bisque',
 		test: (cooker, names, tags) => {
-			return names.lobster && tags.frozen;
+			return names.wobster && tags.frozen;
 		},
-		requirements: [SPECIFIC('lobster'), TAG('frozen')],
+		requirements: [SPECIFIC('wobster'), TAG('frozen')],
 		priority: 30,
 		foodtype: 'meat',
 		health: healing_huge,
@@ -1530,14 +1528,14 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'together'
 	},
-	lobsterdinner: {
+	lobsterdinner_dst: {
 		name: 'Wobster Dinner',
 		test: (cooker, names, tags) => {
-			return names.lobster && names.butter && !tags.meat && !tags.frozen;
+			return names.wobster && names.butter_dst && (tags.meat && tags.meat >= 1) && (tags.fish && tags.fish >= 1) && !tags.frozen;
 		},
-		requirements: [SPECIFIC('lobster'), SPECIFIC('butter'), NOT(TAG('meat')), NOT(TAG('frozen'))],
+		requirements: [SPECIFIC('wobster'), SPECIFIC('butter_dst'), TAG('meat', COMPARE('>=', 1)), TAG('fish', COMPARE('>=', 1)), NOT(TAG('frozen'))],
 		priority: 25,
 		foodtype: 'meat',
 		health: healing_huge,
@@ -1545,8 +1543,9 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_huge,
 		cooktime: 1,
-		mode: 'shipwrecked'
+		mode: 'together'
 	},
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	seafoodgumbo: {
 		name: 'Seafood Gumbo',
 		test: (cooker, names, tags) => {

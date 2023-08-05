@@ -142,12 +142,6 @@ export const calories_per_day = 75,
 			img: 'warlyHAM.png',
 			bit: WARLYHAM,
 			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
-			multipliers: {
-				raw: 0.7,
-				dried: 0.8,
-				cooked: 0.9,
-				recipe: 1.2
-			},
 		},
 		together: {
 			name: 'Don\'t Starve Together',

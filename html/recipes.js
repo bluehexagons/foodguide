@@ -2043,9 +2043,12 @@ export const recipes = {
 		},
 		requirements: [NAME('batnose'), NAME('kelp'), TAG('dairy', COMPARE ('>=', 1))],
 		priority: 55,
+		health: 0,
+		hunger: 187.5,
+		sanity: -5.32,
 		perish: perish_slow,
 		cooktime: 2,
-		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute',
+		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)',
 		mode: 'together'
 	},
 	dustmeringue: {

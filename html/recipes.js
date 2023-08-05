@@ -1366,14 +1366,12 @@ export const recipes = {
 		cooktime: 0.25,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	// Giants recipes
-	flowersalad: {
+	flowersalad_dst: {
 		name: 'Flower Salad',
 		test: (cooker, names, tags) => {
-			return names.cactusflower && tags.veggie && tags.veggie >= 2 && !tags.meat && !tags.inedible && !tags.egg && !tags.sweetener && !tags.fruit;
+			return names.cactusflower_dst && tags.veggie && tags.veggie >= 2 && !tags.meat && !tags.inedible && !tags.egg && !tags.sweetener && !tags.fruit;
 		},
-		requirements: [SPECIFIC('cactusflower'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg')), NOT(TAG('sweetener')), NOT(TAG('fruit'))],
+		requirements: [SPECIFIC('cactusflower_dst'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg')), NOT(TAG('sweetener')), NOT(TAG('fruit'))],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_large,
@@ -1381,9 +1379,9 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'together'
 	},
-	icecream: {
+	icecream_dst: {
 		name: 'Ice Cream',
 		test: (cooker, names, tags) => {
 			return tags.frozen && tags.dairy && tags.sweetener && !tags.meat && !tags.veggie && !tags.inedible && !tags.egg;
@@ -1398,14 +1396,14 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'together'
 	},
-	watermelonicle: {
+	watermelonicle_dst: {
 		name: 'Melonsicle',
 		test: (cooker, names, tags) => {
-			return names.watermelon && tags.frozen && names.twigs && !tags.meat && !tags.veggie && !tags.egg;
+			return names.watermelon_dst && tags.frozen && names.twigs_dst && !tags.meat && !tags.veggie && !tags.egg;
 		},
-		requirements: [SPECIFIC('watermelon'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg'))],
+		requirements: [SPECIFIC('watermelon_dst'), TAG('frozen'), SPECIFIC('twigs_dst'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg'))],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_small,
@@ -1415,8 +1413,9 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'giants'
-	},
+		mode: 'together'
+	},	
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	trailmix: {
 		name: 'Trail Mix',
 		test: (cooker, names, tags) => {

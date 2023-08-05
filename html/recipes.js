@@ -2097,7 +2097,7 @@ export const recipes = {
 		note: 'Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn\'t apply to existing electrical weapons.',
 		mode: 'warlydst'
 	}
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
+	/* Skip this, work on it later.
 	glowberrymousse: {
 		name: 'Glow Berry Mousse',
 		test: (cooker, names, tags) => {
@@ -2114,12 +2114,13 @@ export const recipes = {
 		note: 'Gives 600 seconds of light',
 		mode: 'warlydst'
 	},
+	*/
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
 		test: (cooker, names, tags) => {
-			return ((names.froglegs && names.froglegs >= 2) || (names.froglegs_cooked && names.froglegs_cooked >= 2 ) || (names.froglegs && names.froglegs_cooked)) && (tags.fish && tags.fish >= 1) && !tags.inedible;
+			return ((names.froglegs_dst && names.froglegs_dst >= 2) || (names.froglegs_cooked_dst && names.froglegs_cooked_dst >= 2 ) || (names.froglegs_dst && names.froglegs_cooked_dst)) && (tags.fish && tags.fish >= 1) && !tags.inedible;
 		},
-		requirements: [NAME('froglegs', COMPARE('=',2)), TAG('fish', COMPARE('>=', 1)), NOT(TAG('inedible'))],
+		requirements: [NAME('froglegs', COMPARE('>=',2)), TAG('fish', COMPARE('>=', 1)), NOT(TAG('inedible'))],
 		priority: 30,
 		foodtype: 'meat',
 		health: healing_med,
@@ -2127,9 +2128,10 @@ export const recipes = {
 		sanity: -sanity_small,
 		perish: perish_fastish,
 		cooktime: 2,
-		note: 'Sets wetness to 0 and grants wetness immunity for 300 seconds',
+		note: 'Sets the player\s wetness to 0 and grants the player wetness immunity for 5 minutes',
 		mode: 'warlydst'
 	},
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	dragonchilisalad: {
 		name: 'Hot Dragon Chili Salad',
 		test: (cooker, names, tags) => {

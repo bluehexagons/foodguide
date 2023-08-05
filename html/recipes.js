@@ -1465,13 +1465,12 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	bananapop: {
+	bananapop_dst: {
 		name: 'Banana Pop',
 		test: (cooker, names, tags) => {
-			return names.cave_banana && tags.frozen && tags.inedible && !tags.meat && !tags.fish;
+			return (names.cave_banana_dst || names.cave_banana_cooked_dst) && tags.frozen && names.twigs_dst && !tags.meat && !tags.fish;
 		},
-		requirements: [SPECIFIC('cave_banana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
+		requirements: [NAME('cave_banana'), TAG('frozen'), SPECIFIC('twigs_dst'), NOT(TAG('meat')), NOT(TAG('fish'))],
 		priority: 20,
 		foodtype: 'veggie',
 		health: healing_med,
@@ -1481,9 +1480,10 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'together'
 	},
-	californiaroll: {
+		/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
+	californiaroll_dst: {
 		name: 'California Roll',
 		test: (cooker, names, tags) => {
 			return names.seaweed && names.seaweed === 2 && tags.fish && tags.fish >= 1;
@@ -1496,9 +1496,9 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'together'
 	},
-	ceviche: {
+	ceviche_dst: {
 		name: 'Ceviche',
 		test: (cooker, names, tags) => {
 			return tags.fish && tags.fish >= 2 && tags.frozen;
@@ -1513,9 +1513,10 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'together'
 	},
-		lobsterbisque: {
+
+	lobsterbisque: {
 		name: 'Wobster Bisque',
 		test: (cooker, names, tags) => {
 			return names.lobster && tags.frozen;

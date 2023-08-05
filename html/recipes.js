@@ -2096,13 +2096,14 @@ export const recipes = {
 		cooktime: 2,
 		note: 'Gain the electrical damage modifier for 5 minutes. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn\'t apply to existing electrical weapons.',
 		mode: 'warlydst'
-	}	
+	}
+	
 	glowberrymousse: {
 		name: 'Glow Berry Mousse',
 		test: (cooker, names, tags) => {
 			return (names.wormlight_dst || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
 		},
-		requirements: [OR(NAME('wormlight_dst'), NAME('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
+		requirements: [OR(SPECIFIC('wormlight_dst'), SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_small,
@@ -2112,11 +2113,12 @@ export const recipes = {
 		cooktime: 1,
 		note: 'Gives 5 minutes of light that recedes in similar fashion after eating glowberries',
 		mode: 'warlydst'
-	},	
+	},
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
 		test: (cooker, names, tags) => {
-			return ((names.froglegs_dst && names.froglegs_dst >= 2) || (names.froglegs_cooked_dst && names.froglegs_cooked_dst >= 2 ) || (names.froglegs_dst && names.froglegs_cooked_dst)) && (tags.fish && tags.fish >= 1) && !tags.inedible;
+			return ((names.froglegs && names.froglegs >= 2) || (names.froglegs_cooked && names.froglegs_cooked >= 2 ) || (names.froglegs && names.froglegs_cooked)) && (tags.fish && tags.fish >= 1) && !tags.inedible;
 		},
 		requirements: [NAME('froglegs', COMPARE('=',2)), TAG('fish', COMPARE('>=', 1)), NOT(TAG('inedible'))],
 		priority: 30,
@@ -2126,10 +2128,9 @@ export const recipes = {
 		sanity: -sanity_small,
 		perish: perish_fastish,
 		cooktime: 2,
-		note: 'Sets wetness to 0 and grants wetness immunity for 5 minutes',
+		note: 'Sets wetness to 0 and grants wetness immunity for 300 seconds',
 		mode: 'warlydst'
 	},
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	dragonchilisalad: {
 		name: 'Hot Dragon Chili Salad',
 		test: (cooker, names, tags) => {

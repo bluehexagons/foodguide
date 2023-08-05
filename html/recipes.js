@@ -1324,7 +1324,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return names.twigs_dst && names.honey_dst && (names.corn_dst || names.corn_cooked_dst || names.oceanfish_small_5_inv || names.oceanfish_medium_5_inv);
 		},
-		requirements: [SPECIFIC('twigs_dst'), SPECIFIC('honey_dst'), OR(NAME('corn_dst'), OR(NAME('oceanfish_small_5_inv'), NAME('oceanfish_medium_5_inv')))],
+		requirements: [SPECIFIC('twigs_dst'), SPECIFIC('honey_dst'), OR(NAME('corn'), OR(NAME('oceanfish_small_5_inv'), NAME('oceanfish_medium_5_inv')))],
 		priority: 10,
 		foodtype: 'veggie',
 		health: -healing_small,
@@ -1335,6 +1335,7 @@ export const recipes = {
 		tags: ['honeyed'],
 		mode: 'together'
 	},
+	
 	unagi_dst: {
 		name: 'Unagi',
 		test: (cooker, names, tags) => {

@@ -1118,36 +1118,38 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'together'
 	},
-	/* ABOVE IS 1ST BATCH OF RECIPE PORTING
-	kabobs: {
+
+	kabobs_dst: {
 		name: 'Kabobs',
 		test: (cooker, names, tags) => {
-			return tags.meat && names.twigs && (!tags.monster || tags.monster <= 1) && (tags.inedible && tags.inedible <= 1);
+			return tags.meat && names.twigs_dst && (!tags.monster || tags.monster <= 1) && (tags.inedible && tags.inedible <= 1);
 		},
-		requirements: [TAG('meat'), SPECIFIC('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
+		requirements: [TAG('meat'), SPECIFIC('twigs_dst'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
 		priority: 5,
 		foodtype: 'meat',
 		health: healing_small,
 		hunger: calories_large,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
+		mode: 'together'
 	},
-	mandrakesoup: {
+	mandrakesoup_dst: {
 		name: 'Mandrake Soup',
 		test: (cooker, names, tags) => {
-			return names.mandrake;
+			return names.mandrake_dst;
 		},
-		requirements: [SPECIFIC('mandrake')],
+		requirements: [SPECIFIC('mandrake_dst')],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_superhuge,
 		hunger: calories_superhuge,
 		perish: perish_fast,
 		sanity: sanity_tiny,
-		cooktime: 3
+		cooktime: 3,
+		mode: 'together'
 	},
-	baconeggs: {
+	baconeggs_dst: {
 		name: 'Bacon and Eggs',
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
@@ -1159,9 +1161,10 @@ export const recipes = {
 		hunger: calories_huge,
 		perish: perish_preserved,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
+		mode: 'together'
 	},
-	meatballs: {
+	meatballs_dst: {
 		name: 'Meatballs',
 		test: (cooker, names, tags) => {
 			return tags.meat && !tags.inedible;
@@ -1173,9 +1176,10 @@ export const recipes = {
 		hunger: calories_small * 5,
 		perish: perish_med,
 		sanity: sanity_tiny,
-		cooktime: 0.75
+		cooktime: 0.75,
+		mode: 'together'
 	},
-	bonestew: {
+	bonestew_dst: {
 		name: 'Meaty Stew',
 		test: (cooker, names, tags) => {
 			return tags.meat && tags.meat >= 3 && !tags.inedible;
@@ -1189,22 +1193,25 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
-		cooktime: 0.75
+		cooktime: 0.75,
+		mode: 'together'
 	},
-	perogies: {
+	perogies_dst: {
 		name: 'Pierogi',
 		test: (cooker, names, tags) => {
-			return tags.egg && tags.meat && tags.veggie && !tags.inedible;
+			return tags.egg && tags.meat && tags.veggie && tags.veggie >= 0.5 && !tags.inedible;
 		},
-		requirements: [TAG('egg'), TAG('meat'), TAG('veggie'), NOT(TAG('inedible'))],
+		requirements: [TAG('egg'), TAG('meat'), TAG('veggie', COMPARE('>', 0.5)), NOT(TAG('inedible'))],
 		priority: 5,
 		foodtype: 'meat',
 		health: healing_large,
 		hunger: calories_large,
 		perish: perish_preserved,
 		sanity: sanity_tiny,
-		cooktime: 1
+		cooktime: 1,
+		mode: 'together'
 	},
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	turkeydinner: {
 		name: 'Turkey Dinner',
 		test: (cooker, names, tags) => {

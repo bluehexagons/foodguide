@@ -1211,13 +1211,13 @@ export const recipes = {
 		cooktime: 1,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	turkeydinner: {
+
+	turkeydinner_dst: {
 		name: 'Turkey Dinner',
 		test: (cooker, names, tags) => {
-			return names.drumstick && names.drumstick > 1 && tags.meat && tags.meat > 1 && (tags.veggie || tags.fruit);
+			return names.drumstick_dst && names.drumstick_dst > 1 && tags.meat && tags.meat > 1 && ((tags.veggie && tags. veggie >= 0.5) || tags.fruit);
 		},
-		requirements: [SPECIFIC('drumstick', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), OR(TAG('veggie'), TAG('fruit'))],
+		requirements: [SPECIFIC('drumstick_dst', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), OR(TAG('veggie', COMPARE('>=', 0.5)), TAG('fruit'))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1226,23 +1226,25 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
-		cooktime: 3
+		cooktime: 3,
+		mode: 'together'
 	},
-	ratatouille: {
+	ratatouille_dst: {
 		name: 'Ratatouille',
 		test: (cooker, names, tags) => {
-			return !tags.meat && tags.veggie && !tags.inedible;
+			return !tags.meat && tags.veggie && tags.veggie >= 0.5 && !tags.inedible;
 		},
-		requirements: [NOT(TAG('meat')), TAG('veggie'), NOT(TAG('inedible'))],
+		requirements: [NOT(TAG('meat')), TAG('veggie', COMPARE('>=', 0.5)), NOT(TAG('inedible'))],
 		priority: 0,
 		foodtype: 'veggie',
 		health: healing_small,
 		hunger: calories_med,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 1
+		cooktime: 1,
+		mode: 'together'
 	},
-	jammypreserves: {
+	jammypreserves_dst: {
 		name: 'Fist Full of Jam',
 		test: (cooker, names, tags) => {
 			return tags.fruit && !tags.meat && !tags.veggie && !tags.inedible;
@@ -1254,9 +1256,10 @@ export const recipes = {
 		hunger: calories_small * 3,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 0.5
+		cooktime: 0.5,
+		mode: 'together'
 	},
-	fruitmedley: {
+	fruitmedley_dst: {
 		name: 'Fruit Medley',
 		test: (cooker, names, tags) => {
 			return tags.fruit && tags.fruit >= 3 && !tags.meat && !tags.veggie;
@@ -1270,8 +1273,10 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_brief,
-		cooktime: 0.5
+		cooktime: 0.5,
+		mode: 'together'
 	},
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	fishtacos: {
 		name: 'Fish Tacos',
 		test: (cooker, names, tags) => {

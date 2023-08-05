@@ -449,7 +449,7 @@ export const recipes = {
 		},
 		requirements: [TAG('frozen'), TAG('dairy'), TAG('sweetener'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('inedible')), NOT(TAG('egg'))],
 		priority: 10,
-		foodtype: 'goodies',
+		foodtype: 'veggie',
 		health: 0,
 		hunger: calories_med,
 		perish: perish_superfast,
@@ -965,15 +965,14 @@ export const recipes = {
 //	                       DON'T STARVE TOGETHER RECIPES                          \\
 //--------------------------------------------------------------------------------\\
 	
-	/* REMOVE AFTER UPLOADING SECTION DIVIDERS
-	butterflymuffin: {
+	//_dst isn't needed for the recipe names but is added for identification purposes so people know they are looking at the right recipe
+	butterflymuffin_dst: {
 		name: 'Butter Muffin',
 		test: (cooker, names, tags) => {
-			// return (names.butterflywings || names.moonbutterflywings) && !tags.meat && tags.veggie; <- For when issue #32 is sorted out
-			return names.butterflywings && !tags.meat && tags.veggie;
+			return (names.butterflywings_dst || names.moonbutterflywings) && !tags.meat && tags.veggie && tags.veggie >= 0.5;
 		},
 		requires: 'Butterfly Wings, veggie',
-		requirements: [NAME('butterflywings'), NOT(TAG('meat')), TAG('veggie')],
+		requirements: [OR(NAME('butterflywings'), NAME('moonbutterflywings')), NOT(TAG('meat')), TAG('veggie', COMPARE('>=', 0.5))],
 		priority: 1,
 		weight: 1,
 		foodtype: 'veggie',
@@ -981,23 +980,25 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
+		mode: 'together'
 	},
-	frogglebunwich: {
+	frogglebunwich_dst: {
 		name: 'Froggle Bunwich',
 		test: (cooker, names, tags) => {
-			return (names.froglegs || names.froglegs_cooked) && tags.veggie;
+			return (names.froglegs_dst || names.froglegs_cooked_dst) && tags.veggie && tags.veggie >= 0.5;
 		},
-		requirements: [NAME('froglegs'), TAG('veggie')],
+		requirements: [NAME('froglegs'), TAG('veggie', COMPARE('>=', 0.5))],
 		priority: 1,
 		foodtype: 'meat',
 		health: healing_med,
 		hunger: calories_large,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
+		mode: 'together'
 	},
-	taffy: {
+	taffy_dst: {
 		name: 'Taffy',
 		test: (cooker, names, tags) => {
 			return tags.sweetener && tags.sweetener >= 3 && !tags.meat;
@@ -1010,9 +1011,11 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_med,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
+		mode: 'together'
 	},
-	pumpkincookie: {
+	/* ABOVE IS 1ST BATCH OF RECIPE PORTING
+	pumpkincookie_dst: {
 		name: 'Pumpkin Cookie',
 		test: (cooker, names, tags) => {
 			return (names.pumpkin || names.pumpkin_cooked) && tags.sweetener && tags.sweetener >= 2;
@@ -1025,9 +1028,10 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
+		mode: 'together'
 	},
-	stuffedeggplant: {
+	stuffedeggplant_dst: {
 		name: 'Stuffed Eggplant',
 		test: (cooker, names, tags) => {
 			return (names.eggplant || names.eggplant_cooked) && tags.veggie && tags.veggie > 1;
@@ -1041,9 +1045,10 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_brief,
-		cooktime: 2
+		cooktime: 2,
+		mode: 'together'
 	},
-	fishsticks: {
+	fishsticks_dst: {
 		name: 'Fishsticks',
 		test: (cooker, names, tags) => {
 			return tags.fish && names.twigs && (tags.inedible && tags.inedible <= 1);
@@ -1055,8 +1060,10 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_med,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
+		mode: 'together'
 	},
+
 	honeynuggets: {
 		name: 'Honey Nuggets',
 		test: (cooker, names, tags) => {
@@ -1438,7 +1445,7 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'giants'
 	},
-	REMOVE AFTER UPLOADING SECTION DIVIDERS*/
+	REMOVE AFTER COMPLETING RECIPE PORTING*/
 
 	jellybean: {
 		name: 'Jellybeans',
@@ -1761,7 +1768,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.egg >= 3;
 		},
-      		requirements: [TAG('egg', COMPARE('>=', 4))],
+      		requirements: [TAG('egg', COMPARE('>=', 3))],
 		priority: 0,
 		foodtype: 'meat',
 		health: healing_small,

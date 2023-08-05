@@ -902,7 +902,7 @@ export const recipes = {
 	feijoada: {
 		name: 'Feijoada',
 		test: (cooker, names, tags) => {
-			return tags.meat && names.jellybug === 3 || names.jellybug_cooked === 3 || (names.jellybug && names.jellybug_cooked && names.jellybug + names.jellybug_cooked === 3);
+			return tags.meat && ((names.jellybug ||0) + (names.jellybug_cooked || 0) ==3);
 		},
 		requirements: [TAG('meat'), NAME('jellybug', COMPARE('=', 3))],
 		priority: 30,
@@ -912,7 +912,7 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_med,
 		cooktime: 3.5,
-		note: 'Using 3 Cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs, makes it so that meat is not needed, intentional or not by Klei.',
+		note: 'In the pre2023update version of the game, using 3 Cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs, makes it so that meat is not needed.',
 		mode: 'hamlet'
 	},
 	steamedhamsandwich: {
@@ -2064,38 +2064,54 @@ export const recipes = {
 //	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\
 //--------------------------------------------------------------------------------\\
 
-	/*
-	gazpacho: {
-		name: 'Asparagazpacho',
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
+	nightmarepie: {
+		name: 'Grim Galette',
 		test: (cooker, names, tags) => {
-			return names.asparagus && names.asparagus === 2 && names.ice && names.ice === 2;
+			return names.nightmarefuel && names.nightmarefuel === 2 && (names.potato || names.potato_cooked) && (names.onion || names.onion_cooked);
 		},
-		requirements: [SPECIFIC('asparagus', COMPARE('=', 2)), SPECIFIC('ice', COMPARE('=', 2))],
+		requirements: [NAME('nightmarefuel', COMPARE('=', 2)), NAME('potato'), NAME('onion')],
+		priority: 30,
+		foodtype: 'veggie',
+		health: healing_tiny,
+		hunger: calories_med,
+		perish: perish_med,
+		sanity: sanity_tiny,
+		cooktime: 2,
+		note: 'Swaps health and sanity values',
+		mode: 'warlydst'
+	},
+	voltgoatjelly: {
+		name: 'Volt Goat Chaud Froid',
+		test: (cooker, names, tags) => {
+			return (names.lightninggoathorn) && (tags.sweetener && tags.sweetener >= 2) && !tags.meat;
+		},
+		requirements: [NAME('lightninggoathorn'), TAG('sweetener', COMPARE('>=', 2)), NOT(TAG('meat'))],
+		priority: 30,
+		foodtype: 'goodies',
+		health: healing_small,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_small,
+		cooktime: 2,
+		note: 'All damage caused becomes electrical damage',
+		mode: 'warlydst'
+	}
+	glowberrymousse: {
+		name: 'Glow Berry Mousse',
+		test: (cooker, names, tags) => {
+			return (names.wormlight || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
+		},
+		requirements: [OR(SPECIFIC('wormlight'),SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_small,
-		hunger: calories_med,
+		hunger: calories_large,
+		perish: perish_fastish,
 		sanity: sanity_small,
-		temperature: cold_food_bonus_temp,
-		temperatureduration: buff_food_temp_duration,  // Varies from season to season
-		perish: perish_slow,
-		cooktime: 0.5,
-		mode: 'warly' //+ 'together'
-	},
-	bonesoup: {
-		name: 'Bone Bouillon',
-		test: (cooker, names, tags) => {
-			return names.boneshard && names.boneshard === 2 && (names.onion || names.onion_cooked) && (tags.inedible && tags.inedible < 3);
-		},
-		requirements: [NAME('boneshard', COMPARE('=', 2)), NAME('onion'), TAG('inedible'), TAG('inedible', COMPARE('<', 3))],
-		priority: 30,
-		foodtype: 'meat',
-		health: healing_medsmall * 4,
-		hunger: calories_large * 4,
-		sanity: sanity_tiny,
-		perish: perish_med,
-		cooktime: 2,
-		mode: 'warly' //+ 'together'
+		cooktime: 1,
+		note: 'Gives 600 seconds of light',
+		mode: 'warlydst'
 	},
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
@@ -2111,39 +2127,7 @@ export const recipes = {
 		perish: perish_fastish,
 		cooktime: 2,
 		note: 'Sets wetness to 0 and grants wetness immunity for 300 seconds',
-		mode: 'warly' //+ 'together'
-	},
-	glowberrymousse: {
-		name: 'Glow Berry Mousse',
-		test: (cooker, names, tags) => {
-			return (names.wormlight || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
-		},
-		requirements: [OR(SPECIFIC('wormlight'),SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
-		priority: 30,
-		foodtype: 'veggie',
-		health: healing_small,
-		hunger: calories_large,
-		perish: perish_fastish,
-		sanity: sanity_small,
-		cooktime: 1,
-		note: 'Gives 600 seconds of light',
-		mode: 'warly' //+ 'together'
-	},
-	nightmarepie: {
-		name: 'Grim Galette',
-		test: (cooker, names, tags) => {
-			return names.nightmarefuel && names.nightmarefuel === 2 && (names.potato || names.potato_cooked) && (names.onion || names.onion_cooked);
-		},
-		requirements: [NAME('nightmarefuel', COMPARE('=', 2)), NAME('potato'), NAME('onion')],
-		priority: 30,
-		foodtype: 'veggie',
-		health: healing_tiny,
-		hunger: calories_med,
-		perish: perish_med,
-		sanity: sanity_tiny,
-		cooktime: 2,
-		note: 'Swaps health and sanity values',
-		mode: 'warly' //+ 'together'
+		mode: 'warlydst'
 	},
 	dragonchilisalad: {
 		name: 'Hot Dragon Chili Salad',
@@ -2161,7 +2145,84 @@ export const recipes = {
 		// nochill: true, ?
 		perish: perish_slow,
 		cooktime: 0.75,
-		mode: 'warly' //+ 'together'
+		mode: 'warlydst'
+	},
+	gazpacho: {
+		name: 'Asparagazpacho',
+		test: (cooker, names, tags) => {
+			return names.asparagus && names.asparagus === 2 && names.ice && names.ice === 2;
+		},
+		requirements: [SPECIFIC('asparagus', COMPARE('=', 2)), SPECIFIC('ice', COMPARE('=', 2))],
+		priority: 30,
+		foodtype: 'veggie',
+		health: healing_small,
+		hunger: calories_med,
+		sanity: sanity_small,
+		temperature: cold_food_bonus_temp,
+		temperatureduration: buff_food_temp_duration,  // Varies from season to season
+		perish: perish_slow,
+		cooktime: 0.5,
+		mode: 'warlydst'
+	},
+	potatosouffle: {
+		name: 'Puffed Potato Souffle',
+		test: (cooker, names, tags) => {
+			return ((names.potato && names.potato >= 2) || (names.potato_cooked && names.potato_cooked >= 2) || (names.potato && names.potato_cooked)) && tags.egg && !tags.meat && !tags.inedible;
+		},
+		requirements: [NAME('potato', COMPARE('>=', 2)), TAG('egg'), NOT(TAG('meat')), NOT(TAG('inedible'))],
+		priority: 30,
+		foodtype: 'veggie',
+		health: healing_med,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_med,
+		cooktime: 2,
+		mode: 'warlydst'
+	},
+	monstertartare: {
+		name: 'Monster Tartare',
+		test: (cooker, names, tags) => {
+			return tags.monster && tags.monster >= 2 && tags.egg && tags.veggie;
+		},
+		requirements: [TAG('monster', COMPARE('>=', 2)), TAG('egg'), TAG('veggie')],
+		priority: 30,
+		foodtype: 'meat',
+		health: healing_small,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_small,
+		cooktime: 2,
+		mode: 'warlydst'
+	},
+	freshfruitcrepes: {
+		name: 'Fresh Fruit Crepes',
+		test: (cooker, names, tags) => {
+			return tags.fruit && tags.fruit >= 1.5 && names.butter && names.honey;
+		},
+		requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter'), SPECIFIC('honey')],
+		priority: 30,
+		foodtype: 'veggie',
+		health: healing_huge,
+		hunger: calories_superhuge,
+		perish: perish_med,
+		sanity: sanity_med,
+		cooktime: 2,
+		mode: 'warlydst'
+	},
+	bonesoup: {
+		name: 'Bone Bouillon',
+		test: (cooker, names, tags) => {
+			return names.boneshard && names.boneshard === 2 && (names.onion || names.onion_cooked) && (tags.inedible && tags.inedible < 3);
+		},
+		requirements: [NAME('boneshard', COMPARE('=', 2)), NAME('onion'), TAG('inedible'), TAG('inedible', COMPARE('<', 3))],
+		priority: 30,
+		foodtype: 'meat',
+		health: healing_medsmall * 4,
+		hunger: calories_large * 4,
+		sanity: sanity_tiny,
+		perish: perish_med,
+		cooktime: 2,
+		mode: 'warlydst'
 	},
 	moqueca: {
 		name: 'Moqueca',
@@ -2176,39 +2237,10 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_large,
 		cooktime: 2,
-		mode: 'warly' //+ 'together'
+		mode: 'warlydst'
 	},
-	potatosouffle: {
-		name: 'Puffed Potato Soufflé',
-		test: (cooker, names, tags) => {
-			return ((names.potato && names.potato >= 2) || (names.potato_cooked && names.potato_cooked >= 2) || (names.potato && names.potato_cooked)) && tags.egg && !tags.meat && !tags.inedible;
-		},
-		requirements: [NAME('potato', COMPARE('>=', 2)), TAG('egg'), NOT(TAG('meat')), NOT(TAG('inedible'))],
-		priority: 30,
-		foodtype: 'veggie',
-		health: healing_med,
-		hunger: calories_large,
-		perish: perish_med,
-		sanity: sanity_med,
-		cooktime: 2,
-		mode: 'warly' //+ 'together'
-	},
-	voltgoatjelly: {
-		name: 'Volt Goat Chaud-Froid',
-		test: (cooker, names, tags) => {
-			return (names.lightninggoathorn) && (tags.sweetener && tags.sweetener >= 2) && !tags.meat;
-		},
-		requirements: [NAME('lightninggoathorn'), TAG('sweetener', COMPARE('>=', 2)), NOT(TAG('meat'))],
-		priority: 30,
-		foodtype: 'goodies',
-		health: healing_small,
-		hunger: calories_large,
-		perish: perish_med,
-		sanity: sanity_small,
-		cooktime: 2,
-		note: 'All damage caused becomes electrical damage',
-		mode: 'warly' //+ 'together'
-	}
+	
+	
 	*/
 
 	

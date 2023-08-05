@@ -1449,14 +1449,13 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	guacamole: {
+	
+	guacamole_dst: {
 		name: 'Guacamole',
 		test: (cooker, names, tags) => {
-			// return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit; <- For when issue #32 is sorted out
-			return names.mole && names.cactusmeat && !tags.fruit;
+			return names.mole_dst && (names.rock_avocado_fruit_ripe || names.cactusmeat_dst) && !tags.fruit;
 		},
-		requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
+		requirements: [SPECIFIC('mole_dst'), OR(SPECIFIC('rock_avocado_fruit_ripe'), SPECIFIC('cactusmeat_dst') ), NOT(TAG('fruit'))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1464,8 +1463,14 @@ export const recipes = {
 		perish: perish_med,
 		sanity: 0,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'together'
 	},
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
+	
+	
+	
+	
+	
 	REMOVE AFTER COMPLETING RECIPE PORTING*/
 
 	jellybean: {

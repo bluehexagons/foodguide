@@ -2094,16 +2094,16 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 2,
-		note: 'Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn\'t apply to existing electrical weapons.',
+		note: 'Gain the electrical damage modifier for 5 minutes. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn\'t apply to existing electrical weapons.',
 		mode: 'warlydst'
 	}
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
+	
 	glowberrymousse: {
 		name: 'Glow Berry Mousse',
 		test: (cooker, names, tags) => {
-			return (names.wormlight || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
+			return (names.wormlight_dst || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
 		},
-		requirements: [OR(SPECIFIC('wormlight'),SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
+		requirements: [OR(SPECIFIC('wormlight_dst'), SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_small,
@@ -2111,9 +2111,10 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_small,
 		cooktime: 1,
-		note: 'Gives 600 seconds of light',
+		note: 'Gives 5 minutes of light that recedes in similar fashion after eating glowberries',
 		mode: 'warlydst'
 	},
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
 		test: (cooker, names, tags) => {

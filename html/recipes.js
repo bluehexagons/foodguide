@@ -2118,7 +2118,7 @@ export const recipes = {
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
 		test: (cooker, names, tags) => {
-			return ((names.froglegs_dst && names.froglegs_dst >= 2) || (names.froglegs_cooked_dst && names.froglegs_cooked_dst >= 2 ) || (names.froglegs_dst && names.froglegs_cooked_dst)) && (tags.fish && tags.fish >= 1) && !tags.inedible;
+			return ((names.froglegs_dst || 0) + (names.froglegs_cooked_dst || 0) >=2) && (tags.fish && tags.fish >= 1) && !tags.inedible;
 		},
 		requirements: [NAME('froglegs', COMPARE('>=',2)), TAG('fish', COMPARE('>=', 1)), NOT(TAG('inedible'))],
 		priority: 30,

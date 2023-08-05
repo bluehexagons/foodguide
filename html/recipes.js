@@ -966,8 +966,8 @@ export const recipes = {
 //--------------------------------------------------------------------------------\\
 	
 	//_dst isn't needed for the recipe names but is added for identification purposes so people know they are looking at the right recipe
-	//NOTE: For ingredients that were ported from DS + DLC to DST in foods.js, make sure to use their variable name (which has _dst to it) for the correct data/stats.
-	//It's annoying that I (lakhnish) couldn't make all dst ingredients have the _dst suffix, but at least the simulator becomes fully up-to date.
+	//NOTE: For ingredients that were ported from DS + DLC to DST in foods.js, make sure to use their variable name (which has _dst to it) for the correct data
+	//It's annoying that I couldn't make all dst ingredients have the _dst suffix, but at least many issues with this program gets resolved.
 	
 	butterflymuffin_dst: {
 		name: 'Butter Muffin',
@@ -1288,6 +1288,7 @@ export const recipes = {
 		tags: ['monstermeat'],
 		mode: 'together'
 	},
+
 	waffles_dst: {
 		name: 'Waffles',
 		test: (cooker, names, tags) => {
@@ -1334,12 +1335,13 @@ export const recipes = {
 		tags: ['honeyed'],
 		mode: 'together'
 	},
+	
 	unagi_dst: {
 		name: 'Unagi',
 		test: (cooker, names, tags) => {
 			return (names.cutlichen_dst || names.kelp_dst || names.kelp_cooked_dst || names.kelp_dried_dst) && (names.eel_dst || names.eel_cooked_dst);
 		},
-		requirements: [OR(NAME('cutlichen'), NAME('kelp')), NAME('eel')],
+		requirements: [OR(NAME('cutlichen'),NAME('kelp')), NAME('eel')],
 		priority: 20,
 		foodtype: 'veggie',
 		health: healing_med,
@@ -1364,10 +1366,12 @@ export const recipes = {
 		cooktime: 0.25,
 		mode: 'together'
 	},
-	flowersalad_dst: {
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
+	// Giants recipes
+	flowersalad: {
 		name: 'Flower Salad',
 		test: (cooker, names, tags) => {
-			return names.cactusflower_dst && tags.veggie && tags.veggie >= 2 && !tags.meat && !tags.inedible && !tags.egg && !tags.sweetener && !tags.fruit;
+			return names.cactusflower && tags.veggie && tags.veggie >= 2 && !tags.meat && !tags.inedible && !tags.egg && !tags.sweetener && !tags.fruit;
 		},
 		requirements: [SPECIFIC('cactusflower'), TAG('veggie', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible')), NOT(TAG('egg')), NOT(TAG('sweetener')), NOT(TAG('fruit'))],
 		priority: 10,
@@ -1377,9 +1381,9 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'giants'
 	},
-	icecream_dst: {
+	icecream: {
 		name: 'Ice Cream',
 		test: (cooker, names, tags) => {
 			return tags.frozen && tags.dairy && tags.sweetener && !tags.meat && !tags.veggie && !tags.inedible && !tags.egg;
@@ -1394,14 +1398,14 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'giants'
 	},
-	watermelonicle_dst: {
+	watermelonicle: {
 		name: 'Melonsicle',
 		test: (cooker, names, tags) => {
-			return names.watermelon_dst && tags.frozen && names.twigs_dst && !tags.meat && !tags.veggie && !tags.egg;
+			return names.watermelon && tags.frozen && names.twigs && !tags.meat && !tags.veggie && !tags.egg;
 		},
-		requirements: [SPECIFIC('watermelon_dst'), TAG('frozen'), SPECIFIC('twigs_dst'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg'))],
+		requirements: [SPECIFIC('watermelon'), TAG('frozen'), SPECIFIC('twigs'), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg'))],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_small,
@@ -1411,15 +1415,15 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'giants'
 	},
-	trailmix_dst: {
+	trailmix: {
 		name: 'Trail Mix',
 		test: (cooker, names, tags) => {
-			return (names.acorn_dst || names.acorn_cooked_dst) && tags.seed && tags.seed >= 1 && (names.berries_dst || names.berries_cooked_dst || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
-			
+			// return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy; <- For when issue #32 is sorted out
+			return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
 		},
-		requirements: [NAME('acorn'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
+		requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_medlarge,
@@ -1427,9 +1431,9 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'giants'
 	},
-	hotchili_dst: {
+	hotchili: {
 		name: 'Spicy Chili',
 		test: (cooker, names, tags) => {
 			return tags.meat && tags.veggie && tags.meat >= 1.5 && tags.veggie >= 1.5;
@@ -1444,14 +1448,15 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'giants'
 	},
-	guacamole_dst: {
+	guacamole: {
 		name: 'Guacamole',
 		test: (cooker, names, tags) => {
-			return names.mole_dst && (names.rock_avocado_fruit_ripe_dst || names.cactusmeat_dst) && !tags.fruit;
+			// return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit; <- For when issue #32 is sorted out
+			return names.mole && names.cactusmeat && !tags.fruit;
 		},
-		requirements: [SPECIFIC('mole_dst'), OR(SPECIFIC('rock_avocado_fruit_ripe_dst'),SPECIFIC('cactusmeat_dst')), NOT(TAG('fruit'))],
+		requirements: [SPECIFIC('mole'), SPECIFIC('cactusmeat'), NOT(TAG('fruit'))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1459,8 +1464,10 @@ export const recipes = {
 		perish: perish_med,
 		sanity: 0,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'giants'
 	},
+	REMOVE AFTER COMPLETING RECIPE PORTING*/
+
 	jellybean: {
 		name: 'Jellybeans',
 		test: (cooker, names, tags) => {

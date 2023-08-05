@@ -1756,6 +1756,7 @@ export const food = {
 
 	acorn_dst: {
 		name: 'Birchnut',
+		uncookable: true,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
 		mode: 'together'

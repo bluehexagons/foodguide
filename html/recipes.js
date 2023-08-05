@@ -1415,14 +1415,14 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'together'
 	},	
-	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	trailmix: {
+	
+	trailmix_dst: {
 		name: 'Trail Mix',
 		test: (cooker, names, tags) => {
-			// return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy; <- For when issue #32 is sorted out
-			return names.acorn_cooked && tags.seed && tags.seed >= 1 && (names.berries || names.berries_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
+			return (names.acorn_dst || names.acorn_cooked) && tags.seed && tags.seed >= 1 && (names.berries_dst || names.berries_cooked_dst || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
+			
 		},
-		requirements: [SPECIFIC('acorn_cooked'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
+		requirements: [NAME('acorn'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_medlarge,
@@ -1430,8 +1430,9 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'together'
 	},
+	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
 	hotchili: {
 		name: 'Spicy Chili',
 		test: (cooker, names, tags) => {

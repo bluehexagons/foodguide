@@ -966,6 +966,9 @@ export const recipes = {
 //--------------------------------------------------------------------------------\\
 	
 	//_dst isn't needed for the recipe names but is added for identification purposes so people know they are looking at the right recipe
+	//NOTE: For ingredients that were ported from DS + DLC to DST in foods.js, make sure to use their variable name (which has _dst to it) for the correct data
+	//It's annoying that I couldn't make all dst ingredients have the _dst suffix, but at least many issues with this program gets resolved.
+	
 	butterflymuffin_dst: {
 		name: 'Butter Muffin',
 		test: (cooker, names, tags) => {
@@ -1014,11 +1017,11 @@ export const recipes = {
 		tags: ['honeyed'],
 		mode: 'together'
 	},
-	/* ABOVE IS 1ST BATCH OF RECIPE PORTING
+
 	pumpkincookie_dst: {
 		name: 'Pumpkin Cookie',
 		test: (cooker, names, tags) => {
-			return (names.pumpkin || names.pumpkin_cooked) && tags.sweetener && tags.sweetener >= 2;
+			return (names.pumpkin_dst || names.pumpkin_cooked_dst) && tags.sweetener && tags.sweetener >= 2;
 		},
 		requirements: [NAME('pumpkin'), TAG('sweetener', COMPARE('>=', 2))],
 		priority: 10,
@@ -1034,7 +1037,7 @@ export const recipes = {
 	stuffedeggplant_dst: {
 		name: 'Stuffed Eggplant',
 		test: (cooker, names, tags) => {
-			return (names.eggplant || names.eggplant_cooked) && tags.veggie && tags.veggie > 1;
+			return (names.eggplant_dst || names.eggplant_cooked_dst) && tags.veggie && tags.veggie > 1;
 		},
 		requirements: [NAME('eggplant'), TAG('veggie', COMPARE('>', 1))],
 		priority: 1,
@@ -1051,9 +1054,9 @@ export const recipes = {
 	fishsticks_dst: {
 		name: 'Fishsticks',
 		test: (cooker, names, tags) => {
-			return tags.fish && names.twigs && (tags.inedible && tags.inedible <= 1);
+			return tags.fish && names.twigs_dst && (tags.inedible && tags.inedible <= 1);
 		},
-		requirements: [TAG('fish'), SPECIFIC('twigs'), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
+		requirements: [TAG('fish'), SPECIFIC('twigs_dst'), TAG('inedible'), TAG('inedible', COMPARE('<=', 1))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_large,
@@ -1063,7 +1066,7 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'together'
 	},
-
+	/* ABOVE IS 1ST BATCH OF RECIPE PORTING
 	honeynuggets: {
 		name: 'Honey Nuggets',
 		test: (cooker, names, tags) => {

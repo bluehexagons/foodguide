@@ -1466,8 +1466,115 @@ export const recipes = {
 		mode: 'together'
 	},
 	/* ABOVE IS PREVIOUS BATCH OF RECIPE PORTING
-	
-	
+	bananapop: {
+		name: 'Banana Pop',
+		test: (cooker, names, tags) => {
+			return names.cave_banana && tags.frozen && tags.inedible && !tags.meat && !tags.fish;
+		},
+		requirements: [SPECIFIC('cave_banana'), TAG('frozen'), TAG('inedible'), NOT(TAG('meat')), NOT(TAG('fish'))],
+		priority: 20,
+		foodtype: 'veggie',
+		health: healing_med,
+		hunger: calories_small,
+		perish: perish_superfast,
+		sanity: sanity_large,
+		temperature: cold_food_bonus_temp,
+		temperatureduration: food_temp_average,
+		cooktime: 0.5,
+		mode: 'shipwrecked'
+	},
+	californiaroll: {
+		name: 'California Roll',
+		test: (cooker, names, tags) => {
+			return names.seaweed && names.seaweed === 2 && tags.fish && tags.fish >= 1;
+		},
+		requirements: [SPECIFIC('seaweed', COMPARE('=', 2)), TAG('fish', COMPARE('>=', 1))],
+		priority: 20,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_small,
+		cooktime: 0.5,
+		mode: 'shipwrecked'
+	},
+	ceviche: {
+		name: 'Ceviche',
+		test: (cooker, names, tags) => {
+			return tags.fish && tags.fish >= 2 && tags.frozen;
+		},
+		requirements: [TAG('fish', COMPARE('>=', 2)), TAG('frozen')],
+		priority: 20,
+		foodtype: 'meat',
+		health: healing_med,
+		hunger: calories_med,
+		perish: perish_med,
+		sanity: sanity_tiny,
+		temperature: cold_food_bonus_temp,
+		temperatureduration: food_temp_average,
+		cooktime: 0.5,
+		mode: 'shipwrecked'
+	},
+		lobsterbisque: {
+		name: 'Wobster Bisque',
+		test: (cooker, names, tags) => {
+			return names.lobster && tags.frozen;
+		},
+		requirements: [SPECIFIC('lobster'), TAG('frozen')],
+		priority: 30,
+		foodtype: 'meat',
+		health: healing_huge,
+		hunger: calories_med,
+		perish: perish_med,
+		sanity: sanity_small,
+		cooktime: 0.5,
+		mode: 'shipwrecked'
+	},
+	lobsterdinner: {
+		name: 'Wobster Dinner',
+		test: (cooker, names, tags) => {
+			return names.lobster && names.butter && !tags.meat && !tags.frozen;
+		},
+		requirements: [SPECIFIC('lobster'), SPECIFIC('butter'), NOT(TAG('meat')), NOT(TAG('frozen'))],
+		priority: 25,
+		foodtype: 'meat',
+		health: healing_huge,
+		hunger: calories_large,
+		perish: perish_slow,
+		sanity: sanity_huge,
+		cooktime: 1,
+		mode: 'shipwrecked'
+	},
+	seafoodgumbo: {
+		name: 'Seafood Gumbo',
+		test: (cooker, names, tags) => {
+			return tags.fish && tags.fish > 2;
+		},
+		requirements: [TAG('fish', COMPARE('>', 2))],
+		priority: 10,
+		foodtype: 'meat',
+		health: healing_large,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_medlarge,
+		cooktime: 1,
+		mode: 'shipwrecked'
+	},
+	surfnturf: {
+		name: 'Surf \'n\' Turf',
+		test: (cooker, names, tags) => {
+			return tags.meat && tags.meat >= 2.5 && tags.fish && tags.fish >= 1.5 && !tags.frozen;
+		},
+		requirements: [TAG('meat', COMPARE('>=', 2.5)), TAG('fish', COMPARE('>=', 1.5)), NOT(TAG('frozen'))],
+		priority: 30,
+		foodtype: 'meat',
+		health: healing_huge,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: sanity_large,
+		cooktime: 1,
+		mode: 'shipwrecked'
+	},
 	
 	
 	
@@ -1570,7 +1677,7 @@ export const recipes = {
 	potatotornado: {
 		name: 'Fancy Spiralled Tubers',
 		test: (cooker, names, tags) => {
-			return (names.potato || names.potato_cooked) && names.twigs && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
+			return (names.potato || names.potato_cooked) && names.twigs_dst && (!tags.monster || tags.monster <= 1) && !tags.meat && (tags.inedible && tags.inedible <= 2);
 		},
 		requirements: [NAME('potato'), NAME('twigs'), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))), NOT(TAG('meat')), TAG('inedible', COMPARE('<=', 2))],
 		priority: 10,
@@ -1645,9 +1752,9 @@ export const recipes = {
 	shroomcake: {
 		name: 'Mushy Cake',
 		test: (cooker, names, tags) => {
-			return names.moon_mushroom && names.red_mushroom && names.blue_mushroom && names.green_mushroom;
+			return names.moon_mushroom && names.red_mushroom_dst && names.blue_mushroom_dst && names.green_mushroom_dst;
 		},
-		requirements: [SPECIFIC('moon_mushroom'), SPECIFIC('red_mushroom'), SPECIFIC('blue_mushroom'), SPECIFIC('green_mushroom')],
+		requirements: [SPECIFIC('moon_mushroom'), SPECIFIC('red_mushroom_dst'), SPECIFIC('blue_mushroom_dst'), SPECIFIC('green_mushroom_dst')],
 		priority: 30,
 		foodtype: 'goodies',
 		health: 0,
@@ -1678,7 +1785,7 @@ export const recipes = {
 	koalefig_trunk: {
 		name: 'Fig-Stuffed Trunk',
 		test: (cooker, names, tags) => {
-			return (names.trunk_summer || names.trunk_cooked || names.trunk_winter) && (names.fig || names.fig_cooked);
+			return (names.trunk_summer_dst || names.trunk_cooked_dst || names.trunk_winter_dst) && (names.fig || names.fig_cooked);
 		},
 		requirements: [NAME('trunk_summer'), NAME('fig')],
 		priority: 40,
@@ -1708,9 +1815,9 @@ export const recipes = {
 	figkabab: {
 		name: 'Figkabab',
 		test: (cooker, names, tags) => {
-			return (names.fig || names.fig_cooked) && names.twigs && tags.meat && tags.meat >= 1 && (!tags.monster || tags.monster <= 1);
+			return (names.fig || names.fig_cooked) && names.twigs_dst && tags.meat && tags.meat >= 1 && (!tags.monster || tags.monster <= 1);
 		},
-		requirements: [NAME('fig'), SPECIFIC('twigs'), TAG('meat', COMPARE('>=', 1)), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
+		requirements: [NAME('fig'), SPECIFIC('twigs_dst'), TAG('meat', COMPARE('>=', 1)), OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1)))],
 		priority: 30,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1725,7 +1832,7 @@ export const recipes = {
 	frognewton: {
 		name: 'Figgy Frogwich',
 		test: (cooker, names, tags) => {
-			return (names.fig || names.fig_cooked) && (names.froglegs || names.froglegs_cooked);
+			return (names.fig || names.fig_cooked) && (names.froglegs_dst || names.froglegs_cooked_dst);
 		},
 		requirements: [NAME('fig'), NAME('froglegs')],
 		priority: 1,
@@ -1740,7 +1847,7 @@ export const recipes = {
 	frozenbananadaiquiri: {
 		name: 'Frozen Banana Daiquiri',
 		test: (cooker, names, tags) => {
-			return (names.cave_banana || names.cave_banana_cooked) && (tags.frozen && tags.frozen >=1) && !tags.meat && !tags.fish;
+			return (names.cave_banana_dst || names.cave_banana_cooked_dst) && (tags.frozen && tags.frozen >=1) && !tags.meat && !tags.fish;
 		},
 		requirements: [NAME('cave_banana'), TAG('frozen', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('meat'))],
 		priority: 2,
@@ -1776,7 +1883,7 @@ export const recipes = {
 	bananajuice: {
 		name: 'Banana Shake',
 		test: (cooker, names, tags) => {
-			return ((names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2) && !tags.meat && !tags.fish && !tags.monster;
+			return ((names.cave_banana_dst || 0) + (names.cave_banana_cooked_dst || 0) >= 2) && !tags.meat && !tags.fish && !tags.monster;
 		},
 		requirements: [NAME('cave_banana', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('monster'))],
 		priority: 1,
@@ -1822,9 +1929,9 @@ export const recipes = {
 	talleggs: {
 		name: 'Tall Scotch Eggs',
 		test: (cooker, names, tags) => {
-			return names.tallbirdegg && tags.veggie && tags.veggie >=1;
+			return names.tallbirdegg_dst && tags.veggie && tags.veggie >=1;
 		},
-      		requirements: [SPECIFIC('tallbirdegg'), TAG('veggie', COMPARE('>=', 1))],
+      		requirements: [SPECIFIC('tallbirdegg_dst'), TAG('veggie', COMPARE('>=', 1))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_huge,
@@ -1874,7 +1981,7 @@ export const recipes = {
 	leafloaf: {
 		name: 'Leafy Meatloaf',
 		test: (cooker, names, tags) => {
-			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 );
+			return ((names.plantmeat_dst || 0) + (names.plantmeat_cooked_dst || 0) >= 2 );
 		},
 		requirements: [NAME('plantmeat', COMPARE('>=',2))],
 		priority: 25,
@@ -1889,7 +1996,7 @@ export const recipes = {
 	leafymeatburger: {
 		name: 'Veggie Burger',
 		test: (cooker, names, tags) => {
-			return (names.plantmeat || names.plantmeat_cooked) && (names.onion || names.onion_cooked) && tags.veggie && tags.veggie >= 2;
+			return (names.plantmeat_dst || names.plantmeat_cooked_dst) && (names.onion || names.onion_cooked) && tags.veggie && tags.veggie >= 2;
 		},
 		requirements: [NAME('plantmeat'), NAME('onion'), TAG('veggie', COMPARE('>=', 2))],
 		priority: 26,
@@ -1904,7 +2011,7 @@ export const recipes = {
 	leafymeatsouffle: {
 		name: 'Jelly Salad',
 		test: (cooker, names, tags) => {
-			return ((names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 ) && tags.sweetener && tags.sweetener >= 2;
+			return ((names.plantmeat_dst || 0) + (names.plantmeat_cooked_dst || 0) >= 2 ) && tags.sweetener && tags.sweetener >= 2;
 		},
 		requirements: [NAME('plantmeat', COMPARE('>=', 2)), TAG('sweetener', COMPARE('>=',2))],
 		priority: 50,
@@ -1919,7 +2026,7 @@ export const recipes = {
 	meatysalad: {
 		name: 'Beefy Greens',
 		test: (cooker, names, tags) => {
-			return (names.plantmeat || names.plantmeat_cooked) && tags.veggie && tags.veggie >= 3;
+			return (names.plantmeat_dst || names.plantmeat_cooked_dst) && tags.veggie && tags.veggie >= 3;
 		},
 		requirements: [NAME('plantmeat'), TAG('veggie', COMPARE('>=', 3))],
 		priority: 25,

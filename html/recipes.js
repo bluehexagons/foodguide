@@ -2064,11 +2064,11 @@ export const recipes = {
 //	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\
 //--------------------------------------------------------------------------------\\
 
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
+	
 	nightmarepie: {
 		name: 'Grim Galette',
 		test: (cooker, names, tags) => {
-			return names.nightmarefuel && names.nightmarefuel === 2 && (names.potato || names.potato_cooked) && (names.onion || names.onion_cooked);
+			return (names.nightmarefuel && names.nightmarefuel == 2) && (names.potato || names.potato_cooked) && (names.onion || names.onion_cooked);
 		},
 		requirements: [NAME('nightmarefuel', COMPARE('=', 2)), NAME('potato'), NAME('onion')],
 		priority: 30,
@@ -2078,9 +2078,10 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		note: 'Swaps health and sanity values',
+		note: 'The player\'s health and sanity percentage values are swapped',
 		mode: 'warlydst'
 	},
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	voltgoatjelly: {
 		name: 'Volt Goat Chaud Froid',
 		test: (cooker, names, tags) => {

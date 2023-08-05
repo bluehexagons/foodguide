@@ -3226,7 +3226,8 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		hunger: calories_small,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
 	fig_cooked: {
 		name: 'Cooked Fig',
@@ -3237,7 +3238,8 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		hunger: calories_medsmall,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
 	batnose: {
 		name: 'Naked Nostrils',

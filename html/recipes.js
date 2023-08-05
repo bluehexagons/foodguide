@@ -2064,11 +2064,11 @@ export const recipes = {
 //	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\
 //--------------------------------------------------------------------------------\\
 
-	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
+	
 	nightmarepie: {
 		name: 'Grim Galette',
 		test: (cooker, names, tags) => {
-			return names.nightmarefuel && names.nightmarefuel === 2 && (names.potato || names.potato_cooked) && (names.onion || names.onion_cooked);
+			return names.nightmarefuel && names.nightmarefuel == 2 && (names.potato || names.potato_cooked) && (names.onion || names.onion_cooked);
 		},
 		requirements: [NAME('nightmarefuel', COMPARE('=', 2)), NAME('potato'), NAME('onion')],
 		priority: 30,
@@ -2078,7 +2078,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		note: 'Swaps health and sanity values',
+		note: 'The player\'s health and sanity percentage values are swapped',
 		mode: 'warlydst'
 	},
 	voltgoatjelly: {
@@ -2094,15 +2094,15 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 2,
-		note: 'All damage caused becomes electrical damage',
+		note: 'Gain the electrical damage modifier for 5 minutes. Deal 1.5x more damage to normal mobs; deal 2.5x more damage to wet mobs',
 		mode: 'warlydst'
 	}
 	glowberrymousse: {
 		name: 'Glow Berry Mousse',
 		test: (cooker, names, tags) => {
-			return (names.wormlight || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
+			return (names.wormlight_dst || (names.wormlight_lesser && names.wormlight_lesser >= 2)) && (tags.fruit && tags.fruit >= 2) && !tags.meat && !tags.inedible;
 		},
-		requirements: [OR(SPECIFIC('wormlight'),SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
+		requirements: [OR(SPECIFIC('wormlight_dst'),SPECIFIC('wormlight_lesser', COMPARE('>=', 2))), TAG('fruit', COMPARE('>=', 2)), NOT(TAG('meat')), NOT(TAG('inedible'))],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_small,
@@ -2110,9 +2110,10 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_small,
 		cooktime: 1,
-		note: 'Gives 600 seconds of light',
+		note: 'Gives 16 minutes of light that fades in a similar fashion to other glowberries',
 		mode: 'warlydst'
 	},
+	/* ABOVE ARE ALREADY PORTED WARLY DST RECIPES
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
 		test: (cooker, names, tags) => {

@@ -1923,14 +1923,14 @@ export const food = {
 	},
 
 	foliage_dst: {
-	 name: 'Foliage',
-	 uncookable: true,
-	 health: healing_tiny,
-	 hunger: 0,
-	 sanity: 0,
-	 perish: perish_fast,
-	 stack: stack_size_smallitem,
-	 mode: 'together'
+		 name: 'Foliage',
+		 uncookable: true,
+		 health: healing_tiny,
+		 hunger: 0,
+		 sanity: 0,
+		 perish: perish_fast,
+		 stack: stack_size_smallitem,
+		 mode: 'together'
 	},
 	goatmilk_dst: {
 		name: 'Electric Milk',
@@ -2011,6 +2011,8 @@ export const food = {
 	},
 	plantmeat_dst: {
 		name: 'Leafy Meat',
+		ismeat: true,
+		meat: 1,
 		health: 0,
 		hunger: calories_small,
 		sanity: -sanity_small,
@@ -2021,6 +2023,8 @@ export const food = {
 	},
 	plantmeat_cooked_dst: {
 		name: 'Cooked Leafy Meat',
+		ismeat: true,
+		meat: 1,
 		health: healing_tiny,
 		hunger: calories_medsmall,
 		sanity: 0,
@@ -2678,6 +2682,7 @@ export const food = {
 	wobster: {
 		name: 'Wobster DST',
 		//inedible: true,
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: total_day_time * 4,
@@ -3032,7 +3037,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	//DST Hook, Line, and Inker
 	pondfish: {
 		name: 'Freshwater Fish',
-		basename: 'Fish', //so that it shows up next to other fish meats
+		basename: 'FishMo', //so that it shows up next to fish morsel
 		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
@@ -3046,7 +3051,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	pondeel: {
 		name: 'Live Eel',
-		basename: 'EelLive',
+		basename: 'EelA', //so that it's to the left of cooked eel
 		ismeat: true,
 		meat: 0.5,
 		fish: 1,
@@ -3079,6 +3084,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	//_dst because it's ported from SW but added in this update
 	fishmeat_small_dst: {
 		name: 'Fish Morsel',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		health: healing_tiny,
@@ -3094,6 +3100,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	//_dst because it's ported from SW but added in this update
 	fishmeat_small_cooked_dst: {
 		name: 'Cooked Fish Morsel',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		health: healing_tiny,
@@ -3105,6 +3112,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	fishmeat: {
 		name: 'Fish Meat',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		health: healing_tiny,
@@ -3119,6 +3127,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	fishmeat_cooked: {
 		name: 'Cooked Fish Meat',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		health: healing_med,
@@ -3136,6 +3145,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_1_inv: {
 		name: 'Runty Guppy',
 		basename: 'oceanBaby6',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3144,6 +3154,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_2_inv: {
 		name: 'Needlenosed Squirt',
 		basename: 'oceanBaby4',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3152,6 +3163,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_3_inv: {
 		name: 'Bitty Baitfish',
 		basename: 'oceanBaby1',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3160,6 +3172,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_4_inv: {
 		name: 'Smolt Fry',
 		basename: 'oceanBaby8',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3168,6 +3181,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_5_inv: {
 		name: 'Popperfish',
 		basename: 'oceanBaby5',
+		ismeat: true,
 		veggie: 1,
 		perish: perish_one_day,
 		mode: 'together'
@@ -3175,6 +3189,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_6_inv: {
 		name: 'Fallounder',
 		basename: 'oceanBaby3',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3183,6 +3198,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_7_inv: {
 		name: 'Bloomfin Tuna',
 		basename: 'oceanBaby2',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3191,6 +3207,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_8_inv: {
 		name: 'Scorching Sunfish',
 		basename: 'oceanBaby7',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3199,6 +3216,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_small_9_inv: {
 		name: 'Spittlefish',
 		basename: 'oceanBaby9',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3209,6 +3227,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_1_inv: {
 		name: 'Mudfish',
 		basename: 'oceanBig8',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3217,6 +3236,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_2_inv: {
 		name: 'Deep Bass',
 		basename: 'oceanBig5',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3225,6 +3245,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_3_inv: {
 		name: 'Dandy Lionfish',
 		basename: 'oceanBig3',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3233,6 +3254,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_4_inv: {
 		name: 'Black Catfish',
 		basename: 'oceanBig1',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3241,6 +3263,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_5_inv: {
 		name: 'Corn Cod',
 		basename: 'oceanBig2',
+		ismeat: true,
 		veggie: 1,
 		perish: perish_one_day,
 		mode: 'together'
@@ -3248,6 +3271,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_6_inv: {
 		name: 'Dappled Koi',
 		basename: 'oceanBig4',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3256,6 +3280,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_7_inv: {
 		name: 'Golden Koi',
 		basename: 'oceanBig6',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3264,6 +3289,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_8_inv: {
 		name: 'Ice Bream',
 		basename: 'oceanBig7',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		frozen: 1,
@@ -3273,6 +3299,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	oceanfish_medium_9_inv: {
 		name: 'Sweetish Fish',
 		basename: 'oceanBig9',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3282,6 +3309,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	// DST Return of Them: Troubled Waters food
 	barnacle: {
 		name: 'Barnacles',
+		ismeat: true,
 		meat: 0.25,
 		fish: 0.25,
 		health: 0,
@@ -3295,6 +3323,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	barnacle_cooked: {
 		name: 'Cooked Barnacles',
+		ismeat: true,
 		meat: 0.25,
 		fish: 0.25,
 		health: healing_tiny,

@@ -15,6 +15,7 @@ import {
 	sanity_tiny,
 	sanity_small,
 	sanity_med,
+	sanity_medlarge,
 	sanity_huge,
 	perish_one_day,
 	perish_two_day,
@@ -610,6 +611,16 @@ export const food = {
 		hunger: calories_huge,
 		sanity: 0,
 		perish: perish_slow,
+		stack: stack_size_meditem
+	},
+	trunk_winter: {
+		name: 'Winter Koalefant Trunk',
+		uncookable: true,
+		ismeat: true,
+		health: healing_medlarge,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
 		stack: stack_size_meditem
 	},
 	twigs: {
@@ -2320,6 +2331,7 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
+		meat: 1,
 		stack: stack_size_meditem,
 		mode: 'together'
 	},
@@ -2330,6 +2342,18 @@ export const food = {
 		hunger: calories_huge,
 		sanity: 0,
 		perish: perish_slow,
+		meat: 1,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	trunk_winter_dst: {
+		name: 'Winter Koalefant Trunk',
+		ismeat: true,
+		health: healing_medlarge,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
+		meat: 1,
 		stack: stack_size_meditem,
 		mode: 'together'
 	},
@@ -2968,8 +2992,36 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		drytime: dry_fast,
-		dry: 'morsel_dried_dst',
+		mode: 'together'
+	},
+	pondeel: {
+		name: 'Live Eel',
+		ismeat: true,
+		meat: 0.5,
+		fish: 1,
+		health: healing_small,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	spoiled_fish: {
+		name: 'Spoiled Fish',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	spoiled_fish_morsel: {
+		name: 'Spoiled Fish Morsel',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
 		mode: 'together'
 	},
 	//_dst because it's ported from SW but added in this update
@@ -3270,11 +3322,20 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-
 	refined_dust: {
 		name: "Collected Dust",
 		decoration: 2,
 		mode: 'together'
-	}
+	},
+	milkywhites: {
+		name: "Milky Whites",
+		dairy: 1,
+		health: healing_medsmall,
+		hunger: calories_small,
+		sanity: -sanity_medlarge,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
 
 };

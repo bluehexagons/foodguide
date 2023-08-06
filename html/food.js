@@ -15,6 +15,7 @@ import {
 	sanity_tiny,
 	sanity_small,
 	sanity_med,
+	sanity_medlarge,
 	sanity_huge,
 	perish_one_day,
 	perish_two_day,
@@ -3270,11 +3271,20 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-
 	refined_dust: {
 		name: "Collected Dust",
 		decoration: 2,
 		mode: 'together'
-	}
+	},
+	milkywhites: {
+		name: "Milky Whites",
+		dairy: 1,
+		health: healing_medsmall,
+		hunger: calories_small,
+		sanity: -sanity_medlarge,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
 
 };

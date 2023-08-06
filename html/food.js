@@ -153,6 +153,8 @@ export const food = {
 	eel_cooked: {
 		name: 'Cooked Eel',
 		ismeat: true,
+		meat: 0.5,
+		fish: 1,
 		health: healing_medsmall,
 		hunger: calories_small,
 		sanity: 0,
@@ -1880,6 +1882,8 @@ export const food = {
 	eel_cooked_dst: {
 		name: 'Cooked Eel',
 		ismeat: true,
+		meat: 0.5,
+		fish: 1,
 		health: healing_medsmall,
 		hunger: calories_small,
 		sanity: 0,

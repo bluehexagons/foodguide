@@ -1771,6 +1771,7 @@ export const food = {
 		name: 'Birchnut',
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
+		cook: 'acorn_cooked_dst',
 		mode: 'together'
 	},
 	acorn_cooked_dst: {
@@ -1833,6 +1834,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		rot: 'rottenegg_dst',
+		cook: 'bird_egg_cooked_dst',
 		mode: 'together'
 	},
 	bird_egg_cooked_dst: {
@@ -1877,6 +1879,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		//dry: 'morsel_dried',
 		drytime: dry_fast,
+		cook: 'eel_cooked_dst',
 		mode: 'together'
 	},
 	eel_cooked_dst: {
@@ -3009,6 +3012,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
+		cook: 'eel_cooked_dst',
 		mode: 'together'
 	},
 	spoiled_fish: {

@@ -1339,7 +1339,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (names.cutlichen_dst || names.kelp || names.kelp_cooked || names.kelp_dried) && (names.eel_dst || names.eel_cooked_dst || names.pondeel);
 		},
-		requirements: [OR(NAME('cutlichen'),NAME('kelp')), NAME('eel')],
+		requirements: [OR(NAME('cutlichen'),NAME('kelp')), OR(NAME('eel'), NAME('pondeel'))],
 		priority: 20,
 		foodtype: 'veggie',
 		health: healing_med,

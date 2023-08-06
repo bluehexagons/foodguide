@@ -1899,7 +1899,6 @@ export const food = {
 	},
 	froglegs_dst: {
 		name: 'Frog Legs',
-		basename: 'FrogLegs',
 		ismeat: true,
 		meat: 0.5,
 		health: 0,
@@ -1911,7 +1910,6 @@ export const food = {
 	},
 	froglegs_cooked_dst: {
 		name: 'Cooked Frog Legs',
-		basename: 'FrogLegsCooked',
 		ismeat: true,
 		meat: 0.5,
 		precook: 1,
@@ -1980,7 +1978,6 @@ export const food = {
 	},
 	mandrake_dst: {
 		name: 'Mandrake',
-		basename: 'Mandrake',
 		veggie: 1,
 		magic: 1,
 		health: healing_huge,
@@ -1991,7 +1988,6 @@ export const food = {
 	},
 	mandrake_cooked_dst: {
 		name: 'Cooked Mandrake',
-		basename: 'MandrakeCooked',
 		uncookable: true,
 		veggie: 1,
 		magic: 1,
@@ -2013,7 +2009,6 @@ export const food = {
 	},
 	plantmeat_dst: {
 		name: 'Leafy Meat',
-		basename: 'LeafyMeat',
 		health: 0,
 		hunger: calories_small,
 		sanity: -sanity_small,
@@ -2023,7 +2018,6 @@ export const food = {
 	},
 	plantmeat_cooked_dst: {
 		name: 'Cooked Leafy Meat',
-		basename: 'LeafyMeatCooked',
 		health: healing_tiny,
 		hunger: calories_medsmall,
 		sanity: 0,
@@ -2033,7 +2027,6 @@ export const food = {
 	},
 	monstermeat_dst: {
 		name: 'Monster Meat',
-		basename: 'MonsterMeat',
 		ismeat: true,
 		meat: 1,
 		monster: true,
@@ -2042,13 +2035,12 @@ export const food = {
 		sanity: -sanity_med,
 		perish: perish_fast,
 		stack: stack_size_meditem,
-		dry: 'monstermeat_dried_dst',
+		dry: 'monstermeat_dried',
 		drytime: dry_fast,
 		mode: 'together'
 	},
 	monstermeat_cooked_dst: {
 		name: 'Cooked Monster Meat',
-		basename: 'MonsterMeatCooked',
 		ismeat: true,
 		meat: 1,
 		monster: true,

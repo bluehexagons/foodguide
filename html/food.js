@@ -1769,14 +1769,12 @@ export const food = {
 
 	acorn_dst: {
 		name: 'Birchnut',
-		basename: 'Birchnut',
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
 	acorn_cooked_dst: {
 		name: 'Roasted Birchnut',
-		basename: 'BirchnutRoasted',
 		ideal: true,
 		seed: 1,
 		hunger: calories_tiny,
@@ -1828,7 +1826,6 @@ export const food = {
 	},
 	bird_egg_dst: {
 		name: 'Egg',
-		basename: 'Egg',
 		egg: 1,
 		health: 0,
 		hunger: calories_tiny,
@@ -1840,7 +1837,6 @@ export const food = {
 	},
 	bird_egg_cooked_dst: {
 		name: 'Cooked Egg',
-		basename: 'EggCooked',
 		egg: 1,
 		precook: 1,
 		health: 0,
@@ -1871,7 +1867,6 @@ export const food = {
 	},
 	eel_dst: {
 		name: 'Eel',
-		basename: 'Eel',
 		ismeat: true,
 		meat: 0.5,
 		fish: 1,
@@ -1886,7 +1881,6 @@ export const food = {
 	},
 	eel_cooked_dst: {
 		name: 'Cooked Eel',
-		basename: 'EelLCooked',
 		ismeat: true,
 		meat: 0.5,
 		fish: 1,
@@ -3007,7 +3001,6 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	pondeel: {
 		name: 'Live Eel',
-		basename: 'EelL',
 		ismeat: true,
 		meat: 0.5,
 		fish: 1,

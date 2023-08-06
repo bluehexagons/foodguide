@@ -613,6 +613,16 @@ export const food = {
 		perish: perish_slow,
 		stack: stack_size_meditem
 	},
+	trunk_winter: {
+		name: 'Winter Koalefant Trunk',
+		uncookable: true,
+		ismeat: true,
+		health: healing_medlarge,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_meditem
+	},
 	twigs: {
 		name: 'Twigs',
 		inedible: 1

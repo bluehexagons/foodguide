@@ -479,6 +479,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_med,
+		cook: 'red_mushroom_cooked',
 		stack: stack_size_smallitem
 	},
 	red_mushroom_cooked: {
@@ -499,6 +500,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: -sanity_huge,
 		perish: perish_med,
+		cook: 'green_mushroom_cooked',
 		stack: stack_size_smallitem
 	},
 	green_mushroom_cooked: {
@@ -519,6 +521,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: -sanity_med,
 		perish: perish_med,
+		cook: 'blue_mushroom_cooked',
 		stack: stack_size_smallitem
 	},
 	blue_mushroom_cooked: {
@@ -2352,6 +2355,7 @@ export const food = {
 		perish: perish_fast,
 		meat: 1,
 		stack: stack_size_meditem,
+		cook: 'trunk_summer_cooked_dst',
 		mode: 'together'
 	},
 	trunk_summer_cooked_dst: {
@@ -2374,6 +2378,7 @@ export const food = {
 		perish: perish_fast,
 		meat: 1,
 		stack: stack_size_meditem,
+		cook: 'trunk_summer_cooked_dst',
 		mode: 'together'
 	},
 	twigs_dst: {
@@ -2391,6 +2396,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_med,
+		cook: 'cave_banana_cooked_dst',
 		mode: 'together'
 	},
 	cave_banana_cooked_dst: {
@@ -2414,6 +2420,7 @@ export const food = {
 		sanity: 0,
 		cook: 'carrot_cooked_dst',
 		stack: stack_size_smallitem,
+		cook: 'carrot_cooked_dst',
 		mode: 'together'
 	},
 	carrot_cooked_dst: {
@@ -2438,6 +2445,7 @@ export const food = {
 		perish: perish_med,
 		sanity: 0,
 		stack: stack_size_smallitem,
+		cook: 'corn_cooked_dst',
 		mode: 'together'
 	},
 	corn_cooked_dst: {
@@ -2461,6 +2469,7 @@ export const food = {
 		perish: perish_med,
 		sanity: 0,
 		stack: stack_size_meditem,
+		cook: 'pumpkin_cooked_dst',
 		mode: 'together'
 	},
 	pumpkin_cooked_dst: {
@@ -2484,6 +2493,7 @@ export const food = {
 		perish: perish_med,
 		sanity: 0,
 		stack: stack_size_meditem,
+		cook: 'eggplant_cooked_dst',
 		mode: 'together'
 	},
 	eggplant_cooked_dst: {
@@ -2508,6 +2518,7 @@ export const food = {
 		perish: perish_med,
 		sanity: -sanity_tiny,
 		stack: stack_size_meditem,
+		cook: 'durian_cooked_dst',
 		mode: 'together'
 	},
 	durian_cooked_dst: {
@@ -2532,6 +2543,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: 0,
 		stack: stack_size_smallitem,
+		cook: 'pomegranate_cooked_dst',
 		mode: 'together'
 	},
 	pomegranate_cooked_dst: {
@@ -2555,6 +2567,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: 0,
 		stack: stack_size_smallitem,
+		cook: 'dragonfruit_cooked_dst',
 		mode: 'together'
 	},
 	dragonfruit_cooked_dst: {
@@ -2579,6 +2592,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: 0,
 		stack: stack_size_smallitem,
+		cook: 'berries_cooked_dst',
 		mode: 'together'
 	},
 	berries_cooked_dst: {
@@ -2602,6 +2616,7 @@ export const food = {
 		perish: perish_med,
 		sanity: -sanity_tiny,
 		stack: stack_size_smallitem,
+		cook: 'cactusmeat_cooked_dst',
 		mode: 'together'
 	},
 	cactusmeat_cooked_dst: {
@@ -2624,6 +2639,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		stack: stack_size_smallitem,
+		cook: 'watermelon_cooked_dst',
 		mode: 'together'
 	},
 	watermelon_cooked_dst: {

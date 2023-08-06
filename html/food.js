@@ -3130,10 +3130,10 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	//All the small ocean fish
 	//Don't add what they rot or cook into, it seems to break the simulator.
 	//basename is just so they are grouped together. They used to be all over the place and it was annoying to navigate. 
-	//Their number is their order when organized alphabetically 
+
 	oceanfish_small_1_inv: {
 		name: 'Runty Guppy',
-		basename: 'oceanBaby5',
+		basename: 'oceanBaby1',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3141,7 +3141,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_2_inv: {
 		name: 'Needlenosed Squirt',
-		basename: 'oceanBaby4',
+		basename: 'oceanBaby2',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3149,7 +3149,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_3_inv: {
 		name: 'Bitty Baitfish',
-		basename: 'oceanBaby1',
+		basename: 'oceanBaby3',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3157,7 +3157,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_4_inv: {
 		name: 'Smolt Fry',
-		basename: 'oceanBaby7',
+		basename: 'oceanBaby4',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3165,14 +3165,14 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_5_inv: {
 		name: 'Popperfish',
-		basename: 'CornCod2',//so that it's next to corn cod and corn
+		basename: 'oceanBaby5',
 		veggie: 1,
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_small_6_inv: {
 		name: 'Fallounder',
-		basename: 'oceanBaby3',
+		basename: 'oceanBaby6',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3180,7 +3180,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_7_inv: {
 		name: 'Bloomfin Tuna',
-		basename: 'oceanBaby2',
+		basename: 'oceanBaby7',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3188,7 +3188,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_8_inv: {
 		name: 'Scorching Sunfish',
-		basename: 'oceanBaby6',
+		basename: 'oceanBaby8',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3196,7 +3196,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_9_inv: {
 		name: 'Spittlefish',
-		basename: 'oceanBaby8',
+		basename: 'oceanBaby9',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3206,6 +3206,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	//All the medium sized fish
 	oceanfish_medium_1_inv: {
 		name: 'Mudfish',
+		basename: 'oceanBig1',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3213,6 +3214,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_medium_2_inv: {
 		name: 'Deep Bass',
+		basename: 'oceanBig2',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3220,6 +3222,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_medium_3_inv: {
 		name: 'Dandy Lionfish',
+		basename: 'oceanBig3',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3227,6 +3230,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_medium_4_inv: {
 		name: 'Black Catfish',
+		basename: 'oceanBig4',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3234,19 +3238,22 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_medium_5_inv: {
 		name: 'Corn Cod',
+		basename: 'oceanBig5',
 		veggie: 1,
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_6_inv: {
 		name: 'Dappled Koi',
+		basename: 'oceanBig6',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_7_inv: {
-		name: 'Golden Koi',
+		name: 'Golden Koi5',
+		basename: 'oceanBig7',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3254,6 +3261,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},	
 	oceanfish_medium_8_inv: {
 		name: 'Ice Bream',
+		basename: 'oceanBig8',
 		meat: 1,
 		fish: 1,
 		frozen: 1,
@@ -3262,6 +3270,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},	
 	oceanfish_medium_9_inv: {
 		name: 'Sweetish Fish',
+		basename: 'oceanBig9',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3279,6 +3288,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		cook: 'barnacle_cooked',
 		perish: perish_fast,
 		stack: stack_size_meditem,
+		cook: 'barnacle_cooked',
 		mode: 'together'
 	},
 	barnacle_cooked: {
@@ -3305,6 +3315,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Puts the player to sleep',
+		cook: 'moon_mushroom_cooked',
 		mode: 'together'
 	},
 	moon_mushroom_cooked: {
@@ -3340,6 +3351,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_fast,
 		sanity: 0,
 		stack: stack_size_smallitem,
+		cook: 'fig_cooked',
 		mode: 'together'
 	},
 	fig_cooked: {
@@ -3364,7 +3376,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		cook: 'batnose_cooked',
 		//idk why the guide uses "morsel" 'cause the prefab name is "smallmeat"
 		//dry: 'smallmeat_dried',
-		dry: 'morsel_dried',
+		dry: 'morsel_dried_dst',
 		drytime: 'dry_med',
 		perish: perish_fast,
 		stack: stack_size_smallitem,

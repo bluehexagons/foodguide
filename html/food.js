@@ -2992,8 +2992,36 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		drytime: dry_fast,
-		dry: 'morsel_dried_dst',
+		mode: 'together'
+	},
+	pondeel: {
+		name: 'Live Eel',
+		ismeat: true,
+		meat: 0.5,
+		fish: 1,
+		health: healing_small,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	spoiled_fish: {
+		name: 'Spoiled Fish',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	spoiled_fish_morsel: {
+		name: 'Spoiled Fish Morsel',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
 		mode: 'together'
 	},
 	//_dst because it's ported from SW but added in this update

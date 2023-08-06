@@ -603,16 +603,6 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_meditem
 	},
-	trunk_winter: {
-		name: 'Winter Koalefant Trunk',
-		uncookable: true,
-		ismeat: true,
-		health: healing_medlarge,
-		hunger: calories_large,
-		sanity: 0,
-		perish: perish_fast,
-		stack: stack_size_meditem
-	},
 	trunk_summer_cooked: {
 		name: 'Koalefant Trunk Steak',
 		uncookable: true,
@@ -2327,18 +2317,6 @@ export const food = {
 	trunk_summer_dst: {
 		name: 'Koalefant Trunk',
 		ismeat: true,
-		meat: 1,
-		health: healing_medlarge,
-		hunger: calories_large,
-		sanity: 0,
-		perish: perish_fast,
-		stack: stack_size_meditem,
-		mode: 'together'
-	},
-	trunk_winter_dst: {
-		name: 'Winter Koalefant Trunk',
-		ismeat: true,
-		meat: 1,
 		health: healing_medlarge,
 		hunger: calories_large,
 		sanity: 0,
@@ -2349,7 +2327,6 @@ export const food = {
 	trunk_summer_cooked_dst: {
 		name: 'Koalefant Trunk Steak',
 		ismeat: true,
-		meat: 1,
 		health: healing_large,
 		hunger: calories_huge,
 		sanity: 0,
@@ -2994,20 +2971,6 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		drytime: dry_fast,
 		dry: 'morsel_dried_dst',
-		mode: 'together'
-	},
-	pondeel: {
-		name: 'Live Eel',
-		ismeat: true,
-		meat: 0.5,
-		fish: 1,
-		health: healing_small,
-		hunger: calories_tiny,
-		sanity: 0,
-		perish: perish_superfast,
-		stack: stack_size_smallitem,
-		//dry: 'morsel_dried',
-		drytime: dry_fast,
 		mode: 'together'
 	},
 	//_dst because it's ported from SW but added in this update

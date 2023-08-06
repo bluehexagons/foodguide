@@ -2331,6 +2331,7 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
+		meat: 1,
 		stack: stack_size_meditem,
 		mode: 'together'
 	},
@@ -2341,6 +2342,7 @@ export const food = {
 		hunger: calories_huge,
 		sanity: 0,
 		perish: perish_slow,
+		meat: 1,
 		stack: stack_size_meditem,
 		mode: 'together'
 	},
@@ -2351,6 +2353,7 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
+		meat: 1,
 		stack: stack_size_meditem,
 		mode: 'together'
 	},

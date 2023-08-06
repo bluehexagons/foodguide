@@ -853,6 +853,7 @@ export const food = {
 	},
 	watermelon: {
 		name: 'Watermelon',
+		isfruit: true,
 		fruit: 1,
 		ideal: true,
 		hunger: calories_small,
@@ -864,6 +865,7 @@ export const food = {
 	},
 	watermelon_cooked: {
 		name: 'Grilled Watermelon',
+		isfruit: true,
 		fruit: 1,
 		hunger: calories_small,
 		health: healing_tiny,
@@ -2637,6 +2639,7 @@ export const food = {
 	},
 	watermelon_dst: {
 		name: 'Watermelon',
+		isfruit: true,
 		fruit: 1,
 		ideal: true,
 		hunger: calories_small,
@@ -2649,6 +2652,7 @@ export const food = {
 	},
 	watermelon_cooked_dst: {
 		name: 'Grilled Watermelon',
+		isfruit: true,
 		fruit: 1,
 		hunger: calories_small,
 		health: healing_tiny,
@@ -2661,6 +2665,8 @@ export const food = {
 	wormlight_dst: {
 		name: 'Glow Berry',
 		basename:'GlowberryNormal',//so it's to the right of lesser glowberries
+		isfruit: true,
+		fruit: 1,
 		health: healing_medsmall + healing_small,
 		hunger: calories_medsmall,
 		sanity: -sanity_small,

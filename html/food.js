@@ -2656,6 +2656,7 @@ export const food = {
 	},
 	wormlight_dst: {
 		name: 'Glow Berry',
+		basename:'GlowberryNormal',//so it's to the right of lesser glowberries
 		health: healing_medsmall + healing_small,
 		hunger: calories_medsmall,
 		sanity: -sanity_small,
@@ -2715,6 +2716,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	
 	wormlight_lesser: {
 		name: 'Lesser Glow Berry',
+		basename:'GlowberryLesser', //so it's next to glowberries
 		isfruit: true,
 		fruit: 0.5,
 		health: healing_small,
@@ -3133,7 +3135,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 
 	oceanfish_small_1_inv: {
 		name: 'Runty Guppy',
-		basename: 'oceanBaby1',
+		basename: 'oceanBaby6',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3141,7 +3143,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_2_inv: {
 		name: 'Needlenosed Squirt',
-		basename: 'oceanBaby2',
+		basename: 'oceanBaby4',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3149,7 +3151,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_3_inv: {
 		name: 'Bitty Baitfish',
-		basename: 'oceanBaby3',
+		basename: 'oceanBaby1',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3157,7 +3159,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_4_inv: {
 		name: 'Smolt Fry',
-		basename: 'oceanBaby4',
+		basename: 'oceanBaby8',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3172,7 +3174,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_6_inv: {
 		name: 'Fallounder',
-		basename: 'oceanBaby6',
+		basename: 'oceanBaby3',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3180,7 +3182,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_7_inv: {
 		name: 'Bloomfin Tuna',
-		basename: 'oceanBaby7',
+		basename: 'oceanBaby2',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3188,7 +3190,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_small_8_inv: {
 		name: 'Scorching Sunfish',
-		basename: 'oceanBaby8',
+		basename: 'oceanBaby7',
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
@@ -3206,7 +3208,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	//All the medium sized fish
 	oceanfish_medium_1_inv: {
 		name: 'Mudfish',
-		basename: 'oceanBig1',
+		basename: 'oceanBig8',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3214,7 +3216,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_medium_2_inv: {
 		name: 'Deep Bass',
-		basename: 'oceanBig2',
+		basename: 'oceanBig5',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3230,7 +3232,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_medium_4_inv: {
 		name: 'Black Catfish',
-		basename: 'oceanBig4',
+		basename: 'oceanBig1',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3238,22 +3240,22 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	oceanfish_medium_5_inv: {
 		name: 'Corn Cod',
-		basename: 'oceanBig5',
+		basename: 'oceanBig2',
 		veggie: 1,
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_6_inv: {
 		name: 'Dappled Koi',
-		basename: 'oceanBig6',
+		basename: 'oceanBig4',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_7_inv: {
-		name: 'Golden Koi5',
-		basename: 'oceanBig7',
+		name: 'Golden Koi',
+		basename: 'oceanBig6',
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
@@ -3261,7 +3263,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},	
 	oceanfish_medium_8_inv: {
 		name: 'Ice Bream',
-		basename: 'oceanBig8',
+		basename: 'oceanBig7',
 		meat: 1,
 		fish: 1,
 		frozen: 1,

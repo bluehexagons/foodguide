@@ -2344,6 +2344,16 @@ export const food = {
 		stack: stack_size_meditem,
 		mode: 'together'
 	},
+	trunk_winter_dst: {
+		name: 'Winter Koalefant Trunk',
+		ismeat: true,
+		health: healing_medlarge,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
 	twigs_dst: {
 		name: 'Twigs',
 		inedible: 1,

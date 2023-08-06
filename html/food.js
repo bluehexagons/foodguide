@@ -241,6 +241,7 @@ export const food = {
 	},
 	ice: {
 		name: 'Ice',
+		isfrozen: true,
 		frozen: 1,
 		health: healing_tiny / 2,
 		hunger: calories_tiny / 4,
@@ -1961,6 +1962,7 @@ export const food = {
 	},
 	ice_dst: {
 		name: 'Ice',
+		isfrozen: true,
 		frozen: 1,
 		health: healing_tiny / 2,
 		hunger: calories_tiny / 4,
@@ -3303,6 +3305,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		name: 'Ice Bream',
 		basename: 'oceanBig7',
 		ismeat: true,
+		isfrozen: true,
 		meat: 1,
 		fish: 1,
 		frozen: 1,

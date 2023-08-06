@@ -75,7 +75,6 @@ export const food = {
 	},
 	butterflywings: {
 		name: 'Butterfly Wings',
-		isveggie: true,
 		decoration: 2,
 		health: healing_medsmall,
 		hunger: calories_tiny,
@@ -1814,6 +1813,7 @@ export const food = {
 	},
 	cactusflower_dst: {
 		name: 'Cactus Flower',
+		isveggie: true,
 		veggie: 0.5,
 		hunger: calories_small,
 		health: healing_medsmall,
@@ -2216,6 +2216,7 @@ export const food = {
 	red_mushroom_dst: {
 		name: 'Red Cap',
 		basename: 'CapRed',
+		isveggie: true,
 		veggie: 0.5,
 		ideal: true,
 		health: -healing_med,
@@ -2228,6 +2229,7 @@ export const food = {
 	},
 	red_mushroom_cooked_dst: {
 		name: 'Cooked Red Cap',
+		isveggie: true,
 		veggie: 0.5,
 		health: healing_tiny,
 		hunger: 0,
@@ -2239,6 +2241,7 @@ export const food = {
 	green_mushroom_dst: {
 		name: 'Green Cap',
 		basename: 'CapGreen',
+		isveggie: true,
 		veggie: 0.5,
 		ideal: true,
 		health: 0,
@@ -2251,6 +2254,7 @@ export const food = {
 	},
 	green_mushroom_cooked_dst: {
 		name: 'Cooked Green Cap',
+		isveggie: true,
 		veggie: 0.5,
 		health: -healing_tiny,
 		hunger: 0,
@@ -2262,6 +2266,7 @@ export const food = {
 	blue_mushroom_dst: {
 		name: 'Blue Cap',
 		basename: 'CapBlue',
+		isveggie: true,
 		veggie: 0.5,
 		ideal: true,
 		health: healing_med,
@@ -2274,6 +2279,7 @@ export const food = {
 	},
 	blue_mushroom_cooked_dst: {
 		name: 'Cooked Blue Cap',
+		isveggie: true,
 		veggie: 0.5,
 		health: -healing_small,
 		hunger: 0,
@@ -2617,6 +2623,7 @@ export const food = {
 	cactusmeat_dst: {
 		name: 'Cactus Flesh',
 		ideal: true,
+		isveggie: true,
 		veggie: 1,
 		hunger: calories_small,
 		health: -healing_small,
@@ -2628,6 +2635,7 @@ export const food = {
 	},
 	cactusmeat_cooked_dst: {
 		name: 'Cooked Cactus Flesh',
+		isveggie: true,
 		veggie: 1,
 		hunger: calories_small,
 		health: healing_tiny,
@@ -2834,7 +2842,6 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	moonbutterflywings: {
 		name: 'Moon Moth Wings',
-		isveggie: true,
 		decoration: 2,
 		health: healing_medsmall,
 		hunger: calories_tiny,
@@ -3344,6 +3351,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	moon_mushroom: {
 		name: 'Moon Shroom',
 		basename: 'CapMoon',
+		isveggie: true,
 		veggie: 0.5,
 		health: 0,
 		hunger: calories_small,
@@ -3357,6 +3365,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	moon_mushroom_cooked: {
 		name: 'Cooked Moon Shroom',
+		isveggie: true,
 		veggie: 0.5,
 		health: 0,
 		hunger: -calories_small,

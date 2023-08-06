@@ -1785,7 +1785,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (names.trunk_summer_dst || names.trunk_cooked_dst || names.trunk_winter_dst) && (names.fig || names.fig_cooked);
 		},
-		requirements: [NAME('trunk_summer'), NAME('fig')],
+		requirements: [OR(NAME('trunk_summer'), NAME('trunk_winter')), NAME('fig')],
 		priority: 40,
 		foodtype: 'meat',
 		health: healing_huge,

@@ -1903,6 +1903,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: -sanity_small,
 		stack: stack_size_smallitem,
+		cook: 'froglegs_cooked_dst',
 		mode: 'together'
 	},
 	froglegs_cooked_dst: {
@@ -1981,6 +1982,7 @@ export const food = {
 		hunger: calories_huge,
 		sanity: 0,
 		stack: stack_size_smallitem,
+		cook: 'mandrake_cooked_dst',
 		mode: 'together'
 	},
 	mandrake_cooked_dst: {
@@ -2001,7 +2003,7 @@ export const food = {
 		ideal: true,
 		meat: 0.5,
 		perish: total_day_time * 2,
-		cook: 'morsel_cooked',
+		cook: 'morsel_cooked_dst',
 		mode: 'together'
 	},
 	plantmeat_dst: {
@@ -2011,6 +2013,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
+		cook: 'plantmeat_cooked_dst',
 		mode: 'together'
 	},
 	plantmeat_cooked_dst: {
@@ -2032,8 +2035,9 @@ export const food = {
 		sanity: -sanity_med,
 		perish: perish_fast,
 		stack: stack_size_meditem,
-		dry: 'monstermeat_dried',
+		dry: 'monstermeat_dried_dst',
 		drytime: dry_fast,
+		cook: 'monstermeat_cooked_dst',
 		mode: 'together'
 	},
 	monstermeat_cooked_dst: {
@@ -2073,6 +2077,7 @@ export const food = {
 		stack: stack_size_meditem,
 		dry: 'meat_dried_dst',
 		drytime: dry_med,
+		cook: 'meat_cooked_dst',
 		mode: 'together'
 	},
 	meat_cooked_dst: {
@@ -2099,7 +2104,6 @@ export const food = {
 		stack: stack_size_meditem,
 		mode: 'together'
 	},
-
 	morsel_dst: {
 		name: 'Morsel',
 		ismeat: true,
@@ -2111,6 +2115,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		drytime: dry_fast,
 		dry: 'morsel_dried_dst',
+		cook: 'morsel_cooked_dst',
 		mode: 'together'
 	},
 	morsel_cooked_dst: {
@@ -2151,6 +2156,7 @@ export const food = {
 		stack: stack_size_meditem,
 		drytime: dry_fast,
 		dry: 'morsel_dried_dst',
+		cook: 'drumstick_cooked_dst',
 		mode: 'together'
 	},
 	drumstick_cooked_dst: {
@@ -2168,6 +2174,7 @@ export const food = {
 	batwing_dst: {
 		name: 'Batilisk Wing',
 		ismeat: true,
+		meat: 0.5,
 		health: healing_small,
 		hunger: calories_small,
 		sanity: -sanity_small,
@@ -2175,17 +2182,17 @@ export const food = {
 		stack: stack_size_smallitem,
 		drytime: dry_med,
 		dry: 'morsel_dried_dst',
-		meat: 0.5,
+		cook: 'batwing_cooked_dst',
 		mode: 'together'
 	},
 	batwing_cooked_dst: {
 		name: 'Cooked Batilisk Wing',
 		ismeat: true,
+		meat: 0.5,
 		health: healing_medsmall,
 		hunger: calories_medsmall,
 		sanity: 0,
 		perish: perish_med,
-		meat: 0.5,
 		mode: 'together'
 	},
 	minotaurhorn_dst: {
@@ -2207,6 +2214,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		cook: 'red_mushroom_cooked_dst',
 		mode: 'together'
 	},
 	red_mushroom_cooked_dst: {
@@ -2229,6 +2237,7 @@ export const food = {
 		sanity: -sanity_huge,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		cook: 'green_mushroom_cooked_dst',
 		mode: 'together'
 	},
 	green_mushroom_cooked_dst: {
@@ -2251,6 +2260,7 @@ export const food = {
 		sanity: -sanity_med,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		cook: 'blue_mushroom_cooked_dst',
 		mode: 'together'
 	},
 	blue_mushroom_cooked_dst: {
@@ -2292,6 +2302,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
+		cook: 'seeds_cooked_dst',
 		mode: 'together'
 	},
 	seeds_cooked_dst: {
@@ -2319,6 +2330,7 @@ export const food = {
 		health: healing_small,
 		hunger: calories_med,
 		sanity: 0,
+		cook: 'tallbirdegg_cooked_dst',
 		mode: 'together'
 	},
 	tallbirdegg_cooked_dst: {
@@ -3004,6 +3016,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 	pondeel: {
 		name: 'Live Eel',
+		basename: 'EelLive',
 		ismeat: true,
 		meat: 0.5,
 		fish: 1,

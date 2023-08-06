@@ -2411,6 +2411,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_med,
 		sanity: 0,
+		cook: 'carrot_cooked_dst',
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},

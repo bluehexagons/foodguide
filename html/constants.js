@@ -92,6 +92,8 @@ export const calories_per_day = 75,
 	TOGETHER = 1 << 3,
 	WARLY = 1 << 4,
 	HAMLET = 1 << 5,
+	WARLYHAM = 1 << 6,
+	WARLYDST = 1 << 7,
 
 
 	modes = {
@@ -123,15 +125,8 @@ export const calories_per_day = 75,
 			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
 			color: '#ffdf93'
 		},
-		together: {
-			name: 'Don\'t Starve Together',
-			img: 'together.png',
-			bit: TOGETHER,
-			mask: VANILLA | GIANTS | TOGETHER,
-			color: '#c0c0c0'
-		},
 		warly: {
-			name: 'Warly',
+			name: 'Warly Shipwrecked',
 			img: 'warly.png',
 			bit: WARLY,
 			mask: VANILLA | GIANTS | SHIPWRECKED | WARLY,
@@ -142,4 +137,24 @@ export const calories_per_day = 75,
 				recipe: 1.2
 			},
 		},
+		warlyham: {
+			name: 'Warly Hamlet',
+			img: 'warlyHAM.png',
+			bit: WARLYHAM,
+			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
+		},
+		together: {
+			name: 'Don\'t Starve Together',
+			img: 'together.png',
+			bit: TOGETHER,
+			mask: TOGETHER,
+			color: '#c0c0c0'
+		},
+		warlydst: {
+			name: 'Warly Don\'t Starve Together',
+			img: 'warlyDST.png',
+			bit: WARLYDST,
+			mask: TOGETHER | WARLYDST,
+		},
+		
 	};

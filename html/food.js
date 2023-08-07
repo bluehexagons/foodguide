@@ -15,6 +15,7 @@ import {
 	sanity_tiny,
 	sanity_small,
 	sanity_med,
+	sanity_medlarge,
 	sanity_huge,
 	perish_one_day,
 	perish_two_day,
@@ -39,6 +40,11 @@ import {
 } from './constants.js';
 
 export const food = {
+	
+//--------------------------------------------------------------------------------\\	
+//	               DON'T STARVE VANILLA INGREDIENTS + EDIBLES                     \\
+//--------------------------------------------------------------------------------\\
+
 	acorn: {
 		name: 'Birchnut',
 		uncookable: true,
@@ -69,7 +75,6 @@ export const food = {
 	},
 	butterflywings: {
 		name: 'Butterfly Wings',
-		isveggie: true,
 		decoration: 2,
 		health: healing_medsmall,
 		hunger: calories_tiny,
@@ -147,6 +152,8 @@ export const food = {
 	eel_cooked: {
 		name: 'Cooked Eel',
 		ismeat: true,
+		meat: 0.5,
+		fish: 1,
 		health: healing_medsmall,
 		hunger: calories_small,
 		sanity: 0,
@@ -234,6 +241,7 @@ export const food = {
 	},
 	ice: {
 		name: 'Ice',
+		isfrozen: true,
 		frozen: 1,
 		health: healing_tiny / 2,
 		hunger: calories_tiny / 4,
@@ -471,6 +479,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_med,
+		cook: 'red_mushroom_cooked',
 		stack: stack_size_smallitem
 	},
 	red_mushroom_cooked: {
@@ -491,6 +500,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: -sanity_huge,
 		perish: perish_med,
+		cook: 'green_mushroom_cooked',
 		stack: stack_size_smallitem
 	},
 	green_mushroom_cooked: {
@@ -511,6 +521,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: -sanity_med,
 		perish: perish_med,
+		cook: 'blue_mushroom_cooked',
 		stack: stack_size_smallitem
 	},
 	blue_mushroom_cooked: {
@@ -605,6 +616,16 @@ export const food = {
 		hunger: calories_huge,
 		sanity: 0,
 		perish: perish_slow,
+		stack: stack_size_meditem
+	},
+	trunk_winter: {
+		name: 'Winter Koalefant Trunk',
+		uncookable: true,
+		ismeat: true,
+		health: healing_medlarge,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
 		stack: stack_size_meditem
 	},
 	twigs: {
@@ -804,7 +825,10 @@ export const food = {
 		stack: stack_size_smallitem
 	},
 
-	// Giants ingredients
+//--------------------------------------------------------------------------------\\	
+//	               DON'T STARVE REIGN OF GIANTS INGREDIENTS                       \\
+//--------------------------------------------------------------------------------\\
+
 	cactusmeat: {
 		name: 'Cactus Flesh',
 		ideal: true,
@@ -829,6 +853,7 @@ export const food = {
 	},
 	watermelon: {
 		name: 'Watermelon',
+		isfruit: true,
 		fruit: 1,
 		ideal: true,
 		hunger: calories_small,
@@ -840,6 +865,7 @@ export const food = {
 	},
 	watermelon_cooked: {
 		name: 'Grilled Watermelon',
+		isfruit: true,
 		fruit: 1,
 		hunger: calories_small,
 		health: healing_tiny,
@@ -867,7 +893,10 @@ export const food = {
 		mode: 'giants'
 	},
 
-	//Shipwrecked ingredients
+//--------------------------------------------------------------------------------\\	
+//	                   DON'T STARVE SHIPWRECKED INGREDIENTS                       \\
+//--------------------------------------------------------------------------------\\
+
 	coral_brain: {
 		name: 'Brainy Matter',
 		uncookable: true,
@@ -1404,7 +1433,10 @@ export const food = {
 		mode: 'shipwrecked'
 	},
 
-	//Hamlet Ingredients
+//--------------------------------------------------------------------------------\\	
+//	                     DON'T STARVE HAMLET INGREDIENTS                          \\
+//--------------------------------------------------------------------------------\\
+
 	asparagus: {
 		name: 'Asparagus',
 		isveggie: true,
@@ -1552,7 +1584,10 @@ export const food = {
 		mode: 'hamlet'
 	},
 
-	//Hamlet edibles
+//--------------------------------------------------------------------------------\\	
+//	                       DON'T STARVE HAMLET EDIBLES                            \\
+//--------------------------------------------------------------------------------\\
+
 	clippings: {
 		name: 'Clippings',
 		uncookable: true,
@@ -1731,10 +1766,978 @@ export const food = {
 		mode: 'hamlet'
 	},
 
-	//DST Ingredients
+//--------------------------------------------------------------------------------\\	
+//	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
+//--------------------------------------------------------------------------------\\
+	
+//PORTED INGREDIENTS FROM DS + DLC's GET THE DST SUFFIX TO DIFFERENTIATE FROM THE DS VERSION OF THE INGREDIENT\\
+
+	acorn_dst: {
+		name: 'Birchnut',
+		perish: perish_preserved,
+		stack: stack_size_smallitem,
+		cook: 'acorn_cooked_dst',
+		mode: 'together'
+	},
+	acorn_cooked_dst: {
+		name: 'Roasted Birchnut',
+		ideal: true,
+		seed: 1,
+		hunger: calories_tiny,
+		health: healing_tiny,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	butter_dst: {
+		name: 'Butter',
+		fat: 1,
+		dairy: 1,
+		health: healing_large,
+		hunger: calories_med,
+		sanity: 0,
+		perish: perish_superslow,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	butterflywings_dst: {
+		name: 'Butterfly Wings',
+		isveggie: true,
+		decoration: 2,
+		health: healing_medsmall,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	cactusflower_dst: {
+		name: 'Cactus Flower',
+		isveggie: true,
+		veggie: 0.5,
+		hunger: calories_small,
+		health: healing_medsmall,
+		sanity: sanity_tiny,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	deerclopseyeball_dst: {
+		name: 'Deerclops Eyeball',
+		uncookable: true,
+		health: healing_huge,
+		hunger: calories_huge,
+		sanity: -sanity_med,
+		mode: 'together'
+	},
+	bird_egg_dst: {
+		name: 'Egg',
+		egg: 1,
+		health: 0,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		rot: 'rottenegg_dst',
+		cook: 'bird_egg_cooked_dst',
+		mode: 'together'
+	},
+	bird_egg_cooked_dst: {
+		name: 'Cooked Egg',
+		egg: 1,
+		precook: 1,
+		health: 0,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	rottenegg_dst: {
+		name: 'Rotten Egg',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	cutlichen_dst: {
+		name: 'Lichen',
+		isveggie: true,
+		veggie: 1,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: -sanity_tiny,
+		perish: perish_two_day,
+		mode: 'together'
+	},
+	eel_dst: {
+		name: 'Eel',
+		ismeat: true,
+		meat: 0.5,
+		fish: 1,
+		health: healing_small,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		//dry: 'morsel_dried',
+		drytime: dry_fast,
+		cook: 'eel_cooked_dst',
+		mode: 'together'
+	},
+	eel_cooked_dst: {
+		name: 'Cooked Eel',
+		ismeat: true,
+		meat: 0.5,
+		fish: 1,
+		health: healing_medsmall,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	froglegs_dst: {
+		name: 'Frog Legs',
+		ismeat: true,
+		meat: 0.5,
+		health: 0,
+		hunger: calories_small,
+		perish: perish_fast,
+		sanity: -sanity_small,
+		stack: stack_size_smallitem,
+		cook: 'froglegs_cooked_dst',
+		mode: 'together'
+	},
+	froglegs_cooked_dst: {
+		name: 'Cooked Frog Legs',
+		ismeat: true,
+		meat: 0.5,
+		precook: 1,
+		health: healing_tiny,
+		hunger: calories_small,
+		perish: perish_med,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+
+	foliage_dst: {
+		 name: 'Foliage',
+		 uncookable: true,
+		 health: healing_tiny,
+		 hunger: 0,
+		 sanity: 0,
+		 perish: perish_fast,
+		 stack: stack_size_smallitem,
+		 mode: 'together'
+	},
+	goatmilk_dst: {
+		name: 'Electric Milk',
+		dairy: 1,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: sanity_small,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	honey_dst: {
+		name: 'Honey',
+		sweetener: true,
+		health: healing_small,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_superslow,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	honeycomb_dst: {
+		name: 'Honeycomb',
+		sweetener: true,
+		mode: 'together'
+	},
+	ice_dst: {
+		name: 'Ice',
+		isfrozen: true,
+		frozen: 1,
+		health: healing_tiny / 2,
+		hunger: calories_tiny / 4,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	lightbulb_dst: {
+		name: 'Light Bulb',
+		health: healing_tiny,
+		hunger: 0,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		uncookable: true,
+		mode: 'together'
+	},
+	mandrake_dst: {
+		name: 'Mandrake',
+		veggie: 1,
+		magic: 1,
+		health: healing_huge,
+		hunger: calories_huge,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		cook: 'mandrake_cooked_dst',
+		mode: 'together'
+	},
+	mandrake_cooked_dst: {
+		name: 'Cooked Mandrake',
+		uncookable: true,
+		veggie: 1,
+		magic: 1,
+		precook: 1,
+		health: healing_superhuge,
+		hunger: calories_superhuge,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	mole_dst: {
+		name: 'Moleworm',
+		// inedible: true,
+		ideal: true,
+		meat: 0.5,
+		perish: total_day_time * 2,
+		cook: 'morsel_cooked_dst',
+		mode: 'together'
+	},
+	plantmeat_dst: {
+		name: 'Leafy Meat',
+		ismeat: true,
+		meat: 1,
+		health: 0,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		cook: 'plantmeat_cooked_dst',
+		mode: 'together'
+	},
+	plantmeat_cooked_dst: {
+		name: 'Cooked Leafy Meat',
+		ismeat: true,
+		meat: 1,
+		health: healing_tiny,
+		hunger: calories_medsmall,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	monstermeat_dst: {
+		name: 'Monster Meat',
+		ismeat: true,
+		meat: 1,
+		monster: true,
+		health: -healing_med,
+		hunger: calories_medsmall,
+		sanity: -sanity_med,
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		dry: 'monstermeat_dried_dst',
+		drytime: dry_fast,
+		cook: 'monstermeat_cooked_dst',
+		mode: 'together'
+	},
+	monstermeat_cooked_dst: {
+		name: 'Cooked Monster Meat',
+		ismeat: true,
+		meat: 1,
+		monster: true,
+		precook: 1,
+		health: -healing_small,
+		hunger: calories_medsmall,
+		sanity: -sanity_small,
+		perish: perish_slow,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	monstermeat_dried_dst: {
+		name: 'Monster Jerky',
+		ismeat: true,
+		meat: 1,
+		monster: true,
+		dried: 1,
+		health: -healing_small,
+		hunger: calories_medsmall,
+		sanity: -sanity_tiny,
+		perish: perish_preserved,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	meat_dst: {
+		name: 'Meat',
+		ismeat: true,
+		meat: 1,
+		health: healing_tiny,
+		hunger: calories_med,
+		sanity: -sanity_small,
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		dry: 'meat_dried_dst',
+		drytime: dry_med,
+		cook: 'meat_cooked_dst',
+		mode: 'together'
+	},
+	meat_cooked_dst: {
+		name: 'Cooked Meat',
+		ismeat: true,
+		meat: 1,
+		precook: 1,
+		health: healing_small,
+		hunger: calories_med,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	meat_dried_dst: {
+		name: 'Jerky',
+		ismeat: true,
+		meat: 1,
+		dried: 1,
+		health: healing_med,
+		hunger: calories_med,
+		sanity: sanity_med,
+		perish: perish_preserved,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	morsel_dst: {
+		name: 'Morsel',
+		ismeat: true,
+		meat: 0.5,
+		health: 0,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		drytime: dry_fast,
+		dry: 'morsel_dried_dst',
+		cook: 'morsel_cooked_dst',
+		mode: 'together'
+	},
+	morsel_cooked_dst: {
+		name: 'Cooked Morsel',
+		raw: 'morsel_dst',
+		ismeat: true,
+		meat: 0.5,
+		precook: 1,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	morsel_dried_dst: {
+		name: 'Small Jerky',
+		wet: 'morsel_dst',
+		ismeat: true,
+		meat: 0.5,
+		dried: 1,
+		health: healing_medsmall,
+		hunger: calories_small,
+		sanity: sanity_small,
+		perish: perish_preserved,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	drumstick_dst: {
+		name: 'Drumstick',
+		ismeat: true,
+		ideal: true,
+		meat: 0.5,
+		health: 0,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		perish: perish_fast,
+		stack: stack_size_meditem,
+		drytime: dry_fast,
+		dry: 'morsel_dried_dst',
+		cook: 'drumstick_cooked_dst',
+		mode: 'together'
+	},
+	drumstick_cooked_dst: {
+		name: 'Fried Drumstick',
+		ismeat: true,
+		meat: 0.5,
+		precook: 1,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	batwing_dst: {
+		name: 'Batilisk Wing',
+		ismeat: true,
+		meat: 0.5,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: -sanity_small,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		drytime: dry_med,
+		dry: 'morsel_dried_dst',
+		cook: 'batwing_cooked_dst',
+		mode: 'together'
+	},
+	batwing_cooked_dst: {
+		name: 'Cooked Batilisk Wing',
+		ismeat: true,
+		meat: 0.5,
+		health: healing_medsmall,
+		hunger: calories_medsmall,
+		sanity: 0,
+		perish: perish_med,
+		mode: 'together'
+	},
+	minotaurhorn_dst: {
+		name: 'Guardian\'s Horn',
+		uncookable: true,
+		ismeat: true,
+		health: healing_huge,
+		hunger: calories_huge,
+		sanity: -sanity_med,
+		mode: 'together'
+	},
+	red_mushroom_dst: {
+		name: 'Red Cap',
+		basename: 'CapRed',
+		isveggie: true,
+		veggie: 0.5,
+		ideal: true,
+		health: -healing_med,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		cook: 'red_mushroom_cooked_dst',
+		mode: 'together'
+	},
+	red_mushroom_cooked_dst: {
+		name: 'Cooked Red Cap',
+		isveggie: true,
+		veggie: 0.5,
+		health: healing_tiny,
+		hunger: 0,
+		sanity: -sanity_small,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	green_mushroom_dst: {
+		name: 'Green Cap',
+		basename: 'CapGreen',
+		isveggie: true,
+		veggie: 0.5,
+		ideal: true,
+		health: 0,
+		hunger: calories_small,
+		sanity: -sanity_huge,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		cook: 'green_mushroom_cooked_dst',
+		mode: 'together'
+	},
+	green_mushroom_cooked_dst: {
+		name: 'Cooked Green Cap',
+		isveggie: true,
+		veggie: 0.5,
+		health: -healing_tiny,
+		hunger: 0,
+		sanity: sanity_med,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	blue_mushroom_dst: {
+		name: 'Blue Cap',
+		basename: 'CapBlue',
+		isveggie: true,
+		veggie: 0.5,
+		ideal: true,
+		health: healing_med,
+		hunger: calories_small,
+		sanity: -sanity_med,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		cook: 'blue_mushroom_cooked_dst',
+		mode: 'together'
+	},
+	blue_mushroom_cooked_dst: {
+		name: 'Cooked Blue Cap',
+		isveggie: true,
+		veggie: 0.5,
+		health: -healing_small,
+		hunger: 0,
+		sanity: sanity_small,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	petals_dst: {
+		name: 'Petals',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: 0,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	petals_evil_dst: {
+		name: 'Dark Petals',
+		basename: 'Petals.',
+		uncookable: true,
+		health: 0,
+		hunger: 0,
+		sanity: -sanity_tiny,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	seeds_dst: {
+		name: 'Seeds',
+		uncookable: true,
+		health: 0,
+		hunger: calories_tiny / 2,
+		sanity: 0,
+		perish: perish_superslow,
+		stack: stack_size_smallitem,
+		cook: 'seeds_cooked_dst',
+		mode: 'together'
+	},
+	seeds_cooked_dst: {
+		name: 'Toasted Seeds',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: calories_tiny / 2,
+		sanity: 0,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	spoiled_food_dst: {
+		name: 'Rot',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	tallbirdegg_dst: {
+		name: 'Tallbird Egg',
+		egg: 4,
+		health: healing_small,
+		hunger: calories_med,
+		sanity: 0,
+		cook: 'tallbirdegg_cooked_dst',
+		mode: 'together'
+	},
+	tallbirdegg_cooked_dst: {
+		name: 'Fried Tallbird Egg',
+		egg: 4,
+		precook: 1,
+		health: 0,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
+		mode: 'together'
+	},
+	trunk_summer_dst: {
+		name: 'Koalefant Trunk',
+		ismeat: true,
+		health: healing_medlarge,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
+		meat: 1,
+		stack: stack_size_meditem,
+		cook: 'trunk_summer_cooked_dst',
+		mode: 'together'
+	},
+	trunk_summer_cooked_dst: {
+		name: 'Koalefant Trunk Steak',
+		ismeat: true,
+		health: healing_large,
+		hunger: calories_huge,
+		sanity: 0,
+		perish: perish_slow,
+		meat: 1,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	trunk_winter_dst: {
+		name: 'Winter Koalefant Trunk',
+		basename: 'KoalefantB',//so it shows up next to summer trunk on sim
+		ismeat: true,
+		health: healing_medlarge,
+		hunger: calories_large,
+		sanity: 0,
+		perish: perish_fast,
+		meat: 1,
+		stack: stack_size_meditem,
+		cook: 'trunk_summer_cooked_dst',
+		mode: 'together'
+	},
+	twigs_dst: {
+		name: 'Twigs',
+		inedible: 1,
+		mode: 'together'
+	},
+
+	cave_banana_dst: {
+		name: 'Banana',
+		ideal: true,
+		isfruit: true,
+		fruit: 1,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_med,
+		cook: 'cave_banana_cooked_dst',
+		mode: 'together'
+	},
+	cave_banana_cooked_dst: {
+		name: 'Cooked Banana',
+		isfruit: true,
+		fruit: 1,
+		precook: 1,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_fast,
+		mode: 'together'
+	},
+	carrot_dst: {
+		name: 'Carrot',
+		isveggie: true,
+		veggie: 1,
+		health: healing_tiny,
+		hunger: calories_small,
+		perish: perish_med,
+		sanity: 0,
+		cook: 'carrot_cooked_dst',
+		stack: stack_size_smallitem,
+		cook: 'carrot_cooked_dst',
+		mode: 'together'
+	},
+	carrot_cooked_dst: {
+		name: 'Roasted Carrot',
+		isveggie: true,
+		veggie: 1,
+		precook: 1,
+		health: healing_small,
+		hunger: calories_small,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	corn_dst: {
+		name: 'Corn',
+		ideal: true,
+		isveggie: true,
+		veggie: 1,
+		health: healing_small,
+		hunger: calories_med,
+		perish: perish_med,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		cook: 'corn_cooked_dst',
+		mode: 'together'
+	},
+	corn_cooked_dst: {
+		name: 'Popcorn',
+		isveggie: true,
+		veggie: 1,
+		precook: 1,
+		health: healing_small,
+		hunger: calories_small,
+		perish: perish_slow,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	pumpkin_dst: {
+		name: 'Pumpkin',
+		isveggie: true,
+		veggie: 1,
+		health: healing_small,
+		hunger: calories_large,
+		perish: perish_med,
+		sanity: 0,
+		stack: stack_size_meditem,
+		cook: 'pumpkin_cooked_dst',
+		mode: 'together'
+	},
+	pumpkin_cooked_dst: {
+		name: 'Hot Pumpkin',
+		isveggie: true,
+		veggie: 1,
+		precook: 1,
+		health: healing_medsmall,
+		hunger: calories_large,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	eggplant_dst: {
+		name: 'Eggplant',
+		isveggie: true,
+		veggie: 1,
+		health: healing_medsmall,
+		hunger: calories_med,
+		perish: perish_med,
+		sanity: 0,
+		stack: stack_size_meditem,
+		cook: 'eggplant_cooked_dst',
+		mode: 'together'
+	},
+	eggplant_cooked_dst: {
+		name: 'Braised Eggplant',
+		isveggie: true,
+		veggie: 1,
+		precook: 1,
+		health: healing_med,
+		hunger: calories_med,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	durian_dst: {
+		name: 'Durian',
+		isfruit: true,
+		monster: 1,
+		fruit: 1,
+		health: -healing_small,
+		hunger: calories_med,
+		perish: perish_med,
+		sanity: -sanity_tiny,
+		stack: stack_size_meditem,
+		cook: 'durian_cooked_dst',
+		mode: 'together'
+	},
+	durian_cooked_dst: {
+		name: 'Extra Smelly Durian',
+		isfruit: true,
+		monster: 1,
+		fruit: 1,
+		precook: 1,
+		health: 0,
+		hunger: calories_med,
+		perish: perish_fast,
+		sanity: -sanity_tiny,
+		stack: stack_size_meditem,
+		mode: 'together'
+	},
+	pomegranate_dst: {
+		name: 'Pomegranate',
+		isfruit: true,
+		fruit: 1,
+		health: healing_small,
+		hunger: calories_tiny,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		cook: 'pomegranate_cooked_dst',
+		mode: 'together'
+	},
+	pomegranate_cooked_dst: {
+		name: 'Sliced Pomegranate',
+		isfruit: true,
+		fruit: 1,
+		precook: 1,
+		health: healing_med,
+		hunger: calories_small,
+		perish: perish_superfast,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	dragonfruit_dst: {
+		name: 'Dragon Fruit',
+		isfruit: true,
+		fruit: 1,
+		health: healing_small,
+		hunger: calories_tiny,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		cook: 'dragonfruit_cooked_dst',
+		mode: 'together'
+	},
+	dragonfruit_cooked_dst: {
+		name: 'Prepared Dragon Fruit',
+		isfruit: true,
+		fruit: 1,
+		precook: 1,
+		health: healing_med,
+		hunger: calories_small,
+		perish: perish_superfast,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	
+	berries_dst: {
+		name: 'Berries',
+		isfruit: true,
+		fruit: 0.5,
+		health: 0,
+		hunger: calories_tiny,
+		perish: perish_fast,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		cook: 'berries_cooked_dst',
+		mode: 'together'
+	},
+	berries_cooked_dst: {
+		name: 'Roasted Berries',
+		isfruit: true,
+		fruit: 0.5,
+		precook: 1,
+		health: healing_tiny,
+		hunger: calories_small,
+		perish: perish_superfast,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	cactusmeat_dst: {
+		name: 'Cactus Flesh',
+		ideal: true,
+		isveggie: true,
+		veggie: 1,
+		hunger: calories_small,
+		health: -healing_small,
+		perish: perish_med,
+		sanity: -sanity_tiny,
+		stack: stack_size_smallitem,
+		cook: 'cactusmeat_cooked_dst',
+		mode: 'together'
+	},
+	cactusmeat_cooked_dst: {
+		name: 'Cooked Cactus Flesh',
+		isveggie: true,
+		veggie: 1,
+		hunger: calories_small,
+		health: healing_tiny,
+		perish: perish_med,
+		sanity: sanity_med,
+		precook: 1,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	watermelon_dst: {
+		name: 'Watermelon',
+		isfruit: true,
+		fruit: 1,
+		ideal: true,
+		hunger: calories_small,
+		health: healing_small,
+		perish: perish_fast,
+		sanity: sanity_tiny,
+		stack: stack_size_smallitem,
+		cook: 'watermelon_cooked_dst',
+		mode: 'together'
+	},
+	watermelon_cooked_dst: {
+		name: 'Grilled Watermelon',
+		isfruit: true,
+		fruit: 1,
+		hunger: calories_small,
+		health: healing_tiny,
+		perish: perish_superfast,
+		sanity: sanity_tiny * 1.5,
+		precook: 1,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	wormlight_dst: {
+		name: 'Glow Berry',
+		basename:'GlowberryNormal',//so it's to the right of lesser glowberries
+		isfruit: true,
+		fruit: 1,
+		health: healing_medsmall + healing_small,
+		hunger: calories_medsmall,
+		sanity: -sanity_small,
+		perish: perish_med,
+		note: 'Gives 90 seconds of light',
+		mode: 'together'
+	},
+	glommerfuel_dst: {
+		name: 'Glommer\'s Goop',
+		uncookable: true,
+		health: healing_large,
+		hunger: calories_tiny,
+		sanity: -sanity_huge,
+		mode: 'together'
+	},
+	//Lobsters exist in both games but were difficult to port. 
+	// For simplicity's sake, the prefab name for lobsters in DST will be referred to as wobster.
+	// Their display name will have DST added to it due to a conflict since their image name is the same as SW
+	wobster: {
+		name: 'Wobster DST',
+		//inedible: true,
+		ismeat: true,
+		meat: 1,
+		fish: 1,
+		perish: total_day_time * 4,
+		mode: 'together'
+	},
+	wobster_dead: {
+		name: 'Dead Wobster DST',
+		basename: 'Wobster.',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_largeitem,
+		cook: 'wobster_cooked',
+		mode: 'together'
+	},
+	wobster_cooked: {
+		name: 'Delicious Wobster DST',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	
+//DST EXCLUSIVE INGREDIENTS DO NOT GET THE 'dst' SUFFIX\\
+	
+/*
+I (lakhnish) tried to add the 'dst' suffix to some ingredients below (i.e. kelp) and the simulator would break for reasons I don't understand.
+For example: the Jelly Beans recipe has a specific for Royal Jelly and needed the prefabname to match royal_jelly_dst in order for the simulator to actually load. 
+However, if I do the same for kelp and rename it to kelp_dst, the simulator would stop loading entirely and idk why.
+*/
+	
 	wormlight_lesser: {
 		name: 'Lesser Glow Berry',
-		//uncookable = true, <- Not anymore
+		basename:'GlowberryLesser', //so it's next to glowberries
 		isfruit: true,
 		fruit: 0.5,
 		health: healing_small,
@@ -1747,6 +2750,7 @@ export const food = {
 	},
 	berries_juicy: {
 		name: 'Juicy Berries',
+		basename: 'BerriesJ',
 		isfruit: true,
 		fruit: 0.5,
 		health: healing_tiny,
@@ -1754,6 +2758,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_two_day,
 		stack: stack_size_smallitem,
+		cook: 'berries_juicy_cooked',
 		mode: 'together'
 	},
 	berries_juicy_cooked: {
@@ -1839,7 +2844,6 @@ export const food = {
 	},
 	moonbutterflywings: {
 		name: 'Moon Moth Wings',
-		isveggie: true,
 		decoration: 2,
 		health: healing_medsmall,
 		hunger: calories_tiny,
@@ -1868,6 +2872,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
+		cook: 'rock_avocado_fruit_ripe_cooked',
 		mode: 'together'
 	},
 	rock_avocado_fruit_ripe_cooked: {
@@ -1884,6 +2889,29 @@ export const food = {
 	},
 
 	//DST Additions From Warly's Update
+	asparagus_dst: {
+		name: 'Asparagus',
+		isveggie: true,
+		veggie: 1,
+		health: healing_small,
+		hunger: calories_small,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		cook: 'asparagus_cooked_dst',
+		mode: 'together'
+	},
+	asparagus_cooked_dst: {
+		name: 'Cooked Asparagus',
+		isveggie: true,
+		veggie: 1,
+		health: healing_small,
+		hunger: calories_med,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
 	pepper: {
 		name: 'Pepper',
 		isveggie: true,
@@ -1893,6 +2921,7 @@ export const food = {
 		sanity: -sanity_med,
 		perish: perish_slow,
 		stack: stack_size_smallitem,
+		cook: 'pepper_cooked',
 		mode: 'together'
 	},
 	pepper_cooked: {
@@ -1916,6 +2945,7 @@ export const food = {
 		sanity: -sanity_tiny,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		cook: 'potato_cooked',
 		mode: 'together'
 	},
 	potato_cooked: {
@@ -1939,6 +2969,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_slow,
 		stack: stack_size_smallitem,
+		cook: 'garlic_cooked',
 		mode: 'together'
 	},
 	garlic_cooked: {
@@ -1962,6 +2993,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
+		cook: 'tomato_cooked',
 		mode: 'together'
 	},
 	tomato_cooked: {
@@ -1985,6 +3017,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_slow,
 		stack: stack_size_smallitem,
+		cook: 'onion_cooked',
 		mode: 'together'
 	},
 	onion_cooked: {
@@ -2017,10 +3050,9 @@ export const food = {
 	},
 
 	//DST Hook, Line, and Inker
-	//This replaces the fish from ponds. Waiting on Issue #32 to be resolved
-	/*
 	pondfish: {
 		name: 'Freshwater Fish',
+		basename: 'FishMo', //so that it shows up next to fish morsel
 		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
@@ -2029,16 +3061,45 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		rot: 'spoiled_fish',
-		drytime: dry_fast,
-		dry: 'morsel_dried'
+		cook: 'fishmeat_small_dst',
+		mode: 'together'
 	},
-	*/
-
-	// Names are the same as SW RIP. Commented out b/c issue #32.
-	/*
-	fishmeat_small: {
+	pondeel: {
+		name: 'Live Eel',
+		basename: 'EelA', //so that it's to the left of cooked eel
+		ismeat: true,
+		meat: 0.5,
+		fish: 1,
+		health: healing_small,
+		hunger: calories_tiny,
+		sanity: 0,
+		perish: perish_superfast,
+		stack: stack_size_smallitem,
+		cook: 'eel_cooked_dst',
+		mode: 'together'
+	},
+	spoiled_fish: {
+		name: 'Spoiled Fish',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	spoiled_fish_morsel: {
+		name: 'Spoiled Fish Morsel',
+		uncookable: true,
+		health: spoiled_health,
+		hunger: spoiled_hunger,
+		sanity: 0,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+	//_dst because it's ported from SW but added in this update
+	fishmeat_small_dst: {
 		name: 'Fish Morsel',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		health: healing_tiny,
@@ -2046,13 +3107,15 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		cook: 'fishmeat_small_cooked',
-		dry: 'smallmeat_dried',
+		cook: 'fishmeat_small_cooked_dst',
+		dry: 'morsel_dried_dst',
 		drytime: dry_fast,
 		mode: 'together'
 	},
-	fishmeat_small_cooked: {
+	//_dst because it's ported from SW but added in this update
+	fishmeat_small_cooked_dst: {
 		name: 'Cooked Fish Morsel',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
 		health: healing_tiny,
@@ -2062,9 +3125,9 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	*/
 	fishmeat: {
 		name: 'Fish Meat',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		health: healing_tiny,
@@ -2079,6 +3142,7 @@ export const food = {
 	},
 	fishmeat_cooked: {
 		name: 'Cooked Fish Meat',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
 		health: healing_med,
@@ -2090,47 +3154,86 @@ export const food = {
 	},
 
 	//All the small ocean fish
+	//Don't add what they rot or cook into, it seems to break the simulator.
+	//basename is just so they are grouped together. They used to be all over the place and it was annoying to navigate. 
+
 	oceanfish_small_1_inv: {
 		name: 'Runty Guppy',
+		basename: 'oceanBaby6',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_small_2_inv: {
 		name: 'Needlenosed Squirt',
+		basename: 'oceanBaby4',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_small_3_inv: {
 		name: 'Bitty Baitfish',
+		basename: 'oceanBaby1',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_small_4_inv: {
 		name: 'Smolt Fry',
+		basename: 'oceanBaby8',
+		ismeat: true,
 		meat: 0.5,
 		fish: 0.5,
-		//cook: fishmeat_small_cooked, Issue #32
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_small_5_inv: {
 		name: 'Popperfish',
+		basename: 'oceanBaby5',
+		ismeat: true,
 		veggie: 1,
-		cook: 'corn_cooked',
-		rot: 'spoiled_fish',
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_6_inv: {
+		name: 'Fallounder',
+		basename: 'oceanBaby3',
+		ismeat: true,
+		meat: 0.5,
+		fish: 0.5,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_7_inv: {
+		name: 'Bloomfin Tuna',
+		basename: 'oceanBaby2',
+		ismeat: true,
+		meat: 0.5,
+		fish: 0.5,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_8_inv: {
+		name: 'Scorching Sunfish',
+		basename: 'oceanBaby7',
+		ismeat: true,
+		meat: 0.5,
+		fish: 0.5,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_small_9_inv: {
+		name: 'Spittlefish',
+		basename: 'oceanBaby9',
+		ismeat: true,
+		meat: 0.5,
+		fish: 0.5,
 		perish: perish_one_day,
 		mode: 'together'
 	},
@@ -2138,52 +3241,91 @@ export const food = {
 	//All the medium sized fish
 	oceanfish_medium_1_inv: {
 		name: 'Mudfish',
+		basename: 'oceanBig8',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
-		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_2_inv: {
 		name: 'Deep Bass',
+		basename: 'oceanBig5',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
-		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_3_inv: {
 		name: 'Dandy Lionfish',
+		basename: 'oceanBig3',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
-		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_4_inv: {
 		name: 'Black Catfish',
+		basename: 'oceanBig1',
+		ismeat: true,
 		meat: 1,
 		fish: 1,
-		cook: 'fishmeat_cooked',
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
 	oceanfish_medium_5_inv: {
 		name: 'Corn Cod',
+		basename: 'oceanBig2',
+		ismeat: true,
 		veggie: 1,
-		cook: 'corn_cooked',
-		rot: 'spoiled_fish',
 		perish: perish_one_day,
 		mode: 'together'
 	},
+	oceanfish_medium_6_inv: {
+		name: 'Dappled Koi',
+		basename: 'oceanBig4',
+		ismeat: true,
+		meat: 1,
+		fish: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},
+	oceanfish_medium_7_inv: {
+		name: 'Golden Koi',
+		basename: 'oceanBig6',
+		ismeat: true,
+		meat: 1,
+		fish: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},	
+	oceanfish_medium_8_inv: {
+		name: 'Ice Bream',
+		basename: 'oceanBig7',
+		ismeat: true,
+		isfrozen: true,
+		meat: 1,
+		fish: 1,
+		frozen: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},	
+	oceanfish_medium_9_inv: {
+		name: 'Sweetish Fish',
+		basename: 'oceanBig9',
+		ismeat: true,
+		meat: 1,
+		fish: 1,
+		perish: perish_one_day,
+		mode: 'together'
+	},	
 
 	// DST Return of Them: Troubled Waters food
 	barnacle: {
 		name: 'Barnacles',
+		ismeat: true,
 		meat: 0.25,
 		fish: 0.25,
 		health: 0,
@@ -2192,10 +3334,12 @@ export const food = {
 		cook: 'barnacle_cooked',
 		perish: perish_fast,
 		stack: stack_size_meditem,
+		cook: 'barnacle_cooked',
 		mode: 'together'
 	},
 	barnacle_cooked: {
 		name: 'Cooked Barnacles',
+		ismeat: true,
 		meat: 0.25,
 		fish: 0.25,
 		health: healing_tiny,
@@ -2210,6 +3354,7 @@ export const food = {
 	moon_mushroom: {
 		name: 'Moon Shroom',
 		basename: 'CapMoon',
+		isveggie: true,
 		veggie: 0.5,
 		health: 0,
 		hunger: calories_small,
@@ -2218,10 +3363,12 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Puts the player to sleep',
+		cook: 'moon_mushroom_cooked',
 		mode: 'together'
 	},
 	moon_mushroom_cooked: {
 		name: 'Cooked Moon Shroom',
+		isveggie: true,
 		veggie: 0.5,
 		health: 0,
 		hunger: -calories_small,
@@ -2252,7 +3399,9 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		cook: 'fig_cooked',
+		mode: 'together'
 	},
 	fig_cooked: {
 		name: 'Cooked Fig',
@@ -2263,7 +3412,8 @@ export const food = {
 		hunger: calories_medsmall,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		mode: 'together'
 	},
 	batnose: {
 		name: 'Naked Nostrils',
@@ -2275,7 +3425,7 @@ export const food = {
 		cook: 'batnose_cooked',
 		//idk why the guide uses "morsel" 'cause the prefab name is "smallmeat"
 		//dry: 'smallmeat_dried',
-		dry: 'morsel_dried',
+		dry: 'morsel_dried_dst',
 		drytime: 'dry_med',
 		perish: perish_fast,
 		stack: stack_size_smallitem,
@@ -2294,11 +3444,20 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-	//I don't know how to add this as an ingredient – afaik it's not edible on its own, it's a crafted item only needed for cooking Amberosia. decoration value according to fandom wiki, wasn't able to find it in game files
-	/*
 	refined_dust: {
 		name: "Collected Dust",
-		decoration: 2
-	}
-	*/
+		decoration: 2,
+		mode: 'together'
+	},
+	milkywhites: {
+		name: "Milky Whites",
+		dairy: 1,
+		health: healing_medsmall,
+		hunger: calories_small,
+		sanity: -sanity_medlarge,
+		perish: perish_med,
+		stack: stack_size_smallitem,
+		mode: 'together'
+	},
+
 };

@@ -540,17 +540,26 @@ strong {
   box-shadow: inset 0px 0px 5px 3px #eee;
   border-radius: 5px;
 }
+
+.github-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: block;
+}
+
 @media(max-width: 1000px) {
   #navbar .listmenu {
     margin-top: 5px;
     display: block;
   }
 }
-@media(max-width: 767px) {
+@media(max-width: 1150px) {
   .github-link {
     display: none;
   }
-
+}
+@media(max-width: 767px) {
   .ingredientdropdown {
     overflow: auto;
   }

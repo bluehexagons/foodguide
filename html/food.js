@@ -3461,3 +3461,61 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	},
 
 };
+
+for (const key in food) {
+	if (!food.hasOwnProperty(key)) {
+		continue;
+	}
+
+	const f = food[key];
+	f.match = 0;
+	f.lowerName = f.name.toLowerCase();
+	f.id = key;
+	f.nameObject = {};
+	f.nameObject[key] = 1;
+	f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
+	f.preparationType = f.preparationType || 'raw';
+	if (food[key + '_cooked']) {
+		f.cook = food[key + '_cooked'];
+	}
+	if (typeof f.cook === 'string') {
+		f.cook = food[f.cook];
+	}
+	if (f.cook && !f.cook.raw) {
+		f.cook.raw = f;
+		f.cook.cooked = true;
+		if (!f.cook.basename) {
+			f.cook.basename = (f.basename || f.name) + '.';
+		}
+	}
+	if (typeof f.raw === 'string') {
+		f.raw = food[f.raw];
+		f.cooked = true;
+		if (!f.basename) {
+			f.basename = (f.raw.basename || f.raw.name) + '.';
+		}
+	}
+	if (typeof f.dry === 'string') {
+		f.dry = food[f.dry];
+	}
+	if (f.dry && !f.dry.wet) {
+		f.dry.wet = f;
+		f.dry.rackdried = true;
+		if (!f.dry.basename) {
+			f.dry.basename = (f.basename || f.name) + '..';
+		}
+	}
+	if (typeof f.wet === 'string') {
+		f.rackdried = true;
+		f.wet = food[f.wet];
+		if (!f.basename) {
+			f.basename = (f.wet.basename || f.wet.name) + '..';
+		}
+	}
+	if (f.cook) {
+		f.cook.preparationType = 'cooked';
+	}
+	if (f.dry) {
+		f.dry.preparationType = 'dried';
+	}
+}

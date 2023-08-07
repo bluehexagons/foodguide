@@ -33,4 +33,3 @@ export const NOT = item => { return {item: item, test: NOTTest, toString: NOTStr
 export const NAME = (name, qty) => { return {name: name, qty: qty || NOQTY, test: NAMETest, toString: NAMEString}; }; //permits cooked variant
 export const SPECIFIC = (name, qty) => { return {name: name, qty: qty || NOQTY, test: SPECIFICTest, toString: SPECIFICString}; }; //disallows cooked/uncooked variant
 export const TAG = (tag, qty) => { return {tag: tag, qty: qty || NOQTY, test: TAGTest, toString: TAGString}; };
-

@@ -44,19 +44,9 @@ import {
 } from './constants.js';
 import {food} from './food.js';
 import {recipes} from './recipes.js';
+import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 (() => {
-	const stats = ['hunger', 'health', 'sanity'];
-	const isStat = {
-		hunger: true,
-		health: true,
-		sanity: true
-	};
-	const isBestStat = {
-		bestHunger: true,
-		bestHealth: true,
-		bestSanity: true
-	};
 	const modeRefreshers = [];
 
 	let statMultipliers = defaultStatMultipliers;
@@ -71,6 +61,10 @@ import {recipes} from './recipes.js';
 			}
 		}
 		modeMask = mask;
+		updateRecipeCrunchData();
+		if (document.getElementById('statistics').hasChildNodes) {
+			document.getElementById('statistics').replaceChildren(makeRecipeGrinder());
+		}
 		for (let i = 0; i < modeTab.childNodes.length; i++) {
 			const img = modeTab.childNodes[i];
 			const mode = modes[img.dataset.mode]
@@ -96,7 +90,19 @@ import {recipes} from './recipes.js';
 		}
 	};
 
-	let recipeCrunchData;
+	let recipeCrunchData = {};
+	const updateRecipeCrunchData = () => {
+		recipeCrunchData.recipes = recipes.filter(item => {
+			return !item.trash && (item.modeMask & modeMask) === 0;
+		}).sort((a, b) => {
+			return b.priority - a.priority;
+		});
+
+		recipeCrunchData.test = recipeCrunchData.recipes.map(a => { return a.test; })
+		recipeCrunchData.tests = recipeCrunchData.recipes.map(a => { return a.test.toString(); })
+		recipeCrunchData.priority = recipeCrunchData.recipes.map(a => { return a.priority; });
+	}
+	updateRecipeCrunchData();
 
 	let matchingNames = (() => {
 		const tagsearch = /^tag[: ]/;
@@ -312,140 +318,10 @@ import {recipes} from './recipes.js';
 		};
 	})();
 
-	const makeImage = (() => {
-		const canvas = document.createElement('canvas');
-		const ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d');
-		const canvas32 = document.createElement('canvas');
-		const ctx32 = canvas32.getContext && canvas32.getContext('2d');
-		const images = {};
-		const images32 = {};
-		const canvasSupported = !!ctx;
-		let requests = [];
-		const cacheImage = url => {
-			const renderToCache = (url, imageElement) => {
-				ctx.clearRect(0, 0, 64, 64);
-				ctx.drawImage(imageElement, 0, 0, 64, 64);
-				ctx32.clearRect(0, 0, 32, 32);
-				ctx32.drawImage(imageElement, 0, 0, 32, 32);
-				try {
-					images[url] = canvas.toDataURL();
-					images32[url] = canvas32.toDataURL();
-				} catch (ex) {
-					canvasSupported = false;
-				}
-				requests.filter(request => { return request.url === url; }).forEach(request => {
-					if (request.url === url) {
-						delete request.img.dataset.pending;
-						if (noDataset) {
-							request.img.removeAttribute('data-pending');
-						}
-						if (request.d === 32) {
-							request.img.src = images32[url] || url;
-						} else {
-							request.img.src = images[url] || url;
-						}
-					}
-				});
-				requests = requests.filter(request => { return request.url !== url; });
-			};
-			return e => {
-				renderToCache(url, e.target);
-			}
-		};
-		const queue = (img, url, d) => {
-			img.dataset.pending = url;
-			if (noDataset) {
-				img.setAttribute('data-pending', url);
-			}
-			requests.push({url: url, img: img, d: d});
-		};
-		const makeImage = (url, d) => {
-			const img = new Image(d)
-			if (canvasSupported) {
-				if (images[url]) {
-					//image is cached
-					if (d === 32) {
-						img.src = images32[url];
-					} else {
-						img.src = images[url];
-					}
-				} else if (images[url] === null) {
-					//image is waiting to be loaded
-					queue(img, url, d);
-				} else {
-					//image has not been cached
-					images[url] = null;
-					const dummy = new Image();
-					dummy.addEventListener('load', cacheImage(url), false);
-					dummy.src = url;
-					queue(img, url, d);
-				}
-			} else {
-				//if we can't cache the images with canvas, just do it normally
-				img.src = url;
-			}
-			return img;
-		};
-		canvas.width = 64;
-		canvas.height = 64;
-		canvas32.width = 32;
-		canvas32.height = 32;
-		makeImage.queue = queue;
-		return makeImage;
-	})();
-	const makeLinkable = (() => {
-		const linkSearch = /\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/;
-		const leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g;
-		const rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g;
-		const addLeftClass = (_a, b, c) => { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); };
-		const addRightClass = (_a, b, c) => { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); };
-		const titleCase = /_(\w)/g;
-		const toTitleCase = (_a, b) => { return ' ' + b.toUpperCase(); };
-
-		return str => {
-			const processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass);
-			const results = processed && processed.split(linkSearch);
-
-			if (!results || results.length === 1) {
-				return processed;
-			} else {
-				const fragment = document.createDocumentFragment();
-				fragment.appendChild(document.createTextNode(results[0]));
-				for (let i = 1; i < results.length; i += 4) {
-					if (results[i] === '' && results[i + 1] === '') {
-						fragment.appendChild(document.createElement('br'));
-					} else {
-						const span = document.createElement('span');
-						span.className = results[i + 2] === '' ? 'link' : 'link ' + results[i + 2]; //IE doesn't support classList, too lazy to come up with a polyfill
-						span.dataset.link = results[i];
-						if (noDataset) {
-							span.setAttribute('data-link', results[i]);
-						}
-						if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
-							span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
-							const url = results[i + 1].split(' ')[0];
-							const image = makeImage(url, 32);
-							image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
-							span.appendChild(image);
-						} else {
-							span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
-						}
-						fragment.appendChild(span);
-					}
-					fragment.appendChild(document.createTextNode(results[i + 3]));
-				}
-				return fragment;
-			}
-		};
-	})();
-
 	const mainElement = document.getElementById('main');
 	const foodElement = document.getElementById('food');
 	const recipesElement = document.getElementById('recipes');
 	const navbar = document.getElementById('navbar');
-	let noDataset = false;
-	let info;
-	const taggify = (tag, name) => { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 
 	// TODO: process the rot: entries, and add the spoiled fish
 
@@ -457,264 +333,6 @@ import {recipes} from './recipes.js';
 	document.getElementById('perishwinter').appendChild(document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'));
 	document.getElementById('perishsummer').appendChild(document.createTextNode(Math.round(perish_summer_mult * 1000) / 10 + '%'));
 	document.getElementById('perishfridge').appendChild(document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'));
-
-	let foodCount = 0
-	for (const i in food) {
-		if (!food.hasOwnProperty(i)) {
-			continue;
-		}
-
-		const f = food[i];
-		f.match = 0;
-		f.lowerName = f.name.toLowerCase();
-		f.id = i;
-		f.nameObject = {};
-		f.nameObject[i] = 1;
-		f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
-		f.preparationType = f.preparationType || 'raw';
-		if (food[i + '_cooked']) {
-			f.cook = food[i + '_cooked'];
-		}
-		if (typeof f.cook === 'string') {
-			f.cook = food[f.cook];
-		}
-		if (f.cook && !f.cook.raw) {
-			f.cook.raw = f;
-			f.cook.cooked = true;
-			if (!f.cook.basename) {
-				f.cook.basename = (f.basename || f.name) + '.';
-			}
-		}
-		if (typeof f.raw === 'string') {
-			f.raw = food[f.raw];
-			f.cooked = true;
-			if (!f.basename) {
-				f.basename = (f.raw.basename || f.raw.name) + '.';
-			}
-		}
-		if (typeof f.dry === 'string') {
-			f.dry = food[f.dry];
-		}
-		if (f.dry && !f.dry.wet) {
-			f.dry.wet = f;
-			f.dry.rackdried = true;
-			if (!f.dry.basename) {
-				f.dry.basename = (f.basename || f.name) + '..';
-			}
-		}
-		if (typeof f.wet === 'string') {
-			f.rackdried = true;
-			f.wet = food[f.wet];
-			if (!f.basename) {
-				f.basename = (f.wet.basename || f.wet.name) + '..';
-			}
-		}
-		if (f.cook) {
-			f.cook.preparationType = 'cooked';
-		}
-		if (f.dry) {
-			f.dry.preparationType = 'dried';
-		}
-
-		for (let i = 0; i < stats.length; i++) {
-			let stat = stats[i];
-			let bestStat = f[stat] || 0;
-			let bestStatType = f.preparationType;
-
-			if (f.raw) {
-				bestStat = Math.max(f.raw[stat] || 0, bestStat)
-				if (bestStat === f.raw[stat]) {
-					bestStatType = 'raw';
-				}
-			}
-			if (f.cook) {
-				bestStat = Math.max(f.cook[stat] || 0, bestStat)
-				if (bestStat === f.cook[stat]) {
-					bestStatType = 'cooked';
-				}
-			}
-			stat = stat.charAt(0).toUpperCase() + stat.slice(1);
-			f['best' + stat] = bestStat;
-			f['best' + stat + 'Type'] = bestStatType;
-			// console.log('best' + stat + 'Type');
-		}
-
-		// const bestHealth = f.health || 0;
-		// const bestHunger = f.hunger || 0;
-		// const bestSanity = f.sanity || 0;
-		// if (f.cook) {
-		// 	bestHealth = Math.max(f.cook.health || 0, bestHealth);
-		// 	bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
-		// 	bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
-		// }
-		// if (f.raw) {
-		// 	bestHealth = Math.max(f.raw.health || 0, bestHealth);
-		// 	bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
-		// 	bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
-		// }
-		// f.bestHealth = bestHealth;
-		// f.bestHunger = bestHunger;
-		// f.bestSanity = bestSanity;
-
-		f.info = [];
-		info = f.info;
-		f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
-		f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
-		f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : '\xd7' + f.meat));
-		f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : '\xd7' + f.egg));
-		f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : '\xd7' + f.fish));
-		f.magic && info.push(taggify('magic'));
-		f.decoration && info.push(taggify('decoration'));
-		f.inedible && info.push(taggify('inedible'));
-		f.monster && info.push(taggify('monster', 'monster food'));
-		f.sweetener && info.push(taggify('sweetener'));
-		f.fat && info.push(taggify('fat'));
-		f.dairy && info.push(taggify('dairy'));
-		f.jellyfish && info.push(taggify('jellyfish'));
-		f.antihistamine && info.push(taggify('antihistamine'));
-		f.filter && info.push(taggify('filter'));
-		f.bug && info.push(taggify('bug'));
-		f.bone && info.push(taggify('bone'));
-		f.comment && info.push(f.comment);
-		f.roughage && info.push(taggify('roughage'));
-		food[foodCount++] = f;
-	}
-
-	food.length = foodCount;
-
-	let recipeCount = 0
-	for (const i in recipes) {
-		if (!recipes.hasOwnProperty(i)) {
-			continue;
-		}
-		recipes[i].match = 0;
-		recipes[i].name = recipes[i].name || i;
-		recipes[i].id = i;
-		recipes[i].lowerName = recipes[i].name.toLowerCase();
-		recipes[i].weight = recipes[i].weight || 1;
-		recipes[i].priority = recipes[i].priority || 0;
-		recipes[i].img = 'img/' + recipes[i].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
-		if (recipes[i].requirements) {
-			recipes[i].requires = makeLinkable(recipes[i].requirements.join('; ') + (recipes[i].mode ? ('; [tag:' + recipes[i].mode + '|img/' + modes[recipes[i].mode].img + ']') : ''));
-		}
-		if (recipes[i].mode) {
-			recipes[i][recipes[i].mode] = true;
-		} else {
-			recipes[i].vanilla = true;
-			recipes[i].mode = 'vanilla';
-		}
-		recipes[i].modeMask = modes[recipes[i].mode].bit;
-		if (recipes[i].temperature) {
-			if (recipes[i].note) {
-				recipes[i].note += '; ';
-			} else {
-				recipes[i].note = '';
-			}
-			recipes[i].note += 'Provides ' + recipes[i].temperature + ' heat for ' + recipes[i].temperatureduration + ' seconds';
-		}
-		if (recipes[i].temperaturebump) {
-			if (recipes[i].note) {
-				recipes[i].note += '; ';
-			} else {
-				recipes[i].note = '';
-			}
-			recipes[i].note += recipes[i].temperature + ' heat when consumed';
-		}
-		recipes[i].preparationType = 'recipe';
-		recipes[recipeCount++] = recipes[i];
-	}
-
-	recipes.length = recipeCount;
-	recipes.forEach = Array.prototype.forEach;
-	recipes.filter = Array.prototype.filter;
-	recipes.sort = Array.prototype.sort;
-
-	recipes.byName = function (name) {
-		let i = this.length;
-		while (i--) {
-			if (this[i].lowerName === name) {
-				return this[i];
-			}
-		}
-	};
-	const reduceRecipeButton = (a, b) => {
-		return a + '[recipe:' + b.name + '|' + b.img + ']';
-	};
-	const pl = (str, n, plr) => {
-		return n === 1 ? str : str + (plr || 's');
-	};
-
-	for (let i = 0; i < food.length; i++) {
-		const f = food[i];
-		info = f.info;
-		f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
-		if (f.cook) {
-			if (!(f.cook instanceof Object)) {
-				f.cook = food[f.cook];
-			}
-			info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
-		}
-		if (f.dry) {
-			if (!(f.dry instanceof Object)) {
-				f.dry = food[f.dry];
-			}
-			info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
-		}
-		if (f.mode) {
-			f[f.mode] = true;
-			info.push('requires [tag:' + f.mode + '|img/' + modes[f.mode].img + ']');
-		} else {
-			f.vanilla = true;
-			f.mode = 'vanilla';
-		}
-		f.modeMask = modes[f.mode].bit;
-		f.info = info.join('; ');
-		if (!f.uncookable) {
-			f.recipes = [];
-			recipes.forEach(recipe => {
-				const r = recipe.requirements
-				let qualifies = false
-				let i = r.length;
-
-				while (i--) {
-					if (r[i].test(null, f.nameObject, f)) {
-						if (!r[i].cancel && !qualifies) {
-							qualifies = true;
-						}
-					} else {
-						if (r[i].cancel) {
-							qualifies = false;
-							break;
-						}
-					}
-				}
-				if (qualifies) {
-					f.recipes.push(recipe);
-				}
-			});
-			if (f.recipes.length > 0) {
-				f.ingredient = true;
-				f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
-			}
-		} else {
-			f.info += (f.info ? '[|]' : '') + ('cannot be added to crock pot');
-		}
-		if (f.note) {
-			f.info += ('[|]' + f.note);
-		}
-		f.info = makeLinkable(f.info);
-	}
-	food.forEach = Array.prototype.forEach;
-	food.filter = Array.prototype.filter;
-	food.sort = Array.prototype.sort;
-	food.byName = function (name) {
-		let i = this.length;
-		while (i--) {
-			if (this[i].lowerName === name) {
-				return this[i];
-			}
-		}
-	};
 
 	const combinationGenerator = (length, callback, startPos) => {
 		const size = 4
@@ -746,7 +364,6 @@ import {recipes} from './recipes.js';
 			return true;
 		};
 	};
-	recipeCrunchData = {};
 
 	/*
 		// this isn't currently used for some reason?
@@ -764,16 +381,6 @@ import {recipes} from './recipes.js';
 			return f;
 		});
 	*/
-
-	recipeCrunchData.recipes = recipes.filter(item => {
-		return !item.trash;
-	}).sort((a, b) => {
-		return b.priority - a.priority;
-	});
-
-	recipeCrunchData.test = recipeCrunchData.recipes.map(a => { return a.test; })
-	recipeCrunchData.tests = recipeCrunchData.recipes.map(a => { return a.test.toString(); })
-	recipeCrunchData.priority = recipeCrunchData.recipes.map(a => { return a.priority; });
 
 	const getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
 		const l = recipeCrunchData.test.length;
@@ -874,7 +481,7 @@ import {recipes} from './recipes.js';
 				if (storage.activeTab && tabs[storage.activeTab]) {
 					activeTab = tabs[storage.activeTab];
 					activePage = elements[storage.activeTab];
-					modeMask = storage.modeMask || modes.shipwrecked.mask;
+					modeMask = storage.modeMask || modes.together.mask;
 				}
 			}
 		} catch(err) {
@@ -934,14 +541,13 @@ import {recipes} from './recipes.js';
 			}
 			const node = document.createElement('a');
 			node.setAttribute('target', '_blank');
-			node.setAttribute('href', 'http://dontstarve.wikia.com/wiki/' + name.replace(/\s/g, '_'));
+			node.setAttribute('href', 'https://dontstarve.fandom.com/wiki/' + name.replace(/\s/g, '_'));
 			const text = document.createTextNode(name);
 			node.appendChild(text);
 			return node;
 		};
 	const makeSortableTable = (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) => {
 		let table;
-		let header;
 		let sorting;
 		let invertSort = false;
 		let firstHighlight;
@@ -1203,7 +809,6 @@ import {recipes} from './recipes.js';
 			let i = ingredients ? ingredients.length : null;
 			let selectedRecipe;
 			let selectedRecipeElement;
-			// let addedRecipes = 0;
 			let makableRecipe;
 			let makableSummary;
 			let makableFootnote;
@@ -1219,7 +824,6 @@ import {recipes} from './recipes.js';
 			};
 			const checkIngredient = function (item) {
 				return this.indexOf(food[item]) !== -1;
-				//return usesIngredients.indexOf(item.id) !== -1;
 			};
 			const toggleFilter = e => {
 				if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
@@ -1290,8 +894,8 @@ import {recipes} from './recipes.js';
 
 			//TODO: optimize so much around this
 			if (i === null) {
-				i = food.length;
-				ingredients = food;
+				ingredients = food.filter(f => (f.modeMask & modeMask) !== 0);
+				i = ingredients.length;
 			}
 			while (i--) {
 				if (!ingredients[i].skip) {
@@ -1411,8 +1015,8 @@ import {recipes} from './recipes.js';
 					data.perish = data.recipe.perish;
 				}
 				made.push(data);
-			}, () => { // chunk update
-
+			}, () => {
+				// chunk update
 				/*
 				// this code provided updates to the table while the data was being crunched
 				// there wasn't much point since it wasn't really usable until it was done calculating things anyway
@@ -1433,8 +1037,8 @@ import {recipes} from './recipes.js';
 					makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes..';
 					makableTable.update();
 				}*/
-				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
 				//makableTable.update();
+				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
 			}, () => { //computation finished
 				makableTable.setMaxRows(30);
 				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude recipes or ingredients.';

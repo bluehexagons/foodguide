@@ -34,7 +34,8 @@ import {
 	food_temp_brief,
 	food_temp_average,
 	food_temp_long,
-	buff_food_temp_duration
+	total_day_time,
+	modes
 } from './constants.js';
 import {
 	COMPARE,
@@ -45,6 +46,8 @@ import {
 	SPECIFIC,
 	TAG
 } from './functions.js';
+import {makeLinkable, pl, stats} from './utils.js';
+import {food} from './food.js'
 
 export const recipes = {
 	
@@ -2241,8 +2244,215 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'warlydst'
 	},
-	
+};
+
+let recipeCount = 0
+for (const key in recipes) {
+	if (!recipes.hasOwnProperty(key)) {
+		continue;
+	}
+	recipes[key].match = 0;
+	recipes[key].name = recipes[key].name || key;
+	recipes[key].id = key;
+	recipes[key].lowerName = recipes[key].name.toLowerCase();
+	recipes[key].weight = recipes[key].weight || 1;
+	recipes[key].priority = recipes[key].priority || 0;
+	recipes[key].img = 'img/' + recipes[key].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
+	if (recipes[key].mode) {
+		recipes[key][recipes[key].mode] = true;
+	} else {
+		recipes[key].vanilla = true;
+		recipes[key].mode = 'vanilla';
+	}
+	recipes[key].modeMask = modes[recipes[key].mode].bit;
+	if (recipes[key].requirements) {
+		recipes[key].requires = makeLinkable(recipes[key].requirements.join('; ') + (recipes[key].mode ? ('; [tag:' + recipes[key].mode + '|img/' + modes[recipes[key].mode].img + ']') : ''));
+	}
+	if (recipes[key].temperature) {
+		if (recipes[key].note) {
+			recipes[key].note += '; ';
+		} else {
+			recipes[key].note = '';
+		}
+		recipes[key].note += 'Provides ' + recipes[key].temperature + ' heat for ' + recipes[key].temperatureduration + ' seconds';
+	}
+	if (recipes[key].temperaturebump) {
+		if (recipes[key].note) {
+			recipes[key].note += '; ';
+		} else {
+			recipes[key].note = '';
+		}
+		recipes[key].note += recipes[key].temperature + ' heat when consumed';
+	}
+	recipes[key].preparationType = 'recipe';
+	recipes[recipeCount++] = recipes[key];
+}
+
+recipes.length = recipeCount;
+recipes.forEach = Array.prototype.forEach;
+recipes.filter = Array.prototype.filter;
+recipes.sort = Array.prototype.sort;
 
 
-	
+recipes.byName = function (name) {
+	let i = this.length;
+	while (i--) {
+		if (this[i].lowerName === name) {
+			return this[i];
+		}
+	}
+};
+
+/// Food-related code that needs to run after the recipes object is fully set up
+
+const reduceRecipeButton = (a, b) => {
+	return a + '[recipe:' + b.name + '|' + b.img + ']';
+};
+
+const taggify = (tag, name) => { return '[tag:' + tag + '|' + (name || tag) + ']'; };
+let info;
+let foodCount = 0
+for (const key in food) {
+	if (!food.hasOwnProperty(key)) {
+		continue;
+	}
+
+	const f = food[key];
+
+	for (let i = 0; i < stats.length; i++) {
+		let stat = stats[i];
+		let bestStat = f[stat] || 0;
+		let bestStatType = f.preparationType;
+
+		if (f.raw) {
+			bestStat = Math.max(f.raw[stat] || 0, bestStat)
+			if (bestStat === f.raw[stat]) {
+				bestStatType = 'raw';
+			}
+		}
+		if (f.cook) {
+			bestStat = Math.max(f.cook[stat] || 0, bestStat)
+			if (bestStat === f.cook[stat]) {
+				bestStatType = 'cooked';
+			}
+		}
+		stat = stat.charAt(0).toUpperCase() + stat.slice(1);
+		f['best' + stat] = bestStat;
+		f['best' + stat + 'Type'] = bestStatType;
+		// console.log('best' + stat + 'Type');
+	}
+
+	// const bestHealth = f.health || 0;
+	// const bestHunger = f.hunger || 0;
+	// const bestSanity = f.sanity || 0;
+	// if (f.cook) {
+	// 	bestHealth = Math.max(f.cook.health || 0, bestHealth);
+	// 	bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
+	// 	bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
+	// }
+	// if (f.raw) {
+	// 	bestHealth = Math.max(f.raw.health || 0, bestHealth);
+	// 	bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
+	// 	bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
+	// }
+	// f.bestHealth = bestHealth;
+	// f.bestHunger = bestHunger;
+	// f.bestSanity = bestSanity;
+
+	f.info = [];
+	info = f.info;
+	f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
+	f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
+	f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : '\xd7' + f.meat));
+	f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : '\xd7' + f.egg));
+	f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : '\xd7' + f.fish));
+	f.magic && info.push(taggify('magic'));
+	f.decoration && info.push(taggify('decoration'));
+	f.inedible && info.push(taggify('inedible'));
+	f.monster && info.push(taggify('monster', 'monster food'));
+	f.sweetener && info.push(taggify('sweetener'));
+	f.fat && info.push(taggify('fat'));
+	f.dairy && info.push(taggify('dairy'));
+	f.jellyfish && info.push(taggify('jellyfish'));
+	f.antihistamine && info.push(taggify('antihistamine'));
+	f.filter && info.push(taggify('filter'));
+	f.bug && info.push(taggify('bug'));
+	f.bone && info.push(taggify('bone'));
+	f.comment && info.push(f.comment);
+	f.roughage && info.push(taggify('roughage'));
+	food[foodCount++] = f;
+}
+
+food.length = foodCount;
+
+for (let i = 0; i < food.length; i++) {
+	const f = food[i];
+	info = f.info;
+	f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
+	if (f.cook) {
+		if (!(f.cook instanceof Object)) {
+			f.cook = food[f.cook];
+		}
+		info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
+	}
+	if (f.dry) {
+		if (!(f.dry instanceof Object)) {
+			f.dry = food[f.dry];
+		}
+		info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
+	}
+	if (f.mode) {
+		f[f.mode] = true;
+		info.push('requires [tag:' + f.mode + '|img/' + modes[f.mode].img + ']');
+	} else {
+		f.vanilla = true;
+		f.mode = 'vanilla';
+	}
+	f.modeMask = modes[f.mode].bit;
+	f.info = info.join('; ');
+	if (!f.uncookable) {
+		f.recipes = [];
+		recipes.forEach(recipe => {
+			const r = recipe.requirements
+			let qualifies = false
+			let i = r.length;
+
+			while (i--) {
+				if (r[i].test(null, f.nameObject, f)) {
+					if (!r[i].cancel && !qualifies) {
+						qualifies = true;
+					}
+				} else {
+					if (r[i].cancel) {
+						qualifies = false;
+						break;
+					}
+				}
+			}
+			if (qualifies) {
+				f.recipes.push(recipe);
+			}
+		});
+		if (f.recipes.length > 0) {
+			f.ingredient = true;
+			f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
+		}
+	} else {
+		f.info += (f.info ? '[|]' : '') + ('cannot be added to crock pot');
+	}
+	if (f.note) {
+		f.info += ('[|]' + f.note);
+	}
+	f.info = makeLinkable(f.info);
+}
+food.forEach = Array.prototype.forEach;
+food.filter = Array.prototype.filter;
+food.sort = Array.prototype.sort;
+food.byName = function (name) {
+	let i = this.length;
+	while (i--) {
+		if (this[i].lowerName === name) {
+			return this[i];
+		}
+	}
 };

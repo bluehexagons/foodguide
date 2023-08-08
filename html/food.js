@@ -47,7 +47,7 @@ export const food = {
 
 	acorn: {
 		name: 'Birchnut',
-		uncookable: true,
+		seed: 1,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
 		mode: 'giants'

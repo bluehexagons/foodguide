@@ -1400,7 +1400,9 @@ export const food = {
 	},
 	rainbowjellyfish: {
 		name: 'Rainbow Jellyfish',
-		uncookable: true,
+		fish: 1,
+		jellyfish: 1,
+		monster: 1,
 		perish: perish_one_day * 1.5,
 		note: 'Makes the player glow in the dark for 2 minutes',
 		mode: 'shipwrecked'
@@ -1408,7 +1410,9 @@ export const food = {
 	rainbowjellyfish_dead: {
 		name: 'Dead Rainbow Jellyfish',
 		basename: 'Rainbow Jellyfish.',
-		uncookable: true,
+		fish: 1,
+		jellyfish: 1,
+		monster: 1,
 		health: healing_med / 2,
 		hunger: 10,
 		sanity: 0,
@@ -1422,7 +1426,9 @@ export const food = {
 	},
 	rainbowjellyfish_cooked: {
 		name: 'Cooked Rainbow Jellyfish',
-		uncookable: true,
+		fish: 1,
+		jellyfish: 1,
+		monster: 1,
 		health: healing_med / 2,
 		hunger: calories_medsmall,
 		sanity: 0,

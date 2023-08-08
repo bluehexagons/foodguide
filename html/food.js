@@ -47,7 +47,7 @@ export const food = {
 
 	acorn: {
 		name: 'Birchnut',
-		seed: 1,
+		uncookable: true,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
 		mode: 'giants'
@@ -290,8 +290,7 @@ export const food = {
 	},
 	plantmeat: {
 		name: 'Leafy Meat',
-		ismeat: true,
-		meat: 1,
+		uncookable: true,
 		health: 0,
 		hunger: calories_small,
 		sanity: -sanity_small,
@@ -300,8 +299,7 @@ export const food = {
 	},
 	plantmeat_cooked: {
 		name: 'Cooked Leafy Meat',
-		ismeat: true,
-		meat: 1,
+		uncookable: true,
 		health: healing_tiny,
 		hunger: calories_medsmall,
 		sanity: 0,
@@ -442,23 +440,27 @@ export const food = {
 	batwing: {
 		name: 'Batilisk Wing',
 		ismeat: true,
-		meat: 0.5
 		health: healing_small,
 		hunger: calories_small,
 		sanity: -sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		drytime: dry_med,
-		dry: 'morsel_dried'
+		dry: 'morsel_dried',
+		//mode: 'together',
+		//meat: 0.5,
+		uncookable: true
 	},
 	batwing_cooked: {
 		name: 'Cooked Batilisk Wing',
 		ismeat: true,
-		meat: 0.5,
 		health: healing_medsmall,
 		hunger: calories_medsmall,
 		sanity: 0,
-		perish: perish_med
+		perish: perish_med,
+		//mode: 'together',
+		//meat: 0.5,
+		uncookable: true
 	},
 	minotaurhorn: {
 		name: 'Guardian\'s Horn',
@@ -1400,9 +1402,7 @@ export const food = {
 	},
 	rainbowjellyfish: {
 		name: 'Rainbow Jellyfish',
-		fish:1,
-		jellyfish: 1,
-		monster: 1,
+		uncookable: true,
 		perish: perish_one_day * 1.5,
 		note: 'Makes the player glow in the dark for 2 minutes',
 		mode: 'shipwrecked'
@@ -1410,9 +1410,7 @@ export const food = {
 	rainbowjellyfish_dead: {
 		name: 'Dead Rainbow Jellyfish',
 		basename: 'Rainbow Jellyfish.',
-		fish:1,
-		jellyfish: 1,
-		monster: 1,
+		uncookable: true,
 		health: healing_med / 2,
 		hunger: 10,
 		sanity: 0,
@@ -1426,9 +1424,7 @@ export const food = {
 	},
 	rainbowjellyfish_cooked: {
 		name: 'Cooked Rainbow Jellyfish',
-		fish:1,
-		jellyfish: 1,
-		monster: 1,
+		uncookable: true,
 		health: healing_med / 2,
 		hunger: calories_medsmall,
 		sanity: 0,

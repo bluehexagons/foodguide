@@ -442,27 +442,23 @@ export const food = {
 	batwing: {
 		name: 'Batilisk Wing',
 		ismeat: true,
+		meat: 0.5,
 		health: healing_small,
 		hunger: calories_small,
 		sanity: -sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		drytime: dry_med,
-		dry: 'morsel_dried',
-		//mode: 'together',
-		//meat: 0.5,
-		uncookable: true
+		dry: 'morsel_dried'
 	},
 	batwing_cooked: {
 		name: 'Cooked Batilisk Wing',
 		ismeat: true,
+		meat: 0.5,
 		health: healing_medsmall,
 		hunger: calories_medsmall,
 		sanity: 0,
-		perish: perish_med,
-		//mode: 'together',
-		//meat: 0.5,
-		uncookable: true
+		perish: perish_med
 	},
 	minotaurhorn: {
 		name: 'Guardian\'s Horn',

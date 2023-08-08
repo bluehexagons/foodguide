@@ -290,7 +290,8 @@ export const food = {
 	},
 	plantmeat: {
 		name: 'Leafy Meat',
-		uncookable: true,
+		ismeat: true,
+		meat: 1,
 		health: 0,
 		hunger: calories_small,
 		sanity: -sanity_small,
@@ -299,7 +300,8 @@ export const food = {
 	},
 	plantmeat_cooked: {
 		name: 'Cooked Leafy Meat',
-		uncookable: true,
+		ismeat: true,
+		meat: 1,
 		health: healing_tiny,
 		hunger: calories_medsmall,
 		sanity: 0,

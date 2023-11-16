@@ -3,7 +3,7 @@
 Provides some tools for avoiding starvation
 in a game about doing just that.
 
-[Live version](https://bluehexagons.com/foodguide) or
+[Live version](https://foodguide.bluehexagons.com) [(backup)](https://bluehexagons.com/foodguide) or
 [github.io](https://bluehexagons.github.io/foodguide/html/index.htm)
 
 Contributors:

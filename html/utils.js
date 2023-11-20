@@ -1,11 +1,10 @@
 export const makeImage = (() => {
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext && canvas.toDataURL && canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     const canvas32 = document.createElement('canvas');
     const ctx32 = canvas32.getContext && canvas32.getContext('2d');
     const images = {};
     const images32 = {};
-    const canvasSupported = !!ctx;
     let requests = [];
     const cacheImage = url => {
         const renderToCache = (url, imageElement) => {
@@ -13,12 +12,8 @@ export const makeImage = (() => {
             ctx.drawImage(imageElement, 0, 0, 64, 64);
             ctx32.clearRect(0, 0, 32, 32);
             ctx32.drawImage(imageElement, 0, 0, 32, 32);
-            try {
-                images[url] = canvas.toDataURL();
-                images32[url] = canvas32.toDataURL();
-            } catch (ex) {
-                canvasSupported = false;
-            }
+            images[url] = canvas.toDataURL();
+            images32[url] = canvas32.toDataURL();
             requests.filter(request => { return request.url === url; }).forEach(request => {
                 if (request.url === url) {
                     delete request.img.dataset.pending;
@@ -43,28 +38,23 @@ export const makeImage = (() => {
     };
     const makeImage = (url, d) => {
         const img = new Image(d)
-        if (canvasSupported) {
-            if (images[url]) {
-                //image is cached
-                if (d === 32) {
-                    img.src = images32[url];
-                } else {
-                    img.src = images[url];
-                }
-            } else if (images[url] === null) {
-                //image is waiting to be loaded
-                queue(img, url, d);
+        if (images[url]) {
+            //image is cached
+            if (d === 32) {
+                img.src = images32[url];
             } else {
-                //image has not been cached
-                images[url] = null;
-                const dummy = new Image();
-                dummy.addEventListener('load', cacheImage(url), false);
-                dummy.src = url;
-                queue(img, url, d);
+                img.src = images[url];
             }
+        } else if (images[url] === null) {
+            //image is waiting to be loaded
+            queue(img, url, d);
         } else {
-            //if we can't cache the images with canvas, just do it normally
-            img.src = url;
+            //image has not been cached
+            images[url] = null;
+            const dummy = new Image();
+            dummy.addEventListener('load', cacheImage(url), false);
+            dummy.src = url;
+            queue(img, url, d);
         }
         return img;
     };

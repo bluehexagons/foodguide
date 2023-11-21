@@ -533,8 +533,8 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		activePage = elements['simulator'];
 
 		try {
-			if (window.localStorage && localStorage.foodGuideState) {
-				const storage = JSON.parse(localStorage.foodGuideState);
+			if (window.localStorage.foodGuideState) {
+				const storage = JSON.parse(window.localStorage.foodGuideState);
 
 				if (storage.activeTab && tabs[storage.activeTab]) {
 					activeTab = tabs[storage.activeTab];
@@ -543,7 +543,10 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 				}
 			}
 		} catch(err) {
-			console && console.warn('Unable to access localStorage', err);
+			console.warn('Unable to access localStorage', err);
+			try {
+				window.localStorage.removeItem('foodGuideState')
+			} catch {}
 		}
 
 		activeTab.className = 'selected';
@@ -553,18 +556,16 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			let obj;
 
 			try {
-				if (window.localStorage) {
-					if (!localStorage.foodGuideState) {
-						localStorage.foodGuideState = '{}';
-					}
-
-					obj = JSON.parse(localStorage.foodGuideState);
-					obj.activeTab = activeTab.dataset.tab;
-					obj.modeMask = modeMask;
-					localStorage.foodGuideState = JSON.stringify(obj);
+				if (!window.localStorage.foodGuideState) {
+					window.localStorage.foodGuideState = '{}';
 				}
+
+				obj = JSON.parse(window.localStorage.foodGuideState);
+				obj.activeTab = activeTab.dataset.tab;
+				obj.modeMask = modeMask;
+				window.localStorage.foodGuideState = JSON.stringify(obj);
 			} catch(err) {
-				console && console.warn('Unable to access localStorage', err);
+				console.warn('Unable to access localStorage', err);
 			}
 		});
 	})();
@@ -1291,7 +1292,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 				const item = food[id] || recipes[id] || null;
 
 				if (!id) {
-					console && console.warn('ID not set');
+					console.warn('ID not set');
 					return -1;
 				}
 
@@ -1299,7 +1300,9 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 					for (let i = 0; i < slots.length; i++) {
 						if (getSlot(slots[i]) === null) {
 							setSlot(slots[i], item);
-							loaded && updateRecipes();
+							if (loaded) {
+								updateRecipes();
+							}
 
 							return i;
 						}
@@ -1314,7 +1317,9 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 						setSlot(i, item);
 						i.addEventListener('click', removeSlot, false);
 						parent.appendChild(i);
-						loaded && updateRecipes();
+						if (loaded) {
+							updateRecipes();
+						}
 					}
 
 					return 1;
@@ -1531,8 +1536,8 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			}
 
 			try {
-				if (window.localStorage && localStorage.foodGuideState) {
-					state = JSON.parse(localStorage.foodGuideState).pickers;
+				if (window.localStorage.foodGuideState) {
+					state = JSON.parse(window.localStorage.foodGuideState).pickers;
 
 					if (state && state[index]) {
 						state[index].forEach(id => {
@@ -1543,7 +1548,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 					}
 				}
 			} catch (err) {
-				console && console.warn('Unable to access localStorage', err);
+				console.warn('Unable to access localStorage', err);
 			}
 
 			loaded = true;
@@ -1900,13 +1905,10 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			updateRecipes();
 
 			window.addEventListener('beforeunload', () => {
-				if (!window.localStorage) {
-					return
+				if (!window.localStorage.foodGuideState) {
+					window.localStorage.foodGuideState = '{}';
 				}
-				if (!localStorage.foodGuideState) {
-					localStorage.foodGuideState = '{}';
-				}
-				const obj = JSON.parse(localStorage.foodGuideState);
+				const obj = JSON.parse(window.localStorage.foodGuideState);
 				if (!obj.pickers) {
 					obj.pickers = [];
 				}
@@ -1919,7 +1921,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 				} else {
 					obj.pickers[index] = slots;
 				}
-				localStorage.foodGuideState = JSON.stringify(obj);
+				window.localStorage.foodGuideState = JSON.stringify(obj);
 			});
 
 			modeRefreshers.push(refreshPicker);

@@ -129,10 +129,17 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		let anywhere;
 		let wordstarts;
 
-		const filter = element => {
+		const allowedFilter = element => {
 			if ((!allowUncookable && element.uncookable) || (element.modeMask & modeMask) === 0) {
 				element.match = 0;
-			} else if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
+				return false
+			}
+
+			return true
+		}
+
+		const filter = element => {
+			if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
 				element.match = 3;
 			} else if (wordstarts.test(element.lowerName) === 0) {
 				element.match = 2;
@@ -141,6 +148,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			} else {
 				element.match = 0;
 			}
+
 			return element.match;
 		};
 
@@ -213,15 +221,20 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			allowUncookable = !!includeUncookable;
 			name = search.toLowerCase();
 
+			arr = arr.filter(allowedFilter);
+
 			if (tagsearch.test(name)) {
+				// tag:
 				tag = name.split(tagsplit)[1];
 
 				return arr.filter(tagFilter).sort(byMatch);
 			} else if (tagnotsearch.test(name)) {
+				// tagnot:
 				tag = name.split(tagnotsplit)[1];
 
 				return arr.filter(element => { return !tagFilter(element); }).sort(byMatch);
 			} else if (recipesearch.test(name)) {
+				// recipe:
 				recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
 
 				if (recipe) {
@@ -232,6 +245,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 					return [];
 				}
 			} else if (ingredientsearch.test(name)) {
+				// ingredient:
 				ingredient = food.byName(name.split(ingredientsplit)[1].toLowerCase());
 
 				if (ingredient) {
@@ -240,14 +254,19 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 					return [];
 				}
 			} else if (name.indexOf('*') === 0) {
+				// *
+				// Exact matches
 				name = name.substring(1);
 
 				return arr.filter(exact).sort(byMatch);
 			} else if (name.indexOf('~') === 0) {
+				// ~
+				// Similar matches
 				name = name.substring(1);
 
 				return arr.filter(like).sort(byMatch);
 			} else {
+				// Otherwise, do a string comparison
 				wordstarts = new RegExp('\\b' + name + '.*');
 				anywhere = new RegExp('\\b' + name.split('').join('.*') + '.*');
 

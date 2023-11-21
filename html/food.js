@@ -3463,7 +3463,6 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		mode: 'together'
 	},
-
 };
 
 for (const key in food) {
@@ -3472,6 +3471,7 @@ for (const key in food) {
 	}
 
 	const f = food[key];
+
 	f.match = 0;
 	f.lowerName = f.name.toLowerCase();
 	f.id = key;
@@ -3479,12 +3479,15 @@ for (const key in food) {
 	f.nameObject[key] = 1;
 	f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
 	f.preparationType = f.preparationType || 'raw';
+
 	if (food[key + '_cooked']) {
 		f.cook = food[key + '_cooked'];
 	}
+
 	if (typeof f.cook === 'string') {
 		f.cook = food[f.cook];
 	}
+
 	if (f.cook && !f.cook.raw) {
 		f.cook.raw = f;
 		f.cook.cooked = true;
@@ -3492,6 +3495,7 @@ for (const key in food) {
 			f.cook.basename = (f.basename || f.name) + '.';
 		}
 	}
+
 	if (typeof f.raw === 'string') {
 		f.raw = food[f.raw];
 		f.cooked = true;
@@ -3499,9 +3503,11 @@ for (const key in food) {
 			f.basename = (f.raw.basename || f.raw.name) + '.';
 		}
 	}
+
 	if (typeof f.dry === 'string') {
 		f.dry = food[f.dry];
 	}
+
 	if (f.dry && !f.dry.wet) {
 		f.dry.wet = f;
 		f.dry.rackdried = true;
@@ -3509,6 +3515,7 @@ for (const key in food) {
 			f.dry.basename = (f.basename || f.name) + '..';
 		}
 	}
+
 	if (typeof f.wet === 'string') {
 		f.rackdried = true;
 		f.wet = food[f.wet];
@@ -3516,9 +3523,11 @@ for (const key in food) {
 			f.basename = (f.wet.basename || f.wet.name) + '..';
 		}
 	}
+
 	if (f.cook) {
 		f.cook.preparationType = 'cooked';
 	}
+
 	if (f.dry) {
 		f.dry.preparationType = 'dried';
 	}

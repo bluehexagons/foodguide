@@ -104,6 +104,7 @@ export const calories_per_day = 75,
 			mask: VANILLA,
 			color: '#ff592e'
 		},
+
 		giants: {
 			name: 'Reign of Giants',
 			img: 'reign_of_giants.png',
@@ -111,6 +112,7 @@ export const calories_per_day = 75,
 			mask: VANILLA | GIANTS,
 			color: '#b857c6'
 		},
+
 		shipwrecked: {
 			name: 'Shipwrecked',
 			img: 'shipwrecked.png',
@@ -118,6 +120,7 @@ export const calories_per_day = 75,
 			mask: VANILLA | GIANTS | SHIPWRECKED,
 			color: '#50c1cc'
 		},
+
 		hamlet: {
 			name: 'Hamlet',
 			img: 'hamlet.png',
@@ -125,6 +128,7 @@ export const calories_per_day = 75,
 			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
 			color: '#ffdf93'
 		},
+
 		warly: {
 			name: 'Warly Shipwrecked',
 			img: 'warly.png',
@@ -137,12 +141,14 @@ export const calories_per_day = 75,
 				recipe: 1.2
 			},
 		},
+
 		warlyham: {
 			name: 'Warly Hamlet',
 			img: 'warlyHAM.png',
 			bit: WARLYHAM,
 			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
 		},
+
 		together: {
 			name: 'Don\'t Starve Together',
 			img: 'together.png',
@@ -150,11 +156,11 @@ export const calories_per_day = 75,
 			mask: TOGETHER,
 			color: '#c0c0c0'
 		},
+
 		warlydst: {
 			name: 'Warly Don\'t Starve Together',
 			img: 'warlyDST.png',
 			bit: WARLYDST,
 			mask: TOGETHER | WARLYDST,
 		},
-		
 	};

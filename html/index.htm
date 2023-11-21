@@ -22,11 +22,13 @@
 				<li><a href="http://www.dontstarvegame.com/" target="_blank">Don't Starve</a></li>
 			</span>
 		</ul>
+
 		<div id="simulator">
 			<div style="margin-bottom: 6pt">Add ingredients to see what they make.</div>
 			<input type="text" class="ingredientpicker" data-type="food" data-cookable="true" style="width: 25%" placeholder="Filter ingredients" /><div id="ingredients" class="ingredientlist"><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
 			<div id="results"></div>
 		</div>
+
 		<div id="discovery">
 			<div style="margin-bottom: 6pt">Add items in your inventory to see your options.</div>
 			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Filter ingredients" /><div id="inventory" class="ingredientlist"></div>
@@ -37,16 +39,21 @@
 			Find what recipes are most efficient:
 			<div id="makable"></div>
 		</div>
+
 		<div id="foodlist">
 			<div id="food"></div>
 		</div>
+
 		<div id="crockpot">
 			<div id="recipes"></div>
 		</div>
+
 		<div id="statistics">
 		</div>
+
 		<div id="help">
 			<h2>About This Food Guide</h2>
+
 			<p>
 				This is an unofficial tool to help avoid starvation in <a href="http://www.dontstarvegame.com/">Don't Starve</a>,
 				an uncompromising wilderness survival game full of science and magic,
@@ -55,7 +62,9 @@
 			</p>
 			<p>This tool requires a modern web browser and is officially supported in recent versions of: Chrome/Chromium, Firefox, Safari, and Edge; on desktop or mobile</p>
 			<p>Maintained as a community effort. Last content addition: <strong>August 6, 2023</strong></p>
+
 			<h2>About Don't Starve Food</h2>
+
 			<p>
 				<strong>Perish time</strong> is the time before a food item becomes <strong>Rot</strong>. <strong>Halfway</strong> through this period, it will go <strong>stale</strong>, and give <strong><span id="stalehealth"></span> health</strong> and <strong><span id="stalehunger"></span> hunger</strong>, as well as <strong>no sanity</strong>.
 				Food <strong>spoils</strong> at <strong>three quarters</strong>, giving only <strong><span id="spoiledhunger"></span> hunger</strong> and <strong>no longer giving any health</strong>.
@@ -69,13 +78,17 @@
 			<p>
 				Which foods and recipes exist in each version of the game gets a little complicated. For this reason, there are buttons in the upper-left that let you switch modes for a game. Click on a badge to switch to the mode for that game; you can also right-click on badges to toggle their individual recipes and ingredients on and off.
 			</p>
+
 			<h2>Simulator</h2>
+
 			<p>
 				The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. Note that only the highest-priority recipes will be candidates when actually cooking in-game.
 				The combined totals at the top reflect the ingredients added, where perish time is the shortest.
 				The suggestions below the real results show what recipes could be made by adding different items to those already in the Crock Pot.
 			</p>
+
 			<h2>Discovery</h2>
+
 			<p>
 				The Discovery tab is finds what recipes can be prepared using a collection of ingredients. It doesn't take item quantity into account, instead assuming you have four of each.
 				You are also able to calculate efficient recipes using your ingredients to get the most health or hunger benefit from cooking them in the crock pot. This works identically to the Statistics Analyzer tab, but limited to your inventory.
@@ -84,16 +97,20 @@
 			<p>
 				The Statistics Analyzer tab is for those who just want to explore ingredient combinations. It will calculate every valid ingredient combination possible (using an "ideal" ingredient selection, generally excluding uncooked food) and allows filtration by recipe and ingredient contents. Computation may take some time on slower computers.
 			</p>
+
 			<h2>Links</h2>
+
 			<p><a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank">Food Guide Change Log</a>
 			<p><a href="https://github.com/bluehexagons/foodguide/issues" target="_blank">Report Food Guide Bugs or Issues</a>
 			<p><a href="http://www.dontstarvegame.com/" target="_blank">Don't Starve Official Website</a>
 			<p><a href="http://dont-starve-game.wikia.com/" target="_blank">Don't Starve on Wikia</a>
 		</div>
 	</div>
+
 	<div id="footer">
 		<a href="http://www.dontstarvegame.com/">Don't Starve</a> &copy; <a href="http://kleientertainment.com/">Klei Entertainment</a>. Unofficial food guide <a href="https://github.com/bluehexagons/foodguide">source code</a> made available under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.
 	</div>
+
 	<a class="github-link" href="https://github.com/bluehexagons/foodguide" target="_blank">
 		<img
 			decoding="async"
@@ -106,6 +123,7 @@
 			data-recalc-dims="1"
 		>
 	</a>
+
 	<script type="module" src="foodguide.js"></script>
 	<script nomodule>
 		alert("Please use a modern browser!")

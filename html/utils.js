@@ -1,11 +1,12 @@
 export const makeImage = (() => {
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
     const canvas32 = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
     const ctx32 = canvas32.getContext && canvas32.getContext('2d');
     const images = {};
     const images32 = {};
     let requests = [];
+
     const cacheImage = url => {
         const renderToCache = (url, imageElement) => {
             ctx.clearRect(0, 0, 64, 64);
@@ -14,10 +15,12 @@ export const makeImage = (() => {
             ctx32.drawImage(imageElement, 0, 0, 32, 32);
             images[url] = canvas.toDataURL();
             images32[url] = canvas32.toDataURL();
+
             requests.filter(request => { return request.url === url; }).forEach(request => {
                 if (request.url === url) {
                     delete request.img.dataset.pending;
                     request.img.removeAttribute('data-pending');
+
                     if (request.d === 32) {
                         request.img.src = images32[url] || url;
                     } else {
@@ -25,19 +28,24 @@ export const makeImage = (() => {
                     }
                 }
             });
+
             requests = requests.filter(request => { return request.url !== url; });
         };
+
         return e => {
             renderToCache(url, e.target);
         }
     };
+
     const queue = (img, url, d) => {
         img.dataset.pending = url;
         img.setAttribute('data-pending', url);
         requests.push({url: url, img: img, d: d});
     };
+
     const makeImage = (url, d) => {
         const img = new Image(d)
+
         if (images[url]) {
             //image is cached
             if (d === 32) {
@@ -58,11 +66,15 @@ export const makeImage = (() => {
         }
         return img;
     };
+
     canvas.width = 64;
     canvas.height = 64;
+
     canvas32.width = 32;
     canvas32.height = 32;
+
     makeImage.queue = queue;
+
     return makeImage;
 })();
 
@@ -84,6 +96,7 @@ export const makeLinkable = (() => {
         } else {
             const fragment = document.createDocumentFragment();
             fragment.appendChild(document.createTextNode(results[0]));
+
             for (let i = 1; i < results.length; i += 4) {
                 if (results[i] === '' && results[i + 1] === '') {
                     fragment.appendChild(document.createElement('br'));
@@ -91,6 +104,7 @@ export const makeLinkable = (() => {
                     const span = document.createElement('span');
                     span.className = results[i + 2] === '' ? 'link' : 'link ' + results[i + 2]; //IE doesn't support classList, too lazy to come up with a polyfill
                     span.dataset.link = results[i];
+
                     if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
                         span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
                         const url = results[i + 1].split(' ')[0];
@@ -102,8 +116,10 @@ export const makeLinkable = (() => {
                     }
                     fragment.appendChild(span);
                 }
+
                 fragment.appendChild(document.createTextNode(results[i + 3]));
             }
+
             return fragment;
         }
     };

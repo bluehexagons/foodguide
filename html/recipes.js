@@ -2270,7 +2270,11 @@ for (const key in recipes) {
 	recipes[key].modeMask = modes[recipes[key].mode].bit;
 
 	if (recipes[key].requirements) {
-		recipes[key].requires = makeLinkable(recipes[key].requirements.join('; ') + (recipes[key].mode ? ('; [tag:' + recipes[key].mode + '|img/' + modes[recipes[key].mode].img + ']') : ''));
+		let requirements = recipes[key].requirements.slice()
+		if (recipes[key].mode) {
+			requirements.push('[tag:' + recipes[key].mode + '|img/' + modes[recipes[key].mode].img + ']');
+		}
+		recipes[key].requires = makeLinkable(requirements.join('; '));
 	}
 
 	if (recipes[key].temperature) {

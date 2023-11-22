@@ -36,8 +36,10 @@ import {
 	calories_huge,
 	calories_superhuge,
 	spoiled_health,
-	spoiled_hunger
+	spoiled_hunger,
+	modes
 } from './constants.js';
+import {makeLinkable} from './utils.js'
 
 export const food = {
 	
@@ -3495,6 +3497,17 @@ for (const key in food) {
 			f.cook.basename = (f.basename || f.name) + '.';
 		}
 	}
+
+	if (!f.mode) {
+		f.mode = 'vanilla';
+	}
+
+	f[f.mode] = true;
+
+	f.modeMask = modes[f.mode].bit;
+
+	f.modeMask = modes[f.mode].bit || 0;
+	f.modeNode = makeLinkable('[tag:' + f.mode + '|img/' + modes[f.mode].img + ']');
 
 	if (typeof f.raw === 'string') {
 		f.raw = food[f.raw];

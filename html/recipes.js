@@ -2355,7 +2355,6 @@ for (const key in food) {
 		stat = stat.charAt(0).toUpperCase() + stat.slice(1);
 		f['best' + stat] = bestStat;
 		f['best' + stat + 'Type'] = bestStatType;
-		// console.log('best' + stat + 'Type');
 	}
 
 	// const bestHealth = f.health || 0;
@@ -2377,6 +2376,7 @@ for (const key in food) {
 
 	f.info = [];
 	info = f.info;
+	f.originalInfo = f.info;
 
 	f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : '\xd7' + f.fruit));
 	f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : '\xd7' + f.veggie));
@@ -2403,76 +2403,68 @@ for (const key in food) {
 
 food.length = foodCount;
 
-for (let i = 0; i < food.length; i++) {
-	const f = food[i];
+export const updateFoodRecipes = (includedRecipes) => {
+	for (let i = 0; i < food.length; i++) {
+		const f = food[i];
 
-	info = f.info;
-	f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
+		info = f.originalInfo.slice();
+		f.cooked && info.push('from [*' + f.raw.name + '|' + f.raw.img + ']');
 
-	if (f.cook) {
-		if (!(f.cook instanceof Object)) {
-			f.cook = food[f.cook];
+		if (f.cook) {
+			if (!(f.cook instanceof Object)) {
+				f.cook = food[f.cook];
+			}
+			info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
 		}
-		info.push('cook: [*' + f.cook.name + '|' + f.cook.img + ']');
-	}
 
-	if (f.dry) {
-		if (!(f.dry instanceof Object)) {
-			f.dry = food[f.dry];
+		if (f.dry) {
+			if (!(f.dry instanceof Object)) {
+				f.dry = food[f.dry];
+			}
+			info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
 		}
-		info.push('dry in ' + (f.drytime / total_day_time) + ' ' + pl('day', (f.drytime / total_day_time)) + ': [*' + f.dry.name + '|' + f.dry.img + ']');
-	}
 
-	if (f.mode) {
-		f[f.mode] = true;
-		info.push('requires [tag:' + f.mode + '|img/' + modes[f.mode].img + ']');
-	} else {
-		f.vanilla = true;
-		f.mode = 'vanilla';
-	}
+		f.info = info.join('; ');
 
-	f.modeMask = modes[f.mode].bit;
-	f.info = info.join('; ');
+		if (!f.uncookable) {
+			f.recipes = [];
 
-	if (!f.uncookable) {
-		f.recipes = [];
+			includedRecipes.forEach(recipe => {
+				const r = recipe.requirements;
+				let qualifies = false;
+				let i = r.length;
 
-		recipes.forEach(recipe => {
-			const r = recipe.requirements
-			let qualifies = false
-			let i = r.length;
-
-			while (i--) {
-				if (r[i].test(null, f.nameObject, f)) {
-					if (!r[i].cancel && !qualifies) {
-						qualifies = true;
-					}
-				} else {
-					if (r[i].cancel) {
-						qualifies = false;
-						break;
+				while (i--) {
+					if (r[i].test(null, f.nameObject, f)) {
+						if (!r[i].cancel && !qualifies) {
+							qualifies = true;
+						}
+					} else {
+						if (r[i].cancel) {
+							return;
+						}
 					}
 				}
-			}
 
-			if (qualifies) {
-				f.recipes.push(recipe);
-			}
-		});
+				if (qualifies) {
+					f.recipes.push(recipe);
+				}
+			});
 
-		if (f.recipes.length > 0) {
-			f.ingredient = true;
-			f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
+			if (f.recipes.length > 0) {
+				f.ingredient = true;
+				f.info += (f.recipes.reduce(reduceRecipeButton, '[|][ingredient:' + f.name + '|Recipes] '));
+			}
+		} else {
+			f.info += (f.info ? '[|]' : '') + ('cannot be added to crock pot');
 		}
-	} else {
-		f.info += (f.info ? '[|]' : '') + ('cannot be added to crock pot');
-	}
 
-	if (f.note) {
-		f.info += ('[|]' + f.note);
-	}
+		if (f.note) {
+			f.info += ('[|]' + f.note);
+		}
 
-	f.info = makeLinkable(f.info);
+		f.info = makeLinkable(f.info);
+	}
 }
 
 food.forEach = Array.prototype.forEach;

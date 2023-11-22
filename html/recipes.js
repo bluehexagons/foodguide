@@ -1902,7 +1902,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.egg >= 3;
 		},
-      		requirements: [TAG('egg', COMPARE('>=', 3))],
+		requirements: [TAG('egg', COMPARE('>=', 3))],
 		priority: 0,
 		foodtype: 'meat',
 		health: healing_small,
@@ -1917,7 +1917,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (tags.egg && tags.egg >= 1) && (tags.veggie && tags.veggie >= 1) && !tags.meat && !tags.dairy;
 		},
-      		requirements: [TAG('egg', COMPARE('>=', 1)), TAG('veggie', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('dairy'))],
+		requirements: [TAG('egg', COMPARE('>=', 1)), TAG('veggie', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('dairy'))],
 		priority: 1,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1932,7 +1932,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return names.tallbirdegg_dst && tags.veggie && tags.veggie >=1;
 		},
-      		requirements: [SPECIFIC('tallbirdegg_dst'), TAG('veggie', COMPARE('>=', 1))],
+		requirements: [SPECIFIC('tallbirdegg_dst'), TAG('veggie', COMPARE('>=', 1))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_huge,
@@ -1949,7 +1949,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.inedible && !tags.monster && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.magic;
 		},
-      		requirements: [TAG('inedible'), NOT(TAG('monster')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('magic'))],
+		requirements: [TAG('inedible'), NOT(TAG('monster')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('magic'))],
 		priority: -5,
 		foodtype: 'roughage',
 		// secondaryfoodtype: 'wood',
@@ -1966,7 +1966,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.inedible && tags.seed && names.forgetmelots && !tags.monster && !tags.meat && !tags.fish && !tags.egg && !tags.fat && !tags.dairy && !tags.magic;
 		},
-      		requirements: [TAG('inedible'), TAG('seed'), NAME('forgetmelots'), NOT(TAG('monster')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('magic'))],
+		requirements: [TAG('inedible'), TAG('seed'), NAME('forgetmelots'), NOT(TAG('monster')), NOT(TAG('meat')), NOT(TAG('fish')), NOT(TAG('egg')), NOT(TAG('fat')), NOT(TAG('dairy')), NOT(TAG('magic'))],
 		priority: -4,
 		foodtype: 'roughage',
 		health: healing_morehuge,
@@ -2270,10 +2270,12 @@ for (const key in recipes) {
 	recipes[key].modeMask = modes[recipes[key].mode].bit;
 
 	if (recipes[key].requirements) {
-		let requirements = recipes[key].requirements.slice()
+		let requirements = recipes[key].requirements.slice();
+
 		if (recipes[key].mode) {
-			requirements.push('[tag:' + recipes[key].mode + '|img/' + modes[recipes[key].mode].img + ']');
+			recipes[key].modeNode = makeLinkable('[tag:' + recipes[key].mode + '|img/' + modes[recipes[key].mode].img + ']');
 		}
+
 		recipes[key].requires = makeLinkable(requirements.join('; '));
 	}
 

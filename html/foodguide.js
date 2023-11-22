@@ -1813,136 +1813,143 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			parent.parentNode.insertBefore(clear, parent);
 			parent.parentNode.insertBefore(dropdown, parent);
 
-			picker.addEventListener('keydown', e => {
-				let find;
+			// picker.addEventListener('keydown', e => {
+			// 	let find;
 
-				if (movement.indexOf(e.keyCode) !== -1) {
-					const current = selected;
+			// 	if (movement.indexOf(e.keyCode) !== -1) {
+			// 		const current = selected;
 
-					if (e.keyCode === enter) {
-						if (selected === null) {
-							selected = ul.firstChild || null;
-						}
+			// 		if (e.keyCode === enter) {
+			// 			if (selected === null) {
+			// 				selected = ul.firstChild || null;
+			// 			}
 
-						if (selected !== null) {
-							pickItem({target: selected});
-						}
-					} else {
-						if (selected === null) {
-							if (e.keyCode === down) {
-								selected = ul.childNodes[1] || ul.firstChild || null;
+			// 			if (selected !== null) {
+			// 				pickItem({target: selected});
+			// 			}
+			// 		} else {
+			// 			if (selected === null) {
+			// 				if (e.keyCode === down) {
+			// 					selected = ul.childNodes[1] || ul.firstChild || null;
 
-								if (selected !== null) {
-									coords = (selected.offsetLeft + selected.offsetWidth / 2);
-									e.preventDefault();
-								}
-							}
-						} else {
-							e.preventDefault();
+			// 					if (selected !== null) {
+			// 						coords = (selected.offsetLeft + selected.offsetWidth / 2);
+			// 						e.preventDefault();
+			// 					}
+			// 				}
+			// 			} else {
+			// 				e.preventDefault();
 
-							if (e.keyCode === left) {
-								if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
-									selected = selected.previousSibling;
-								} else {
-									find = findNextMatching(selected, el => {
-										//separate this out
-										return el.offsetTop !== selected.offsetTop;
-									});
+			// 				if (e.keyCode === left) {
+			// 					if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
+			// 						selected = selected.previousSibling;
+			// 					} else {
+			// 						find = findNextMatching(selected, el => {
+			// 							//separate this out
+			// 							return el.offsetTop !== selected.offsetTop;
+			// 						});
 
-									if (find) {
-										selected = find.previousSibling;
-									} else {
-										selected = ul.lastChild;
-									}
-								}
+			// 						if (find) {
+			// 							selected = find.previousSibling;
+			// 						} else {
+			// 							selected = ul.lastChild;
+			// 						}
+			// 					}
 
-								if (selected !== null) {
-									coords = (selected.offsetLeft + selected.offsetWidth / 2);
-								}
-							} else if (e.keyCode === right) {
-								if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
-									selected = selected.nextSibling;
-								} else {
-									find = findPreviousMatching(selected, el => {
-										//separate this out
-										return el.offsetTop !== selected.offsetTop;
-									});
+			// 					if (selected !== null) {
+			// 						coords = (selected.offsetLeft + selected.offsetWidth / 2);
+			// 					}
+			// 				} else if (e.keyCode === right) {
+			// 					if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
+			// 						selected = selected.nextSibling;
+			// 					} else {
+			// 						find = findPreviousMatching(selected, el => {
+			// 							//separate this out
+			// 							return el.offsetTop !== selected.offsetTop;
+			// 						});
 
-									if (find) {
-										selected = find.nextSibling;
-									} else {
-										selected = ul.firstChild;
-									}
-								}
+			// 						if (find) {
+			// 							selected = find.nextSibling;
+			// 						} else {
+			// 							selected = ul.firstChild;
+			// 						}
+			// 					}
 
-								if (selected !== null) {
-									coords = (selected.offsetLeft + selected.offsetWidth / 2);
-								}
-							} else if (e.keyCode === up) {
-								find = findPreviousMatching(selected, el => {
-									return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-								});
+			// 					if (selected !== null) {
+			// 						coords = (selected.offsetLeft + selected.offsetWidth / 2);
+			// 					}
+			// 				} else if (e.keyCode === up) {
+			// 					find = findPreviousMatching(selected, el => {
+			// 						return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+			// 					});
 
-								if (!find) {
-									find = findPreviousMatching(ul.lastChild, el => {
-										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-									});
-								}
+			// 					if (!find) {
+			// 						find = findPreviousMatching(ul.lastChild, el => {
+			// 							return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+			// 						});
+			// 					}
 
-								if (find) {
-									selected = find;
-								} else {
-									selected = ul.firstChild;
-								}
-							} else if (e.keyCode === down) {
-								find = findNextMatching(selected, el => {
-									return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-								});
+			// 					if (find) {
+			// 						selected = find;
+			// 					} else {
+			// 						selected = ul.firstChild;
+			// 					}
+			// 				} else if (e.keyCode === down) {
+			// 					find = findNextMatching(selected, el => {
+			// 						return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+			// 					});
 
-								if (!find) {
-									find = findNextMatching(ul.firstChild, el => {
-										return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-									});
-								}
+			// 					if (!find) {
+			// 						find = findNextMatching(ul.firstChild, el => {
+			// 							return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
+			// 						});
+			// 					}
 
-								if (find) {
-									selected = find;
-								} else {
-									selected = ul.lastChild;
-								}
-							}
-						}
-					}
+			// 					if (find) {
+			// 						selected = find;
+			// 					} else {
+			// 						selected = ul.lastChild;
+			// 					}
+			// 				}
+			// 			}
+			// 		}
 
-					if (selected !== current) {
-						if (current !== null) {
-							current.className = '';
-						}
+			// 		if (selected !== current) {
+			// 			if (current !== null) {
+			// 				current.className = '';
+			// 			}
 
-						if (selected !== null) {
-							selected.className = 'selected';
-						}
-					}
-				}
-			}, false);
+			// 			if (selected !== null) {
+			// 				selected.className = 'selected';
+			// 			}
+			// 		}
+			// 	}
+			// }, false);
 
-			const up = 38
-			const left = 37
-			const down = 40
-			const right = 39
-			const enter = 13;
-			const movement = [16, 17, up, right, down, left, enter];
+			// const up = 38
+			// const left = 37
+			// const down = 40
+			// const right = 39
+			// const enter = 13;
+			// const movement = [16, 17, up, right, down, left, enter];
 
-			picker.addEventListener('keyup', e => {
-				// let items;
-				// let i;
-				// const current = selected;
-				if (movement.indexOf(e.keyCode) === -1) {
-					refreshPicker();
-				} else if (selected !== null) {
-					e.preventDefault();
-				}
-			}, false);
+			picker.addEventListener('keydown', _ => {
+				refreshPicker();
+			});
+			picker.addEventListener('keyup', _ => {
+				refreshPicker();
+			});
+
+			// picker.addEventListener('keyup', e => {
+			// 	// let items;
+			// 	// let i;
+			// 	// const current = selected;
+			// 	if (movement.indexOf(e.keyCode) === -1) {
+			// 		refreshPicker();
+			// 	} else if (selected !== null) {
+			// 		e.preventDefault();
+			// 	}
+			// }, false);
 
 			picker.addEventListener('focus', () => {
 				if (!displaying) {

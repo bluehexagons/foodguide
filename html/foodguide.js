@@ -610,13 +610,20 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			const td = document.createElement(cellType);
 			const cell = args[i];
 			const celltext = cell && cell.indexOf ? cell : cell.toString();
-			let image;
 
 			if (cell instanceof DocumentFragment) {
 				td.appendChild(cell.cloneNode(true));
 				Array.prototype.forEach.call(td.getElementsByTagName('img'), queue);
 			} else if (celltext.indexOf('img/') === 0) {
-				image = makeImage(celltext);
+				let imgurl = celltext;
+				let title = celltext;
+				if (celltext.indexOf(':') !== -1) {
+					const split = celltext.split(':');
+					imgurl = split[0];
+					title = split[1];
+				}
+				let image = makeImage(imgurl);
+				image.title = title;
 				td.appendChild(image);
 			} else if (cell && cell.nodeType && cell.nodeType === 1) {
 				td.appendChild(cell);
@@ -834,7 +841,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 		return cells(
 			'td',
-			item.img ? item.img : '',
+			item.img ? item.img + ':' + item.name : '',
 			wikiaHref(item.name),
 			health,
 			hunger,
@@ -853,7 +860,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 		return cells(
 			'td',
-			item.img ? item.img : '',
+			item.img ? item.img + ':' + item.name : '',
 			wikiaHref(item.name),
 			sign(ihealth) + pct(health, ihealth),
 			sign(ihunger) + pct(hunger, ihunger),
@@ -1264,10 +1271,12 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		}
 
 		if (item !== null) {
+			const img = makeImage(item.img)
+			img.title = item.name;
 			if (slotElement.firstChild) {
-				slotElement.replaceChild(makeImage(item.img), slotElement.firstChild);
+				slotElement.replaceChild(img, slotElement.firstChild);
 			} else {
-				slotElement.appendChild(makeImage(item.img));
+				slotElement.appendChild(img);
 			}
 		} else {
 			if (slotElement.firstChild) {
@@ -1391,6 +1400,8 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 			const liIntoPicker = function (item) {
 				const img = makeImage(item.img, 32);
+
+				img.title = item.name;
 
 				const li = document.createElement('span');
 				li.classList.add('item');
@@ -2012,7 +2023,11 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 		modeButton.title = modes[name].name + '\nleft-click to select\nright-click to toggle';
 		modeButton.className = 'mode-button'
-		modeButton.appendChild(makeImage('img/' + modes[name].img));
+
+		const img = makeImage('img/' + modes[name].img);
+		img.title = name;
+		modeButton.appendChild(img);
+
 		modeTab.appendChild(modeButton);
 	}
 

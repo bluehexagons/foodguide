@@ -46,6 +46,14 @@ export const makeImage = (() => {
     const makeImage = (url, d) => {
         const img = new Image(d)
 
+        if (d === 32) {
+            img.width = 32;
+            img.height = 32;
+        } else {
+            img.width = 64;
+            img.height = 64;
+        }
+
         if (images[url]) {
             //image is cached
             if (d === 32) {

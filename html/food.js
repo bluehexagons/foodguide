@@ -239,6 +239,7 @@ export const food = {
 	},
 	honeycomb: {
 		name: 'Honeycomb',
+		skip: true,
 		sweetener: true
 	},
 	ice: {
@@ -633,7 +634,7 @@ export const food = {
 		inedible: 1
 	},
 	cave_banana: {
-		//Shipwrecked calls them bananas, less confusing to go with that one (instead of Cave Banana)
+		// Shipwrecked calls them bananas, less confusing to go with that one (instead of Cave Banana)
 		name: 'Banana',
 		ideal: true,
 		isfruit: true,
@@ -1079,9 +1080,7 @@ export const food = {
 	},
 	dead_swordfish: {
 		name: 'Swordfish',
-		uncookable: true, //perhaps a mistake
-		// meat: 0.5,
-		// fish: 1,
+		uncookable: true,
 		health: healing_tiny,
 		hunger: calories_med,
 		sanity: 0,
@@ -1104,7 +1103,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'shipwrecked'
 	},
-	/* swordfish: { //this refers to the living prefab, probably an accident?
+	/* swordfish: { // this refers to the living prefab, probably an accident?
 		name: 'Swordfish',
 		meat: 0.5,
 		fish: 1,
@@ -1227,7 +1226,6 @@ export const food = {
 	},
 	lobster: {
 		name: 'Wobster',
-		// inedible: true,
 		fish: 2,
 		perish: total_day_time * 2,
 		mode: 'shipwrecked'
@@ -1247,7 +1245,6 @@ export const food = {
 	lobster_cooked: {
 		name: 'Delicious Wobster',
 		uncookable: true,
-		// fish: 2,
 		health: healing_tiny,
 		hunger: calories_small,
 		sanity: 0,
@@ -1257,7 +1254,6 @@ export const food = {
 	},
 	crab: {
 		name: 'Crab',
-		// inedible: true,
 		skip: true,
 		fish: 0.5,
 		perish: total_day_time * 2,
@@ -1964,7 +1960,8 @@ export const food = {
 	honeycomb_dst: {
 		name: 'Honeycomb',
 		sweetener: true,
-		mode: 'together'
+		mode: 'together',
+		skip: true,
 	},
 	ice_dst: {
 		name: 'Ice',
@@ -2012,7 +2009,6 @@ export const food = {
 	},
 	mole_dst: {
 		name: 'Moleworm',
-		// inedible: true,
 		ideal: true,
 		meat: 0.5,
 		perish: total_day_time * 2,
@@ -2703,7 +2699,6 @@ export const food = {
 	// Their display name will have DST added to it due to a conflict since their image name is the same as SW
 	wobster: {
 		name: 'Wobster DST',
-		//inedible: true,
 		ismeat: true,
 		meat: 1,
 		fish: 1,

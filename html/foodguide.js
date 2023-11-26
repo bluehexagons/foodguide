@@ -977,12 +977,13 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		makableButton.addEventListener('click', () => {
 			const idealIngredients = [];
 			const makableRecipes = [];
-			const usesIngredients = [];
-			const excludesIngredients = [];
-			const excludedRecipes = [];
+			const usedIngredients = new Set();
+			const excludedIngredients = new Set();
+			const excludedRecipes = new Set();
 			const excludedRecipesElements = [];
 
 			let i = ingredients ? ingredients.length : null;
+
 			let selectedRecipe;
 			let selectedRecipeElement;
 			let makableRecipe;
@@ -995,23 +996,20 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			let makableDiv;
 			let makableTable;
 
-			const checkExcludes = item => {
-				return excludesIngredients.indexOf(item.id) !== -1;
-			};
-
+			const checkExcludes = item => excludedIngredients.has(item.id);
 			const checkIngredient = function (item) {
-				return this.indexOf(food[item]) !== -1;
+				return this.includes(food[item]);
 			};
 
 			const toggleFilter = e => {
-				if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
-					excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+				if (excludedIngredients.has(e.target.dataset.id)) {
+					excludedIngredients.delete(e.target.dataset.id);
 				}
-				if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
-					usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+				if (usedIngredients.has(e.target.dataset.id)) {
+					usedIngredients.delete(e.target.dataset.id);
 					e.target.className = '';
 				} else {
-					usesIngredients.push(e.target.dataset.id);
+					usedIngredients.add(e.target.dataset.id);
 					e.target.className = 'selected';
 				}
 
@@ -1019,15 +1017,15 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			};
 
 			const toggleExclude = e => {
-				if (usesIngredients.indexOf(e.target.dataset.id) !== -1) {
-					usesIngredients.splice(usesIngredients.indexOf(e.target.dataset.id), 1);
+				if (usedIngredients.has(e.target.dataset.id)) {
+					usedIngredients.delete(e.target.dataset.id);
 				}
 
-				if (excludesIngredients.indexOf(e.target.dataset.id) !== -1) {
-					excludesIngredients.splice(excludesIngredients.indexOf(e.target.dataset.id), 1);
+				if (excludedIngredients.has(e.target.dataset.id)) {
+					excludedIngredients.delete(e.target.dataset.id);
 					e.target.className = '';
 				} else {
-					excludesIngredients.push(e.target.dataset.id);
+					excludedIngredients.add(e.target.dataset.id);
 					e.target.className = 'excluded';
 				}
 
@@ -1035,16 +1033,17 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 				e.preventDefault();
 			};
+
 			const setRecipe = e => {
 				if (selectedRecipeElement) {
 					selectedRecipeElement.className = '';
 				}
 
-				for (let i = 0; i < excludedRecipesElements.length; i++) {
-					excludedRecipesElements[i].className = '';
+				for (const e of excludedRecipesElements) {
+					e.className = '';
 				}
 
-				excludedRecipes.length = 0;
+				excludedRecipes.clear();
 				excludedRecipesElements.length = 0;
 
 				if (selectedRecipe === e.target.dataset.recipe) {
@@ -1058,20 +1057,22 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 				makableTable.update();
 			};
+
 			const excludeRecipe = e => {
 				if (selectedRecipeElement) {
 					selectedRecipeElement.className = '';
 					selectedRecipeElement = null;
 					selectedRecipe = null;
 				}
+				
 
 				const index = excludedRecipesElements.indexOf(e.target);
 				if (index !== -1) {
-					excludedRecipes.splice(index, 1);
+					excludedRecipes.delete(e.target.dataset.recipe);
 					excludedRecipesElements.splice(index, 1);
 					e.target.className = '';
 				} else {
-					excludedRecipes.push(e.target.dataset.recipe);
+					excludedRecipes.add(e.target.dataset.recipe);
 					excludedRecipesElements.push(e.target);
 					e.target.className = 'excluded';
 				}
@@ -1088,33 +1089,43 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			ingredients = ingredients.filter(f => (f.modeMask & modeMask) !== 0);
 			i = ingredients.length;
 
+			for (const ingredient of ingredients.filter(ingredient => ingredient.inefficient).map(ingredient => ingredient.id)) {
+				excludedIngredients.add(ingredient)
+			}
+
+			const tryPush = ingredient => {
+				if (!ingredient.uncookable && !ingredient.skip) {
+					idealIngredients.push(ingredient)
+				}
+			}
+
 			while (i--) {
 				if (!ingredients[i].skip) {
 					if (!ingredients[i].uncookable && (!ingredients[i].cooked || ingredients[i].ideal) && (!ingredients[i].rackdried || ingredients[i].ideal) && idealIngredients.indexOf(ingredients[i]) === -1) {
-						idealIngredients.push(ingredients[i]);
+						tryPush(ingredients[i]);
 					}
 				} else {
 					if (ingredients[i].cook && !ingredients[i].cook.uncookable && !ingredients[i].cook.skip && idealIngredients.indexOf(ingredients[i].cook) === -1) {
-						idealIngredients.push(ingredients[i].cook);
+						tryPush(ingredients[i].cook);
 					} else if (ingredients[i].dry && !ingredients[i].dry.uncookable && !ingredients[i].dry.skip && idealIngredients.indexOf(ingredients[i].dry) === -1) {
-						idealIngredients.push(ingredients[i].dry);
+						tryPush(ingredients[i].dry);
 					}
 				}
 
 				if (ingredients[i].cooked && !ingredients[i].raw.uncookable && !ingredients[i].raw.skip && idealIngredients.indexOf(ingredients[i].raw) === -1) {
-					idealIngredients.push(ingredients[i].raw);
+					tryPush(ingredients[i].raw);
 				}
 
 				if (ingredients[i].rackdried && !ingredients[i].wet.uncookable && !ingredients[i].wet.skip && idealIngredients.indexOf(ingredients[i].wet) === -1) {
-					idealIngredients.push(ingredients[i].wet);
+					tryPush(ingredients[i].wet);
 				}
 
 				/* if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
-					idealIngredients.push(ingredients[i].cook);
+					tryPush(ingredients[i].cook);
 				}
 
 				if (!ingredients[i].uncookable && (ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
-					idealIngredients.push(ingredients[i]);
+					tryPush(ingredients[i]);
 				} */
 			}
 
@@ -1141,9 +1152,12 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 				false,
 				null,
 				null,
-				data => {
-					return (!selectedRecipe || data.recipe.name === selectedRecipe) && (excludedRecipes.length === 0 || excludedRecipes.indexOf(data.recipe.name) === -1) && (!excludesIngredients.length || !data.ingredients.some(checkExcludes)) && (!usesIngredients.length || usesIngredients.every(checkIngredient, data.ingredients));
-				},
+				data => (
+					(!selectedRecipe || data.recipe.name === selectedRecipe)
+					&& !excludedRecipes.has(data.recipe.name)
+					&& (excludedIngredients.size == 0 || !data.ingredients.some(checkExcludes))
+					&& ([...usedIngredients].every(checkIngredient, data.ingredients))
+				),
 				0,
 				15
 			);
@@ -1236,8 +1250,8 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
 			}, () => {
 				//computation finished
-				makableTable.setMaxRows(30);
-				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes. Showing top 30 for selected recipe using all selected ingredients. Right-click to exclude recipes or ingredients.';
+				makableTable.setMaxRows(60);
+				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.';
 			});
 		}, false);
 

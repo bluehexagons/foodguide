@@ -2357,23 +2357,6 @@ for (const key in food) {
 		f['best' + stat + 'Type'] = bestStatType;
 	}
 
-	// const bestHealth = f.health || 0;
-	// const bestHunger = f.hunger || 0;
-	// const bestSanity = f.sanity || 0;
-	// if (f.cook) {
-	// 	bestHealth = Math.max(f.cook.health || 0, bestHealth);
-	// 	bestHunger = Math.max(f.cook.hunger || 0, bestHunger);
-	// 	bestSanity = Math.max(f.cook.sanity || 0, bestSanity);
-	// }
-	// if (f.raw) {
-	// 	bestHealth = Math.max(f.raw.health || 0, bestHealth);
-	// 	bestHunger = Math.max(f.raw.hunger || 0, bestHunger);
-	// 	bestSanity = Math.max(f.raw.sanity || 0, bestSanity);
-	// }
-	// f.bestHealth = bestHealth;
-	// f.bestHunger = bestHunger;
-	// f.bestSanity = bestSanity;
-
 	f.info = [];
 	info = f.info;
 	f.originalInfo = f.info;

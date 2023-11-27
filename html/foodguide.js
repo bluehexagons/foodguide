@@ -64,7 +64,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		}
 
 		modeMask = mask;
-		updateRecipeCrunchData();
+
 		updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
 
 		if (document.getElementById('statistics').hasChildNodes) {
@@ -115,19 +115,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			}
 		}
 	};
-
-	let recipeCrunchData = {};
-	const updateRecipeCrunchData = () => {
-		recipeCrunchData.recipes = recipes.filter(item => {
-			return !item.trash && (item.modeMask & modeMask) === 0 && item.foodtype !== 'roughage';
-		}).sort((a, b) => {
-			return b.priority - a.priority;
-		});
-
-		recipeCrunchData.test = recipeCrunchData.recipes.map(a => { return a.test; });
-		recipeCrunchData.tests = recipeCrunchData.recipes.map(a => { return a.test.toString(); });
-		recipeCrunchData.priority = recipeCrunchData.recipes.map(a => { return a.priority; });
-	}
 
 	let matchingNames = (() => {
 		const tagsearch = /^tag[: ]/;
@@ -482,12 +469,28 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 	*/
 
 	const getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
-		const l = recipeCrunchData.test.length;
+		const recipeCrunchData = {};
+		const updateRecipeCrunchData = () => {
+			recipeCrunchData.recipes = recipes.filter(item => {
+				return !item.trash && (item.modeMask & modeMask) !== 0 && item.foodtype !== 'roughage';
+			}).sort((a, b) => {
+				return b.priority - a.priority;
+			});
+
+			recipeCrunchData.test = recipeCrunchData.recipes.map(a => { return a.test; });
+			recipeCrunchData.tests = recipeCrunchData.recipes.map(a => { return a.test.toString(); });
+			recipeCrunchData.priority = recipeCrunchData.recipes.map(a => { return a.priority || 0; });
+
+			window.recipeCrunchData = recipeCrunchData;
+		}
+		updateRecipeCrunchData();
+
 		const built = [];
-		const desiredTime = 38;
+		// time in milliseconds to try to stay under in each block of calculations
+		const desiredTime = 100;
 		let renderedTo = 0;
 		let lastTime;
-		let block = 60;
+		let block = 100;
 
 		const foodFromIndex = index => {
 			return items[index];
@@ -497,28 +500,29 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			const ingredients = combination.map(foodFromIndex);
 			const names = {};
 			const tags = {};
-			const rcdTest = recipeCrunchData.test;
-			const rcdRecipes = recipeCrunchData.recipes;
 
-			let priority = null;
 			let created = null;
 			let multiple = false;
 
 			setIngredientValues(ingredients, names, tags);
 
-			tags.hunger = tags.bestHunger;// * statMultipliers[tags.bestHungerType];
-			tags.health = tags.bestHealth;// * statMultipliers[tags.bestHealthType];
-			tags.sanity = tags.bestSanity;// * statMultipliers[tags.bestSanityType];
-			for (let i = 0; i < l && (priority === null || rcdRecipes[i].priority >= priority); i++) {
-				if (rcdTest[i](null, names, tags)) {
-					if (created !== null) {
-						multiple = true;
-						created.multiple = true;
-					}
-					created = { recipe: rcdRecipes[i], ingredients: ingredients, tags: { health: tags.health, hunger: tags.hunger }, multiple: multiple };
-					built.push(created);
-					priority = rcdRecipes[i].priority;
+			tags.hunger = tags.bestHunger; // * statMultipliers[tags.bestHungerType];
+			tags.health = tags.bestHealth; // * statMultipliers[tags.bestHealthType];
+			tags.sanity = tags.bestSanity; // * statMultipliers[tags.bestSanityType];
+
+			const matches = recipeCrunchData.recipes.filter(recipe => recipe.test(null, names, tags))
+			const maxPriority = matches.reduce((max, recipe) => Math.max(recipe.priority, max), -Infinity)
+
+			for (const recipe of matches.filter(
+				recipe => recipe.priority >= maxPriority
+			)) {
+				if (created !== null) {
+					multiple = true;
+					created.multiple = true;
 				}
+
+				created = { recipe, ingredients, tags: { health: tags.health, hunger: tags.hunger }, multiple };
+				built.push(created);
 			}
 		};
 
@@ -1004,6 +1008,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 	const makeRecipeGrinder = ingredients => {
 		const makableButton = document.createElement('button');
+		let hasTable = false;
 
 		makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
 		makableButton.className = 'makablebutton';
@@ -1029,6 +1034,18 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			let made;
 			let makableDiv;
 			let makableTable;
+
+			const deleteButton = document.createElement('button');
+			deleteButton.appendChild(document.createTextNode('Clear results'));
+			deleteButton.className = 'deleteButton';
+			deleteButton.addEventListener('click', () => {
+				makableButton.parentNode.removeChild(makableDiv);
+				hasTable = false;
+			})
+			if (hasTable) {
+				makableButton.parentNode.removeChild(makableButton.nextSibling);
+			}
+			hasTable = true;
 
 			const checkExcludes = item => excludedIngredients.has(item.id);
 			const checkIngredient = function (item) {
@@ -1233,10 +1250,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			customFilterHolder.appendChild(customFilterInput);
 
 			makableDiv.appendChild(makableTable);
-			makableButton.parentNode.replaceChild(makableDiv, makableButton);
+			makableButton.after(makableDiv);
 			makableDiv.appendChild(makableFootnote);
 
-			updateRecipeCrunchData();
 			updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
 
 			getRealRecipesFromCollection(idealIngredients, data => { // row update
@@ -1286,6 +1302,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				//computation finished
 				makableTable.setMaxRows(60);
 				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.';
+
+				makableSummary.appendChild(deleteButton)
 			});
 		}, false);
 

@@ -321,13 +321,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 	const getSuggestions = (() => {
 		return (recipeList, items, exclude, itemComplete) => {
-			recipeList.length = 0;
 			const names = {};
 			const tags = {};
+
+			recipeList.length = 0;
 			setIngredientValues(items, names, tags);
-			tags.hunger = tags.bestHunger;
-			tags.health = tags.bestHealth;
-			tags.sanity = tags.bestSanity;
+
 			outer: for (let i = 0; i < recipes.length; i++) {
 				let valid = false;
 
@@ -354,9 +353,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				}
 			}
 
-			tags.img = '';
-			tags.name = 'Combined';
-
 			return recipeList;
 		};
 	})();
@@ -371,10 +367,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			recipeList.length = 0;
 			setIngredientValues(items, names, tags);
 
-			tags.hunger = tags.bestHunger;
-			tags.health = tags.bestHealth;
-			tags.sanity = tags.bestSanity;
-
 			for (let i = 0; i < recipes.length; i++) {
 				if ((recipes[i].modeMask & modeMask) !== 0 && recipes[i].test(null, names, tags)) {
 					recipeList.push(recipes[i]);
@@ -385,13 +377,36 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				return b.priority - a.priority;
 			});
 
-			tags.img = '';
-			tags.name = 'Combined';
-			tags.priority = ' ';
-			tags.perish = 0;
-			tags.cooktime = 0;
+			// Add best row
+			const bestTags = {...tags}
+			bestTags.hunger = bestTags.bestHunger;
+			bestTags.health = bestTags.bestHealth;
+			bestTags.sanity = bestTags.bestSanity;
 
-			recipeList.unshift(tags);
+			bestTags.img = '';
+			bestTags.name = 'Sum:Potential';
+			bestTags.priority = ' ';
+			bestTags.perish = 0;
+			bestTags.cooktime = 0;
+			delete bestTags.cook;
+
+			recipeList.unshift(bestTags);
+
+			// Add total row
+			const totalTags = {...tags}
+
+			totalTags.bestHunger = totalTags.hunger;
+			totalTags.bestHealth = totalTags.health;
+			totalTags.bestSanity = totalTags.sanity;
+
+			totalTags.img = '';
+			totalTags.name = 'Sum:Total';
+			totalTags.priority = ' ';
+			totalTags.perish = 0;
+			totalTags.cooktime = 0;
+			delete totalTags.cook;
+
+			recipeList.unshift(totalTags);
 
 			return recipeList;
 		};
@@ -648,8 +663,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 	};
 
 	const wikiaHref = name => {
-			if (name && name === 'Combined') {
-				return name;
+			if (name && name.startsWith('Sum:')) {
+				return name.substring(name.indexOf(':') + 1);
 			}
 
 			const node = document.createElement('a');
@@ -694,7 +709,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				const sortBy = sort || (e && e.target.dataset.sort) || sorting;
 
 				if (hasSummary) {
-					summary = dataset.shift();
+					summary = [dataset.shift(), dataset.shift()];
 				}
 
 				if (sortBy === 'name') {
@@ -730,7 +745,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				}
 
 				if (hasSummary) {
-					dataset.unshift(summary);
+					dataset.unshift(...summary);
 				}
 			}
 

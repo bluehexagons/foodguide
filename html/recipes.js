@@ -2338,13 +2338,6 @@ for (const key in food) {
 		let bestStat = f[stat] || 0;
 		let bestStatType = f.preparationType;
 
-		if (f.raw) {
-			bestStat = Math.max(f.raw[stat] || 0, bestStat)
-			if (bestStat === f.raw[stat]) {
-				bestStatType = 'raw';
-			}
-		}
-
 		if (f.cook) {
 			bestStat = Math.max(f.cook[stat] || 0, bestStat)
 			if (bestStat === f.cook[stat]) {

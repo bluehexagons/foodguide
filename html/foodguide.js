@@ -73,7 +73,16 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		for (let i = 0; i < modeTab.childNodes.length; i++) {
 			const img = modeTab.childNodes[i];
 			const mode = modes[img.dataset.mode]
-			img.className = (modeMask & mode.bit) !== 0 ? 'mode-button enabled' : 'mode-button';
+			img.className = 'mode-button';
+			if (modeMask === mode.mask) {
+				img.classList.add('selected')
+				img.style.backgroundColor = mode.color;
+			} else if ((modeMask & mode.bit) !== 0) {
+				img.classList.add('enabled')
+				img.style.backgroundColor = 'white';
+			} else {
+				img.style.backgroundColor = 'transparent';
+			}
 
 			if (mode.multipliers && ((modeMask & mode.bit) !== 0)) {
 				for (const foodtype in mode.multipliers) {
@@ -599,7 +608,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 	const queue = img => {
 		if (img.dataset.pending) {
-			makeImage.queue(img, img.dataset.pending, 32);
+			makeImage.queue(img, img.dataset.pending);
 		}
 	};
 
@@ -1180,7 +1189,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			makableFilter.className = 'foodFilter';
 
 			idealIngredients.forEach(item => {
-				const img = makeImage(item.img, 32);
+				const img = makeImage(item.img);
 				img.dataset.id = item.id;
 				img.addEventListener('click', toggleFilter, false);
 				img.addEventListener('contextmenu', toggleExclude, false);
@@ -1413,7 +1422,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			};
 
 			const liIntoPicker = function (item) {
-				const img = makeImage(item.img, 32);
+				const img = makeImage(item.img);
 
 				img.title = item.name;
 
@@ -2036,7 +2045,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		modeButton.addEventListener('contextmenu', togglemode, false);
 
 		modeButton.title = modes[name].name + '\nleft-click to select\nright-click to toggle';
-		modeButton.className = 'mode-button'
+		// Other setup happens in setMode
 
 		const img = makeImage('img/' + modes[name].img);
 		img.title = name;

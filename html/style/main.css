@@ -1,10 +1,25 @@
 body {
   margin: 0px;
+
+  --darkest: black;
+  --darker: #333;
+  --dark: #444;
+
+  --medium: #888;
+
+  --light: #aaa;
+  --lighter: #ccc;
+  --lightest: white;
+
+  --fontColor: var(--darkest);
+  --linkColor: var(--darker);
+  --linkHoverColor: var(--medium);
+  --backgroundColor: var(--light);
 }
 
 #background {
   background-blend-mode: multiply;
-  background: #ccc url('../img/backgroundstripes.png');
+  background: var(--backgroundColor) url('../img/backgroundstripes.png');
   background-size: 100%;
   background-attachment: fixed;
   width: 100%;
@@ -25,11 +40,11 @@ body {
 }
 
 a {
-  color: #333;
+  color: var(--linkColor);
 }
 
 a:hover {
-  color: #888;
+  color: var(--linkHoverColor);
 }
 
 #navbar {
@@ -47,7 +62,7 @@ a:hover {
   padding-left: 0px;
   margin-left: 0px;
   border: 1px solid black;
-  background: #ddd;
+  background: #d4d3d0;
   cursor: pointer;
   margin-bottom: 8px;
   vertical-align: top;
@@ -56,7 +71,7 @@ a:hover {
 
 #navbar li.selected {
   font-weight: bold;
-  background: #fff;
+  background: #fffff6;
   padding-top: 8px;
   margin-bottom: 0px;
   border-radius: 0px 0px 6px 6px;
@@ -110,9 +125,6 @@ span.ingredient img {
   height: 100%;
   background: #ccc;
   background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
   border-radius: 3px 0px 0px 3px;
   transition: border-bottom-left-radius 100ms ease;
   cursor: pointer;
@@ -211,9 +223,6 @@ span.ingredient img {
   border-radius: 4px;
   background: #ddd;
   background: linear-gradient(to bottom, #dddddd 0%,#cccccc 2px,#cccccc 60%,#bbbbbb 85%,#888888 100%);
-  background: -moz-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%);
-  background: -webkit-linear-gradient(to bottom, #eeeeee 0%,#dddddd 8%,#dddddd 60%,#cccccc 85%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #eeeeee),color-stop(8%, #dddddd),color-stop(60%, #dddddd),color-stop(85%, #cccccc));
 }
 
 .ingredientdropdown .item img {
@@ -227,25 +236,16 @@ span.ingredient img {
 .ingredientdropdown .item:hover {
   background: #eee;
   background: linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
-  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
-  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d8d8d8 2px,#d8d8d8 60%,#c8c8c8 85%,#aaaaaa 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d8d8d8),color-stop(60%, #d8d8d8),color-stop(85%, #c8c8c8),color-stop(100%, #aaaaaa));
 }
 
 .ingredientdropdown .item:active {
   background: #fff;
   background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
-  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
-  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa));
 }
 
 .ingredientdropdown .item.selected {
   background: #fff;
   background: linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
-  background: -moz-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
-  background: -webkit-linear-gradient(to bottom, #ffffff 0%,#d5d5d5 2px,#ffffff 60%,#dddddd 85%,#aaaaaa 100%);
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ffffff),color-stop(2px, #d5d5d5),color-stop(60%, #ffffff),color-stop(85%, #dddddd),color-stop(100%, #aaaaaa));
 }
 
 .ingredientdropdown .item.faded {
@@ -294,6 +294,9 @@ p {
 
 table {
   width: 100%;
+  font-size: 16px;
+  line-height: 22px;
+  vertical-align: middle;
 }
 
 table td {
@@ -302,8 +305,7 @@ table td {
   border-bottom: 1px solid #aaa;
   border-right: 1px solid #aaa;
   background: #ddd;
-  padding-left: 3px;
-  padding-right: 3px;
+  padding: 1px 3px;
 }
 
 td img {
@@ -334,9 +336,6 @@ table.links span.link {
   border: 1px solid #999;
   background: #ccc;
   background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
   border-radius: 3px;
   cursor: pointer;
 }
@@ -400,9 +399,6 @@ button.makablebutton {
   border: 1px solid #999;
   background: #ccc;
   background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
   border-radius: 3px;
   cursor: pointer;
 }
@@ -418,9 +414,6 @@ div.recipeFilter img {
   border: 1px solid #999;
   background: #ccc;
   background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
   border-radius: 3px;
   cursor: pointer;
 }
@@ -456,9 +449,6 @@ div.foodFilter img {
   border: 1px solid #999;
   background: #ccc;
   background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -moz-linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
-  background: -webkit-gradient(linear, left bottom, left top, color-stop(0%,rgba(170,170,170,1)), color-stop(50%,rgba(170,170,170,0)));
   border-radius: 3px;
   cursor: pointer;
 }
@@ -511,6 +501,8 @@ strong {
   width: 48px;
   height: 48px;
   opacity: 0.25;
+  padding: 4px;
+  border-radius: 8px;
 }
 
 #navbar li.mode div.mode-button:first-child {
@@ -522,22 +514,28 @@ strong {
 }
 
 #navbar li.mode div.mode-button.enabled {
+  opacity: 0.75;
+}
+
+#navbar li.mode div.mode-button.selected {
   opacity: 1;
+  background-color: transparent;
 }
 
 #navbar li.mode div.mode-button.enabled:hover {
+  opacity: 0.7;
+}
+
+#navbar li.mode div.mode-button.selected:hover {
   opacity: 0.9;
 }
 
 #navbar li.mode div.mode-button:before {
   display: block;
-  content:'';
-  position:absolute;
+  content: '';
+  position: absolute;
   width: 100%;
   height: 100%;
-  -moz-box-shadow:inset 0px 0px 5px 3px #eee;
-  -webkit-box-shadow:inset 0px 0px 5px 3px #eee;
-  box-shadow: inset 0px 0px 5px 3px #eee;
   border-radius: 5px;
 }
 

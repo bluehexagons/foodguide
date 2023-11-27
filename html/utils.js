@@ -1,35 +1,23 @@
 export const makeImage = (() => {
     const canvas = document.createElement('canvas');
-    const canvas32 = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const ctx32 = canvas32.getContext && canvas32.getContext('2d');
     const images = {};
-    const images32 = {};
     let requests = [];
 
     const cacheImage = url => {
-        const renderToCache = (url, imageElement) => {
+        const renderToCache = async (url, imageElement) => {
             ctx.clearRect(0, 0, 64, 64);
             ctx.drawImage(imageElement, 0, 0, 64, 64);
-            ctx32.clearRect(0, 0, 32, 32);
-            ctx32.drawImage(imageElement, 0, 0, 32, 32);
-            images[url] = canvas.toDataURL();
-            images32[url] = canvas32.toDataURL();
+            const blob = await new Promise(done => canvas.toBlob(done, 'image/png'))
+            images[url] = URL.createObjectURL(blob);
 
-            requests.filter(request => { return request.url === url; }).forEach(request => {
-                if (request.url === url) {
-                    delete request.img.dataset.pending;
-                    request.img.removeAttribute('data-pending');
+            requests.filter(request => request.url === url).forEach(request => {
+                delete request.img.dataset.pending;
 
-                    if (request.d === 32) {
-                        request.img.src = images32[url] || url;
-                    } else {
-                        request.img.src = images[url] || url;
-                    }
-                }
+                request.img.src = images[url] || url;
             });
 
-            requests = requests.filter(request => { return request.url !== url; });
+            requests = requests.filter(request => request.url !== url);
         };
 
         return e => {
@@ -37,30 +25,21 @@ export const makeImage = (() => {
         }
     };
 
-    const queue = (img, url, d) => {
+    const queue = (img, url) => {
         img.dataset.pending = url;
-        img.setAttribute('data-pending', url);
-        requests.push({url: url, img: img, d: d});
+        requests.push({url, img});
     };
 
     const makeImage = (url, d) => {
         const img = new Image(d)
+        img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
 
-        if (d === 32) {
-            img.width = 32;
-            img.height = 32;
-        } else {
-            img.width = 64;
-            img.height = 64;
-        }
+        img.width = 64;
+        img.height = 64;
 
         if (images[url]) {
             //image is cached
-            if (d === 32) {
-                img.src = images32[url];
-            } else {
-                img.src = images[url];
-            }
+            img.src = images[url];
         } else if (images[url] === null) {
             //image is waiting to be loaded
             queue(img, url, d);
@@ -70,16 +49,13 @@ export const makeImage = (() => {
             const dummy = new Image();
             dummy.addEventListener('load', cacheImage(url), false);
             dummy.src = url;
-            queue(img, url, d);
+            queue(img, url);
         }
         return img;
     };
 
     canvas.width = 64;
     canvas.height = 64;
-
-    canvas32.width = 32;
-    canvas32.height = 32;
 
     makeImage.queue = queue;
 
@@ -116,7 +92,7 @@ export const makeLinkable = (() => {
                     if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
                         span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
                         const url = results[i + 1].split(' ')[0];
-                        const image = makeImage(url, 32);
+                        const image = makeImage(url);
                         image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
                         span.appendChild(image);
                     } else {

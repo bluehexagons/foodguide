@@ -102,7 +102,7 @@ export const calories_per_day = 75,
 			img: 'vanilla.png',
 			bit: VANILLA,
 			mask: VANILLA,
-			color: '#ff592e'
+			color: '#ff592e',
 		},
 
 		giants: {
@@ -110,7 +110,7 @@ export const calories_per_day = 75,
 			img: 'reign_of_giants.png',
 			bit: GIANTS,
 			mask: VANILLA | GIANTS,
-			color: '#b857c6'
+			color: '#b857c6',
 		},
 
 		shipwrecked: {
@@ -118,7 +118,7 @@ export const calories_per_day = 75,
 			img: 'shipwrecked.png',
 			bit: SHIPWRECKED,
 			mask: VANILLA | GIANTS | SHIPWRECKED,
-			color: '#50c1cc'
+			color: '#50c1cc',
 		},
 
 		hamlet: {
@@ -126,7 +126,7 @@ export const calories_per_day = 75,
 			img: 'hamlet.png',
 			bit: HAMLET,
 			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
-			color: '#ffdf93'
+			color: '#ffdf93',
 		},
 
 		warly: {
@@ -138,8 +138,9 @@ export const calories_per_day = 75,
 				raw: 0.7,
 				dried: 0.8,
 				cooked: 0.9,
-				recipe: 1.2
+				recipe: 1.2,
 			},
+			color: '#50c1cc',
 		},
 
 		warlyham: {
@@ -147,6 +148,7 @@ export const calories_per_day = 75,
 			img: 'warlyHAM.png',
 			bit: WARLYHAM,
 			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
+			color: '#ffdf93',
 		},
 
 		together: {
@@ -154,7 +156,7 @@ export const calories_per_day = 75,
 			img: 'together.png',
 			bit: TOGETHER,
 			mask: TOGETHER,
-			color: '#c0c0c0'
+			color: '#c0c0c0',
 		},
 
 		warlydst: {
@@ -162,5 +164,6 @@ export const calories_per_day = 75,
 			img: 'warlyDST.png',
 			bit: WARLYDST,
 			mask: TOGETHER | WARLYDST,
+			color: '#c0c0c0',
 		},
 	};

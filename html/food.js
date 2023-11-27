@@ -92,6 +92,7 @@ export const food = {
 		sanity: sanity_tiny,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'giants'
 	},
 	deerclopseyeball: {
@@ -109,7 +110,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		rot: 'rottenegg'
+		defaultExclude: true,
+		rot: 'rottenegg',
 	},
 	bird_egg_cooked: {
 		name: 'Cooked Egg',
@@ -226,6 +228,7 @@ export const food = {
 		sanity: sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'giants'
 	},
 	honey: {
@@ -235,12 +238,14 @@ export const food = {
 		hunger: calories_tiny,
 		sanity: 0,
 		perish: perish_superslow,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		defaultExclude: true
 	},
 	honeycomb: {
 		name: 'Honeycomb',
 		skip: true,
-		sweetener: true
+		sweetener: true,
+		defaultExclude: true
 	},
 	ice: {
 		name: 'Ice',
@@ -251,6 +256,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'giants'
 	},
 	lightbulb: {
@@ -269,6 +275,7 @@ export const food = {
 		health: healing_huge,
 		hunger: calories_huge,
 		sanity: 0,
+		defaultExclude: true,
 		stack: stack_size_smallitem
 	},
 	mandrake_cooked: {
@@ -284,11 +291,11 @@ export const food = {
 	},
 	mole: {
 		name: 'Moleworm',
-		// inedible: true,
 		ideal: true,
 		meat: 0.5,
 		perish: total_day_time * 2,
 		cook: 'morsel_cooked',
+		defaultExclude: true,
 		mode: 'giants'
 	},
 	plantmeat: {
@@ -299,7 +306,8 @@ export const food = {
 		hunger: calories_small,
 		sanity: -sanity_small,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		defaultExclude: true
 	},
 	plantmeat_cooked: {
 		name: 'Cooked Leafy Meat',
@@ -309,7 +317,8 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: 0,
 		perish: perish_med,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		defaultExclude: true
 	},
 	monstermeat: {
 		name: 'Monster Meat',
@@ -452,6 +461,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		drytime: dry_med,
+		defaultExclude: true,
 		dry: 'morsel_dried'
 	},
 	batwing_cooked: {
@@ -461,6 +471,7 @@ export const food = {
 		health: healing_medsmall,
 		hunger: calories_medsmall,
 		sanity: 0,
+		defaultExclude: true,
 		perish: perish_med
 	},
 	minotaurhorn: {
@@ -481,7 +492,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		cook: 'red_mushroom_cooked',
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		defaultExclude: true
 	},
 	red_mushroom_cooked: {
 		name: 'Cooked Red Cap',
@@ -490,7 +502,8 @@ export const food = {
 		hunger: 0,
 		sanity: -sanity_small,
 		perish: perish_med,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		defaultExclude: true
 	},
 	green_mushroom: {
 		name: 'Green Cap',
@@ -502,7 +515,8 @@ export const food = {
 		sanity: -sanity_huge,
 		perish: perish_med,
 		cook: 'green_mushroom_cooked',
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		defaultExclude: true
 	},
 	green_mushroom_cooked: {
 		name: 'Cooked Green Cap',
@@ -511,7 +525,8 @@ export const food = {
 		hunger: 0,
 		sanity: sanity_med,
 		perish: perish_med,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
+		defaultExclude: true
 	},
 	blue_mushroom: {
 		name: 'Blue Cap',
@@ -588,7 +603,8 @@ export const food = {
 		egg: 4,
 		health: healing_small,
 		hunger: calories_med,
-		sanity: 0
+		sanity: 0,
+		defaultExclude: true
 	},
 	tallbirdegg_cooked: {
 		name: 'Fried Tallbird Egg',
@@ -597,7 +613,8 @@ export const food = {
 		health: 0,
 		hunger: calories_large,
 		sanity: 0,
-		perish: perish_fast
+		perish: perish_fast,
+		defaultExclude: true
 	},
 	trunk_summer: {
 		name: 'Koalefant Trunk',
@@ -1228,6 +1245,7 @@ export const food = {
 		name: 'Wobster',
 		fish: 2,
 		perish: total_day_time * 2,
+		defaultExclude: true,
 		mode: 'shipwrecked'
 	},
 	lobster_dead: {
@@ -1823,6 +1841,7 @@ export const food = {
 		sanity: sanity_tiny,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	deerclopseyeball_dst: {
@@ -1843,6 +1862,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		rot: 'rottenegg_dst',
 		cook: 'bird_egg_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	bird_egg_cooked_dst: {
@@ -1945,6 +1965,7 @@ export const food = {
 		sanity: sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	honey_dst: {
@@ -1955,12 +1976,14 @@ export const food = {
 		sanity: 0,
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	honeycomb_dst: {
 		name: 'Honeycomb',
 		sweetener: true,
 		mode: 'together',
+		defaultExclude: true,
 		skip: true,
 	},
 	ice_dst: {
@@ -1972,6 +1995,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	lightbulb_dst: {
@@ -1993,6 +2017,7 @@ export const food = {
 		sanity: 0,
 		stack: stack_size_smallitem,
 		cook: 'mandrake_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	mandrake_cooked_dst: {
@@ -2013,6 +2038,7 @@ export const food = {
 		meat: 0.5,
 		perish: total_day_time * 2,
 		cook: 'morsel_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	plantmeat_dst: {
@@ -2025,6 +2051,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		cook: 'plantmeat_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	plantmeat_cooked_dst: {
@@ -2036,6 +2063,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	monstermeat_dst: {
@@ -2196,6 +2224,7 @@ export const food = {
 		drytime: dry_med,
 		dry: 'morsel_dried_dst',
 		cook: 'batwing_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	batwing_cooked_dst: {
@@ -2206,6 +2235,7 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: 0,
 		perish: perish_med,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	minotaurhorn_dst: {
@@ -2229,6 +2259,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		cook: 'red_mushroom_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	red_mushroom_cooked_dst: {
@@ -2240,6 +2271,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	green_mushroom_dst: {
@@ -2254,6 +2286,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		cook: 'green_mushroom_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	green_mushroom_cooked_dst: {
@@ -2265,6 +2298,7 @@ export const food = {
 		sanity: sanity_med,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	blue_mushroom_dst: {
@@ -2350,6 +2384,7 @@ export const food = {
 		hunger: calories_med,
 		sanity: 0,
 		cook: 'tallbirdegg_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	tallbirdegg_cooked_dst: {
@@ -2360,6 +2395,7 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	trunk_summer_dst: {
@@ -2372,6 +2408,7 @@ export const food = {
 		meat: 1,
 		stack: stack_size_meditem,
 		cook: 'trunk_summer_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	trunk_summer_cooked_dst: {
@@ -2383,6 +2420,7 @@ export const food = {
 		perish: perish_slow,
 		meat: 1,
 		stack: stack_size_meditem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	trunk_winter_dst: {
@@ -2396,6 +2434,7 @@ export const food = {
 		meat: 1,
 		stack: stack_size_meditem,
 		cook: 'trunk_summer_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	twigs_dst: {
@@ -2703,6 +2742,7 @@ export const food = {
 		meat: 1,
 		fish: 1,
 		perish: total_day_time * 4,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	wobster_dead: {
@@ -2851,6 +2891,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: sanity_med,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	moon_tree_blossom: {
@@ -3036,17 +3077,20 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	lightninggoathorn: {
 		name: 'Volt Goat Horn',
 		inedible: 1,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	nightmarefuel: {
 		name: 'Nightmare Fuel',
 		inedible: 1,
 		magic: 1,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	boneshard: {
 		name: 'Bone Shards',
 		inedible: 1,
+		defaultExclude: true,
 		mode: 'together'
 	},
 
@@ -3063,6 +3107,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		cook: 'fishmeat_small_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	pondeel: {
@@ -3077,6 +3122,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		cook: 'eel_cooked_dst',
+		defaultExclude: true,
 		mode: 'together'
 	},
 	spoiled_fish: {
@@ -3165,6 +3211,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true, // TODO: simplify the way these get handled, but for now exclude them from the statistics analyzer
 		mode: 'together'
 	},
 	oceanfish_small_2_inv: {
@@ -3174,6 +3221,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_small_3_inv: {
@@ -3183,6 +3231,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_small_4_inv: {
@@ -3192,6 +3241,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_small_5_inv: {
@@ -3200,6 +3250,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		ismeat: true,
 		veggie: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_small_6_inv: {
@@ -3209,6 +3260,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_small_7_inv: {
@@ -3218,6 +3270,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_small_8_inv: {
@@ -3227,6 +3280,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_small_9_inv: {
@@ -3236,6 +3290,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 0.5,
 		fish: 0.5,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 
@@ -3247,6 +3302,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_medium_2_inv: {
@@ -3256,6 +3312,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_medium_3_inv: {
@@ -3265,6 +3322,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_medium_4_inv: {
@@ -3274,6 +3332,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_medium_5_inv: {
@@ -3282,6 +3341,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		ismeat: true,
 		veggie: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_medium_6_inv: {
@@ -3291,6 +3351,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},
 	oceanfish_medium_7_inv: {
@@ -3300,6 +3361,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},	
 	oceanfish_medium_8_inv: {
@@ -3311,6 +3373,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		frozen: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},	
 	oceanfish_medium_9_inv: {
@@ -3320,6 +3383,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		meat: 1,
 		fish: 1,
 		perish: perish_one_day,
+		skip: true,
 		mode: 'together'
 	},	
 
@@ -3388,6 +3452,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		hunger: 0,
 		sanity: sanity_supertiny,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	
@@ -3430,6 +3495,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		drytime: 'dry_med',
 		perish: perish_fast,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	batnose_cooked: {
@@ -3448,6 +3514,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 	refined_dust: {
 		name: "Collected Dust",
 		decoration: 2,
+		defaultExclude: true,
 		mode: 'together'
 	},
 	milkywhites: {
@@ -3458,6 +3525,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_medlarge,
 		perish: perish_med,
 		stack: stack_size_smallitem,
+		defaultExclude: true,
 		mode: 'together'
 	},
 };

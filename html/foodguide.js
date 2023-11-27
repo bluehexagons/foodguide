@@ -68,7 +68,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
 
 		if (document.getElementById('statistics').hasChildNodes) {
-			document.getElementById('statistics').replaceChildren(makeRecipeGrinder());
+			document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
 		}
 
 		for (let i = 0; i < modeTab.childNodes.length; i++) {
@@ -1006,7 +1006,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
 	};
 
-	const makeRecipeGrinder = ingredients => {
+	const makeRecipeGrinder = (ingredients, excludeDefault) => {
 		const makableButton = document.createElement('button');
 		let hasTable = false;
 
@@ -1019,7 +1019,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			const usedIngredients = new Set();
 			const excludedIngredients = new Set();
 			const excludedRecipes = new Set();
-			const excludedRecipesElements = [];
 
 			let i = ingredients ? ingredients.length : null;
 
@@ -1090,12 +1089,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 					selectedRecipeElement.className = '';
 				}
 
-				for (const e of excludedRecipesElements) {
+				for (const e of makableRecipe.childNodes) {
 					e.className = '';
 				}
 
 				excludedRecipes.clear();
-				excludedRecipesElements.length = 0;
 
 				if (selectedRecipe === e.target.dataset.recipe) {
 					selectedRecipeElement = null;
@@ -1117,14 +1115,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				}
 				
 
-				const index = excludedRecipesElements.indexOf(e.target);
-				if (index !== -1) {
+				if (excludedRecipes.has(e.target.dataset.recipe)) {
 					excludedRecipes.delete(e.target.dataset.recipe);
-					excludedRecipesElements.splice(index, 1);
 					e.target.className = '';
 				} else {
 					excludedRecipes.add(e.target.dataset.recipe);
-					excludedRecipesElements.push(e.target);
 					e.target.className = 'excluded';
 				}
 
@@ -1140,13 +1135,19 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			ingredients = ingredients.filter(f => (f.modeMask & modeMask) !== 0);
 			i = ingredients.length;
 
-			for (const ingredient of ingredients.filter(ingredient => ingredient.inefficient).map(ingredient => ingredient.id)) {
-				excludedIngredients.add(ingredient)
+			if (excludeDefault) {
+				for (const ingredient of ingredients.filter(ingredient => ingredient.defaultExclude).map(ingredient => ingredient.id)) {
+					excludedIngredients.add(ingredient);
+				}
+
+				for (const recipe of recipes.filter(recipe => recipe.defaultExclude).map(recipe => recipe.id)) {
+					excludedRecipes.add(recipe);
+				}
 			}
 
 			const tryPush = ingredient => {
 				if (!ingredient.uncookable && !ingredient.skip) {
-					idealIngredients.push(ingredient)
+					idealIngredients.push(ingredient);
 				}
 			}
 
@@ -1170,14 +1171,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				if (ingredients[i].rackdried && !ingredients[i].wet.uncookable && !ingredients[i].wet.skip && idealIngredients.indexOf(ingredients[i].wet) === -1) {
 					tryPush(ingredients[i].wet);
 				}
-
-				/* if (ingredients[i].cook && idealIngredients.indexOf(ingredients[i].cook) === -1 && !ingredients[i].cook.uncookable) {
-					tryPush(ingredients[i].cook);
-				}
-
-				if (!ingredients[i].uncookable && (ingredients[i].ideal || !ingredients[i].cook || ingredients[i].cook.uncookable) && idealIngredients.indexOf(ingredients[i]) === -1) {
-					tryPush(ingredients[i]);
-				} */
 			}
 
 			made = [];
@@ -1204,8 +1197,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				null,
 				null,
 				data => (
-					(!selectedRecipe || data.recipe.name === selectedRecipe)
-					&& !excludedRecipes.has(data.recipe.name)
+					(!selectedRecipe || data.recipe.id === selectedRecipe)
+					&& !excludedRecipes.has(data.recipe.id)
 					&& (excludedIngredients.size == 0 || !data.ingredients.some(checkExcludes))
 					&& ([...usedIngredients].every(checkIngredient, data.ingredients))
 				),
@@ -1235,6 +1228,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				img.dataset.id = item.id;
 				img.addEventListener('click', toggleFilter, false);
 				img.addEventListener('contextmenu', toggleExclude, false);
+				if (excludedIngredients.has(item.id)) {
+					img.className = 'excluded';
+				}
 				img.title = item.name;
 				makableFilter.appendChild(img);
 			});
@@ -1256,22 +1252,25 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
 
 			getRealRecipesFromCollection(idealIngredients, data => { // row update
-				if (makableRecipes.indexOf(data.recipe.name) === -1) {
+				if (makableRecipes.indexOf(data.recipe.id) === -1) {
 					let i = 0;
 
 					for (i = 0; i < makableRecipes.length; i++) {
-						if (data.recipe.name < makableRecipes[i]) {
+						if (data.recipe.id < makableRecipes[i]) {
 							break;
 						}
 					}
 
-					makableRecipes.splice(i, 0, data.recipe.name);
+					makableRecipes.splice(i, 0, data.recipe.id);
 
-					const img = makeImage(recipes.byName(makableRecipes[i].toLowerCase()).img);
+					const img = makeImage(recipes[makableRecipes[i].toLowerCase()].img);
 
 					img.dataset.recipe = makableRecipes[i];
 					img.addEventListener('click', setRecipe, false);
 					img.addEventListener('contextmenu', excludeRecipe, false);
+					if (excludedRecipes.has(data.recipe.id)) {
+						img.className = 'excluded';
+					}
 					img.title = data.recipe.name;
 
 					if (i < makableRecipe.childNodes.length) {
@@ -1309,8 +1308,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 		return makableButton;
 	};
-
-	document.getElementById('statistics').appendChild(makeRecipeGrinder());
 
 	const highest = (array, property) => {
 		return array.reduce((previous, current) => {
@@ -1621,7 +1618,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 					if (discover.firstChild) {
 						discover.removeChild(discover.firstChild);
 					}
-					if (makable.firstChild) {
+					while (makable.firstChild) {
 						makable.removeChild(makable.firstChild);
 					}
 

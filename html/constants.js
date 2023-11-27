@@ -121,14 +121,6 @@ export const calories_per_day = 75,
 			color: '#50c1cc',
 		},
 
-		hamlet: {
-			name: 'Hamlet',
-			img: 'hamlet.png',
-			bit: HAMLET,
-			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
-			color: '#ffdf93',
-		},
-
 		warly: {
 			name: 'Warly Shipwrecked',
 			img: 'warly.png',
@@ -141,6 +133,14 @@ export const calories_per_day = 75,
 				recipe: 1.2,
 			},
 			color: '#50c1cc',
+		},
+
+		hamlet: {
+			name: 'Hamlet',
+			img: 'hamlet.png',
+			bit: HAMLET,
+			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
+			color: '#ffdf93',
 		},
 
 		warlyham: {

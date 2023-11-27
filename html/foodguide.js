@@ -24,27 +24,28 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 import {
-	total_day_time,
-	sanity_small,
-	perish_preserved,
-	perish_fridge_mult,
-	perish_ground_mult,
-	perish_winter_mult,
-	perish_summer_mult,
-	stale_food_hunger,
-	spoiled_food_hunger,
-	stale_food_health,
+	GIANTS,
+	HAMLET,
+	SHIPWRECKED,
+	VANILLA,
 	base_cook_time,
 	defaultStatMultipliers,
-	VANILLA,
-	GIANTS,
-	SHIPWRECKED,
-	HAMLET,
-	modes
+	headings,
+	modes,
+	perish_fridge_mult,
+	perish_ground_mult,
+	perish_preserved,
+	perish_summer_mult,
+	perish_winter_mult,
+	sanity_small,
+	spoiled_food_hunger,
+	stale_food_health,
+	stale_food_hunger,
+	total_day_time
 } from './constants.js';
-import {food} from './food.js';
-import {recipes, updateFoodRecipes} from './recipes.js';
-import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
+import { food } from './food.js';
+import { recipes, updateFoodRecipes } from './recipes.js';
+import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 (() => {
 	const modeRefreshers = [];
@@ -833,18 +834,27 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		let health = sign(item.health * mult);
 		let hunger = sign(item.hunger * mult);
 		let sanity = isNaN(item.sanity) ? '' : (item.sanity * mult);
+		let perish = isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time);
 
 		if (item.cook) {
 			const cookmult = statMultipliers[item.cook.preparationType]
 
-			if (item.cook.health !== (item.health || 0)) {
-				health += ' (' + sign((item.cook.health * cookmult) - (health || 0)) + ')';
+			if ((item.cook.health || 0) !== (item.health || 0)) {
+				health += ' (' + sign(((item.cook.health || 0) * cookmult) - (item.health || 0)) + ')';
 			}
-			if (item.cook.hunger !== (item.hunger || 0)) {
-				hunger += ' (' + sign((item.cook.hunger * cookmult) - (hunger || 0)) + ')';
+			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
+				hunger += ' (' + sign(((item.cook.hunger || 0) * cookmult) - (item.hunger || 0)) + ')';
 			}
-			if (item.cook.sanity !== (item.sanity || 0)) {
-				sanity += ' (' + sign((item.cook.sanity * cookmult) - (sanity || 0)) + ')';
+			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
+				sanity += ' (' + sign(((item.cook.sanity || 0) * cookmult) - (item.sanity || 0)) + ')';
+			}
+			if ((item.cook.perish || 0) !== (item.perish || 0)) {
+				const dayDifference = ((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
+				if (isNaN(dayDifference)) {
+					perish += ' (to Never)';
+				} else {
+					perish += ' (' + (item.perish ? sign(dayDifference) : 'to ' + (item.cook.perish / total_day_time)) + ')';
+				}
 			}
 		}
 
@@ -855,7 +865,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			health,
 			hunger,
 			sanity,
-			isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time),
+			perish,
 			item.info || '',
 			item.modeNode || '',
 		);
@@ -942,7 +952,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		};
 
 		const foodTable = makeSortableTable(
-			{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': '', 'Mode:DLC or Game Mode required': 'modeMask'},
+			{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Info': '', 'Mode:DLC or Game Mode required': 'modeMask'},
 			Array.prototype.slice.call(food),
 			makeFoodRow,
 			'name',
@@ -953,7 +963,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 		);
 
 		const recipeTable = makeSortableTable(
-			{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim+struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+			{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim+struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
 			Array.prototype.slice.call(recipes),
 			makeRecipeRow,
 			'name',
@@ -1141,7 +1151,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 			made = [];
 
 			makableTable = makeSortableTable(
-				{'': '', 'Name': 'name', 'Health': 'health', 'Health+:Health gained compared to ingredients': 'healthpls', 'Hunger': 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
+				{'': '', 'Name': 'name', [headings.health]: 'health', 'Health+:Health gained compared to ingredients': 'healthpls', [headings.hunger]: 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
 				made,
 				data => {
 					const item = data.recipe;
@@ -1520,7 +1530,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 					const sanity = cooking[0].sanity;
 
 					let table = makeSortableTable(
-						{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+						{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
 						cooking,
 						item => {
 							return makeRecipeRow(item, health, hunger, sanity);
@@ -1550,7 +1560,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 						if (suggestions.length > 0) {
 							results.appendChild(document.createTextNode('Add more ingredients to make:'));
 							table = makeSortableTable(
-								{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+								{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
 								suggestions,
 								item => {
 									return makeRecipeRow(item, health, hunger, sanity);
@@ -1584,7 +1594,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 					if (ingredients.length > 0) {
 						const foodTable = makeSortableTable(
-							{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Info': '', 'Mode:DLC or Game Mode required': 'modeMask'},
+							{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Info': '', 'Mode:DLC or Game Mode required': 'modeMask'},
 							ingredients,
 							makeFoodRow,
 							'name'
@@ -1595,7 +1605,7 @@ import {makeLinkable, isStat, isBestStat, makeImage, pl} from './utils.js';
 
 						if (inventoryrecipes.length > 0) {
 							const table = makeSortableTable(
-								{'': '', 'Name': 'name', 'Health': 'health', 'Hunger': 'hunger', 'Sanity': 'sanity', 'Perish:Time to turn to rot': 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+								{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
 								inventoryrecipes,
 								makeRecipeRow,
 								'name'

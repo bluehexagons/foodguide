@@ -84,86 +84,92 @@ export const calories_per_day = 75,
 		dried: 1,
 		cooked: 1,
 		recipe: 1
+	};
+
+export const VANILLA = 1
+export const GIANTS = 1 << 1
+export const SHIPWRECKED = 1 << 2
+export const TOGETHER = 1 << 3
+export const WARLY = 1 << 4
+export const HAMLET = 1 << 5
+export const WARLYHAM = 1 << 6
+export const WARLYDST = 1 << 7
+
+export const modes = {
+	vanilla: {
+		name: 'Vanilla',
+		img: 'vanilla.png',
+		bit: VANILLA,
+		mask: VANILLA,
+		color: '#ff592e',
 	},
 
-	VANILLA = 1,
-	GIANTS = 1 << 1,
-	SHIPWRECKED = 1 << 2,
-	TOGETHER = 1 << 3,
-	WARLY = 1 << 4,
-	HAMLET = 1 << 5,
-	WARLYHAM = 1 << 6,
-	WARLYDST = 1 << 7,
+	giants: {
+		name: 'Reign of Giants',
+		img: 'reign_of_giants.png',
+		bit: GIANTS,
+		mask: VANILLA | GIANTS,
+		color: '#b857c6',
+	},
 
+	shipwrecked: {
+		name: 'Shipwrecked',
+		img: 'shipwrecked.png',
+		bit: SHIPWRECKED,
+		mask: VANILLA | GIANTS | SHIPWRECKED,
+		color: '#50c1cc',
+	},
 
-	modes = {
-		vanilla: {
-			name: 'Vanilla',
-			img: 'vanilla.png',
-			bit: VANILLA,
-			mask: VANILLA,
-			color: '#ff592e',
+	warly: {
+		name: 'Warly Shipwrecked',
+		img: 'warly.png',
+		bit: WARLY,
+		mask: VANILLA | GIANTS | SHIPWRECKED | WARLY,
+		multipliers: {
+			raw: 0.7,
+			dried: 0.8,
+			cooked: 0.9,
+			recipe: 1.2,
 		},
+		color: '#50c1cc',
+	},
 
-		giants: {
-			name: 'Reign of Giants',
-			img: 'reign_of_giants.png',
-			bit: GIANTS,
-			mask: VANILLA | GIANTS,
-			color: '#b857c6',
-		},
+	hamlet: {
+		name: 'Hamlet',
+		img: 'hamlet.png',
+		bit: HAMLET,
+		mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
+		color: '#ffdf93',
+	},
 
-		shipwrecked: {
-			name: 'Shipwrecked',
-			img: 'shipwrecked.png',
-			bit: SHIPWRECKED,
-			mask: VANILLA | GIANTS | SHIPWRECKED,
-			color: '#50c1cc',
-		},
+	warlyham: {
+		name: 'Warly Hamlet',
+		img: 'warlyHAM.png',
+		bit: WARLYHAM,
+		mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
+		color: '#ffdf93',
+	},
 
-		warly: {
-			name: 'Warly Shipwrecked',
-			img: 'warly.png',
-			bit: WARLY,
-			mask: VANILLA | GIANTS | SHIPWRECKED | WARLY,
-			multipliers: {
-				raw: 0.7,
-				dried: 0.8,
-				cooked: 0.9,
-				recipe: 1.2,
-			},
-			color: '#50c1cc',
-		},
+	together: {
+		name: 'Don\'t Starve Together',
+		img: 'together.png',
+		bit: TOGETHER,
+		mask: TOGETHER,
+		color: '#c0c0c0',
+	},
 
-		hamlet: {
-			name: 'Hamlet',
-			img: 'hamlet.png',
-			bit: HAMLET,
-			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
-			color: '#ffdf93',
-		},
+	warlydst: {
+		name: 'Warly Don\'t Starve Together',
+		img: 'warlyDST.png',
+		bit: WARLYDST,
+		mask: TOGETHER | WARLYDST,
+		color: '#c0c0c0',
+	},
+};
 
-		warlyham: {
-			name: 'Warly Hamlet',
-			img: 'warlyHAM.png',
-			bit: WARLYHAM,
-			mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
-			color: '#ffdf93',
-		},
-
-		together: {
-			name: 'Don\'t Starve Together',
-			img: 'together.png',
-			bit: TOGETHER,
-			mask: TOGETHER,
-			color: '#c0c0c0',
-		},
-
-		warlydst: {
-			name: 'Warly Don\'t Starve Together',
-			img: 'warlyDST.png',
-			bit: WARLYDST,
-			mask: TOGETHER | WARLYDST,
-			color: '#c0c0c0',
-		},
-	};
+export const headings = {
+	health: 'Health:Health restored (change if cooked)',
+	hunger: 'Hunger:Hunger restored (change if cooked)',
+	sanity: 'Sanity:Sanity restored (change if cooked)',
+	perish: 'Perish:Time to turn to rot (change if cooked)',
+}

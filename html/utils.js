@@ -79,30 +79,42 @@ export const makeLinkable = (() => {
             return processed;
         } else {
             const fragment = document.createDocumentFragment();
-            fragment.appendChild(document.createTextNode(results[0]));
+            let row = document.createElement('div');
+            row.className = 'cellRow';
+            row.appendChild(document.createTextNode(results[0]));
 
             for (let i = 1; i < results.length; i += 4) {
                 if (results[i] === '' && results[i + 1] === '') {
-                    fragment.appendChild(document.createElement('br'));
+                    fragment.appendChild(row);
+                    row = document.createElement('div');
+                    row.className = 'cellRow';
                 } else {
                     const span = document.createElement('span');
-                    span.className = results[i + 2] === '' ? 'link' : 'link ' + results[i + 2]; //IE doesn't support classList, too lazy to come up with a polyfill
+
+                    span.classList.add('link');
+                    if (results[i + 2] !== '') {
+                        span.classList.add(...results[i + 2].split(' '));
+                    }
                     span.dataset.link = results[i];
 
                     if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
                         span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
                         const url = results[i + 1].split(' ')[0];
                         const image = makeImage(url);
+
                         image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
                         span.appendChild(image);
                     } else {
                         span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
                     }
-                    fragment.appendChild(span);
+
+                    row.appendChild(span);
                 }
 
-                fragment.appendChild(document.createTextNode(results[i + 3]));
+                row.appendChild(document.createTextNode(results[i + 3]));
             }
+
+            fragment.appendChild(row)
 
             return fragment;
         }

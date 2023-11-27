@@ -305,7 +305,13 @@ table td {
   border-bottom: 1px solid #aaa;
   border-right: 1px solid #aaa;
   background: #ddd;
-  padding: 1px 3px;
+  padding: 2px 5px;
+  min-height: 26px;
+  min-width: 40px;
+}
+
+td .cellRow:nth-child(n + 2) {
+  margin-top: 1px;
 }
 
 td img {
@@ -367,6 +373,7 @@ table.links span.link.strike {
 span.link img {
   width: 20px;
   height: 20px;
+  margin-bottom: -2px;
   vertical-align: text-bottom;
 }
 
@@ -502,7 +509,7 @@ strong {
   height: 48px;
   opacity: 0.25;
   padding: 4px;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 #navbar li.mode div.mode-button:first-child {

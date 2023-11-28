@@ -1153,7 +1153,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 			while (i--) {
 				if (!ingredients[i].skip) {
-					if (!ingredients[i].uncookable && (!ingredients[i].cooked || ingredients[i].ideal) && (!ingredients[i].rackdried || ingredients[i].ideal) && idealIngredients.indexOf(ingredients[i]) === -1) {
+					if (!ingredients[i].uncookable && (!ingredients[i].cooked || ingredients[i].ideal) && idealIngredients.indexOf(ingredients[i]) === -1) {
 						tryPush(ingredients[i]);
 					}
 				} else {

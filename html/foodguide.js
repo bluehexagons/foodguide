@@ -1012,8 +1012,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 		makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
 		makableButton.className = 'makablebutton';
-
-		makableButton.addEventListener('click', () => {
+		const initializeGrinder = () => (() => {
 			const idealIngredients = [];
 			const makableRecipes = [];
 			const usedIngredients = new Set();
@@ -1304,7 +1303,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 				makableSummary.appendChild(deleteButton)
 			});
-		}, false);
+		})();
+
+		makableButton.addEventListener('click', initializeGrinder, false);
 
 		return makableButton;
 	};

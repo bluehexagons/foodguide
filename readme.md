@@ -1,4 +1,4 @@
-# [Don't Starve Food Guide](https://bluehexagons.com/foodguide)
+# [Don't Starve Food Guide](https://foodguide.bluehexagons.com)
 
 Provides some tools for avoiding starvation
 in a game about doing just that.

@@ -2184,7 +2184,7 @@ export const recipes = {
 		cooktime: 2,
 		mode: 'warlydst'
 	},
-	monstertartare: {
+	monstertartare_dst: {
 		name: 'Monster Tartare',
 		test: (cooker, names, tags) => {
 			return tags.monster && tags.monster >= 2 && !tags.inedible;
@@ -2199,7 +2199,7 @@ export const recipes = {
 		cooktime: 0.5,
 		mode: 'warlydst'
 	},
-	freshfruitcrepes: {
+	freshfruitcrepes_dst: {
 		name: 'Fresh Fruit Crepes',
 		test: (cooker, names, tags) => {
 			return tags.fruit && tags.fruit >= 1.5 && names.butter_dst && names.honey_dst;

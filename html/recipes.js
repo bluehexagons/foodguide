@@ -1419,7 +1419,7 @@ export const recipes = {
 	trailmix_dst: {
 		name: 'Trail Mix',
 		test: (cooker, names, tags) => {
-			return (names.acorn_dst || names.acorn_cooked) && tags.seed && tags.seed >= 1 && (names.berries_dst || names.berries_cooked_dst || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
+			return (names.acorn_dst || names.acorn_cooked_dst) && tags.seed && tags.seed >= 1 && (names.berries_dst || names.berries_cooked_dst || names.berries_juicy || names.berries_juicy_cooked) && tags.fruit && tags.fruit >= 1 && !tags.meat && !tags.veggie && !tags.egg && !tags.dairy;
 			
 		},
 		requirements: [NAME('acorn'), TAG('seed', COMPARE('>=', 1)), NAME('berries'), TAG('fruit', COMPARE('>=', 1)), NOT(TAG('meat')), NOT(TAG('veggie')), NOT(TAG('egg')), NOT(TAG('dairy'))],

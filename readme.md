@@ -28,3 +28,4 @@ builds for a thin Electron wrapper around this project.
   [6lancmange](https://github.com/6lancmange)
   [lakhnishMonster](https://github.com/lakhnishMonster)
   [lormico](https://github.com/lormico)
+  [VaingloriousReptile](https://github.com/VaingloriousReptile)

@@ -83,17 +83,17 @@ export const calories_per_day = 75,
 		raw: 1,
 		dried: 1,
 		cooked: 1,
-		recipe: 1
+		recipe: 1,
 	};
 
-export const VANILLA = 1
-export const GIANTS = 1 << 1
-export const SHIPWRECKED = 1 << 2
-export const TOGETHER = 1 << 3
-export const WARLY = 1 << 4
-export const HAMLET = 1 << 5
-export const WARLYHAM = 1 << 6
-export const WARLYDST = 1 << 7
+export const VANILLA = 1;
+export const GIANTS = 1 << 1;
+export const SHIPWRECKED = 1 << 2;
+export const TOGETHER = 1 << 3;
+export const WARLY = 1 << 4;
+export const HAMLET = 1 << 5;
+export const WARLYHAM = 1 << 6;
+export const WARLYDST = 1 << 7;
 
 export const modes = {
 	vanilla: {
@@ -172,4 +172,4 @@ export const headings = {
 	hunger: 'Hunger:Hunger restored (change if cooked)',
 	sanity: 'Sanity:Sanity restored (change if cooked)',
 	perish: 'Perish:Time to turn to rot (change if cooked)',
-}
+};

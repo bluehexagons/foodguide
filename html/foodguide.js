@@ -41,7 +41,7 @@ import {
 	spoiled_food_hunger,
 	stale_food_health,
 	stale_food_hunger,
-	total_day_time
+	total_day_time,
 } from './constants.js';
 import { food } from './food.js';
 import { recipes, updateFoodRecipes } from './recipes.js';
@@ -68,24 +68,26 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
 
 		if (document.getElementById('statistics').hasChildNodes) {
-			document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
+			document
+				.getElementById('statistics')
+				.replaceChildren(makeRecipeGrinder(null, true));
 		}
 
 		for (let i = 0; i < modeTab.childNodes.length; i++) {
 			const img = modeTab.childNodes[i];
-			const mode = modes[img.dataset.mode]
+			const mode = modes[img.dataset.mode];
 			img.className = 'mode-button';
 			if (modeMask === mode.mask) {
-				img.classList.add('selected')
+				img.classList.add('selected');
 				img.style.backgroundColor = mode.color;
 			} else if ((modeMask & mode.bit) !== 0) {
-				img.classList.add('enabled')
+				img.classList.add('enabled');
 				img.style.backgroundColor = 'white';
 			} else {
 				img.style.backgroundColor = 'transparent';
 			}
 
-			if (mode.multipliers && ((modeMask & mode.bit) !== 0)) {
+			if (mode.multipliers && (modeMask & mode.bit) !== 0) {
 				for (const foodtype in mode.multipliers) {
 					if (mode.multipliers.hasOwnProperty(foodtype)) {
 						statMultipliers[foodtype] *= mode.multipliers[foodtype];
@@ -103,20 +105,21 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			'hamlet',
 			'shipwrecked',
 			'giants',
-			'vanilla'
+			'vanilla',
 		];
 
 		// Set the background color based on selected game mode
 		for (let i = 0; i < modeOrder.length; i++) {
 			const mode = modes[modeOrder[i]];
 			if ((modeMask & mode.bit) !== 0) {
-				document.getElementById('background').style['background-color'] = mode.color;
+				document.getElementById('background').style['background-color'] =
+          mode.color;
 				return;
 			}
 		}
 	};
 
-	let matchingNames = (() => {
+	const matchingNames = (() => {
 		const tagsearch = /^tag[: ]/;
 		const tagsplit = /^tag:? */;
 		const tagnotsearch = /^tagnot[: ]/;
@@ -135,16 +138,22 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		let wordstarts;
 
 		const allowedFilter = element => {
-			if ((!allowUncookable && element.uncookable) || (element.modeMask & modeMask) === 0) {
+			if (
+				(!allowUncookable && element.uncookable) ||
+        (element.modeMask & modeMask) === 0
+			) {
 				element.match = 0;
 				return false;
 			}
 
 			return true;
-		}
+		};
 
 		const filter = element => {
-			if (element.lowerName.indexOf(name) === 0 || (element.raw && element.raw.lowerName.indexOf(name) === 0)) {
+			if (
+				element.lowerName.indexOf(name) === 0 ||
+        (element.raw && element.raw.lowerName.indexOf(name) === 0)
+			) {
 				element.match = 3;
 			} else if (wordstarts.test(element.lowerName) === 0) {
 				element.match = 2;
@@ -158,7 +167,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		};
 
 		const tagFilter = element => {
-			return element.match = element[tag] + 0 || 0;
+			return (element.match = element[tag] + 0 || 0);
 		};
 
 		const recipeFilter = element => {
@@ -178,7 +187,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				}
 				i++;
 			}
-			return element.match = failed ? 0 : 1;
+			return (element.match = failed ? 0 : 1);
 		};
 
 		const ingredientFilter = recipe => {
@@ -186,7 +195,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			let failed = true;
 
 			while (i < recipe.requirements.length) {
-				const result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
+				const result = recipe.requirements[i].test(
+					null,
+					ingredient.nameObject,
+					ingredient,
+				);
 				if (recipe.requirements[i].cancel) {
 					if (!result) {
 						failed = true;
@@ -199,15 +212,20 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				}
 				i++;
 			}
-			return recipe.match = failed ? 0 : 1;
+			return (recipe.match = failed ? 0 : 1);
 		};
 
 		const exact = element => {
-			return element.match = (element.lowerName === name) ? 1 : 0;
+			return (element.match = element.lowerName === name ? 1 : 0);
 		};
 
 		const like = element => {
-			return element.match = (element.lowerName === name || (element.raw && element.raw.lowerName === name) || (element.cook && element.cook.lowerName === name)) ? 1 : 0;
+			return (element.match =
+        element.lowerName === name ||
+        (element.raw && element.raw.lowerName === name) ||
+        (element.cook && element.cook.lowerName === name)
+        	? 1
+        	: 0);
 		};
 
 		const byMatch = (a, b) => {
@@ -237,7 +255,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				// tagnot:
 				tag = name.split(tagnotsplit)[1];
 
-				return arr.filter(element => { return !tagFilter(element); }).sort(byMatch);
+				return arr
+					.filter(element => {
+						return !tagFilter(element);
+					})
+					.sort(byMatch);
 			} else if (recipesearch.test(name)) {
 				// recipe:
 				recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
@@ -289,12 +311,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 				for (const k in item) {
 					if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
-						let val = item[k]
+						let val = item[k];
 
 						if (isStat[k]) {
 							val *= statMultipliers[item.preparationType];
 						} else if (isBestStat[k]) {
-							val *= statMultipliers[item[k+'Type']];
+							val *= statMultipliers[item[k + 'Type']];
 						}
 
 						tags[k] = val + (tags[k] || 0);
@@ -322,7 +344,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				}
 
 				for (let ii = 0; ii < recipes[i].requirements.length; ii++) {
-					const requirement = recipes[i].requirements[ii]
+					const requirement = recipes[i].requirements[ii];
 
 					if (requirement.test(null, names, tags)) {
 						if (!recipes[i].requirements[ii].cancel) {
@@ -355,7 +377,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			setIngredientValues(items, names, tags);
 
 			for (let i = 0; i < recipes.length; i++) {
-				if ((recipes[i].modeMask & modeMask) !== 0 && recipes[i].test(null, names, tags)) {
+				if (
+					(recipes[i].modeMask & modeMask) !== 0 &&
+          recipes[i].test(null, names, tags)
+				) {
 					recipeList.push(recipes[i]);
 				}
 			}
@@ -365,7 +390,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			});
 
 			// Add best row
-			const bestTags = {...tags}
+			const bestTags = { ...tags };
 			bestTags.hunger = bestTags.bestHunger;
 			bestTags.health = bestTags.bestHealth;
 			bestTags.sanity = bestTags.bestSanity;
@@ -380,7 +405,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			recipeList.unshift(bestTags);
 
 			// Add total row
-			const totalTags = {...tags}
+			const totalTags = { ...tags };
 
 			totalTags.bestHunger = totalTags.hunger;
 			totalTags.bestHealth = totalTags.health;
@@ -406,19 +431,49 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 	// TODO: process the rot: entries, and add the spoiled fish
 
-	document.getElementById('stalehealth').appendChild(document.createTextNode(Math.round(stale_food_health * 1000) / 10 + '%'));
-	document.getElementById('stalehunger').appendChild(document.createTextNode(Math.round(stale_food_hunger * 1000) / 10 + '%'));
-	document.getElementById('spoiledhunger').appendChild(document.createTextNode(Math.round(spoiled_food_hunger * 1000) / 10 + '%'));
-	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_small));
-	document.getElementById('perishground').appendChild(document.createTextNode(Math.round(perish_ground_mult * 1000) / 10 + '%'));
-	document.getElementById('perishwinter').appendChild(document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'));
-	document.getElementById('perishsummer').appendChild(document.createTextNode(Math.round(perish_summer_mult * 1000) / 10 + '%'));
-	document.getElementById('perishfridge').appendChild(document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'));
+	document
+		.getElementById('stalehealth')
+		.appendChild(
+			document.createTextNode(Math.round(stale_food_health * 1000) / 10 + '%'),
+		);
+	document
+		.getElementById('stalehunger')
+		.appendChild(
+			document.createTextNode(Math.round(stale_food_hunger * 1000) / 10 + '%'),
+		);
+	document
+		.getElementById('spoiledhunger')
+		.appendChild(
+			document.createTextNode(Math.round(spoiled_food_hunger * 1000) / 10 + '%'),
+		);
+	document
+		.getElementById('spoiledsanity')
+		.appendChild(document.createTextNode(sanity_small));
+	document
+		.getElementById('perishground')
+		.appendChild(
+			document.createTextNode(Math.round(perish_ground_mult * 1000) / 10 + '%'),
+		);
+	document
+		.getElementById('perishwinter')
+		.appendChild(
+			document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'),
+		);
+	document
+		.getElementById('perishsummer')
+		.appendChild(
+			document.createTextNode(Math.round(perish_summer_mult * 1000) / 10 + '%'),
+		);
+	document
+		.getElementById('perishfridge')
+		.appendChild(
+			document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'),
+		);
 
 	const combinationGenerator = (length, callback, startPos) => {
-		const size = 4
-		const index = 1
-		const current = startPos || [0, 0, 0, 0]
+		const size = 4;
+		const index = 1;
+		const current = startPos || [0, 0, 0, 0];
 
 		return batch => {
 			while (batch-- && index <= length) {
@@ -468,21 +523,38 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		});
 	*/
 
-	const getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
+	const getRealRecipesFromCollection = (
+		items,
+		mainCallback,
+		chunkCallback,
+		endCallback,
+	) => {
 		const recipeCrunchData = {};
 		const updateRecipeCrunchData = () => {
-			recipeCrunchData.recipes = recipes.filter(item => {
-				return !item.trash && (item.modeMask & modeMask) !== 0 && item.foodtype !== 'roughage';
-			}).sort((a, b) => {
-				return b.priority - a.priority;
+			recipeCrunchData.recipes = recipes
+				.filter(item => {
+					return (
+						!item.trash &&
+            (item.modeMask & modeMask) !== 0 &&
+            item.foodtype !== 'roughage'
+					);
+				})
+				.sort((a, b) => {
+					return b.priority - a.priority;
+				});
+
+			recipeCrunchData.test = recipeCrunchData.recipes.map(a => {
+				return a.test;
+			});
+			recipeCrunchData.tests = recipeCrunchData.recipes.map(a => {
+				return a.test.toString();
+			});
+			recipeCrunchData.priority = recipeCrunchData.recipes.map(a => {
+				return a.priority || 0;
 			});
 
-			recipeCrunchData.test = recipeCrunchData.recipes.map(a => { return a.test; });
-			recipeCrunchData.tests = recipeCrunchData.recipes.map(a => { return a.test.toString(); });
-			recipeCrunchData.priority = recipeCrunchData.recipes.map(a => { return a.priority || 0; });
-
 			window.recipeCrunchData = recipeCrunchData;
-		}
+		};
 		updateRecipeCrunchData();
 
 		const built = [];
@@ -510,18 +582,28 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			tags.health = tags.bestHealth; // * statMultipliers[tags.bestHealthType];
 			tags.sanity = tags.bestSanity; // * statMultipliers[tags.bestSanityType];
 
-			const matches = recipeCrunchData.recipes.filter(recipe => recipe.test(null, names, tags))
-			const maxPriority = matches.reduce((max, recipe) => Math.max(recipe.priority, max), -Infinity)
+			const matches = recipeCrunchData.recipes.filter(recipe =>
+				recipe.test(null, names, tags),
+			);
+			const maxPriority = matches.reduce(
+				(max, recipe) => Math.max(recipe.priority, max),
+				-Infinity,
+			);
 
 			for (const recipe of matches.filter(
-				recipe => recipe.priority >= maxPriority
+				recipe => recipe.priority >= maxPriority,
 			)) {
 				if (created !== null) {
 					multiple = true;
 					created.multiple = true;
 				}
 
-				created = { recipe, ingredients, tags: { health: tags.health, hunger: tags.hunger }, multiple };
+				created = {
+					recipe,
+					ingredients,
+					tags: { health: tags.health, hunger: tags.hunger },
+					multiple,
+				};
 				built.push(created);
 			}
 		};
@@ -542,7 +624,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			}
 			if (lastTime !== Date.now() - start) {
 				lastTime = Date.now() - start + 1;
-				block = desiredTime / lastTime * block + 1 | 0;
+				block = ((desiredTime / lastTime) * block + 1) | 0;
 			}
 			chunkCallback && chunkCallback();
 			end && endCallback && endCallback();
@@ -578,9 +660,17 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 			if (navtab.dataset.tab) {
 				tabs[navtab.dataset.tab] = navtab;
-				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
+				elements[navtab.dataset.tab] = document.getElementById(
+					navtab.dataset.tab,
+				);
 				elements[navtab.dataset.tab].style.display = 'none';
-				navtab.addEventListener('selectstart', e => { e.preventDefault(); }, false);
+				navtab.addEventListener(
+					'selectstart',
+					e => {
+						e.preventDefault();
+					},
+					false,
+				);
 				navtab.addEventListener('click', showTab, false);
 			}
 		}
@@ -598,10 +688,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 					modeMask = storage.modeMask || modes.together.mask;
 				}
 			}
-		} catch(err) {
+		} catch (err) {
 			console.warn('Unable to access localStorage', err);
 			try {
-				window.localStorage.removeItem('foodGuideState')
+				window.localStorage.removeItem('foodGuideState');
 			} catch {}
 		}
 
@@ -620,7 +710,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				obj.activeTab = activeTab.dataset.tab;
 				obj.modeMask = modeMask;
 				window.localStorage.foodGuideState = JSON.stringify(obj);
-			} catch(err) {
+			} catch (err) {
 				console.warn('Unable to access localStorage', err);
 			}
 		});
@@ -651,7 +741,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 					imgurl = split[0];
 					title = split[1];
 				}
-				let image = makeImage(imgurl);
+				const image = makeImage(imgurl);
 				image.title = title;
 				td.appendChild(image);
 			} else if (cell && cell.nodeType && cell.nodeType === 1) {
@@ -667,21 +757,35 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 	};
 
 	const wikiaHref = name => {
-			if (name && name.startsWith('Sum:')) {
-				return name.substring(name.indexOf(':') + 1);
-			}
+		if (name && name.startsWith('Sum:')) {
+			return name.substring(name.indexOf(':') + 1);
+		}
 
-			const node = document.createElement('a');
-			node.setAttribute('target', '_blank');
-			node.setAttribute('href', 'https://dontstarve.fandom.com/wiki/' + name.replace(/\s/g, '_'));
+		const node = document.createElement('a');
+		node.setAttribute('target', '_blank');
+		node.setAttribute(
+			'href',
+			'https://dontstarve.fandom.com/wiki/' + name.replace(/\s/g, '_'),
+		);
 
-			const text = document.createTextNode(name);
-			node.appendChild(text);
+		const text = document.createTextNode(name);
+		node.appendChild(text);
 
-			return node;
-		};
+		return node;
+	};
 
-	const makeSortableTable = (headers, dataset, rowGenerator, defaultSort, hasSummary, linkCallback, highlightCallback, filterCallback, startRow, maxRows) => {
+	const makeSortableTable = (
+		headers,
+		dataset,
+		rowGenerator,
+		defaultSort,
+		hasSummary,
+		linkCallback,
+		highlightCallback,
+		filterCallback,
+		startRow,
+		maxRows,
+	) => {
 		let table;
 		let sorting;
 		let invertSort = false;
@@ -690,7 +794,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		let rows;
 
 		const generateAndHighlight = (item, index, array) => {
-			if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
+			if (
+				(!maxRows || rows < maxRows) &&
+        (!filterCallback || filterCallback(item))
+			) {
 				const row = rowGenerator(item);
 
 				if (highlightCallback && highlightCallback(item, array)) {
@@ -731,7 +838,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 						const sa = a[sortBy];
 						const sb = b[sortBy];
 
-						return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
+						return !isNaN(sa) && !isNaN(sb)
+							? sb - sa
+							: isNaN(sa) && isNaN(sb)
+								? 0
+								: isNaN(sa)
+									? 1
+									: -1;
 					});
 				}
 
@@ -792,9 +905,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			if (linkCallback) {
 				table.className = 'links';
 
-				Array.prototype.forEach.call(table.getElementsByClassName('link'), element => {
-					element.addEventListener('click', linkCallback, false);
-				});
+				Array.prototype.forEach.call(
+					table.getElementsByClassName('link'),
+					element => {
+						element.addEventListener('click', linkCallback, false);
+					},
+				);
 			}
 
 			if (oldTable) {
@@ -802,9 +918,20 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			}
 
 			if (scrollHighlight) {
-				if (firstHighlight && firstHighlight.offsetTop + table.offsetTop + mainElement.offsetTop + firstHighlight.offsetHeight > window.scrollY + window.innerHeight) {
+				if (
+					firstHighlight &&
+          firstHighlight.offsetTop +
+            table.offsetTop +
+            mainElement.offsetTop +
+            firstHighlight.offsetHeight >
+            window.scrollY + window.innerHeight
+				) {
 					firstHighlight.scrollIntoView(true);
-				} else if (lastHighlight && lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop < window.scrollY) {
+				} else if (
+					lastHighlight &&
+          lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop <
+            window.scrollY
+				) {
 					lastHighlight.scrollIntoView(false);
 				}
 			}
@@ -835,44 +962,82 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 		n = parseFloat(parseFloat(n).toFixed(4));
 
-		return n > 0 ? '+' + n : n
+		return n > 0 ? '+' + n : n;
 	};
 
 	const rawpct = (base, val) => {
-		return base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0;
+		return base < val
+			? (val - base) / Math.abs(base)
+			: base > val
+				? -(base - val) / Math.abs(base)
+				: 0;
 	};
 
 	const pct = (base, val) => {
-		const result = !isNaN(base) && base !== val ? ' (' + sign(((base < val ? (val - base) / Math.abs(base) : base > val ? -(base - val) / Math.abs(base) : 0)*100).toFixed(0)) + '%)' : '';
+		const result =
+      !isNaN(base) && base !== val
+      	? ' (' +
+          sign(
+          	(
+          		(base < val
+          			? (val - base) / Math.abs(base)
+          			: base > val
+          				? -(base - val) / Math.abs(base)
+          				: 0) * 100
+          	).toFixed(0),
+          ) +
+          '%)'
+      	: '';
 
-		return result.indexOf('Infinity') === -1 ? result : ' (' + sign(val - base) + ')';
+		return result.indexOf('Infinity') === -1
+			? result
+			: ' (' + sign(val - base) + ')';
 	};
 
 	const makeFoodRow = item => {
 		const mult = statMultipliers[item.preparationType];
 		let health = sign(item.health * mult);
 		let hunger = sign(item.hunger * mult);
-		let sanity = isNaN(item.sanity) ? '' : (item.sanity * mult);
-		let perish = isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time);
+		let sanity = isNaN(item.sanity) ? '' : item.sanity * mult;
+		let perish = isNaN(item.perish)
+			? 'Never'
+			: item.perish / total_day_time +
+        ' ' +
+        pl('day', item.perish / total_day_time);
 
 		if (item.cook) {
-			const cookmult = statMultipliers[item.cook.preparationType]
+			const cookmult = statMultipliers[item.cook.preparationType];
 
 			if ((item.cook.health || 0) !== (item.health || 0)) {
-				health += ' (' + sign(((item.cook.health || 0) * cookmult) - (item.health || 0)) + ')';
+				health +=
+          ' (' +
+          sign((item.cook.health || 0) * cookmult - (item.health || 0)) +
+          ')';
 			}
 			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
-				hunger += ' (' + sign(((item.cook.hunger || 0) * cookmult) - (item.hunger || 0)) + ')';
+				hunger +=
+          ' (' +
+          sign((item.cook.hunger || 0) * cookmult - (item.hunger || 0)) +
+          ')';
 			}
 			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
-				sanity += ' (' + sign(((item.cook.sanity || 0) * cookmult) - (item.sanity || 0)) + ')';
+				sanity +=
+          ' (' +
+          sign((item.cook.sanity || 0) * cookmult - (item.sanity || 0)) +
+          ')';
 			}
 			if ((item.cook.perish || 0) !== (item.perish || 0)) {
-				const dayDifference = ((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
+				const dayDifference =
+          ((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
 				if (isNaN(dayDifference)) {
 					perish += ' (to Never)';
 				} else {
-					perish += ' (' + (item.perish ? sign(dayDifference) : 'to ' + (item.cook.perish / total_day_time)) + ')';
+					perish +=
+            ' (' +
+            (item.perish
+            	? sign(dayDifference)
+            	: 'to ' + item.cook.perish / total_day_time) +
+            ')';
 				}
 			}
 		}
@@ -903,8 +1068,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			sign(ihealth) + pct(health, ihealth),
 			sign(ihunger) + pct(hunger, ihunger),
 			isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity),
-			isNaN(item.perish) ? 'Never' : item.perish / total_day_time + ' ' + pl('day', item.perish / total_day_time),
-			(item.cooktime * base_cook_time + 0.5 | 0) + ' secs',
+			isNaN(item.perish)
+				? 'Never'
+				: item.perish / total_day_time +
+            ' ' +
+            pl('day', item.perish / total_day_time),
+			((item.cooktime * base_cook_time + 0.5) | 0) + ' secs',
 			item.priority || '0',
 			item.requires || '',
 			item.note || '',
@@ -919,9 +1088,16 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		let recipeHighlighted = [];
 
 		const setFoodHighlight = e => {
-			let name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+			let name = !e.target
+				? e
+				: e.target.tagName === 'IMG'
+					? e.target.parentNode.dataset.link
+					: e.target.dataset.link;
 
-			if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
+			if (
+				name.substring(0, 7) === 'recipe:' ||
+        name.substring(0, 11) === 'ingredient:'
+			) {
 				setTab('crockpot');
 
 				if (name.substring(0, 7) === 'recipe:') {
@@ -944,7 +1120,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		};
 
 		const setRecipeHighlight = e => {
-			const name = !e.target ? e : e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+			const name = !e.target
+				? e
+				: e.target.tagName === 'IMG'
+					? e.target.parentNode.dataset.link
+					: e.target.dataset.link;
 			const modename = name.substring(name.indexOf(':') + 1);
 
 			if (!!modes[modename]) {
@@ -971,25 +1151,47 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		};
 
 		const foodTable = makeSortableTable(
-			{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Info': '', 'Mode:DLC or Game Mode required': 'modeMask'},
+			{
+				'': '',
+				Name: 'name',
+				[headings.health]: 'health',
+				[headings.hunger]: 'hunger',
+				[headings.sanity]: 'sanity',
+				[headings.perish]: 'perish',
+				Info: '',
+				'Mode:DLC or Game Mode required': 'modeMask',
+			},
 			Array.prototype.slice.call(food),
 			makeFoodRow,
 			'name',
 			false,
 			setFoodHighlight,
 			testFoodHighlight,
-			testmode
+			testmode,
 		);
 
 		const recipeTable = makeSortableTable(
-			{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim+struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+			{
+				'': '',
+				Name: 'name',
+				[headings.health]: 'health',
+				[headings.hunger]: 'hunger',
+				[headings.sanity]: 'sanity',
+				[headings.perish]: 'perish',
+				'Cook Time': 'cooktime',
+				'Priority:One of the highest priority recipes for a combination will be made':
+          'priority',
+				'Requires:Dim+struck items cannot be used': '',
+				Notes: '',
+				'Mode:DLC or Game Mode required': 'modeMask',
+			},
 			Array.prototype.slice.call(recipes),
 			makeRecipeRow,
 			'name',
 			false,
 			setRecipeHighlight,
 			testRecipeHighlight,
-			testmode
+			testmode,
 		);
 
 		foodElement.appendChild(foodTable);
@@ -1010,300 +1212,369 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		const makableButton = document.createElement('button');
 		let hasTable = false;
 
-		makableButton.appendChild(document.createTextNode('Calculate efficient recipes (may take some time)'));
+		makableButton.appendChild(
+			document.createTextNode(
+				'Calculate efficient recipes (may take some time)',
+			),
+		);
 		makableButton.className = 'makablebutton';
-		const initializeGrinder = () => (() => {
-			const idealIngredients = [];
-			const makableRecipes = [];
-			const usedIngredients = new Set();
-			const excludedIngredients = new Set();
-			const excludedRecipes = new Set();
+		const initializeGrinder = () =>
+			(() => {
+				const idealIngredients = [];
+				const makableRecipes = [];
+				const usedIngredients = new Set();
+				const excludedIngredients = new Set();
+				const excludedRecipes = new Set();
 
-			let i = ingredients ? ingredients.length : null;
+				let i = ingredients ? ingredients.length : null;
 
-			let selectedRecipe;
-			let selectedRecipeElement;
-			let makableRecipe;
-			let makableSummary;
-			let makableFootnote;
-			let makableFilter;
-			let customFilterHolder;
-			let customFilterInput;
-			let made;
-			let makableDiv;
-			let makableTable;
+				let selectedRecipe;
+				let selectedRecipeElement;
+				let makableRecipe;
+				let makableSummary;
+				let makableFootnote;
+				let makableFilter;
+				let customFilterHolder;
+				let customFilterInput;
+				let made;
+				let makableDiv;
+				let makableTable;
 
-			const deleteButton = document.createElement('button');
-			deleteButton.appendChild(document.createTextNode('Clear results'));
-			deleteButton.className = 'deleteButton';
-			deleteButton.addEventListener('click', () => {
-				makableButton.parentNode.removeChild(makableDiv);
-				hasTable = false;
-			})
-			if (hasTable) {
-				makableButton.parentNode.removeChild(makableButton.nextSibling);
-			}
-			hasTable = true;
-
-			const checkExcludes = item => excludedIngredients.has(item.id);
-			const checkIngredient = function (item) {
-				return this.includes(food[item]);
-			};
-
-			const toggleFilter = e => {
-				if (excludedIngredients.has(e.target.dataset.id)) {
-					excludedIngredients.delete(e.target.dataset.id);
+				const deleteButton = document.createElement('button');
+				deleteButton.appendChild(document.createTextNode('Clear results'));
+				deleteButton.className = 'deleteButton';
+				deleteButton.addEventListener('click', () => {
+					makableButton.parentNode.removeChild(makableDiv);
+					hasTable = false;
+				});
+				if (hasTable) {
+					makableButton.parentNode.removeChild(makableButton.nextSibling);
 				}
-				if (usedIngredients.has(e.target.dataset.id)) {
-					usedIngredients.delete(e.target.dataset.id);
-					e.target.className = '';
-				} else {
-					usedIngredients.add(e.target.dataset.id);
-					e.target.className = 'selected';
-				}
+				hasTable = true;
 
-				makableTable.update();
-			};
+				const checkExcludes = item => excludedIngredients.has(item.id);
+				const checkIngredient = function (item) {
+					return this.includes(food[item]);
+				};
 
-			const toggleExclude = e => {
-				if (usedIngredients.has(e.target.dataset.id)) {
-					usedIngredients.delete(e.target.dataset.id);
-				}
-
-				if (excludedIngredients.has(e.target.dataset.id)) {
-					excludedIngredients.delete(e.target.dataset.id);
-					e.target.className = '';
-				} else {
-					excludedIngredients.add(e.target.dataset.id);
-					e.target.className = 'excluded';
-				}
-
-				makableTable.update();
-
-				e.preventDefault();
-			};
-
-			const setRecipe = e => {
-				if (selectedRecipeElement) {
-					selectedRecipeElement.className = '';
-				}
-
-				for (const e of makableRecipe.childNodes) {
-					e.className = '';
-				}
-
-				excludedRecipes.clear();
-
-				if (selectedRecipe === e.target.dataset.recipe) {
-					selectedRecipeElement = null;
-					selectedRecipe = null;
-				} else {
-					selectedRecipe = e.target.dataset.recipe;
-					selectedRecipeElement = e.target;
-					e.target.className = 'selected';
-				}
-
-				makableTable.update();
-			};
-
-			const excludeRecipe = e => {
-				if (selectedRecipeElement) {
-					selectedRecipeElement.className = '';
-					selectedRecipeElement = null;
-					selectedRecipe = null;
-				}
-				
-
-				if (excludedRecipes.has(e.target.dataset.recipe)) {
-					excludedRecipes.delete(e.target.dataset.recipe);
-					e.target.className = '';
-				} else {
-					excludedRecipes.add(e.target.dataset.recipe);
-					e.target.className = 'excluded';
-				}
-
-				makableTable.update();
-
-				e.preventDefault();
-			};
-
-			//TODO: optimize so much around this
-			if (i === null) {
-				ingredients = food;
-			}
-			ingredients = ingredients.filter(f => (f.modeMask & modeMask) !== 0);
-			i = ingredients.length;
-
-			if (excludeDefault) {
-				for (const ingredient of ingredients.filter(ingredient => ingredient.defaultExclude).map(ingredient => ingredient.id)) {
-					excludedIngredients.add(ingredient);
-				}
-
-				for (const recipe of recipes.filter(recipe => recipe.defaultExclude).map(recipe => recipe.id)) {
-					excludedRecipes.add(recipe);
-				}
-			}
-
-			const tryPush = ingredient => {
-				if (!ingredient.uncookable && !ingredient.skip) {
-					idealIngredients.push(ingredient);
-				}
-			}
-
-			while (i--) {
-				if (!ingredients[i].skip) {
-					if (!ingredients[i].uncookable && (!ingredients[i].cooked || ingredients[i].ideal) && idealIngredients.indexOf(ingredients[i]) === -1) {
-						tryPush(ingredients[i]);
+				const toggleFilter = e => {
+					if (excludedIngredients.has(e.target.dataset.id)) {
+						excludedIngredients.delete(e.target.dataset.id);
 					}
-				} else {
-					if (ingredients[i].cook && !ingredients[i].cook.uncookable && !ingredients[i].cook.skip && idealIngredients.indexOf(ingredients[i].cook) === -1) {
-						tryPush(ingredients[i].cook);
-					} else if (ingredients[i].dry && !ingredients[i].dry.uncookable && !ingredients[i].dry.skip && idealIngredients.indexOf(ingredients[i].dry) === -1) {
-						tryPush(ingredients[i].dry);
+					if (usedIngredients.has(e.target.dataset.id)) {
+						usedIngredients.delete(e.target.dataset.id);
+						e.target.className = '';
+					} else {
+						usedIngredients.add(e.target.dataset.id);
+						e.target.className = 'selected';
+					}
+
+					makableTable.update();
+				};
+
+				const toggleExclude = e => {
+					if (usedIngredients.has(e.target.dataset.id)) {
+						usedIngredients.delete(e.target.dataset.id);
+					}
+
+					if (excludedIngredients.has(e.target.dataset.id)) {
+						excludedIngredients.delete(e.target.dataset.id);
+						e.target.className = '';
+					} else {
+						excludedIngredients.add(e.target.dataset.id);
+						e.target.className = 'excluded';
+					}
+
+					makableTable.update();
+
+					e.preventDefault();
+				};
+
+				const setRecipe = e => {
+					if (selectedRecipeElement) {
+						selectedRecipeElement.className = '';
+					}
+
+					for (const e of makableRecipe.childNodes) {
+						e.className = '';
+					}
+
+					excludedRecipes.clear();
+
+					if (selectedRecipe === e.target.dataset.recipe) {
+						selectedRecipeElement = null;
+						selectedRecipe = null;
+					} else {
+						selectedRecipe = e.target.dataset.recipe;
+						selectedRecipeElement = e.target;
+						e.target.className = 'selected';
+					}
+
+					makableTable.update();
+				};
+
+				const excludeRecipe = e => {
+					if (selectedRecipeElement) {
+						selectedRecipeElement.className = '';
+						selectedRecipeElement = null;
+						selectedRecipe = null;
+					}
+
+					if (excludedRecipes.has(e.target.dataset.recipe)) {
+						excludedRecipes.delete(e.target.dataset.recipe);
+						e.target.className = '';
+					} else {
+						excludedRecipes.add(e.target.dataset.recipe);
+						e.target.className = 'excluded';
+					}
+
+					makableTable.update();
+
+					e.preventDefault();
+				};
+
+				//TODO: optimize so much around this
+				if (i === null) {
+					ingredients = food;
+				}
+				ingredients = ingredients.filter(f => (f.modeMask & modeMask) !== 0);
+				i = ingredients.length;
+
+				if (excludeDefault) {
+					for (const ingredient of ingredients
+						.filter(ingredient => ingredient.defaultExclude)
+						.map(ingredient => ingredient.id)) {
+						excludedIngredients.add(ingredient);
+					}
+
+					for (const recipe of recipes
+						.filter(recipe => recipe.defaultExclude)
+						.map(recipe => recipe.id)) {
+						excludedRecipes.add(recipe);
 					}
 				}
 
-				if (ingredients[i].cooked && !ingredients[i].raw.uncookable && !ingredients[i].raw.skip && idealIngredients.indexOf(ingredients[i].raw) === -1) {
-					tryPush(ingredients[i].raw);
-				}
+				const tryPush = ingredient => {
+					if (!ingredient.uncookable && !ingredient.skip) {
+						idealIngredients.push(ingredient);
+					}
+				};
 
-				if (ingredients[i].rackdried && !ingredients[i].wet.uncookable && !ingredients[i].wet.skip && idealIngredients.indexOf(ingredients[i].wet) === -1) {
-					tryPush(ingredients[i].wet);
-				}
-			}
-
-			made = [];
-
-			makableTable = makeSortableTable(
-				{'': '', 'Name': 'name', [headings.health]: 'health', 'Health+:Health gained compared to ingredients': 'healthpls', [headings.hunger]: 'hunger', 'Hunger+:Hunger gained compared to ingredients': 'hungerpls', 'Ingredients': ''},
-				made,
-				data => {
-					const item = data.recipe;
-
-					return cells(
-						'td',
-						item.img ? item.img : '',
-						item.name,
-						sign(item.health),
-						sign(data.healthpls) + ' (' + sign((data.healthpct * 100) | 0) + '%)',
-						sign(item.hunger),
-						sign(data.hungerpls) + ' (' + sign((data.hungerpct * 100) | 0) + '%)',
-						makeLinkable(data.ingredients.reduce(ingredientToIcon, '') + (data.multiple ? '*' : ''))
-					);
-				},
-				'hungerpls',
-				false,
-				null,
-				null,
-				data => (
-					(!selectedRecipe || data.recipe.id === selectedRecipe)
-					&& !excludedRecipes.has(data.recipe.id)
-					&& (excludedIngredients.size == 0 || !data.ingredients.some(checkExcludes))
-					&& ([...usedIngredients].every(checkIngredient, data.ingredients))
-				),
-				0,
-				15
-			);
-
-			makableDiv = document.createElement('div');
-
-			makableSummary = document.createElement('div');
-			makableSummary.appendChild(document.createTextNode('Computing combinations..'));
-
-			makableFootnote = document.createElement('div');
-			makableFootnote.appendChild(document.createTextNode('* combination has multiple possible results'));
-
-			makableDiv.appendChild(makableSummary);
-
-			makableRecipe = document.createElement('div');
-			makableRecipe.className = 'recipeFilter';
-			makableDiv.appendChild(makableRecipe);
-
-			makableFilter = document.createElement('div');
-			makableFilter.className = 'foodFilter';
-
-			idealIngredients.forEach(item => {
-				const img = makeImage(item.img);
-				img.dataset.id = item.id;
-				img.addEventListener('click', toggleFilter, false);
-				img.addEventListener('contextmenu', toggleExclude, false);
-				if (excludedIngredients.has(item.id)) {
-					img.className = 'excluded';
-				}
-				img.title = item.name;
-				makableFilter.appendChild(img);
-			});
-
-			makableDiv.appendChild(makableFilter);
-
-			customFilterHolder = document.createElement('div');
-
-			customFilterInput = document.createElement('input');
-			customFilterInput.type = 'text';
-			customFilterInput.placeholder = 'use custom filter';
-			customFilterInput.className = 'customFilterInput';
-			customFilterHolder.appendChild(customFilterInput);
-
-			makableDiv.appendChild(makableTable);
-			makableButton.after(makableDiv);
-			makableDiv.appendChild(makableFootnote);
-
-			updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
-
-			getRealRecipesFromCollection(idealIngredients, data => { // row update
-				if (makableRecipes.indexOf(data.recipe.id) === -1) {
-					let i = 0;
-
-					for (i = 0; i < makableRecipes.length; i++) {
-						if (data.recipe.id < makableRecipes[i]) {
-							break;
+				while (i--) {
+					if (!ingredients[i].skip) {
+						if (
+							!ingredients[i].uncookable &&
+              (!ingredients[i].cooked || ingredients[i].ideal) &&
+              idealIngredients.indexOf(ingredients[i]) === -1
+						) {
+							tryPush(ingredients[i]);
+						}
+					} else {
+						if (
+							ingredients[i].cook &&
+              !ingredients[i].cook.uncookable &&
+              !ingredients[i].cook.skip &&
+              idealIngredients.indexOf(ingredients[i].cook) === -1
+						) {
+							tryPush(ingredients[i].cook);
+						} else if (
+							ingredients[i].dry &&
+              !ingredients[i].dry.uncookable &&
+              !ingredients[i].dry.skip &&
+              idealIngredients.indexOf(ingredients[i].dry) === -1
+						) {
+							tryPush(ingredients[i].dry);
 						}
 					}
 
-					makableRecipes.splice(i, 0, data.recipe.id);
+					if (
+						ingredients[i].cooked &&
+            !ingredients[i].raw.uncookable &&
+            !ingredients[i].raw.skip &&
+            idealIngredients.indexOf(ingredients[i].raw) === -1
+					) {
+						tryPush(ingredients[i].raw);
+					}
 
-					const img = makeImage(recipes[makableRecipes[i].toLowerCase()].img);
+					if (
+						ingredients[i].rackdried &&
+            !ingredients[i].wet.uncookable &&
+            !ingredients[i].wet.skip &&
+            idealIngredients.indexOf(ingredients[i].wet) === -1
+					) {
+						tryPush(ingredients[i].wet);
+					}
+				}
 
-					img.dataset.recipe = makableRecipes[i];
-					img.addEventListener('click', setRecipe, false);
-					img.addEventListener('contextmenu', excludeRecipe, false);
-					if (excludedRecipes.has(data.recipe.id)) {
+				made = [];
+
+				makableTable = makeSortableTable(
+					{
+						'': '',
+						Name: 'name',
+						[headings.health]: 'health',
+						'Health+:Health gained compared to ingredients': 'healthpls',
+						[headings.hunger]: 'hunger',
+						'Hunger+:Hunger gained compared to ingredients': 'hungerpls',
+						Ingredients: '',
+					},
+					made,
+					data => {
+						const item = data.recipe;
+
+						return cells(
+							'td',
+							item.img ? item.img : '',
+							item.name,
+							sign(item.health),
+							sign(data.healthpls) +
+                ' (' +
+                sign((data.healthpct * 100) | 0) +
+                '%)',
+							sign(item.hunger),
+							sign(data.hungerpls) +
+                ' (' +
+                sign((data.hungerpct * 100) | 0) +
+                '%)',
+							makeLinkable(
+								data.ingredients.reduce(ingredientToIcon, '') +
+                  (data.multiple ? '*' : ''),
+							),
+						);
+					},
+					'hungerpls',
+					false,
+					null,
+					null,
+					data =>
+						(!selectedRecipe || data.recipe.id === selectedRecipe) &&
+            !excludedRecipes.has(data.recipe.id) &&
+            (excludedIngredients.size == 0 ||
+              !data.ingredients.some(checkExcludes)) &&
+            [...usedIngredients].every(checkIngredient, data.ingredients),
+					0,
+					25,
+				);
+
+				makableDiv = document.createElement('div');
+
+				makableSummary = document.createElement('div');
+				makableSummary.appendChild(
+					document.createTextNode('Computing combinations..'),
+				);
+
+				makableFootnote = document.createElement('div');
+				makableFootnote.appendChild(
+					document.createTextNode('* combination has multiple possible results'),
+				);
+
+				makableDiv.appendChild(makableSummary);
+
+				makableRecipe = document.createElement('div');
+				makableRecipe.className = 'recipeFilter';
+				makableDiv.appendChild(makableRecipe);
+
+				makableFilter = document.createElement('div');
+				makableFilter.className = 'foodFilter';
+
+				idealIngredients.forEach(item => {
+					const img = makeImage(item.img);
+					img.dataset.id = item.id;
+					img.addEventListener('click', toggleFilter, false);
+					img.addEventListener('contextmenu', toggleExclude, false);
+					if (excludedIngredients.has(item.id)) {
 						img.className = 'excluded';
 					}
-					img.title = data.recipe.name;
+					img.title = item.name;
+					makableFilter.appendChild(img);
+				});
 
-					if (i < makableRecipe.childNodes.length) {
-						makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
-					} else {
-						makableRecipe.appendChild(img);
-					}
-				}
+				makableDiv.appendChild(makableFilter);
 
-				if (!data.name) {
-					data.name = data.recipe.name;
-					data.health = data.recipe.health;
-					data.ihealth = data.tags.health;
-					data.healthpls = data.recipe.health - data.ihealth;
-					data.hunger = data.recipe.hunger;
-					data.ihunger = data.tags.hunger;
-					data.hungerpls = data.recipe.hunger - data.ihunger;
-					data.healthpct = rawpct(data.ihealth, data.recipe.health);
-					data.hungerpct = rawpct(data.ihunger, data.recipe.hunger);
-					data.sanity = data.recipe.sanity;
-					data.perish = data.recipe.perish;
-				}
+				customFilterHolder = document.createElement('div');
 
-				made.push(data);
-			}, () => {
-				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.. (you can change Food Guide tabs during this process)';
-			}, () => {
-				//computation finished
-				makableTable.setMaxRows(60);
-				makableSummary.firstChild.textContent = 'Found ' + made.length + ' valid recipes.';
+				customFilterInput = document.createElement('input');
+				customFilterInput.type = 'text';
+				customFilterInput.placeholder = 'use custom filter';
+				customFilterInput.className = 'customFilterInput';
+				customFilterHolder.appendChild(customFilterInput);
 
-				makableSummary.appendChild(deleteButton)
-			});
-		})();
+				makableDiv.appendChild(makableTable);
+				makableButton.after(makableDiv);
+				makableDiv.appendChild(makableFootnote);
+
+				updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
+
+				getRealRecipesFromCollection(
+					idealIngredients,
+					data => {
+						// row update
+						if (makableRecipes.indexOf(data.recipe.id) === -1) {
+							let i = 0;
+
+							for (i = 0; i < makableRecipes.length; i++) {
+								if (data.recipe.id < makableRecipes[i]) {
+									break;
+								}
+							}
+
+							makableRecipes.splice(i, 0, data.recipe.id);
+
+							const img = makeImage(
+								recipes[makableRecipes[i].toLowerCase()].img,
+							);
+
+							img.dataset.recipe = makableRecipes[i];
+							img.addEventListener('click', setRecipe, false);
+							img.addEventListener('contextmenu', excludeRecipe, false);
+							if (excludedRecipes.has(data.recipe.id)) {
+								img.className = 'excluded';
+							}
+							img.title = data.recipe.name;
+
+							if (i < makableRecipe.childNodes.length) {
+								makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
+							} else {
+								makableRecipe.appendChild(img);
+							}
+						}
+
+						if (!data.name) {
+							data.name = data.recipe.name;
+							data.health = data.recipe.health;
+							data.ihealth = data.tags.health;
+							data.healthpls = data.recipe.health - data.ihealth;
+							data.hunger = data.recipe.hunger;
+							data.ihunger = data.tags.hunger;
+							data.hungerpls = data.recipe.hunger - data.ihunger;
+							data.healthpct = rawpct(data.ihealth, data.recipe.health);
+							data.hungerpct = rawpct(data.ihunger, data.recipe.hunger);
+							data.sanity = data.recipe.sanity;
+							data.perish = data.recipe.perish;
+						}
+
+						made.push(data);
+					},
+					() => {
+						makableSummary.firstChild.textContent =
+              'Found ' +
+              made.length +
+              ' valid recipes.. (you can change Food Guide tabs during this process)';
+					},
+					() => {
+						//computation finished
+						window.analysis = {
+							made,
+						};
+
+						makableTable.setMaxRows(250);
+						makableSummary.firstChild.textContent =
+              'Found ' + made.length + ' valid recipes.';
+
+						makableSummary.appendChild(deleteButton);
+					},
+				);
+			})();
 
 		makableButton.addEventListener('click', initializeGrinder, false);
 
@@ -1324,7 +1595,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		if (item !== null) {
 			slotElement.dataset.id = item.id;
 		} else {
-			if (slotElement.nextSibling && getSlot(slotElement.nextSibling) !== null) {
+			if (
+				slotElement.nextSibling &&
+        getSlot(slotElement.nextSibling) !== null
+			) {
 				setSlot(slotElement, getSlot(slotElement.nextSibling));
 				setSlot(slotElement.nextSibling, null);
 
@@ -1335,7 +1609,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		}
 
 		if (item !== null) {
-			const img = makeImage(item.img)
+			const img = makeImage(item.img);
 			img.title = item.name;
 			if (slotElement.firstChild) {
 				slotElement.replaceChild(img, slotElement.firstChild);
@@ -1352,7 +1626,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 	};
 
 	const getSlot = slotElement => {
-		return slotElement && (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null);
+		return (
+			slotElement &&
+      (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null)
+		);
 	};
 
 	(() => {
@@ -1499,7 +1776,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			};
 
 			const removeSlot = e => {
-				const target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
+				const target =
+          e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
 
 				if (limited) {
 					if (getSlot(target) !== null) {
@@ -1521,7 +1799,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 			const refreshPicker = () => {
 				searchSelectorControls.splitTag();
-				const names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+				const names = matchingNames(
+					from,
+					searchSelectorControls.getSearch(),
+					allowUncookable,
+				);
 
 				dropdown.removeChild(ul);
 
@@ -1535,7 +1817,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			};
 
 			const searchFor = e => {
-				const name = e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				const name =
+          e.target.tagName === 'IMG'
+          	? e.target.parentNode.dataset.link
+          	: e.target.dataset.link;
 				const matches = matchingNames(from, name, allowUncookable);
 
 				if (matches.length === 1) {
@@ -1561,7 +1846,20 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 					const sanity = cooking[0].sanity;
 
 					let table = makeSortableTable(
-						{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+						{
+							'': '',
+							Name: 'name',
+							[headings.health]: 'health',
+							[headings.hunger]: 'hunger',
+							[headings.sanity]: 'sanity',
+							[headings.perish]: 'perish',
+							'Cook Time': 'cooktime',
+							'Priority:One of the highest priority recipes for a combination will be made':
+                'priority',
+							'Requires:Dim, struck items cannot be used': '',
+							Notes: '',
+							'Mode:DLC or Game Mode required': 'modeMask',
+						},
 						cooking,
 						item => {
 							return makeRecipeRow(item, health, hunger, sanity);
@@ -1570,8 +1868,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 						true,
 						searchFor,
 						(item, array) => {
-							return array.length > 0 && item.priority === highest(array, 'priority');
-						}
+							return (
+								array.length > 0 && item.priority === highest(array, 'priority')
+							);
+						},
 					);
 
 					if (results.firstChild) {
@@ -1589,29 +1889,52 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 						getSuggestions(suggestions, ingredients, cooking);
 
 						if (suggestions.length > 0) {
-							results.appendChild(document.createTextNode('Add more ingredients to make:'));
+							results.appendChild(
+								document.createTextNode('Add more ingredients to make:'),
+							);
 							table = makeSortableTable(
-								{'': '', 'Name': 'name', 'Health:(% more than ingredients)': 'health', 'Hunger:(% more than ingredients)': 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+								{
+									'': '',
+									Name: 'name',
+									'Health:(% more than ingredients)': 'health',
+									'Hunger:(% more than ingredients)': 'hunger',
+									[headings.sanity]: 'sanity',
+									[headings.perish]: 'perish',
+									'Cook Time': 'cooktime',
+									'Priority:One of the highest priority recipes for a combination will be made':
+                    'priority',
+									'Requires:Dim, struck items cannot be used': '',
+									Notes: '',
+									'Mode:DLC or Game Mode required': 'modeMask',
+								},
 								suggestions,
 								item => {
 									return makeRecipeRow(item, health, hunger, sanity);
 								},
 								'priority',
 								false,
-								searchFor
+								searchFor,
 							);
 							results.appendChild(table);
 						}
 					}
 
-					ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
+					ul &&
+            ul.firstChild &&
+            Array.prototype.forEach.call(
+            	ul.getElementsByTagName('span'),
+            	updateFaded,
+            );
 				};
 			} else if (parent.id === 'inventory') {
 				//discovery
 				updateRecipes = () => {
-					ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), slot => {
-						return getSlot(slot);
-					});
+					ingredients = Array.prototype.map.call(
+						parent.getElementsByClassName('ingredient'),
+						slot => {
+							return getSlot(slot);
+						},
+					);
 
 					if (discoverfood.firstChild) {
 						discoverfood.removeChild(discoverfood.firstChild);
@@ -1625,10 +1948,19 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 					if (ingredients.length > 0) {
 						const foodTable = makeSortableTable(
-							{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Info': '', 'Mode:DLC or Game Mode required': 'modeMask'},
+							{
+								'': '',
+								Name: 'name',
+								[headings.health]: 'health',
+								[headings.hunger]: 'hunger',
+								[headings.sanity]: 'sanity',
+								[headings.perish]: 'perish',
+								Info: '',
+								'Mode:DLC or Game Mode required': 'modeMask',
+							},
 							ingredients,
 							makeFoodRow,
-							'name'
+							'name',
 						);
 
 						discoverfood.appendChild(foodTable);
@@ -1636,11 +1968,24 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 						if (inventoryrecipes.length > 0) {
 							const table = makeSortableTable(
-								{'': '', 'Name': 'name', [headings.health]: 'health', [headings.hunger]: 'hunger', [headings.sanity]: 'sanity', [headings.perish]: 'perish', 'Cook Time': 'cooktime', 'Priority:One of the highest priority recipes for a combination will be made': 'priority', 'Requires:Dim, struck items cannot be used': '', 'Notes' : '', 'Mode:DLC or Game Mode required': 'modeMask'},
+								{
+									'': '',
+									Name: 'name',
+									[headings.health]: 'health',
+									[headings.hunger]: 'hunger',
+									[headings.sanity]: 'sanity',
+									[headings.perish]: 'perish',
+									'Cook Time': 'cooktime',
+									'Priority:One of the highest priority recipes for a combination will be made':
+                    'priority',
+									'Requires:Dim, struck items cannot be used': '',
+									Notes: '',
+									'Mode:DLC or Game Mode required': 'modeMask',
+								},
 								inventoryrecipes,
 								makeRecipeRow,
-								'name'
-							)
+								'name',
+							);
 
 							discover.appendChild(table);
 
@@ -1648,7 +1993,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 						}
 					}
 
-					ul && ul.firstChild && Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
+					if (ul &&
+            ul.firstChild) {
+						Array.prototype.forEach.call(
+            	ul.getElementsByTagName('span'),
+            	updateFaded,
+						);
+					}
 				};
 			}
 
@@ -1688,7 +2039,19 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				const dropdown = document.createElement('div');
 				let extended = false;
 				let extendedHeight = null;
-				const searchTypes = [{title: 'name', prefix: '', placeholder: 'Filter ingredients'}, {title: 'tag', prefix: 'tag:', placeholder: 'Meat, veggie, fruit, egg, monster...'}, {title: 'recipe', prefix: 'recipe:', placeholder: 'Find ingredients used in a recipe'}];
+				const searchTypes = [
+					{ title: 'name', prefix: '', placeholder: 'Filter ingredients' },
+					{
+						title: 'tag',
+						prefix: 'tag:',
+						placeholder: 'Meat, veggie, fruit, egg, monster...',
+					},
+					{
+						title: 'recipe',
+						prefix: 'recipe:',
+						placeholder: 'Find ingredients used in a recipe',
+					},
+				];
 				let selectedType = searchTypes[0];
 				let retractTimer = null;
 
@@ -1709,7 +2072,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 					if (extendedHeight === null) {
 						dropdown.style.height = 'auto';
 						dropdown.style.left = searchSelector.offsetLeft;
-						dropdown.style.top = searchSelector.offsetTop + searchSelector.offsetHeight;
+						dropdown.style.top =
+              searchSelector.offsetTop + searchSelector.offsetHeight;
 						extendedHeight = dropdown.offsetHeight + 'px';
 						dropdown.style.height = '0px';
 					}
@@ -1719,7 +2083,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 					searchSelector.style.borderBottomLeftRadius = '0px';
 					dropdown.style.borderTopLeftRadius = '0px';
 					dropdown.style.width = 'auto';
-					dropdown.style.width = Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1) + 'px';
+					dropdown.style.width =
+            Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1) +
+            'px';
 
 					if (retractTimer !== null) {
 						clearTimeout(retractTimer);
@@ -1769,46 +2135,72 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 								}
 							}
 						}
-					}
+					},
 				};
 
-				searchSelector.addEventListener('click', () => {
-					if (extended) {
-						retract();
-					} else {
-						extend();
-					}
-				}, false);
+				searchSelector.addEventListener(
+					'click',
+					() => {
+						if (extended) {
+							retract();
+						} else {
+							extend();
+						}
+					},
+					false,
+				);
 
-				searchSelector.addEventListener('selectstart', e => { e.preventDefault(); }, false);
+				searchSelector.addEventListener(
+					'selectstart',
+					e => {
+						e.preventDefault();
+					},
+					false,
+				);
 
-				searchSelector.addEventListener('mouseout', () => {
-					if (retractTimer !== null) {
-						clearTimeout(retractTimer);
-					}
-					retractTimer = setTimeout(retract, 500);
-				}, false);
+				searchSelector.addEventListener(
+					'mouseout',
+					() => {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+						}
+						retractTimer = setTimeout(retract, 500);
+					},
+					false,
+				);
 
-				searchSelector.addEventListener('mouseover', () => {
-					if (retractTimer !== null) {
-						clearTimeout(retractTimer);
-						retractTimer = null;
-					}
-				}, false);
+				searchSelector.addEventListener(
+					'mouseover',
+					() => {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+							retractTimer = null;
+						}
+					},
+					false,
+				);
 
-				dropdown.addEventListener('mouseout', () => {
-					if (retractTimer !== null) {
-						clearTimeout(retractTimer);
-					}
-					retractTimer = setTimeout(retract, 500);
-				}, false);
+				dropdown.addEventListener(
+					'mouseout',
+					() => {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+						}
+						retractTimer = setTimeout(retract, 500);
+					},
+					false,
+				);
 
-				dropdown.addEventListener('mouseover', () => {
-					if (retractTimer !== null) {
-						clearTimeout(retractTimer);
-						retractTimer = null;
-					}
-				}, false);
+				dropdown.addEventListener(
+					'mouseover',
+					() => {
+						if (retractTimer !== null) {
+							clearTimeout(retractTimer);
+							retractTimer = null;
+						}
+					},
+					false,
+				);
 
 				searchTypes.forEach((searchType, index) => {
 					const element = document.createElement('div');
@@ -1829,10 +2221,20 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 			dropdown.className = 'ingredientdropdown';
 			dropdown.appendChild(ul);
-			dropdown.addEventListener('mousedown', e => { e.preventDefault(); }, false);
+			dropdown.addEventListener(
+				'mousedown',
+				e => {
+					e.preventDefault();
+				},
+				false,
+			);
 
 			(() => {
-				const names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+				const names = matchingNames(
+					from,
+					searchSelectorControls.getSearch(),
+					allowUncookable,
+				);
 
 				dropdown.removeChild(ul);
 				ul = document.createElement('div');
@@ -1844,43 +2246,65 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			clear.className = 'clearingredients';
 			clear.appendChild(document.createTextNode('clear'));
 
-			clear.addEventListener('click', () => {
-				if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
-					while (getSlot(parent.firstChild)) {
-						removeSlot({ target: parent.firstChild });
+			clear.addEventListener(
+				'click',
+				() => {
+					if (
+						picker.value === '' &&
+            searchSelectorControls.getTag() === 'name'
+					) {
+						while (getSlot(parent.firstChild)) {
+							removeSlot({ target: parent.firstChild });
+						}
+					} else {
+						picker.value = '';
+						searchSelectorControls.setSearchType(0);
+						refreshPicker();
 					}
-				} else {
-					picker.value = '';
-					searchSelectorControls.setSearchType(0);
-					refreshPicker();
-				}
-			}, false);
+				},
+				false,
+			);
 
-			clear.addEventListener('mouseover', () => {
-				if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
-					clear.firstChild.textContent = 'clear chosen ingredients';
-				}
-			}, false);
+			clear.addEventListener(
+				'mouseover',
+				() => {
+					if (
+						picker.value === '' &&
+            searchSelectorControls.getTag() === 'name'
+					) {
+						clear.firstChild.textContent = 'clear chosen ingredients';
+					}
+				},
+				false,
+			);
 
-			clear.addEventListener('mouseout', () => {
-				if (clear.firstChild.textContent !== 'clear') {
-					clear.firstChild.textContent = 'clear';
-				}
-			}, false);
+			clear.addEventListener(
+				'mouseout',
+				() => {
+					if (clear.firstChild.textContent !== 'clear') {
+						clear.firstChild.textContent = 'clear';
+					}
+				},
+				false,
+			);
 
 			toggleText.className = 'toggleingredients enabled';
 
-			toggleText.addEventListener('click', () => {
-				if (toggleText.classList.contains('enabled')) {
-					toggleText.classList.remove('enabled')
-					dropdown.classList.add('hidetext')
-					toggleText.firstChild.textContent = 'Show names'
-				} else {
-					toggleText.classList.add('enabled')
-					dropdown.classList.remove('hidetext')
-					toggleText.firstChild.textContent = 'Icons only'
-				}
-			}, false);
+			toggleText.addEventListener(
+				'click',
+				() => {
+					if (toggleText.classList.contains('enabled')) {
+						toggleText.classList.remove('enabled');
+						dropdown.classList.add('hidetext');
+						toggleText.firstChild.textContent = 'Show names';
+					} else {
+						toggleText.classList.add('enabled');
+						dropdown.classList.remove('hidetext');
+						toggleText.firstChild.textContent = 'Icons only';
+					}
+				},
+				false,
+			);
 
 			toggleText.appendChild(document.createTextNode('Icons only'));
 			parent.parentNode.insertBefore(toggleText, parent);
@@ -2026,17 +2450,25 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			// 	}
 			// }, false);
 
-			picker.addEventListener('focus', () => {
-				if (!displaying) {
-					displaying = true;
-				}
-			}, false);
+			picker.addEventListener(
+				'focus',
+				() => {
+					if (!displaying) {
+						displaying = true;
+					}
+				},
+				false,
+			);
 
-			picker.addEventListener('blur', () => {
-				if (displaying) {
-					displaying = false;
-				}
-			}, false);
+			picker.addEventListener(
+				'blur',
+				() => {
+					if (displaying) {
+						displaying = false;
+					}
+				},
+				false,
+			);
 
 			updateRecipes();
 
@@ -2063,7 +2495,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			modeRefreshers.push(refreshPicker);
 			modeRefreshers.push(updateRecipes);
 		}
-	})()
+	})();
 
 	const showmode = e => {
 		setMode(modes[e.target.dataset.mode].mask);
@@ -2072,7 +2504,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 	const togglemode = e => {
 		setMode(modeMask ^ modes[e.target.dataset.mode].bit);
 		e.preventDefault();
-	}
+	};
 
 	const modeTab = document.createElement('li');
 	navbar.insertBefore(modeTab, navbar.firstChild);
@@ -2085,7 +2517,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		modeButton.addEventListener('click', showmode, false);
 		modeButton.addEventListener('contextmenu', togglemode, false);
 
-		modeButton.title = modes[name].name + '\nleft-click to select\nright-click to toggle';
+		modeButton.title =
+      modes[name].name + '\nleft-click to select\nright-click to toggle';
 		// Other setup happens in setMode
 
 		const img = makeImage('img/' + modes[name].img);

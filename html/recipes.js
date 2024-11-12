@@ -35,7 +35,7 @@ import {
 	sanity_medlarge,
 	sanity_small,
 	sanity_tiny,
-	total_day_time
+	total_day_time,
 } from './constants.js';
 import { food } from './food.js';
 import {
@@ -45,15 +45,15 @@ import {
 	NOT,
 	OR,
 	SPECIFIC,
-	TAG
+	TAG,
 } from './functions.js';
 import { makeLinkable, pl, stats } from './utils.js';
 
 export const recipes = {
 	
-//--------------------------------------------------------------------------------\\	
-//	                       DON'T STARVE VANILLA RECIPES                           \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                       DON'T STARVE VANILLA RECIPES                           \\
+	//--------------------------------------------------------------------------------\\
 		
 	butterflymuffin: {
 		name: 'Butter Muffin',
@@ -69,7 +69,7 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
 	},
 	frogglebunwich: {
 		name: 'Froggle Bunwich',
@@ -83,7 +83,7 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
 	},
 	taffy: {
 		name: 'Taffy',
@@ -98,7 +98,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_med,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
 	},
 	pumpkincookie: {
 		name: 'Pumpkin Cookie',
@@ -113,7 +113,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
 	},
 	stuffedeggplant: {
 		name: 'Stuffed Eggplant',
@@ -129,7 +129,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_brief,
-		cooktime: 2
+		cooktime: 2,
 	},
 	fishsticks: {
 		name: 'Fishsticks',
@@ -143,7 +143,7 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_med,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
 	},
 	honeynuggets: {
 		name: 'Honey Nuggets',
@@ -158,7 +158,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
 	},
 	honeyham: {
 		name: 'Honey Ham',
@@ -175,7 +175,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 2,
-		tags: ['honeyed']
+		tags: ['honeyed'],
 	},
 	dragonpie: {
 		name: 'Dragonpie',
@@ -191,7 +191,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
-		cooktime: 2
+		cooktime: 2,
 	},
 	kabobs: {
 		name: 'Kabobs',
@@ -205,7 +205,7 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
 	},
 	mandrakesoup: {
 		name: 'Mandrake Soup',
@@ -219,7 +219,7 @@ export const recipes = {
 		hunger: calories_superhuge,
 		perish: perish_fast,
 		sanity: sanity_tiny,
-		cooktime: 3
+		cooktime: 3,
 	},
 	baconeggs: {
 		name: 'Bacon and Eggs',
@@ -233,7 +233,7 @@ export const recipes = {
 		hunger: calories_huge,
 		perish: perish_preserved,
 		sanity: sanity_tiny,
-		cooktime: 2
+		cooktime: 2,
 	},
 	meatballs: {
 		name: 'Meatballs',
@@ -247,7 +247,7 @@ export const recipes = {
 		hunger: calories_small * 5,
 		perish: perish_med,
 		sanity: sanity_tiny,
-		cooktime: 0.75
+		cooktime: 0.75,
 	},
 	bonestew: {
 		name: 'Meaty Stew',
@@ -263,7 +263,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
-		cooktime: 0.75
+		cooktime: 0.75,
 	},
 	perogies: {
 		name: 'Pierogi',
@@ -277,7 +277,7 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_preserved,
 		sanity: sanity_tiny,
-		cooktime: 1
+		cooktime: 1,
 	},
 	turkeydinner: {
 		name: 'Turkey Dinner',
@@ -293,7 +293,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
-		cooktime: 3
+		cooktime: 3,
 	},
 	ratatouille: {
 		name: 'Ratatouille',
@@ -307,7 +307,7 @@ export const recipes = {
 		hunger: calories_med,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 1
+		cooktime: 1,
 	},
 	jammypreserves: {
 		name: 'Fist Full of Jam',
@@ -321,7 +321,7 @@ export const recipes = {
 		hunger: calories_small * 3,
 		perish: perish_slow,
 		sanity: sanity_tiny,
-		cooktime: 0.5
+		cooktime: 0.5,
 	},
 	fruitmedley: {
 		name: 'Fruit Medley',
@@ -337,7 +337,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_brief,
-		cooktime: 0.5
+		cooktime: 0.5,
 	},
 	fishtacos: {
 		name: 'Fish Tacos',
@@ -352,7 +352,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		tags: ['monstermeat']
+		tags: ['monstermeat'],
 	},
 	waffles: {
 		name: 'Waffles',
@@ -366,7 +366,7 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_fast,
 		sanity: sanity_tiny,
-		cooktime: 0.5
+		cooktime: 0.5,
 	},
 	monsterlasagna: {
 		name: 'Monster Lasagna',
@@ -380,7 +380,7 @@ export const recipes = {
 		hunger: calories_large,
 		perish: perish_fast,
 		sanity: -sanity_medlarge,
-		cooktime: 0.5
+		cooktime: 0.5,
 	},
 	powcake: {
 		name: 'Powdercake',
@@ -395,7 +395,7 @@ export const recipes = {
 		perish: 9000000,
 		sanity: 0,
 		cooktime: 0.5,
-		tags: ['honeyed']
+		tags: ['honeyed'],
 	},
 	unagi: {
 		name: 'Unagi',
@@ -409,7 +409,7 @@ export const recipes = {
 		hunger: calories_medsmall,
 		perish: perish_med,
 		sanity: sanity_tiny,
-		cooktime: 0.5
+		cooktime: 0.5,
 	},
 	wetgoop: {
 		name: 'Wet Goop',
@@ -423,12 +423,12 @@ export const recipes = {
 		hunger: 0,
 		perish: perish_fast,
 		sanity: 0,
-		cooktime: 0.25
+		cooktime: 0.25,
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                    DON'T STARVE REIGN OF GIANTS RECIPES                      \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                    DON'T STARVE REIGN OF GIANTS RECIPES                      \\
+	//--------------------------------------------------------------------------------\\
 
 	flowersalad: {
 		name: 'Flower Salad',
@@ -443,7 +443,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	icecream: {
 		name: 'Ice Cream',
@@ -460,7 +460,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	watermelonicle: {
 		name: 'Melonsicle',
@@ -477,7 +477,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	trailmix: {
 		name: 'Trail Mix',
@@ -492,7 +492,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	hotchili: {
 		name: 'Spicy Chili',
@@ -509,7 +509,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	guacamole: {
 		name: 'Guacamole',
@@ -524,12 +524,12 @@ export const recipes = {
 		perish: perish_med,
 		sanity: 0,
 		cooktime: 0.5,
-		mode: 'giants'
+		mode: 'giants',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                    DON'T STARVE SHIPWRECKED RECIPES                          \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                    DON'T STARVE SHIPWRECKED RECIPES                          \\
+	//--------------------------------------------------------------------------------\\
 
 	californiaroll: {
 		name: 'California Roll',
@@ -544,7 +544,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	seafoodgumbo: {
 		name: 'Seafood Gumbo',
@@ -559,7 +559,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_medlarge,
 		cooktime: 1,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	bisque: {
 		name: 'Bisque',
@@ -574,7 +574,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 1,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	ceviche: {
 		name: 'Ceviche',
@@ -591,7 +591,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	jellyopop: {
 		name: 'Jelly-O Pop',
@@ -608,7 +608,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	bananapop: {
 		name: 'Banana Pop',
@@ -625,7 +625,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	lobsterbisque: {
 		name: 'Wobster Bisque',
@@ -640,7 +640,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 0.5,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	lobsterdinner: {
 		name: 'Wobster Dinner',
@@ -655,7 +655,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_huge,
 		cooktime: 1,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	sharkfinsoup: {
 		name: 'Shark Fin Soup',
@@ -671,7 +671,7 @@ export const recipes = {
 		sanity: -sanity_small,
 		cooktime: 1,
 		note: 'Gives 10 naughtiness',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	surfnturf: {
 		name: 'Surf \'n\' Turf',
@@ -686,7 +686,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_large,
 		cooktime: 1,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	coffee: {
 		name: 'Coffee',
@@ -702,7 +702,7 @@ export const recipes = {
 		sanity: -sanity_tiny,
 		cooktime: 0.5,
 		note: 'Gives 5 bonus speed (+83%) for 240 seconds (0.5 days)',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	tropicalbouillabaisse: {
 		name: 'Tropical Bouillabaisse',
@@ -718,7 +718,7 @@ export const recipes = {
 		sanity: sanity_med,
 		cooktime: 2,
 		note: 'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	caviar: {
 		name: 'Caviar',
@@ -733,12 +733,12 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_large,
 		cooktime: 2,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                        DON'T STARVE WARLY RECIPES                            \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                        DON'T STARVE WARLY RECIPES                            \\
+	//--------------------------------------------------------------------------------\\
 
 	sweetpotatosouffle: {
 		name: 'Sweet Potato Souffle',
@@ -753,7 +753,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 2,
-		mode: 'warly'
+		mode: 'warly',
 	},
 	monstertartare: {
 		name: 'Monster Tartare',
@@ -768,7 +768,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 2,
-		mode: 'warly'
+		mode: 'warly',
 	},
 	freshfruitcrepes: {
 		name: 'Fresh Fruit Crepes',
@@ -783,7 +783,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 2,
-		mode: 'warly'
+		mode: 'warly',
 	},
 	musselbouillabaise: {
 		name: 'Mussel Bouillabaise',
@@ -798,12 +798,12 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 2,
-		mode: 'warly'
+		mode: 'warly',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                       DON'T STARVE HAMLET RECIPES                            \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                       DON'T STARVE HAMLET RECIPES                            \\
+	//--------------------------------------------------------------------------------\\
 
 	nettlelosange: {
 		name: 'Nettle Rolls',
@@ -819,7 +819,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 0.5,
 		note: 'Prevents hayfever for 720 seconds (1.5 days)',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	snakebonesoup: {
 		name: 'Snake Bone Soup',
@@ -834,7 +834,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 1,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	tea: {
 		name: 'Tea',
@@ -852,7 +852,7 @@ export const recipes = {
 		cooktime: 0.5,
 		rot: 'icedtea',
 		note: 'Gives 2.5 bonus speed (+42%) for 120 seconds',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	icedtea: {
 		name: 'Iced Tea',
@@ -869,7 +869,7 @@ export const recipes = {
 		temperaturebump: -10,
 		cooktime: 0.5,
 		note: 'Gives 1.7 bonus speed (+28%) for 80 seconds',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	asparagussoup: {
 		name: 'Asparagus Soup',
@@ -884,7 +884,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	spicyvegstinger: {
 		name: 'Spicy Vegetable Stinger',
@@ -900,7 +900,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_large,
 		cooktime: 0.5,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	feijoada: {
 		name: 'Feijoada',
@@ -916,7 +916,7 @@ export const recipes = {
 		sanity: sanity_med,
 		cooktime: 3.5,
 		note: 'In the pre2023update version of the game, using 3 Cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs, makes it so that meat is not needed.',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	steamedhamsandwich: {
 		name: 'Steamed Ham Sandwich',
@@ -931,7 +931,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_med,
 		cooktime: 2,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	hardshell_tacos: {
 		name: 'Hard Shell Tacos',
@@ -946,7 +946,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 1,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	gummy_cake: {
 		name: 'Gummy Cake',
@@ -961,12 +961,12 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: -sanity_tiny,
 		cooktime: 2,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                   DON'T STARVE TOGETHER PORTED RECIPES                       \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                   DON'T STARVE TOGETHER PORTED RECIPES                       \\
+	//--------------------------------------------------------------------------------\\
 	
 	//KEEP IN MIND THAT PORTED INGREDIENTS FROM DS + DLCs ARE TO HAVE _dst ADDED TO THE END TO ENSURE THAT THE PROPER INGREDIENT DATA IS BEING USED
 	//_dst isn't needed for the recipe names but is added for identification purposes so people know they are looking at the right recipe, as some recipes are different in DST
@@ -987,7 +987,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	frogglebunwich_dst: {
 		name: 'Froggle Bunwich',
@@ -1002,7 +1002,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	taffy_dst: {
 		name: 'Taffy',
@@ -1018,7 +1018,7 @@ export const recipes = {
 		sanity: sanity_med,
 		cooktime: 2,
 		tags: ['honeyed'],
-		mode: 'together'
+		mode: 'together',
 	},
 	pumpkincookie_dst: {
 		name: 'Pumpkin Cookie',
@@ -1034,7 +1034,7 @@ export const recipes = {
 		sanity: sanity_med,
 		cooktime: 2,
 		tags: ['honeyed'],
-		mode: 'together'
+		mode: 'together',
 	},
 	stuffedeggplant_dst: {
 		name: 'Stuffed Eggplant',
@@ -1051,7 +1051,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_brief,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	fishsticks_dst: {
 		name: 'Fishsticks',
@@ -1066,7 +1066,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	honeynuggets_dst: {
 		name: 'Honey Nuggets',
@@ -1082,7 +1082,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 2,
 		tags: ['honeyed'],
-		mode: 'together'
+		mode: 'together',
 	},
 	honeyham_dst: {
 		name: 'Honey Ham',
@@ -1100,7 +1100,7 @@ export const recipes = {
 		temperatureduration: food_temp_average,
 		cooktime: 2,
 		tags: ['honeyed'],
-		mode: 'together'
+		mode: 'together',
 	},
 	dragonpie_dst: {
 		name: 'Dragonpie',
@@ -1117,7 +1117,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	kabobs_dst: {
 		name: 'Kabobs',
@@ -1132,7 +1132,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	mandrakesoup_dst: {
 		name: 'Mandrake Soup',
@@ -1147,7 +1147,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 3,
-		mode: 'together'
+		mode: 'together',
 	},
 	baconeggs_dst: {
 		name: 'Bacon and Eggs',
@@ -1162,7 +1162,7 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	meatballs_dst: {
 		name: 'Meatballs',
@@ -1177,7 +1177,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 0.75,
-		mode: 'together'
+		mode: 'together',
 	},
 	bonestew_dst: {
 		name: 'Meaty Stew',
@@ -1194,7 +1194,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.75,
-		mode: 'together'
+		mode: 'together',
 	},
 	perogies_dst: {
 		name: 'Pierogi',
@@ -1209,7 +1209,7 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: sanity_tiny,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	turkeydinner_dst: {
 		name: 'Turkey Dinner',
@@ -1226,7 +1226,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 3,
-		mode: 'together'
+		mode: 'together',
 	},
 	ratatouille_dst: {
 		name: 'Ratatouille',
@@ -1241,7 +1241,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	jammypreserves_dst: {
 		name: 'Fist Full of Jam',
@@ -1256,7 +1256,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	fruitmedley_dst: {
 		name: 'Fruit Medley',
@@ -1273,7 +1273,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_brief,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	fishtacos_dst: {
 		name: 'Fish Tacos',
@@ -1289,7 +1289,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 0.5,
 		tags: ['monstermeat'],
-		mode: 'together'
+		mode: 'together',
 	},
 	waffles_dst: {
 		name: 'Waffles',
@@ -1304,7 +1304,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	monsterlasagna_dst: {
 		name: 'Monster Lasagna',
@@ -1319,7 +1319,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: -sanity_medlarge,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	powcake_dst: {
 		name: 'Powdercake',
@@ -1335,7 +1335,7 @@ export const recipes = {
 		sanity: 0,
 		cooktime: 0.5,
 		tags: ['honeyed'],
-		mode: 'together'
+		mode: 'together',
 	},
 	unagi_dst: {
 		name: 'Unagi',
@@ -1350,7 +1350,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	wetgoop_dst: {
 		name: 'Wet Goop',
@@ -1365,7 +1365,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: 0,
 		cooktime: 0.25,
-		mode: 'together'
+		mode: 'together',
 	},
 	flowersalad_dst: {
 		name: 'Flower Salad',
@@ -1380,7 +1380,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	icecream_dst: {
 		name: 'Ice Cream',
@@ -1397,7 +1397,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	watermelonicle_dst: {
 		name: 'Melonsicle',
@@ -1414,7 +1414,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},		
 	trailmix_dst: {
 		name: 'Trail Mix',
@@ -1430,7 +1430,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	hotchili_dst: {
 		name: 'Spicy Chili',
@@ -1447,7 +1447,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	
 	guacamole_dst: {
@@ -1463,7 +1463,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: 0,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	bananapop_dst: {
 		name: 'Banana Pop',
@@ -1480,7 +1480,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	californiaroll_dst: {
 		name: 'California Roll',
@@ -1495,7 +1495,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	ceviche_dst: {
 		name: 'Ceviche',
@@ -1512,7 +1512,7 @@ export const recipes = {
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_average,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	lobsterbisque_dst: {
 		name: 'Wobster Bisque',
@@ -1527,7 +1527,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	lobsterdinner_dst: {
 		name: 'Wobster Dinner',
@@ -1542,7 +1542,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_huge,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	seafoodgumbo_dst: {
 		name: 'Seafood Gumbo',
@@ -1557,7 +1557,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_medlarge,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	surfnturf_dst: {
 		name: 'Surf \'n\' Turf',
@@ -1572,14 +1572,14 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_large,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	
-//--------------------------------------------------------------------------------\\	
-//	                 DON'T STARVE TOGETHER EXCLUSIVE RECIPES                      \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                 DON'T STARVE TOGETHER EXCLUSIVE RECIPES                      \\
+	//--------------------------------------------------------------------------------\\
 
-//KEEP IN MIND THAT PORTED INGREDIENTS FROM DS + DLCs ARE TO HAVE _dst ADDED TO THE END TO ENSURE THAT THE PROPER INGREDIENT DATA IS BEING USED
+	//KEEP IN MIND THAT PORTED INGREDIENTS FROM DS + DLCs ARE TO HAVE _dst ADDED TO THE END TO ENSURE THAT THE PROPER INGREDIENT DATA IS BEING USED
 
 	jellybean: {
 		name: 'Jellybeans',
@@ -1594,7 +1594,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 2.5,
 		note: 'Recipe produces 3; heals 120 health over 2 minutes',
-		mode: 'together'
+		mode: 'together',
 	},
 	vegstinger: {
 		name: 'Vegetable Stinger',
@@ -1610,7 +1610,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_large,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	asparagussoup_dst: {
 		name: 'Asparagus Soup',
@@ -1625,7 +1625,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	pepperpopper: {
 		name: 'Stuffed Pepper Poppers',
@@ -1643,7 +1643,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		note: 'Increases temperature by 40 degrees in 15 seconds.',
-		mode: 'together'
+		mode: 'together',
 	},
 	mashedpotatoes: {
 		name: 'Creamy Potato Purée',
@@ -1658,7 +1658,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_large,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	salsa: {
 		name: 'Salsa Fresca',
@@ -1673,7 +1673,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_large,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	potatotornado: {
 		name: 'Fancy Spiralled Tubers',
@@ -1688,7 +1688,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 0.75,
-		mode: 'together'
+		mode: 'together',
 	},
 	barnaclepita: {
 		name: 'Barnacle Pita',
@@ -1703,7 +1703,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	barnaclesushi: {
 		name: 'Barnacle Nigiri',
@@ -1718,7 +1718,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	barnaclinguine: {
 		name: 'Barnacle Linguine',
@@ -1733,7 +1733,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: healing_med,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	barnaclestuffedfishhead: {
 		name: 'Stuffed Fish Heads',
@@ -1748,7 +1748,7 @@ export const recipes = {
 		perish: perish_superfast,
 		sanity: 0,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	shroomcake: {
 		name: 'Mushy Cake',
@@ -1763,7 +1763,7 @@ export const recipes = {
 		sanity: sanity_small,
 		perish: perish_slow,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	sweettea: {
 		name: 'Soothing Tea',
@@ -1781,7 +1781,7 @@ export const recipes = {
 		temperatureduration: food_temp_brief,
 		cooktime: 1,
 		note: 'Restores 30 sanity over 1 minute',
-		mode: 'together'
+		mode: 'together',
 	},
 	koalefig_trunk: {
 		name: 'Fig-Stuffed Trunk',
@@ -1796,7 +1796,7 @@ export const recipes = {
 		sanity: 0,
 		perish: perish_med,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	figatoni: {
 		name: 'Figatoni',
@@ -1811,7 +1811,7 @@ export const recipes = {
 		sanity: sanity_med,
 		perish: perish_fast,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	figkabab: {
 		name: 'Figkabab',
@@ -1828,7 +1828,7 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	frognewton: {
 		name: 'Figgy Frogwich',
@@ -1843,7 +1843,7 @@ export const recipes = {
 		sanity: sanity_small,
 		perish: perish_slow,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	frozenbananadaiquiri: {
 		name: 'Frozen Banana Daiquiri',
@@ -1861,7 +1861,7 @@ export const recipes = {
 		temperatureduration: food_temp_long,
 		note: 'Lowers temperature by 15 degrees over 15 seconds',
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	bunnystew: {
 		name: 'Bunny Stew',
@@ -1879,7 +1879,7 @@ export const recipes = {
 		temperatureduration: food_temp_brief,
 		note: 'Raises temperature by 5 degrees over 5 seconds',
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	bananajuice: {
 		name: 'Banana Shake',
@@ -1894,7 +1894,7 @@ export const recipes = {
 		sanity: sanity_large,
 		perish: perish_slow,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	// A Little Drama update
 	justeggs: {
@@ -1910,7 +1910,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		mode: 'together'
+		mode: 'together',
 	},
 	veggieomlet: {
 		name: 'Breakfast Skillet',
@@ -1925,7 +1925,7 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: sanity_tiny,
 		cooktime: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 	talleggs: {
 		name: 'Tall Scotch Eggs',
@@ -1941,7 +1941,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 2,
 		note: 'Requires uncooked Tallbird Egg',
-		mode: 'together'
+		mode: 'together',
 	},
 	// food for Beefalo
 	beefalofeed: {
@@ -1959,7 +1959,7 @@ export const recipes = {
 		sanity: 0,
 		cooktime: 0.5,
 		note: 'Cannot be eaten by the player, only given to Beefalo',
-		mode: 'together'
+		mode: 'together',
 	},
 	beefalotreat: {
 		name: 'Beefalo Treats',
@@ -1975,7 +1975,7 @@ export const recipes = {
 		sanity: 0,
 		cooktime: 2,
 		note: 'Cannot be eaten by the player, only given to Beefalo',
-		mode: 'together'
+		mode: 'together',
 	},
 	leafloaf: {
 		name: 'Leafy Meatloaf',
@@ -1990,7 +1990,7 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	leafymeatburger: {
 		name: 'Veggie Burger',
@@ -2005,7 +2005,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_large,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	leafymeatsouffle: {
 		name: 'Jelly Salad',
@@ -2020,7 +2020,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_huge,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 	meatysalad: {
 		name: 'Beefy Greens',
@@ -2035,7 +2035,7 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	// preparednonfoods – not dishes, but made in crock pot
@@ -2052,7 +2052,7 @@ export const recipes = {
 		perish: perish_slow,
 		cooktime: 2,
 		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)',
-		mode: 'together'
+		mode: 'together',
 	},
 	dustmeringue: {
 	 	name: 'Amberosia',
@@ -2063,12 +2063,12 @@ export const recipes = {
 	 	priority: 100,
 	 	cooktime: 2,
 	 	note: 'Used to feed Dust Moths, cannot be eaten by the player',
-	 	mode: 'together'
+	 	mode: 'together',
 	 },
 	
-//--------------------------------------------------------------------------------\\	
-//	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                 DON'T STARVE TOGETHER WARLY RECIPES                          \\
+	//--------------------------------------------------------------------------------\\
 
 	
 	nightmarepie: {
@@ -2085,7 +2085,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		cooktime: 2,
 		note: 'The player\'s health and sanity percentage values are swapped',
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},	
 	voltgoatjelly: {
 		name: 'Volt Goat Chaud Froid',
@@ -2101,7 +2101,7 @@ export const recipes = {
 		sanity: sanity_small,
 		cooktime: 2,
 		note: 'Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn\'t apply to existing electrical weapons.',
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	glowberrymousse: {
 		name: 'Glow Berry Mousse',
@@ -2117,7 +2117,7 @@ export const recipes = {
 		sanity: sanity_small,
 		cooktime: 1,
 		note: 'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry',
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	frogfishbowl: {
 		name: 'Fish Cordon Bleu',
@@ -2133,7 +2133,7 @@ export const recipes = {
 		perish: perish_fastish,
 		cooktime: 2,
 		note: 'Sets the player\s wetness to 0 and grants the player wetness immunity for 5 minutes',
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	dragonchilisalad: {
 		name: 'Hot Dragon Chili Salad',
@@ -2150,7 +2150,7 @@ export const recipes = {
 		perish: perish_slow,
 		cooktime: 0.75,
 		note: 'Increases and keeps the player\'s temperature to 40 below ambient for 5 minutes',
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	gazpacho: {
 		name: 'Asparagazpacho',
@@ -2167,7 +2167,7 @@ export const recipes = {
 		perish: perish_slow,
 		cooktime: 0.5,
 		note: 'Decreases and keeps the player\'s temperature to 20 below ambient for 5 minutes',
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	potatosouffle: {
 		name: 'Puffed Potato Souffle',
@@ -2182,7 +2182,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 2,
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	monstertartare_dst: {
 		name: 'Monster Tartare',
@@ -2197,7 +2197,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: -sanity_medlarge,
 		cooktime: 0.5,
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	freshfruitcrepes_dst: {
 		name: 'Fresh Fruit Crepes',
@@ -2212,7 +2212,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_med,
 		cooktime: 2,
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	bonesoup: {
 		name: 'Bone Bouillon',
@@ -2227,7 +2227,7 @@ export const recipes = {
 		sanity: sanity_tiny,
 		perish: perish_med,
 		cooktime: 2,
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 	moqueca: {
 		name: 'Moqueca',
@@ -2242,11 +2242,11 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_large,
 		cooktime: 2,
-		mode: 'warlydst'
+		mode: 'warlydst',
 	},
 };
 
-let recipeCount = 0
+let recipeCount = 0;
 for (const key in recipes) {
 	if (!recipes.hasOwnProperty(key)) {
 		continue;
@@ -2270,7 +2270,7 @@ for (const key in recipes) {
 	recipes[key].modeMask = modes[recipes[key].mode].bit;
 
 	if (recipes[key].requirements) {
-		let requirements = recipes[key].requirements.slice();
+		const requirements = recipes[key].requirements.slice();
 
 		if (recipes[key].mode) {
 			recipes[key].modeNode = makeLinkable('[tag:' + recipes[key].mode + '|img/' + modes[recipes[key].mode].img + ']');
@@ -2324,7 +2324,7 @@ const reduceRecipeButton = (a, b) => {
 
 const taggify = (tag, name) => { return '[tag:' + tag + '|' + (name || tag) + ']'; };
 let info;
-let foodCount = 0
+let foodCount = 0;
 
 for (const key in food) {
 	if (!food.hasOwnProperty(key)) {
@@ -2339,7 +2339,7 @@ for (const key in food) {
 		let bestStatType = f.preparationType;
 
 		if (f.cook) {
-			bestStat = Math.max(f.cook[stat] || 0, bestStat)
+			bestStat = Math.max(f.cook[stat] || 0, bestStat);
 			if (bestStat === f.cook[stat]) {
 				bestStatType = 'cooked';
 			}
@@ -2379,7 +2379,7 @@ for (const key in food) {
 
 food.length = foodCount;
 
-export const updateFoodRecipes = (includedRecipes) => {
+export const updateFoodRecipes = includedRecipes => {
 	for (let i = 0; i < food.length; i++) {
 		const f = food[i];
 
@@ -2441,7 +2441,7 @@ export const updateFoodRecipes = (includedRecipes) => {
 
 		f.info = makeLinkable(f.info);
 	}
-}
+};
 
 food.forEach = Array.prototype.forEach;
 food.filter = Array.prototype.filter;

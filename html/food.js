@@ -37,22 +37,22 @@ import {
 	stack_size_largeitem,
 	stack_size_meditem,
 	stack_size_smallitem,
-	total_day_time
+	total_day_time,
 } from './constants.js';
 import { makeLinkable } from './utils.js';
 
 export const food = {
 	
-//--------------------------------------------------------------------------------\\	
-//	               DON'T STARVE VANILLA INGREDIENTS + EDIBLES                     \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	               DON'T STARVE VANILLA INGREDIENTS + EDIBLES                     \\
+	//--------------------------------------------------------------------------------\\
 
 	acorn: {
 		name: 'Birchnut',
 		seed: 1,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	acorn_cooked: {
 		name: 'Roasted Birchnut',
@@ -63,7 +63,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	butter: {
 		name: 'Butter',
@@ -73,7 +73,7 @@ export const food = {
 		hunger: calories_med,
 		sanity: 0,
 		perish: perish_superslow,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	butterflywings: {
 		name: 'Butterfly Wings',
@@ -82,7 +82,7 @@ export const food = {
 		hunger: calories_tiny,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	cactusflower: {
 		name: 'Cactus Flower',
@@ -93,14 +93,14 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	deerclopseyeball: {
 		name: 'Deerclops Eyeball',
 		uncookable: true,
 		health: healing_huge,
 		hunger: calories_huge,
-		sanity: -sanity_med
+		sanity: -sanity_med,
 	},
 	bird_egg: {
 		name: 'Egg',
@@ -121,7 +121,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	rottenegg: {
 		name: 'Rotten Egg',
@@ -129,7 +129,7 @@ export const food = {
 		health: spoiled_health,
 		hunger: spoiled_hunger,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	cutlichen: {
 		name: 'Lichen',
@@ -138,7 +138,7 @@ export const food = {
 		health: healing_small,
 		hunger: calories_small,
 		sanity: -sanity_tiny,
-		perish: perish_two_day
+		perish: perish_two_day,
 	},
 	eel: {
 		name: 'Eel',
@@ -151,7 +151,7 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		dry: 'morsel_dried',
-		drytime: dry_fast
+		drytime: dry_fast,
 	},
 	eel_cooked: {
 		name: 'Cooked Eel',
@@ -162,7 +162,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	fish: {
 		name: 'Fish',
@@ -175,7 +175,7 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		drytime: dry_fast,
-		dry: 'morsel_dried'
+		dry: 'morsel_dried',
 	},
 	fish_cooked: {
 		name: 'Cooked Fish',
@@ -187,7 +187,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	froglegs: {
 		name: 'Frog Legs',
@@ -197,7 +197,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_fast,
 		sanity: -sanity_small,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	froglegs_cooked: {
 		name: 'Cooked Frog Legs',
@@ -208,7 +208,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	//Pre-Hamlet foliage could be eaten but wasn't an ingredient
 	// foliage: {
@@ -229,7 +229,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	honey: {
 		name: 'Honey',
@@ -239,13 +239,13 @@ export const food = {
 		sanity: 0,
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	honeycomb: {
 		name: 'Honeycomb',
 		skip: true,
 		sweetener: true,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	ice: {
 		name: 'Ice',
@@ -257,7 +257,7 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	lightbulb: {
 		name: 'Light Bulb',
@@ -266,7 +266,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		uncookable: true
+		uncookable: true,
 	},
 	mandrake: {
 		name: 'Mandrake',
@@ -276,7 +276,7 @@ export const food = {
 		hunger: calories_huge,
 		sanity: 0,
 		defaultExclude: true,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	mandrake_cooked: {
 		name: 'Cooked Mandrake',
@@ -287,7 +287,7 @@ export const food = {
 		health: healing_superhuge,
 		hunger: calories_superhuge,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	mole: {
 		name: 'Moleworm',
@@ -296,7 +296,7 @@ export const food = {
 		perish: total_day_time * 2,
 		cook: 'morsel_cooked',
 		defaultExclude: true,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	plantmeat: {
 		name: 'Leafy Meat',
@@ -307,7 +307,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	plantmeat_cooked: {
 		name: 'Cooked Leafy Meat',
@@ -318,7 +318,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	monstermeat: {
 		name: 'Monster Meat',
@@ -331,7 +331,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_meditem,
 		dry: 'monstermeat_dried',
-		drytime: dry_fast
+		drytime: dry_fast,
 	},
 	monstermeat_cooked: {
 		name: 'Cooked Monster Meat',
@@ -343,7 +343,7 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: -sanity_small,
 		perish: perish_slow,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	monstermeat_dried: {
 		name: 'Monster Jerky',
@@ -355,7 +355,7 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: -sanity_tiny,
 		perish: perish_preserved,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	meat: {
 		name: 'Meat',
@@ -367,7 +367,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_meditem,
 		dry: 'meat_dried',
-		drytime: dry_med
+		drytime: dry_med,
 	},
 	meat_cooked: {
 		name: 'Cooked Meat',
@@ -378,7 +378,7 @@ export const food = {
 		hunger: calories_med,
 		sanity: 0,
 		perish: perish_med,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	meat_dried: {
 		name: 'Jerky',
@@ -389,7 +389,7 @@ export const food = {
 		hunger: calories_med,
 		sanity: sanity_med,
 		perish: perish_preserved,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	morsel: {
 		name: 'Morsel',
@@ -401,7 +401,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		drytime: dry_fast,
-		dry: 'morsel_dried'
+		dry: 'morsel_dried',
 	},
 	morsel_cooked: {
 		name: 'Cooked Morsel',
@@ -413,7 +413,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_med,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	morsel_dried: {
 		name: 'Small Jerky',
@@ -425,7 +425,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: sanity_small,
 		perish: perish_preserved,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	drumstick: {
 		name: 'Drumstick',
@@ -438,7 +438,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_meditem,
 		drytime: dry_fast,
-		dry: 'morsel_dried'
+		dry: 'morsel_dried',
 	},
 	drumstick_cooked: {
 		name: 'Fried Drumstick',
@@ -449,7 +449,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_med,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	batwing: {
 		name: 'Batilisk Wing',
@@ -462,7 +462,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		drytime: dry_med,
 		defaultExclude: true,
-		dry: 'morsel_dried'
+		dry: 'morsel_dried',
 	},
 	batwing_cooked: {
 		name: 'Cooked Batilisk Wing',
@@ -472,7 +472,7 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: 0,
 		defaultExclude: true,
-		perish: perish_med
+		perish: perish_med,
 	},
 	minotaurhorn: {
 		name: 'Guardian\'s Horn',
@@ -480,7 +480,7 @@ export const food = {
 		ismeat: true,
 		health: healing_huge,
 		hunger: calories_huge,
-		sanity: -sanity_med
+		sanity: -sanity_med,
 	},
 	red_mushroom: {
 		name: 'Red Cap',
@@ -493,7 +493,7 @@ export const food = {
 		perish: perish_med,
 		cook: 'red_mushroom_cooked',
 		stack: stack_size_smallitem,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	red_mushroom_cooked: {
 		name: 'Cooked Red Cap',
@@ -503,7 +503,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	green_mushroom: {
 		name: 'Green Cap',
@@ -516,7 +516,7 @@ export const food = {
 		perish: perish_med,
 		cook: 'green_mushroom_cooked',
 		stack: stack_size_smallitem,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	green_mushroom_cooked: {
 		name: 'Cooked Green Cap',
@@ -526,7 +526,7 @@ export const food = {
 		sanity: sanity_med,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	blue_mushroom: {
 		name: 'Blue Cap',
@@ -538,7 +538,7 @@ export const food = {
 		sanity: -sanity_med,
 		perish: perish_med,
 		cook: 'blue_mushroom_cooked',
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	blue_mushroom_cooked: {
 		name: 'Cooked Blue Cap',
@@ -547,7 +547,7 @@ export const food = {
 		hunger: 0,
 		sanity: sanity_small,
 		perish: perish_med,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	petals: {
 		name: 'Petals',
@@ -556,7 +556,7 @@ export const food = {
 		hunger: 0,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	petals_evil: {
 		name: 'Dark Petals',
@@ -566,7 +566,7 @@ export const food = {
 		hunger: 0,
 		sanity: -sanity_tiny,
 		perish: perish_fast,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	seeds: {
 		name: 'Seeds',
@@ -579,7 +579,7 @@ export const food = {
 		hunger: calories_tiny / 2,
 		sanity: 0,
 		perish: perish_superslow,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	seeds_cooked: {
 		name: 'Toasted Seeds',
@@ -588,7 +588,7 @@ export const food = {
 		hunger: calories_tiny / 2,
 		sanity: 0,
 		perish: perish_med,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	spoiled_food: {
 		name: 'Rot',
@@ -596,7 +596,7 @@ export const food = {
 		health: spoiled_health,
 		hunger: spoiled_hunger,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	tallbirdegg: {
 		name: 'Tallbird Egg',
@@ -604,7 +604,7 @@ export const food = {
 		health: healing_small,
 		hunger: calories_med,
 		sanity: 0,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	tallbirdegg_cooked: {
 		name: 'Fried Tallbird Egg',
@@ -614,7 +614,7 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
-		defaultExclude: true
+		defaultExclude: true,
 	},
 	trunk_summer: {
 		name: 'Koalefant Trunk',
@@ -624,7 +624,7 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	trunk_summer_cooked: {
 		name: 'Koalefant Trunk Steak',
@@ -634,7 +634,7 @@ export const food = {
 		hunger: calories_huge,
 		sanity: 0,
 		perish: perish_slow,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	trunk_winter: {
 		name: 'Winter Koalefant Trunk',
@@ -644,11 +644,11 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	twigs: {
 		name: 'Twigs',
-		inedible: 1
+		inedible: 1,
 	},
 	cave_banana: {
 		// Shipwrecked calls them bananas, less confusing to go with that one (instead of Cave Banana)
@@ -659,7 +659,7 @@ export const food = {
 		health: healing_tiny,
 		hunger: calories_small,
 		sanity: 0,
-		perish: perish_med
+		perish: perish_med,
 	},
 	cave_banana_cooked: {
 		name: 'Cooked Banana',
@@ -669,7 +669,7 @@ export const food = {
 		health: healing_small,
 		hunger: calories_small,
 		sanity: 0,
-		perish: perish_fast
+		perish: perish_fast,
 	},
 	carrot: {
 		name: 'Carrot',
@@ -679,7 +679,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	carrot_cooked: {
 		name: 'Roasted Carrot',
@@ -690,7 +690,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	corn: {
 		name: 'Corn',
@@ -701,7 +701,7 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	corn_cooked: {
 		name: 'Popcorn',
@@ -712,7 +712,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_slow,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	pumpkin: {
 		name: 'Pumpkin',
@@ -722,7 +722,7 @@ export const food = {
 		hunger: calories_large,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	pumpkin_cooked: {
 		name: 'Hot Pumpkin',
@@ -733,7 +733,7 @@ export const food = {
 		hunger: calories_large,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	eggplant: {
 		name: 'Eggplant',
@@ -743,7 +743,7 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_med,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	eggplant_cooked: {
 		name: 'Braised Eggplant',
@@ -754,7 +754,7 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	durian: {
 		name: 'Durian',
@@ -765,7 +765,7 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_med,
 		sanity: -sanity_tiny,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	durian_cooked: {
 		name: 'Extra Smelly Durian',
@@ -777,7 +777,7 @@ export const food = {
 		hunger: calories_med,
 		perish: perish_fast,
 		sanity: -sanity_tiny,
-		stack: stack_size_meditem
+		stack: stack_size_meditem,
 	},
 	pomegranate: {
 		name: 'Pomegranate',
@@ -787,7 +787,7 @@ export const food = {
 		hunger: calories_tiny,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	pomegranate_cooked: {
 		name: 'Sliced Pomegranate',
@@ -798,7 +798,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	dragonfruit: {
 		name: 'Dragon Fruit',
@@ -808,7 +808,7 @@ export const food = {
 		hunger: calories_tiny,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	dragonfruit_cooked: {
 		name: 'Prepared Dragon Fruit',
@@ -819,7 +819,7 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	berries: {
 		name: 'Berries',
@@ -829,7 +829,7 @@ export const food = {
 		hunger: calories_tiny,
 		perish: perish_fast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 	berries_cooked: {
 		name: 'Roasted Berries',
@@ -840,12 +840,12 @@ export const food = {
 		hunger: calories_small,
 		perish: perish_superfast,
 		sanity: 0,
-		stack: stack_size_smallitem
+		stack: stack_size_smallitem,
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	               DON'T STARVE REIGN OF GIANTS INGREDIENTS                       \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	               DON'T STARVE REIGN OF GIANTS INGREDIENTS                       \\
+	//--------------------------------------------------------------------------------\\
 
 	cactusmeat: {
 		name: 'Cactus Flesh',
@@ -856,7 +856,7 @@ export const food = {
 		perish: perish_med,
 		sanity: -sanity_tiny,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	cactusmeat_cooked: {
 		name: 'Cooked Cactus Flesh',
@@ -867,7 +867,7 @@ export const food = {
 		sanity: sanity_med,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	watermelon: {
 		name: 'Watermelon',
@@ -879,7 +879,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	watermelon_cooked: {
 		name: 'Grilled Watermelon',
@@ -891,7 +891,7 @@ export const food = {
 		sanity: sanity_tiny * 1.5,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'giants'
+		mode: 'giants',
 	},
 	wormlight: {
 		name: 'Glow Berry',
@@ -900,7 +900,7 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: -sanity_small,
 		perish: perish_med,
-		note: 'Gives 90 seconds of light'
+		note: 'Gives 90 seconds of light',
 	},
 	glommerfuel: {
 		name: 'Glommer\'s Goop',
@@ -908,12 +908,12 @@ export const food = {
 		health: healing_large,
 		hunger: calories_tiny,
 		sanity: -sanity_huge,
-		mode: 'giants'
+		mode: 'giants',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                   DON'T STARVE SHIPWRECKED INGREDIENTS                       \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                   DON'T STARVE SHIPWRECKED INGREDIENTS                       \\
+	//--------------------------------------------------------------------------------\\
 
 	coral_brain: {
 		name: 'Brainy Matter',
@@ -922,7 +922,7 @@ export const food = {
 		hunger: 10,
 		sanity: 50,
 		perish: perish_one_day,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	blubber: {
 		name: 'Blubber',
@@ -932,7 +932,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_largeitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	seaweed: {
 		name: 'Seaweed',
@@ -945,7 +945,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		dry: 'seaweed_dried',
 		drytime: dry_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	seaweed_cooked: {
 		name: 'Roasted Seaweed',
@@ -955,7 +955,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	seaweed_dried: {
 		name: 'Dried Seaweed',
@@ -965,7 +965,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	sweet_potato: {
 		name: 'Sweet Potato',
@@ -975,7 +975,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	sweet_potato_cooked: {
 		name: 'Cooked Sweet Potato',
@@ -985,7 +985,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	coffeebeans: {
 		name: 'Coffee Beans',
@@ -995,7 +995,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	coffeebeans_cooked: {
 		name: 'Roasted Coffee Beans',
@@ -1007,7 +1007,7 @@ export const food = {
 		perish: perish_slow,
 		stack: stack_size_smallitem,
 		note: 'Gives 5 bonus speed (+83%) for 30 seconds',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	coconut_halved: {
 		name: 'Halved Coconut',
@@ -1020,7 +1020,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		cook: 'coconut_cooked',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	coconut_cooked: {
 		name: 'Roasted Coconut',
@@ -1031,7 +1031,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	doydoyegg: {
 		name: 'Doydoy Egg',
@@ -1040,7 +1040,7 @@ export const food = {
 		hunger: calories_med,
 		sanity: 0,
 		perish: perish_med,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	doydoyegg_cooked: {
 		name: 'Fried Doydoy Egg',
@@ -1049,7 +1049,7 @@ export const food = {
 		hunger: calories_large,
 		sanity: 0,
 		perish: perish_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	tropical_fish: {
 		name: 'Tropical Fish',
@@ -1065,7 +1065,7 @@ export const food = {
 		cook: 'fish_raw_small_cooked',
 		dry: 'morsel_dried',
 		drytime: dry_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish_raw: {
 		name: 'Raw Fish',
@@ -1079,7 +1079,7 @@ export const food = {
 		cook: 'fish_med_cooked',
 		dry: 'meat_dried',
 		drytime: dry_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish_med: {
 		name: 'Dead Dogfish',
@@ -1093,7 +1093,7 @@ export const food = {
 		rot: 'spoiled_fish',
 		dry: 'meat_dried',
 		drytime: dry_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	dead_swordfish: {
 		name: 'Swordfish',
@@ -1107,7 +1107,7 @@ export const food = {
 		rot: 'spoiled_fish',
 		dry: 'meat_dried',
 		drytime: dry_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish_med_cooked: {
 		name: 'Fish Steak',
@@ -1118,7 +1118,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	/* swordfish: { // this refers to the living prefab, probably an accident?
 		name: 'Swordfish',
@@ -1141,7 +1141,7 @@ export const food = {
 		sanity: -sanity_med,
 		perish: perish_fast,
 		stack: stack_size_largeitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	limpets: {
 		name: 'Limpets',
@@ -1152,7 +1152,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	limpets_cooked: {
 		name: 'Cooked Limpets',
@@ -1162,7 +1162,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	mussel: {
 		name: 'Mussel',
@@ -1172,7 +1172,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	mussel_cooked: {
 		name: 'Cooked Mussel',
@@ -1182,7 +1182,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	mysterymeat: {
 		name: 'Bile-Covered Slop',
@@ -1191,7 +1191,7 @@ export const food = {
 		hunger: spoiled_hunger,
 		sanity: 0,
 		stack: stack_size_meditem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	jellyfish: {
 		name: 'Jellyfish',
@@ -1199,7 +1199,7 @@ export const food = {
 		jellyfish: 1,
 		monster: 1,
 		perish: perish_one_day * 1.5,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	jellyfish_dead: {
 		name: 'Dead Jellyfish',
@@ -1215,7 +1215,7 @@ export const food = {
 		cook: 'jellyfish_cooked',
 		dry: 'jellyfish_dried',
 		drytime: dry_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	jellyfish_cooked: {
 		name: 'Cooked Jellyfish',
@@ -1227,7 +1227,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_meditem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	jellyfish_dried: {
 		name: 'Dried Jellyfish',
@@ -1239,14 +1239,14 @@ export const food = {
 		sanity: 0,
 		perish: perish_preserved,
 		stack: stack_size_meditem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	lobster: {
 		name: 'Wobster',
 		fish: 2,
 		perish: total_day_time * 2,
 		defaultExclude: true,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	lobster_dead: {
 		name: 'Dead Wobster',
@@ -1258,7 +1258,7 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_largeitem,
 		cook: 'lobster_cooked',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	lobster_cooked: {
 		name: 'Delicious Wobster',
@@ -1268,7 +1268,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	crab: {
 		name: 'Crab',
@@ -1276,7 +1276,7 @@ export const food = {
 		fish: 0.5,
 		perish: total_day_time * 2,
 		cook: 'fish_raw_small_cooked',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish_raw_small: {
 		name: 'Fish Morsel',
@@ -1288,7 +1288,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		dry: 'morsel_dried',
 		drytime: dry_fast,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish_raw_small_cooked: {
 		name: 'Cooked Fish Morsel',
@@ -1298,7 +1298,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	tigereye: {
 		name: 'Eye of the Tiger Shark',
@@ -1307,7 +1307,7 @@ export const food = {
 		hunger: calories_huge,
 		sanity: -sanity_med,
 		stack: stack_size_largeitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	dragoonheart: {
 		name: 'Dragoon Heart',
@@ -1318,7 +1318,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_largeitem,
 		note: 'Gives 90 seconds of light',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	roe: {
 		name: 'Roe',
@@ -1329,7 +1329,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	roe_cooked: {
 		name: 'Cooked Roe',
@@ -1340,7 +1340,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish3: {
 		name: 'Purple Grouper',
@@ -1352,7 +1352,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Gives 2 bonus speed (+33%) for 30 seconds',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish3_cooked: {
 		name: 'Cooked Purple Grouper',
@@ -1364,7 +1364,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		note: 'Gives 2 bonus speed (+33%) for 30 seconds',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish4: {
 		name: 'Pierrot Fish',
@@ -1376,7 +1376,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Dries 1/s for 30 seconds',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish4_cooked: {
 		name: 'Cooked Pierrot Fish',
@@ -1388,7 +1388,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		note: 'Dries 1/s for 30 seconds',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish5: {
 		name: 'Neon Quattro',
@@ -1400,7 +1400,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: '-3 heat',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	fish5_cooked: {
 		name: 'Cooked Neon Quattro',
@@ -1412,7 +1412,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		note: '-3 heat',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	rainbowjellyfish: {
 		name: 'Rainbow Jellyfish',
@@ -1421,7 +1421,7 @@ export const food = {
 		monster: 1,
 		perish: perish_one_day * 1.5,
 		note: 'Makes the player glow in the dark for 2 minutes',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	rainbowjellyfish_dead: {
 		name: 'Dead Rainbow Jellyfish',
@@ -1438,7 +1438,7 @@ export const food = {
 		dry: 'jellyfish_dried',
 		drytime: dry_fast,
 		note: 'Makes the player glow in the dark for 2 minutes',
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 	rainbowjellyfish_cooked: {
 		name: 'Cooked Rainbow Jellyfish',
@@ -1450,12 +1450,12 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_meditem,
-		mode: 'shipwrecked'
+		mode: 'shipwrecked',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                     DON'T STARVE HAMLET INGREDIENTS                          \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                     DON'T STARVE HAMLET INGREDIENTS                          \\
+	//--------------------------------------------------------------------------------\\
 
 	asparagus: {
 		name: 'Asparagus',
@@ -1466,7 +1466,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	asparagus_cooked: {
 		name: 'Cooked Asparagus',
@@ -1477,7 +1477,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	radish: {
 		name: 'Radish',
@@ -1488,7 +1488,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_slow,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	radish_cooked: {
 		name: 'Cooked Radish',
@@ -1499,7 +1499,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	aloe: {
 		name: 'Aloe',
@@ -1510,7 +1510,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	aloe_cooked: {
 		name: 'Cooked Aloe',
@@ -1521,7 +1521,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	jellybug: {
 		name: 'Bean Bugs',
@@ -1531,7 +1531,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	jellybug_cooked: {
 		name: 'Cooked Bean Bugs',
@@ -1541,7 +1541,7 @@ export const food = {
 		sanity: -sanity_tiny,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	foliage: {
 		name: 'Foliage',
@@ -1551,7 +1551,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'hamlet' //as an ingredient, but was a food before... probably okay to leave like this
+		mode: 'hamlet', //as an ingredient, but was a food before... probably okay to leave like this
 	},
 	cutnettle: {
 		name: 'Nettle',
@@ -1561,21 +1561,21 @@ export const food = {
 		sanity: 0,
 		note: 'Prevents hayfever for 200 seconds',
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	snake_bone: {
 		name: 'Snake Bone',
 		isbone: true,
 		bone: 1,
 		stack: stack_size_meditem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	piko_orange: {
 		name: 'Orange Piko',
 		filter: 1,
 		perish: total_day_time * 2,
 		cook: 'morsel_cooked',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	slugbug: {
 		name: 'Gummy Slug',
@@ -1585,7 +1585,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	slugbug_cooked: {
 		name: 'Cooked Gummy Slug',
@@ -1595,18 +1595,18 @@ export const food = {
 		sanity: -sanity_tiny,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	weevole_carapace: {
 		name: 'Weevole Carapace',
 		inedible: 1,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                       DON'T STARVE HAMLET EDIBLES                            \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                       DON'T STARVE HAMLET EDIBLES                            \\
+	//--------------------------------------------------------------------------------\\
 
 	clippings: {
 		name: 'Clippings',
@@ -1616,7 +1616,7 @@ export const food = {
 		hunger: calories_tiny / 2,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	lotus_flower: {
 		name: 'Lotus Flower',
@@ -1627,7 +1627,7 @@ export const food = {
 		sanity: sanity_tiny,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	lotus_flower_cooked: {
 		name: 'Cooked Lotus Root',
@@ -1638,7 +1638,7 @@ export const food = {
 		sanity: sanity_med,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	venus_stalk: {
 		name: 'Flytrap Stalk',
@@ -1650,7 +1650,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		dry: 'walkingstick',
 		drytime: dry_fast,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	nectar_pod: {
 		name: 'Nectar',
@@ -1660,7 +1660,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	teatree_nut: {
 		name: 'Seed Pod',
@@ -1671,7 +1671,7 @@ export const food = {
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
 		note: 'Prevents hayfever for 60 seconds',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	teatree_nut_cooked: {
 		name: 'Cooked Seed Pod',
@@ -1682,7 +1682,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		note: 'Prevents hayfever for 120 seconds',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	tuber_crop: {
 		name: 'Tuber',
@@ -1694,7 +1694,7 @@ export const food = {
 		perish: perish_preserved,
 		stack: stack_size_largeitem,
 		note: 'Poisonous',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	tuber_crop_cooked: {
 		name: 'Fried Tuber',
@@ -1705,7 +1705,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_largeitem,
 		note: 'Poisonous',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	tuber_bloom_crop: {
 		name: 'Blooming Tuber',
@@ -1716,7 +1716,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_preserved,
 		stack: stack_size_largeitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	tuber_bloom_crop_cooked: {
 		name: 'Fried Blooming Tuber',
@@ -1726,7 +1726,7 @@ export const food = {
 		sanity: sanity_tiny,
 		perish: perish_fast,
 		stack: stack_size_largeitem,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	waterdrop: {
 		name: 'Magic Water',
@@ -1736,7 +1736,7 @@ export const food = {
 		hunger: calories_superhuge * 3,
 		sanity: sanity_huge * 3,
 		note: 'Cures poison',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	// This is only found in game data and is not available while playing
 	/*
@@ -1759,7 +1759,7 @@ export const food = {
 		hunger: calories_tiny,
 		sanity: 0,
 		perish: perish_preserved,
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	froglegs_poison: {
 		name: 'Poison Dartfrog Legs',
@@ -1771,7 +1771,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		cook: 'froglegs_poison_cooked',
 		note: 'Poisonous',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 	froglegs_poison_cooked: {
 		name: 'Cooked Dartfrog Legs',
@@ -1783,14 +1783,14 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Poisonous',
-		mode: 'hamlet'
+		mode: 'hamlet',
 	},
 
-//--------------------------------------------------------------------------------\\	
-//	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
-//--------------------------------------------------------------------------------\\
+	//--------------------------------------------------------------------------------\\	
+	//	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
+	//--------------------------------------------------------------------------------\\
 	
-//PORTED INGREDIENTS FROM DS + DLC's GET THE DST SUFFIX TO DIFFERENTIATE FROM THE DS VERSION OF THE INGREDIENT\\
+	//PORTED INGREDIENTS FROM DS + DLC's GET THE DST SUFFIX TO DIFFERENTIATE FROM THE DS VERSION OF THE INGREDIENT\\
 
 	acorn_dst: {
 		name: 'Birchnut',
@@ -1798,7 +1798,7 @@ export const food = {
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
 		cook: 'acorn_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	acorn_cooked_dst: {
 		name: 'Roasted Birchnut',
@@ -1809,7 +1809,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	butter_dst: {
 		name: 'Butter',
@@ -1820,7 +1820,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	butterflywings_dst: {
 		name: 'Butterfly Wings',
@@ -1831,7 +1831,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	cactusflower_dst: {
 		name: 'Cactus Flower',
@@ -1843,7 +1843,7 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	deerclopseyeball_dst: {
 		name: 'Deerclops Eyeball',
@@ -1851,7 +1851,7 @@ export const food = {
 		health: healing_huge,
 		hunger: calories_huge,
 		sanity: -sanity_med,
-		mode: 'together'
+		mode: 'together',
 	},
 	bird_egg_dst: {
 		name: 'Egg',
@@ -1864,7 +1864,7 @@ export const food = {
 		rot: 'rottenegg_dst',
 		cook: 'bird_egg_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	bird_egg_cooked_dst: {
 		name: 'Cooked Egg',
@@ -1875,7 +1875,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	rottenegg_dst: {
 		name: 'Rotten Egg',
@@ -1884,7 +1884,7 @@ export const food = {
 		hunger: spoiled_hunger,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	cutlichen_dst: {
 		name: 'Lichen',
@@ -1894,7 +1894,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: -sanity_tiny,
 		perish: perish_two_day,
-		mode: 'together'
+		mode: 'together',
 	},
 	eel_dst: {
 		name: 'Eel',
@@ -1909,7 +1909,7 @@ export const food = {
 		//dry: 'morsel_dried',
 		drytime: dry_fast,
 		cook: 'eel_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	eel_cooked_dst: {
 		name: 'Cooked Eel',
@@ -1921,7 +1921,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	froglegs_dst: {
 		name: 'Frog Legs',
@@ -1933,7 +1933,7 @@ export const food = {
 		sanity: -sanity_small,
 		stack: stack_size_smallitem,
 		cook: 'froglegs_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	froglegs_cooked_dst: {
 		name: 'Cooked Frog Legs',
@@ -1945,7 +1945,7 @@ export const food = {
 		perish: perish_med,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	foliage_dst: {
@@ -1956,7 +1956,7 @@ export const food = {
 		 sanity: 0,
 		 perish: perish_fast,
 		 stack: stack_size_smallitem,
-		 mode: 'together'
+		 mode: 'together',
 	},
 	goatmilk_dst: {
 		name: 'Electric Milk',
@@ -1967,7 +1967,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	honey_dst: {
 		name: 'Honey',
@@ -1978,7 +1978,7 @@ export const food = {
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	honeycomb_dst: {
 		name: 'Honeycomb',
@@ -1997,7 +1997,7 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	lightbulb_dst: {
 		name: 'Light Bulb',
@@ -2007,7 +2007,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		uncookable: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	mandrake_dst: {
 		name: 'Mandrake',
@@ -2019,7 +2019,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		cook: 'mandrake_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	mandrake_cooked_dst: {
 		name: 'Cooked Mandrake',
@@ -2031,7 +2031,7 @@ export const food = {
 		hunger: calories_superhuge,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	mole_dst: {
 		name: 'Moleworm',
@@ -2040,7 +2040,7 @@ export const food = {
 		perish: total_day_time * 2,
 		cook: 'morsel_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	plantmeat_dst: {
 		name: 'Leafy Meat',
@@ -2053,7 +2053,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		cook: 'plantmeat_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	plantmeat_cooked_dst: {
 		name: 'Cooked Leafy Meat',
@@ -2065,7 +2065,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	monstermeat_dst: {
 		name: 'Monster Meat',
@@ -2080,7 +2080,7 @@ export const food = {
 		dry: 'monstermeat_dried_dst',
 		drytime: dry_fast,
 		cook: 'monstermeat_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	monstermeat_cooked_dst: {
 		name: 'Cooked Monster Meat',
@@ -2093,7 +2093,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_slow,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	monstermeat_dried_dst: {
 		name: 'Monster Jerky',
@@ -2106,7 +2106,7 @@ export const food = {
 		sanity: -sanity_tiny,
 		perish: perish_preserved,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	meat_dst: {
 		name: 'Meat',
@@ -2120,7 +2120,7 @@ export const food = {
 		dry: 'meat_dried_dst',
 		drytime: dry_med,
 		cook: 'meat_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	meat_cooked_dst: {
 		name: 'Cooked Meat',
@@ -2132,7 +2132,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	meat_dried_dst: {
 		name: 'Jerky',
@@ -2144,7 +2144,7 @@ export const food = {
 		sanity: sanity_med,
 		perish: perish_preserved,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	morsel_dst: {
 		name: 'Morsel',
@@ -2158,7 +2158,7 @@ export const food = {
 		drytime: dry_fast,
 		dry: 'morsel_dried_dst',
 		cook: 'morsel_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	morsel_cooked_dst: {
 		name: 'Cooked Morsel',
@@ -2171,7 +2171,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	morsel_dried_dst: {
 		name: 'Small Jerky',
@@ -2184,7 +2184,7 @@ export const food = {
 		sanity: sanity_small,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	drumstick_dst: {
 		name: 'Drumstick',
@@ -2199,7 +2199,7 @@ export const food = {
 		drytime: dry_fast,
 		dry: 'morsel_dried_dst',
 		cook: 'drumstick_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	drumstick_cooked_dst: {
 		name: 'Fried Drumstick',
@@ -2211,7 +2211,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	batwing_dst: {
 		name: 'Batilisk Wing',
@@ -2226,7 +2226,7 @@ export const food = {
 		dry: 'morsel_dried_dst',
 		cook: 'batwing_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	batwing_cooked_dst: {
 		name: 'Cooked Batilisk Wing',
@@ -2237,7 +2237,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	minotaurhorn_dst: {
 		name: 'Guardian\'s Horn',
@@ -2246,7 +2246,7 @@ export const food = {
 		health: healing_huge,
 		hunger: calories_huge,
 		sanity: -sanity_med,
-		mode: 'together'
+		mode: 'together',
 	},
 	red_mushroom_dst: {
 		name: 'Red Cap',
@@ -2261,7 +2261,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		cook: 'red_mushroom_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	red_mushroom_cooked_dst: {
 		name: 'Cooked Red Cap',
@@ -2273,7 +2273,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	green_mushroom_dst: {
 		name: 'Green Cap',
@@ -2288,7 +2288,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		cook: 'green_mushroom_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	green_mushroom_cooked_dst: {
 		name: 'Cooked Green Cap',
@@ -2300,7 +2300,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	blue_mushroom_dst: {
 		name: 'Blue Cap',
@@ -2314,7 +2314,7 @@ export const food = {
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		cook: 'blue_mushroom_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	blue_mushroom_cooked_dst: {
 		name: 'Cooked Blue Cap',
@@ -2325,7 +2325,7 @@ export const food = {
 		sanity: sanity_small,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	petals_dst: {
 		name: 'Petals',
@@ -2335,7 +2335,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	petals_evil_dst: {
 		name: 'Dark Petals',
@@ -2346,7 +2346,7 @@ export const food = {
 		sanity: -sanity_tiny,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	seeds_dst: {
 		name: 'Seeds',
@@ -2357,7 +2357,7 @@ export const food = {
 		perish: perish_superslow,
 		stack: stack_size_smallitem,
 		cook: 'seeds_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	seeds_cooked_dst: {
 		name: 'Toasted Seeds',
@@ -2367,7 +2367,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	spoiled_food_dst: {
 		name: 'Rot',
@@ -2376,7 +2376,7 @@ export const food = {
 		hunger: spoiled_hunger,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	tallbirdegg_dst: {
 		name: 'Tallbird Egg',
@@ -2386,7 +2386,7 @@ export const food = {
 		sanity: 0,
 		cook: 'tallbirdegg_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	tallbirdegg_cooked_dst: {
 		name: 'Fried Tallbird Egg',
@@ -2397,7 +2397,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	trunk_summer_dst: {
 		name: 'Koalefant Trunk',
@@ -2410,7 +2410,7 @@ export const food = {
 		stack: stack_size_meditem,
 		cook: 'trunk_summer_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	trunk_summer_cooked_dst: {
 		name: 'Koalefant Trunk Steak',
@@ -2422,7 +2422,7 @@ export const food = {
 		meat: 1,
 		stack: stack_size_meditem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	trunk_winter_dst: {
 		name: 'Winter Koalefant Trunk',
@@ -2436,12 +2436,12 @@ export const food = {
 		stack: stack_size_meditem,
 		cook: 'trunk_summer_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	twigs_dst: {
 		name: 'Twigs',
 		inedible: 1,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	cave_banana_dst: {
@@ -2454,7 +2454,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		cook: 'cave_banana_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	cave_banana_cooked_dst: {
 		name: 'Cooked Banana',
@@ -2465,7 +2465,7 @@ export const food = {
 		hunger: calories_small,
 		sanity: 0,
 		perish: perish_fast,
-		mode: 'together'
+		mode: 'together',
 	},
 	carrot_dst: {
 		name: 'Carrot',
@@ -2478,7 +2478,7 @@ export const food = {
 		cook: 'carrot_cooked_dst',
 		stack: stack_size_smallitem,
 		cook: 'carrot_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	carrot_cooked_dst: {
 		name: 'Roasted Carrot',
@@ -2490,7 +2490,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	corn_dst: {
 		name: 'Corn',
@@ -2503,7 +2503,7 @@ export const food = {
 		sanity: 0,
 		stack: stack_size_smallitem,
 		cook: 'corn_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	corn_cooked_dst: {
 		name: 'Popcorn',
@@ -2515,7 +2515,7 @@ export const food = {
 		perish: perish_slow,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	pumpkin_dst: {
 		name: 'Pumpkin',
@@ -2527,7 +2527,7 @@ export const food = {
 		sanity: 0,
 		stack: stack_size_meditem,
 		cook: 'pumpkin_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	pumpkin_cooked_dst: {
 		name: 'Hot Pumpkin',
@@ -2539,7 +2539,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: 0,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	eggplant_dst: {
 		name: 'Eggplant',
@@ -2551,7 +2551,7 @@ export const food = {
 		sanity: 0,
 		stack: stack_size_meditem,
 		cook: 'eggplant_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	eggplant_cooked_dst: {
 		name: 'Braised Eggplant',
@@ -2563,7 +2563,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: 0,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	durian_dst: {
 		name: 'Durian',
@@ -2576,7 +2576,7 @@ export const food = {
 		sanity: -sanity_tiny,
 		stack: stack_size_meditem,
 		cook: 'durian_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	durian_cooked_dst: {
 		name: 'Extra Smelly Durian',
@@ -2589,7 +2589,7 @@ export const food = {
 		perish: perish_fast,
 		sanity: -sanity_tiny,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 	pomegranate_dst: {
 		name: 'Pomegranate',
@@ -2601,7 +2601,7 @@ export const food = {
 		sanity: 0,
 		stack: stack_size_smallitem,
 		cook: 'pomegranate_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	pomegranate_cooked_dst: {
 		name: 'Sliced Pomegranate',
@@ -2613,7 +2613,7 @@ export const food = {
 		perish: perish_superfast,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	dragonfruit_dst: {
 		name: 'Dragon Fruit',
@@ -2625,7 +2625,7 @@ export const food = {
 		sanity: 0,
 		stack: stack_size_smallitem,
 		cook: 'dragonfruit_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	dragonfruit_cooked_dst: {
 		name: 'Prepared Dragon Fruit',
@@ -2637,7 +2637,7 @@ export const food = {
 		perish: perish_superfast,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	
 	berries_dst: {
@@ -2650,7 +2650,7 @@ export const food = {
 		sanity: 0,
 		stack: stack_size_smallitem,
 		cook: 'berries_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	berries_cooked_dst: {
 		name: 'Roasted Berries',
@@ -2662,7 +2662,7 @@ export const food = {
 		perish: perish_superfast,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	cactusmeat_dst: {
 		name: 'Cactus Flesh',
@@ -2675,7 +2675,7 @@ export const food = {
 		sanity: -sanity_tiny,
 		stack: stack_size_smallitem,
 		cook: 'cactusmeat_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	cactusmeat_cooked_dst: {
 		name: 'Cooked Cactus Flesh',
@@ -2687,7 +2687,7 @@ export const food = {
 		sanity: sanity_med,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	watermelon_dst: {
 		name: 'Watermelon',
@@ -2700,7 +2700,7 @@ export const food = {
 		sanity: sanity_tiny,
 		stack: stack_size_smallitem,
 		cook: 'watermelon_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	watermelon_cooked_dst: {
 		name: 'Grilled Watermelon',
@@ -2712,7 +2712,7 @@ export const food = {
 		sanity: sanity_tiny * 1.5,
 		precook: 1,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	wormlight_dst: {
 		name: 'Glow Berry',
@@ -2724,7 +2724,7 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_med,
 		note: 'Gives 90 seconds of light',
-		mode: 'together'
+		mode: 'together',
 	},
 	glommerfuel_dst: {
 		name: 'Glommer\'s Goop',
@@ -2732,7 +2732,7 @@ export const food = {
 		health: healing_large,
 		hunger: calories_tiny,
 		sanity: -sanity_huge,
-		mode: 'together'
+		mode: 'together',
 	},
 	//Lobsters exist in both games but were difficult to port. 
 	// For simplicity's sake, the prefab name for lobsters in DST will be referred to as wobster.
@@ -2744,7 +2744,7 @@ export const food = {
 		fish: 1,
 		perish: total_day_time * 4,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	wobster_dead: {
 		name: 'Dead Wobster DST',
@@ -2756,7 +2756,7 @@ export const food = {
 		perish: perish_superfast,
 		stack: stack_size_largeitem,
 		cook: 'wobster_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	wobster_cooked: {
 		name: 'Delicious Wobster DST',
@@ -2766,12 +2766,12 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	
-//DST EXCLUSIVE INGREDIENTS DO NOT GET THE 'dst' SUFFIX\\
+	//DST EXCLUSIVE INGREDIENTS DO NOT GET THE 'dst' SUFFIX\\
 	
-/*
+	/*
 I (lakhnish) tried to add the 'dst' suffix to some ingredients below (i.e. kelp) and the simulator would break for reasons I don't understand.
 For example: the Jelly Beans recipe has a specific for Royal Jelly and needed the prefabname to match royal_jelly_dst in order for the simulator to actually load. 
 However, if I do the same for kelp and rename it to kelp_dst, the simulator would stop loading entirely and idk why.
@@ -2788,7 +2788,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Gives 22.5 seconds of light',
-		mode: 'together'
+		mode: 'together',
 	},
 	berries_juicy: {
 		name: 'Juicy Berries',
@@ -2801,7 +2801,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_two_day,
 		stack: stack_size_smallitem,
 		cook: 'berries_juicy_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	berries_juicy_cooked: {
 		name: 'Roasted Juicy Berries',
@@ -2813,7 +2813,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_one_day,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	phlegm: {
 		name: 'Phlegm',
@@ -2823,7 +2823,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_med,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	royal_jelly: {
 		name: 'Royal Jelly',
@@ -2832,7 +2832,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		hunger: calories_small,
 		sanity: sanity_med,
 		perish: perish_med,
-		mode: 'together'
+		mode: 'together',
 	},
 	succulent_picked: {
 		name: 'Succulent',
@@ -2843,7 +2843,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	//DST Turn Of Tides Additions
@@ -2858,7 +2858,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		dry: 'kelp_dried',
 		drytime: dry_superfast,
-		mode: 'together'
+		mode: 'together',
 	},
 	kelp_cooked: {
 		name: 'Cooked Kelp Fronds',
@@ -2870,7 +2870,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_tiny,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	kelp_dried: {
 		name: 'Dried Kelp Fronds',
@@ -2882,7 +2882,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: sanity_small,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	moonbutterflywings: {
 		name: 'Moon Moth Wings',
@@ -2893,7 +2893,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	moon_tree_blossom: {
 		name: 'Lune Tree Blossom',
@@ -2904,7 +2904,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	rock_avocado_fruit_ripe: {
 		name: 'Ripe Stone Fruit',
@@ -2916,7 +2916,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
 		cook: 'rock_avocado_fruit_ripe_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	rock_avocado_fruit_ripe_cooked: {
 		name: 'Cooked Stone Fruit',
@@ -2928,7 +2928,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_two_day,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	//DST Additions From Warly's Update
@@ -2942,7 +2942,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		cook: 'asparagus_cooked_dst',
-		mode: 'together'
+		mode: 'together',
 	},
 	asparagus_cooked_dst: {
 		name: 'Cooked Asparagus',
@@ -2953,7 +2953,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	pepper: {
 		name: 'Pepper',
@@ -2965,7 +2965,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_slow,
 		stack: stack_size_smallitem,
 		cook: 'pepper_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	pepper_cooked: {
 		name: 'Roasted Pepper',
@@ -2977,7 +2977,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_small,
 		perish: perish_slow,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	potato: {
 		name: 'Potato',
@@ -2989,7 +2989,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		cook: 'potato_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	potato_cooked: {
 		name: 'Roasted Potato',
@@ -3001,7 +3001,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	garlic: {
 		name: 'Garlic',
@@ -3013,7 +3013,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_slow,
 		stack: stack_size_smallitem,
 		cook: 'garlic_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	garlic_cooked: {
 		name: 'Roasted Garlic',
@@ -3025,7 +3025,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_tiny,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	tomato: {
 		name: 'Toma Root',
@@ -3037,7 +3037,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		cook: 'tomato_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	tomato_cooked: {
 		name: 'Roasted Toma Root',
@@ -3049,7 +3049,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	onion: {
 		name: 'Onion',
@@ -3061,7 +3061,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_slow,
 		stack: stack_size_smallitem,
 		cook: 'onion_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	onion_cooked: {
 		name: 'Roasted Onion',
@@ -3073,26 +3073,26 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_tiny,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	lightninggoathorn: {
 		name: 'Volt Goat Horn',
 		inedible: 1,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	nightmarefuel: {
 		name: 'Nightmare Fuel',
 		inedible: 1,
 		magic: 1,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	boneshard: {
 		name: 'Bone Shards',
 		inedible: 1,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	//DST Hook, Line, and Inker
@@ -3109,7 +3109,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		cook: 'fishmeat_small_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	pondeel: {
 		name: 'Live Eel',
@@ -3124,7 +3124,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		cook: 'eel_cooked_dst',
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	spoiled_fish: {
 		name: 'Spoiled Fish',
@@ -3133,7 +3133,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		hunger: spoiled_hunger,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	spoiled_fish_morsel: {
 		name: 'Spoiled Fish Morsel',
@@ -3142,7 +3142,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		hunger: spoiled_hunger,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	//_dst because it's ported from SW but added in this update
 	fishmeat_small_dst: {
@@ -3158,7 +3158,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		cook: 'fishmeat_small_cooked_dst',
 		dry: 'morsel_dried_dst',
 		drytime: dry_fast,
-		mode: 'together'
+		mode: 'together',
 	},
 	//_dst because it's ported from SW but added in this update
 	fishmeat_small_cooked_dst: {
@@ -3171,7 +3171,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	fishmeat: {
 		name: 'Fish Meat',
@@ -3186,7 +3186,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		cook: 'fishmeat_cooked',
 		dry: 'meat_dried',
 		drytime: dry_fast,
-		mode: 'together'
+		mode: 'together',
 	},
 	fishmeat_cooked: {
 		name: 'Cooked Fish Meat',
@@ -3198,7 +3198,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_superfast,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	//All the small ocean fish
@@ -3213,7 +3213,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true, // TODO: simplify the way these get handled, but for now exclude them from the statistics analyzer
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_2_inv: {
 		name: 'Needlenosed Squirt',
@@ -3223,7 +3223,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_3_inv: {
 		name: 'Bitty Baitfish',
@@ -3233,7 +3233,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_4_inv: {
 		name: 'Smolt Fry',
@@ -3243,7 +3243,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_5_inv: {
 		name: 'Popperfish',
@@ -3252,7 +3252,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		veggie: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_6_inv: {
 		name: 'Fallounder',
@@ -3262,7 +3262,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_7_inv: {
 		name: 'Bloomfin Tuna',
@@ -3272,7 +3272,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_8_inv: {
 		name: 'Scorching Sunfish',
@@ -3282,7 +3282,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_small_9_inv: {
 		name: 'Spittlefish',
@@ -3292,7 +3292,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 0.5,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	//All the medium sized fish
@@ -3304,7 +3304,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_medium_2_inv: {
 		name: 'Deep Bass',
@@ -3314,7 +3314,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_medium_3_inv: {
 		name: 'Dandy Lionfish',
@@ -3324,7 +3324,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_medium_4_inv: {
 		name: 'Black Catfish',
@@ -3334,7 +3334,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_medium_5_inv: {
 		name: 'Corn Cod',
@@ -3343,7 +3343,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		veggie: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_medium_6_inv: {
 		name: 'Dappled Koi',
@@ -3353,7 +3353,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	oceanfish_medium_7_inv: {
 		name: 'Golden Koi',
@@ -3363,7 +3363,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},	
 	oceanfish_medium_8_inv: {
 		name: 'Ice Bream',
@@ -3375,7 +3375,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		frozen: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},	
 	oceanfish_medium_9_inv: {
 		name: 'Sweetish Fish',
@@ -3385,7 +3385,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		fish: 1,
 		perish: perish_one_day,
 		skip: true,
-		mode: 'together'
+		mode: 'together',
 	},	
 
 	// DST Return of Them: Troubled Waters food
@@ -3401,7 +3401,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_fast,
 		stack: stack_size_meditem,
 		cook: 'barnacle_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	barnacle_cooked: {
 		name: 'Cooked Barnacles',
@@ -3413,7 +3413,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_slow,
 		stack: stack_size_meditem,
-		mode: 'together'
+		mode: 'together',
 	},
 
 	// DST Return of Them: Forgotten Knowledge food
@@ -3430,7 +3430,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		stack: stack_size_smallitem,
 		note: 'Puts the player to sleep',
 		cook: 'moon_mushroom_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	moon_mushroom_cooked: {
 		name: 'Cooked Moon Shroom',
@@ -3442,7 +3442,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Removes grogginess effect',
-		mode: 'together'
+		mode: 'together',
 	},
 
 	// DST Return of Them: Reap What You Sow food
@@ -3454,7 +3454,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: sanity_supertiny,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	
 	// DST Return of Them: Waterlogged beta
@@ -3468,7 +3468,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		stack: stack_size_smallitem,
 		cook: 'fig_cooked',
-		mode: 'together'
+		mode: 'together',
 	},
 	fig_cooked: {
 		name: 'Cooked Fig',
@@ -3480,7 +3480,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_superfast,
 		sanity: 0,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	batnose: {
 		name: 'Naked Nostrils',
@@ -3497,7 +3497,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	batnose_cooked: {
 		name: 'Charred Nostrils',
@@ -3510,16 +3510,16 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		mode: 'together'
+		mode: 'together',
 	},
 	refined_dust: {
-		name: "Collected Dust",
+		name: 'Collected Dust',
 		decoration: 2,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 	milkywhites: {
-		name: "Milky Whites",
+		name: 'Milky Whites',
 		dairy: 1,
 		health: healing_medsmall,
 		hunger: calories_small,
@@ -3527,7 +3527,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		defaultExclude: true,
-		mode: 'together'
+		mode: 'together',
 	},
 };
 

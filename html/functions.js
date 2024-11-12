@@ -21,7 +21,7 @@ export const COMPARISONS = {
 	'>':  function (qty) { return qty > this.qty; },
 	'<':  function (qty) { return qty < this.qty; },
 	'>=': function (qty) { return qty >= this.qty; },
-	'<=': function (qty) { return qty <= this.qty; }
+	'<=': function (qty) { return qty <= this.qty; },
 };
 
 export const NOQTY = {test: qty => { return !!qty; }, toString: () => { return ''; }};

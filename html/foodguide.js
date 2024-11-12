@@ -773,6 +773,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 		return node;
 	};
+	
+	const fractionChars = ['\u215b', '\u00bc', '\u215c', '\u00bd', '\u215d', '\u00be', '\u215e'];
 
 	const makeSortableTable = (
 		headers,
@@ -960,9 +962,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			return '';
 		}
 
-		n = parseFloat(parseFloat(n).toFixed(4));
+		const nEights = ((Math.abs(n) % 1) * 8) | 0;
+		let fractStr = nEights < 1 || nEights > 7 ? '' : fractionChars[nEights];
 
-		return n > 0 ? '+' + n : n;
+		n = Math.floor(n);
+		return (n > 0 ? '+' + n : n) + fractStr;
 	};
 
 	const rawpct = (base, val) => {

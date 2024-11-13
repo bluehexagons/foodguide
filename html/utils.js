@@ -136,3 +136,17 @@ export const isBestStat = {
 export const pl = (str, n, plr) => {
 	return n === 1 ? str : str + (plr || 's');
 };
+
+export const makeElement = (tagName, textContent, className) => {
+	const el = document.createElement(tagName);
+
+	if (textContent) {
+		el.appendChild(document.createTextNode(textContent));
+	}
+
+	if (className) {
+		el.className = className;
+	}
+
+	return el;
+};

@@ -1,158 +1,253 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>Don't Starve Food Guide</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<link rel="modulepreload" href="constants.js">
-	<link rel="modulepreload" href="food.js">
-	<link rel="modulepreload" href="foodguide.js">
-	<link rel="modulepreload" href="recipes.js">
-	<link rel="modulepreload" href="utils.js">
+	<head>
+		<title>Don't Starve Food Guide</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+		<link rel="modulepreload" href="constants.js">
+		<link rel="modulepreload" href="food.js">
+		<link rel="modulepreload" href="foodguide.js">
+		<link rel="modulepreload" href="recipes.js">
+		<link rel="modulepreload" href="utils.js">
 
-	<link rel="shortcut icon" href="icon.png" />
-	<meta charset='utf-8' />
-	<link rel="stylesheet" href="style/main.css">
-</head>
-<body>
-<div id="background"></div>
-<div id="content">
-	<div id="main">
-		<ul id="navbar">
-			<span class="listmenu">
-				<li data-tab="simulator" title="Crock Pot recipe simulation">Simulator</li>
-				<li data-tab="discovery" title="Add inventory items to find recipes">Discovery</li>
-				<li data-tab="foodlist" title="View all food in the selected DLC">Food List</li>
-				<li data-tab="crockpot" title="View all recipes for the selected DLC">Recipe List</li>
-				<li data-tab="statistics" title="Find all recipes (unstable)">Statistics Analyzer</li>
-				<li data-tab="help" title="Help and information">Help</li>
-				<li><a title="Give Klei your money" href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a></li>
-			</span>
-		</ul>
+		<link rel="shortcut icon" href="icon.png" />
+		<meta charset='utf-8' />
+		<link rel="stylesheet" href="style/main.css">
+	</head>
+	<body>
+		<div id="background"></div>
+		<div id="content">
+			<div id="main">
+				<ul id="navbar">
+					<span class="listmenu">
+						<li data-tab="simulator" title="Crock Pot recipe simulation">Simulator</li>
+						<li data-tab="discovery" title="Add inventory items to find recipes">Discovery</li>
+						<li data-tab="foodlist" title="View all food in the selected DLC">Food List</li>
+						<li data-tab="crockpot" title="View all recipes for the selected DLC">Recipe List</li>
+						<li data-tab="statistics" title="Find all recipes (unstable)">Statistics Analyzer</li>
+						<li data-tab="help" title="Help and information">Help</li>
+						<li><a title="Give Klei your money" href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a></li>
+					</span>
+				</ul>
 
-		<div id="simulator">
-			<div style="margin-bottom: 6pt">Add ingredients to see what they make.</div>
-			<input type="text" class="ingredientpicker" data-type="food" data-cookable="true" style="width: 25%" placeholder="Filter ingredients" /><div id="ingredients" class="ingredientlist"><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span><span class="ingredient"></span></div>
-			<div id="results"></div>
+				<div id="simulator">
+					<div style="margin-bottom: 6pt">
+						Add ingredients to see what they make.
+					</div>
+					<input
+						type="text"
+						class="ingredientpicker"
+						data-type="food"
+						data-cookable="true"
+						style="width: 25%"
+						placeholder="Filter ingredients"
+					/>
+					<div id="ingredients" class="ingredientlist">
+						<span class="ingredient"></span>
+						<span class="ingredient"></span>
+						<span class="ingredient"></span>
+						<span class="ingredient"></span>
+					</div>
+					<div id="results"></div>
+				</div>
+
+				<div id="discovery">
+					<p style="margin-bottom: 6pt">
+						Add items in your inventory to see your options.
+					</p>
+					<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Filter ingredients" />
+					<div id="inventory" class="ingredientlist"></div>
+					<h2>
+						Stats about your food:
+					</h2>
+					<div id="discoverfood"></div>
+					<h2>
+						With these, you can make:
+					</h2>
+					<div id="discover"></div>
+					<h2>
+						Find what recipes are most efficient:
+					</h2>
+					<div id="makable"></div>
+				</div>
+
+				<div id="foodlist">
+					<div id="food"></div>
+				</div>
+
+				<div id="crockpot">
+					<div id="recipes"></div>
+				</div>
+
+				<div id="statistics">
+				</div>
+
+				<div id="help">
+					<h2>
+						About This Food Guide
+					</h2>
+
+					<p>
+						This is an unofficial tool to help avoid starvation in
+						<a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a>,
+						an uncompromising wilderness survival game full of science and magic,
+						by <a href="https://klei.com/" target="_blank">Klei Entertainment</a>,
+						available on <a href="https://store.steampowered.com/app/219740/" target="_blank">Steam</a>.
+					</p>
+					<p>
+						This tool requires a modern web browser, such as a recent version of Firefox, Chrome, Edge, or Safari.
+					</p>
+
+					<p>
+						Maintained as a community effort. Last content addition: <strong>August 6, 2023</strong>
+					</p>
+
+					<h2>
+						About Don't Starve
+					</h2>
+
+					<h3>
+						Food Mechanics
+					</h3>
+
+					<p>
+						<strong>Perish time</strong> is the time before a food item becomes <strong>Rot</strong>.
+						<strong>Halfway</strong> through this period, it will go <strong>stale</strong>,
+						and give <strong><span id="stalehealth"></span> health</strong> and
+						<strong><span id="stalehunger"></span> hunger</strong>, as well as <strong>no sanity</strong>.
+						Food <strong>spoils</strong> at <strong>three quarters</strong>, giving only
+						<strong><span id="spoiledhunger"></span> hunger</strong> and <strong>no longer giving any health</strong>.
+						Eating spoiled food will decrease sanity by <strong><span id="spoiledsanity"></span></strong>.
+						Food <strong>dropped on the ground</strong> will <strong>perish</strong> at a rate of
+						<strong><span id="perishground"></span></strong> (or <strong><span id="perishwinter"></span></strong>
+						in <strong>Winter</strong>, <strong><span id="perishsummer"></span></strong> in <strong>Summer</strong>),
+						while keeping it in the <strong>Ice Box</strong>
+						will reduce the rate to <strong><span id="perishfridge"></span></strong>.
+					</p>
+					<p>
+						Foods that provide <strong>warmth</strong> or <strong>cooling</strong> work like a thermal stone;
+						when eaten, they provide a heat source at a particular temperature for a period of time.
+						Eating another heating/cooling food within this period will replace the earlier effect.
+					</p>
+					<p>
+						<strong>Recipe priority</strong> determines which recipe a food combination will make;
+						only the highest-priority possible recipes can be produced by a batch of ingredients.
+					</p>
+					<p>
+						In recipe requirements, cooked/uncooked usually doesn't make a difference.
+						If it does, then only the valid form will be listed.
+					</p>
+
+					<h3>
+						About DLC and Don't Starve Together
+					</h3>
+
+					<p>
+						Which foods and recipes exist in each version of the game gets a little complicated.
+						For this reason, there are buttons in the upper-left that let you switch modes for a game.
+						Click on a badge to switch to the mode for that game;
+						you can also right-click on badges to toggle their individual recipes and ingredients on and off.
+					</p>
+
+					<h3>
+						Useful wiki pages:
+					</h3>
+
+					<ul>
+						<li><a href="https://dontstarve.fandom.com/wiki/Food" target="_blank">Food</a></li>
+						<li><a href="https://dontstarve.fandom.com/wiki/Cooking" target="_blank">Cooking</a></li>
+						<li><a href="https://dontstarve.fandom.com/wiki/Crock_Pot" target="_blank">Crock Pot</a></li>
+						<li><a href="https://dontstarve.fandom.com/wiki/Farming" target="_blank">Farming</a></li>
+					</ul>
+
+					<h2>Sections</h2>
+
+					<h3>Simulator</h3>
+
+					<p>
+						The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. 
+						Note that only the highest-priority recipes will be candidates when actually cooking in-game.
+						The combined totals at the top reflect the ingredients added, where perish time is the shortest.
+						The suggestions below the real results show what recipes could be made by adding different items
+						to those already in the Crock Pot.
+					</p>
+
+					<h3>Discovery</h3>
+
+					<p>
+						The Discovery tab is finds what recipes can be prepared using a collection of ingredients.
+						It doesn't take item quantity into account, instead assuming you have four of each.
+						You are also able to calculate efficient recipes using your ingredients to get the most health
+						or hunger benefit from cooking them in the crock pot. This works identically to the Statistics Analyzer tab,
+						but limited to your inventory.
+					</p>
+
+					<h3>Statistics Analyzer</h3>
+
+					<p>
+						The Statistics Analyzer tab is for those who just want to explore ingredient combinations.
+						It will calculate every valid ingredient combination possible
+						(using an "ideal" ingredient selection, generally excluding uncooked food)
+						and allows filtration by recipe and ingredient contents. Computation may take some time on slower computers.
+					</p>
+
+					<p>
+						For advanced use, open your browser's JavaScript console. <code>analysis.made</code> contains the list of
+						the working combinations from the last analysis, including beyond those visible in the interface.
+					</p>
+
+					<h2>
+						Advanced Use (JavaScript Globals)
+					</h2>
+
+					<p>
+						The Food Guide populates <code>window</code> with a few properties:
+						<code>food</code>, <code>recipes</code>, and <code>matchingNames</code>.
+						The Statistics Analyzer writes its results to
+						<code>analysis</code> and <code>recipeCrunchData</code>.
+					</p>
+
+					<p>
+						The local state is stored under <code>localStorage.foodGuideState</code>.
+					</p>
+
+					<h2>
+						Links
+					</h2>
+
+					<ul>
+						<li><a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank">Food Guide Change Log</a></li>
+						<li><a href="https://github.com/bluehexagons/foodguide/issues" target="_blank">Report Food Guide Bugs or Issues</a></li>
+						<li><a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve Official Website</a></li>
+						<li><a href="https://dontstarve.fandom.com/" target="_blank">Don't Starve Wiki on Fandom</a></li>
+					</ul>
+				</div>
+			</div>
+
+			<div id="footer">
+				<a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a>
+				&copy; <a href="https://klei.com/">Klei Entertainment</a>.
+				
+				Unofficial food guide <a href="https://github.com/bluehexagons/foodguide">source code</a> made available under the
+				<a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.
+			</div>
+
+			<a class="github-link" href="https://github.com/bluehexagons/foodguide" target="_blank">
+				<img
+					decoding="async"
+					loading="lazy"
+					width="120"
+					height="120"
+					src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149"
+					class="attachment-full size-full"
+					alt="Fork me on GitHub"
+					data-recalc-dims="1"
+				>
+			</a>
+
+			<script type="module" src="foodguide.js"></script>
+			<script nomodule>
+				alert('Please use a modern browser! This tool requires ES module support.');
+			</script>
 		</div>
-
-		<div id="discovery">
-			<div style="margin-bottom: 6pt">Add items in your inventory to see your options.</div>
-			<input type="text" class="ingredientpicker" style="width: 25%" placeholder="Filter ingredients" /><div id="inventory" class="ingredientlist"></div>
-			Stats about your food:
-			<div id="discoverfood"></div>
-			With these, you can make:
-			<div id="discover"></div>
-			Find what recipes are most efficient:
-			<div id="makable"></div>
-		</div>
-
-		<div id="foodlist">
-			<div id="food"></div>
-		</div>
-
-		<div id="crockpot">
-			<div id="recipes"></div>
-		</div>
-
-		<div id="statistics">
-		</div>
-
-		<div id="help">
-			<h2>About This Food Guide</h2>
-
-			<p>
-				This is an unofficial tool to help avoid starvation in <a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a>,
-				an uncompromising wilderness survival game full of science and magic,
-				by <a href="https://klei.com/" target="_blank">Klei Entertainment</a>,
-				available on <a href="https://store.steampowered.com/app/219740/" target="_blank">Steam</a>.
-			</p>
-			<p>This tool requires a modern web browser and is officially supported in recent versions of: Chrome/Chromium, Firefox, Safari, and Edge; on desktop or mobile</p>
-			<p>Maintained as a community effort. Last content addition: <strong>August 6, 2023</strong></p>
-
-			<h2>About Don't Starve</h2>
-
-			<h3>Food Mechanics</h3>
-
-			<p>
-				<strong>Perish time</strong> is the time before a food item becomes <strong>Rot</strong>. <strong>Halfway</strong> through this period, it will go <strong>stale</strong>, and give <strong><span id="stalehealth"></span> health</strong> and <strong><span id="stalehunger"></span> hunger</strong>, as well as <strong>no sanity</strong>.
-				Food <strong>spoils</strong> at <strong>three quarters</strong>, giving only <strong><span id="spoiledhunger"></span> hunger</strong> and <strong>no longer giving any health</strong>.
-				Eating spoiled food will decrease sanity by <strong><span id="spoiledsanity"></span></strong>.
-				Food <strong>dropped on the ground</strong> will <strong>perish</strong> at a rate of <strong><span id="perishground"></span></strong> (or <strong><span id="perishwinter"></span></strong> in <strong>Winter</strong>, <strong><span id="perishsummer"></span></strong> in <strong>Summer</strong>), while keeping it in the <strong>Ice Box</strong> will reduce the rate to <strong><span id="perishfridge"></span></strong>.
-			</p>
-			<p>Foods that provide <strong>warmth</strong> or <strong>cooling</strong> work like a thermal stone; when eaten, they provide a heat source at a particular temperature for a period of time. Eating another heating/cooling food within this period will replace the earlier effect.</p>
-			<p><strong>Recipe priority</strong> determines which recipe a food combination will make; only the highest-priority possible recipes can be produced by a batch of ingredients.</p>
-			<p>In recipe requirements, cooked/uncooked usually doesn't make a difference. If it does, then only the valid form will be listed.</p>
-
-			<h3>About DLC and Don't Starve Together</h3>
-
-			<p>
-				Which foods and recipes exist in each version of the game gets a little complicated. For this reason, there are buttons in the upper-left that let you switch modes for a game. Click on a badge to switch to the mode for that game; you can also right-click on badges to toggle their individual recipes and ingredients on and off.
-			</p>
-
-			<h2>Sections</h2>
-
-			<h3>Simulator</h3>
-
-			<p>
-				The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. Note that only the highest-priority recipes will be candidates when actually cooking in-game.
-				The combined totals at the top reflect the ingredients added, where perish time is the shortest.
-				The suggestions below the real results show what recipes could be made by adding different items to those already in the Crock Pot.
-			</p>
-
-			<h3>Discovery</h3>
-
-			<p>
-				The Discovery tab is finds what recipes can be prepared using a collection of ingredients. It doesn't take item quantity into account, instead assuming you have four of each.
-				You are also able to calculate efficient recipes using your ingredients to get the most health or hunger benefit from cooking them in the crock pot. This works identically to the Statistics Analyzer tab, but limited to your inventory.
-			</p>
-
-			<h3>Statistics Analyzer</h3>
-
-			<p>
-				The Statistics Analyzer tab is for those who just want to explore ingredient combinations. It will calculate every valid ingredient combination possible (using an "ideal" ingredient selection, generally excluding uncooked food) and allows filtration by recipe and ingredient contents. Computation may take some time on slower computers.
-			</p>
-
-			<p>
-				For advanced use, open your browser's JavaScript console. <code>analysis.made</code> contains the list of
-				the working combinations from the last analysis, including beyond those visible in the interface.
-			</p>
-
-			<h2>Advanced Use (JavaScript Globals)</h2>
-
-			<p>The Food Guide populates <code>window</code> with a few properties: <code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The Statistics Analyzer writes its results to <code>analysis</code> and <code>recipeCrunchData</code>.</p>
-
-			<p>The local state is stored under <code>localStorage.foodGuideState</code>.</p>
-
-			<h2>Links</h2>
-
-			<p><a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank">Food Guide Change Log</a>
-			<p><a href="https://github.com/bluehexagons/foodguide/issues" target="_blank">Report Food Guide Bugs or Issues</a>
-			<p><a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve Official Website</a>
-			<p><a href="https://dontstarve.fandom.com/" target="_blank">Don't Starve Wiki on Fandom</a>
-		</div>
-	</div>
-
-	<div id="footer">
-		<a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a> &copy; <a href="https://klei.com/">Klei Entertainment</a>. Unofficial food guide <a href="https://github.com/bluehexagons/foodguide">source code</a> made available under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.
-	</div>
-
-	<a class="github-link" href="https://github.com/bluehexagons/foodguide" target="_blank">
-		<img
-			decoding="async"
-			loading="lazy"
-			width="120"
-			height="120"
-			src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149"
-			class="attachment-full size-full"
-			alt="Fork me on GitHub"
-			data-recalc-dims="1"
-		>
-	</a>
-
-	<script type="module" src="foodguide.js"></script>
-	<script nomodule>
-		alert("Please use a modern browser!")
-	</script>
-</div>
-</body>
+	</body>
 </html>

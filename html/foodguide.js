@@ -45,7 +45,7 @@ import {
 } from './constants.js';
 import { food } from './food.js';
 import { recipes, updateFoodRecipes } from './recipes.js';
-import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
+import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './utils.js';
 
 (() => {
 	const modeRefreshers = [];
@@ -429,8 +429,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 	const recipesElement = document.getElementById('recipes');
 	const navbar = document.getElementById('navbar');
 
-	// TODO: process the rot: entries, and add the spoiled fish
-
 	document
 		.getElementById('stalehealth')
 		.appendChild(
@@ -505,23 +503,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			return true;
 		};
 	};
-
-	/*
-		// this isn't currently used for some reason?
-		const usefulTags = ['id', 'health', 'hunger', 'fruit', 'veggie', 'meat', 'egg', 'fish', 'magic', 'decoration', 'inedible', 'monster', 'sweetener', 'fat', 'dairy'];
-		recipeCrunchData.food = food.filter(item => {
-			return !item.uncookable && !item.skip && (item.ideal || (!item.cook && (!item.raw || !item.raw.ideal)));
-		}).map(item => {
-			const f = {}
-			let t = usefulTags.length;
-			while (t--) {
-				if (item.hasOwnProperty(usefulTags[t])) {
-					f[usefulTags[t]] = item[usefulTags[t]];
-				}
-			}
-			return f;
-		});
-	*/
 
 	const getRealRecipesFromCollection = (
 		items,
@@ -1600,11 +1581,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			slotElement.dataset.id = item.id;
 		} else {
 			if (
-				slotElement.nextSibling &&
-        getSlot(slotElement.nextSibling) !== null
+				slotElement.nextElementSibling &&
+        getSlot(slotElement.nextElementSibling) !== null
 			) {
-				setSlot(slotElement, getSlot(slotElement.nextSibling));
-				setSlot(slotElement.nextSibling, null);
+				setSlot(slotElement, getSlot(slotElement.nextElementSibling));
+				setSlot(slotElement.nextElementSibling, null);
 
 				return;
 			} else {
@@ -1650,14 +1631,14 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			let state;
 			const from = picker.dataset.type === 'recipes' ? recipes : food;
 			const allowUncookable = !picker.dataset.cookable;
-			const parent = picker.nextSibling;
+			let parent = picker.nextElementSibling;
+			while (!parent.classList.contains('ingredientlist')) parent = parent.nextElementSibling;
 			let slots = parent.getElementsByClassName('ingredient');
 			let limited;
 			let ingredients = [];
 			let updateRecipes;
 			const suggestions = [];
 			const inventoryrecipes = [];
-			let selected = null;
 			let loaded = false;
 			const results = document.getElementById('results');
 			const discoverfood = document.getElementById('discoverfood');
@@ -1666,32 +1647,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			const clear = document.createElement('span');
 			const toggleText = document.createElement('span');
 
-			const findPreviousMatching = (el, test) => {
-				let previous = el;
+			const pickItem = e => {
+				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
+				const result = appendSlot(target.dataset.id);
 
-				while (previous.previousSibling) {
-					previous = previous.previousSibling;
-
-					if (test(previous)) {
-						return previous;
-					}
+				if (result !== -1) {
+					e && e.preventDefault && e.preventDefault();
 				}
-
-				return null;
-			};
-
-			const findNextMatching = (el, test) => {
-				let next = el;
-
-				while (next.nextSibling) {
-					next = next.nextSibling;
-
-					if (test(next)) {
-						return next;
-					}
-				}
-
-				return null;
 			};
 
 			let displaying = false;
@@ -1734,15 +1696,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 				}
 			};
 
-			const pickItem = e => {
-				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
-				const result = appendSlot(target.dataset.id);
-
-				if (result !== -1) {
-					e && e.preventDefault && e.preventDefault();
-				}
-			};
-
 			const liIntoPicker = function (item) {
 				const img = makeImage(item.img);
 
@@ -1759,10 +1712,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 				li.dataset.id = item.id;
 
-				if (ingredients.indexOf(item) !== -1) {
-					li.style.opacity = 0.5;
-				}
-
 				li.addEventListener('mousedown', pickItem, false);
 				this.appendChild(li);
 
@@ -1770,12 +1719,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			};
 
 			const updateFaded = el => {
-				if (ingredients.indexOf(food[el.dataset.id]) !== -1) {
-					if (!el.style.opacity) {
-						el.style.opacity = 0.5;
+				if (ingredients.includes(food[el.dataset.id])) {
+					if (!el.classList.contains('faded')) {
+						el.classList.add('faded');
 					}
-				} else if (el.style.opacity) {
-					el.style.removeProperty('opacity');
+				} else if (el.classList.contains('faded')) {
+					el.classList.remove('faded');
 				}
 			};
 
@@ -1817,7 +1766,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 
 				dropdown.appendChild(ul);
 
-				selected = null;
 			};
 
 			const searchFor = e => {
@@ -1878,23 +1826,22 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 						},
 					);
 
-					if (results.firstChild) {
-						results.removeChild(results.firstChild);
-					}
-
-					if (results.firstChild) {
-						results.removeChild(results.firstChild);
+					while (results.firstChild) {
 						results.removeChild(results.firstChild);
 					}
 
 					results.appendChild(table);
+
+					results.appendChild(
+						makeElement('p', 'The highlighted row(s) will be selected from when cooking.'),
+					);
 
 					if (ingredients[0] !== null) {
 						getSuggestions(suggestions, ingredients, cooking);
 
 						if (suggestions.length > 0) {
 							results.appendChild(
-								document.createTextNode('Add more ingredients to make:'),
+								makeElement('p', 'Add more ingredients to make:'),
 							);
 							table = makeSortableTable(
 								{
@@ -2316,143 +2263,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 			parent.parentNode.insertBefore(clear, parent);
 			parent.parentNode.insertBefore(dropdown, parent);
 
-			// picker.addEventListener('keydown', e => {
-			// 	let find;
-
-			// 	if (movement.indexOf(e.keyCode) !== -1) {
-			// 		const current = selected;
-
-			// 		if (e.keyCode === enter) {
-			// 			if (selected === null) {
-			// 				selected = ul.firstChild || null;
-			// 			}
-
-			// 			if (selected !== null) {
-			// 				pickItem({target: selected});
-			// 			}
-			// 		} else {
-			// 			if (selected === null) {
-			// 				if (e.keyCode === down) {
-			// 					selected = ul.childNodes[1] || ul.firstChild || null;
-
-			// 					if (selected !== null) {
-			// 						coords = (selected.offsetLeft + selected.offsetWidth / 2);
-			// 						e.preventDefault();
-			// 					}
-			// 				}
-			// 			} else {
-			// 				e.preventDefault();
-
-			// 				if (e.keyCode === left) {
-			// 					if (selected.previousSibling && selected.previousSibling.offsetTop === selected.offsetTop) {
-			// 						selected = selected.previousSibling;
-			// 					} else {
-			// 						find = findNextMatching(selected, el => {
-			// 							//separate this out
-			// 							return el.offsetTop !== selected.offsetTop;
-			// 						});
-
-			// 						if (find) {
-			// 							selected = find.previousSibling;
-			// 						} else {
-			// 							selected = ul.lastChild;
-			// 						}
-			// 					}
-
-			// 					if (selected !== null) {
-			// 						coords = (selected.offsetLeft + selected.offsetWidth / 2);
-			// 					}
-			// 				} else if (e.keyCode === right) {
-			// 					if (selected.nextSibling && selected.nextSibling.offsetTop === selected.offsetTop) {
-			// 						selected = selected.nextSibling;
-			// 					} else {
-			// 						find = findPreviousMatching(selected, el => {
-			// 							//separate this out
-			// 							return el.offsetTop !== selected.offsetTop;
-			// 						});
-
-			// 						if (find) {
-			// 							selected = find.nextSibling;
-			// 						} else {
-			// 							selected = ul.firstChild;
-			// 						}
-			// 					}
-
-			// 					if (selected !== null) {
-			// 						coords = (selected.offsetLeft + selected.offsetWidth / 2);
-			// 					}
-			// 				} else if (e.keyCode === up) {
-			// 					find = findPreviousMatching(selected, el => {
-			// 						return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-			// 					});
-
-			// 					if (!find) {
-			// 						find = findPreviousMatching(ul.lastChild, el => {
-			// 							return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-			// 						});
-			// 					}
-
-			// 					if (find) {
-			// 						selected = find;
-			// 					} else {
-			// 						selected = ul.firstChild;
-			// 					}
-			// 				} else if (e.keyCode === down) {
-			// 					find = findNextMatching(selected, el => {
-			// 						return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-			// 					});
-
-			// 					if (!find) {
-			// 						find = findNextMatching(ul.firstChild, el => {
-			// 							return coords >= el.offsetLeft - 1 && coords <= el.offsetLeft + el.offsetWidth + 1;
-			// 						});
-			// 					}
-
-			// 					if (find) {
-			// 						selected = find;
-			// 					} else {
-			// 						selected = ul.lastChild;
-			// 					}
-			// 				}
-			// 			}
-			// 		}
-
-			// 		if (selected !== current) {
-			// 			if (current !== null) {
-			// 				current.className = '';
-			// 			}
-
-			// 			if (selected !== null) {
-			// 				selected.className = 'selected';
-			// 			}
-			// 		}
-			// 	}
-			// }, false);
-
-			// const up = 38
-			// const left = 37
-			// const down = 40
-			// const right = 39
-			// const enter = 13;
-			// const movement = [16, 17, up, right, down, left, enter];
-
 			picker.addEventListener('keydown', _ => {
 				refreshPicker();
 			});
 			picker.addEventListener('keyup', _ => {
 				refreshPicker();
 			});
-
-			// picker.addEventListener('keyup', e => {
-			// 	// let items;
-			// 	// let i;
-			// 	// const current = selected;
-			// 	if (movement.indexOf(e.keyCode) === -1) {
-			// 		refreshPicker();
-			// 	} else if (selected !== null) {
-			// 		e.preventDefault();
-			// 	}
-			// }, false);
 
 			picker.addEventListener(
 				'focus',

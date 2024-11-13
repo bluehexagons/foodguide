@@ -1,6 +1,10 @@
 body {
   margin: 0px;
 
+  font-size: 18px;
+
+  box-sizing: border-box;
+
   --darkest: black;
   --darker: #333;
   --dark: #444;
@@ -91,28 +95,28 @@ a:hover {
   border: 1px solid #999;
 }
 
-span.ingredient {
-  width: 68px;
-  height: 68px;
-  display: inline-block;
+.ingredientlist {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.ingredient {
   margin: 0px;
-  margin-right: 5px;
   overflow: hidden;
   cursor: pointer;
-  background: url('../img/background.png') top left no-repeat;
+  background: url('../img/background.png');
+  background-size: cover;
   position: relative;
 }
 
-span.ingredient img {
+.ingredient img {
   display: block;
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: 64px;
   height: 64px;
-  margin-left: -32px;
-  margin-top: -32px;
   border: none;
+  margin: 4px;
 }
 
 .searchselector {
@@ -123,8 +127,7 @@ span.ingredient img {
   border: 1px solid #999;
   border-right: none;
   height: 100%;
-  background: #ccc;
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: #ddd;
   border-radius: 3px 0px 0px 3px;
   transition: border-bottom-left-radius 100ms ease;
   cursor: pointer;
@@ -199,38 +202,44 @@ span.ingredient img {
 }
 
 .ingredientdropdown div {
-  margin: 0px;
+  margin: 4px 0;
   padding: 0px;
   margin-bottom: 4px;
   text-align: justify;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .ingredientdropdown .item {
-  border: 1px solid #bbb;
-  font-size: 8pt;
-  padding-top: 2px;
+  border: 1px solid #aaa;
+  font-size: 12pt;
+  padding: 2px 4px;
   white-space: nowrap;
   text-align: center;
-  line-height: 14px;
-  display: inline-block;
-  vertical-align: top;
-  padding-left: 1px;
+  line-height: 20px;
+  display: inline-flex;
+  align-content: center;
+  vertical-align: middle;
   overflow: hidden;
-  padding-right: 1px;
-  margin: 1px;
   list-style-type: none;
   cursor: pointer;
   border-radius: 4px;
-  background: #ddd;
-  background: linear-gradient(to bottom, #dddddd 0%,#cccccc 2px,#cccccc 60%,#bbbbbb 85%,#888888 100%);
+  background: #eaeaea;
 }
 
 .ingredientdropdown .item img {
-  margin-left: auto;
-  margin-right: auto;
   width: 20px;
   height: 20px;
-  display: block;
+  margin-right: 4px;
+}
+
+.ingredientdropdown.hidetext .item img {
+  margin-right: 0;
+}
+
+.ingredientdropdown .item .text {
+  vertical-align: middle;
 }
 
 .ingredientdropdown .item:hover {
@@ -249,7 +258,8 @@ span.ingredient img {
 }
 
 .ingredientdropdown .item.faded {
-  opacity: 0.5;
+  background: #bbb;
+  color: #444;
 }
 
 .ingredientdropdown.hidetext div .text {
@@ -282,7 +292,19 @@ span.ingredient img {
   border: 1px solid #c55;
 }
 
+h1 {
+  color: #444;
+}
+
 h2 {
+  font-size: 1.75;
+  padding-left: 10px;
+  color: #444;
+  margin-bottom: 6pt;
+}
+
+h3 {
+  font-size: 1.5;
   padding-left: 10px;
   color: #444;
   margin-bottom: 4pt;
@@ -340,8 +362,8 @@ table.links span.link {
   padding-top: 1px;
   display: inline-block;
   border: 1px solid #999;
-  background: #ccc;
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: #ddd;
+  margin-bottom: 1px;
   border-radius: 3px;
   cursor: pointer;
 }
@@ -398,14 +420,10 @@ span.link img {
 button.makablebutton {
   font-size: 14pt;
   margin: 4px;
-  padding-left: 2px;
-  padding-right: 2px;
-  padding-bottom: 1px;
-  padding-top: 1px;
+  padding: 4px 8px;
   display: inline-block;
   border: 1px solid #999;
-  background: #ccc;
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: #ddd;
   border-radius: 3px;
   cursor: pointer;
 }
@@ -419,8 +437,7 @@ div.recipeFilter img {
   padding-top: 1px;
   display: inline-block;
   border: 1px solid #999;
-  background: #ccc;
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: #ddd;
   border-radius: 3px;
   cursor: pointer;
 }
@@ -454,8 +471,7 @@ div.foodFilter img {
   padding-top: 1px;
   display: inline-block;
   border: 1px solid #999;
-  background: #ccc;
-  background: linear-gradient(to top, rgba(170, 170, 170, 1) 0%,rgba(170, 170, 170, 0) 50%);
+  background: #ddd;
   border-radius: 3px;
   cursor: pointer;
 }
@@ -544,6 +560,14 @@ strong {
   width: 100%;
   height: 100%;
   border-radius: 5px;
+}
+
+.highlighted {
+  outline: 1px solid #ccb;
+}
+
+#results .highlighted td {
+  border-bottom: 4px solid #ccb !important;
 }
 
 .github-link {

@@ -1067,126 +1067,158 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	};
 
 	// food list, recipe list
-	(() => {
-		let foodHighlight;
-		let foodHighlighted = [];
-		let recipeHighlighted = [];
+	let foodHighlight;
+	let foodHighlighted = [];
+	let recipeHighlighted = [];
 
-		const setFoodHighlight = e => {
-			let name = !e.target
-				? e
-				: e.target.tagName === 'IMG'
-					? e.target.parentNode.dataset.link
-					: e.target.dataset.link;
+	const setHighlight = e => {
+		let name = !e.target
+			? e
+			: e.target.tagName === 'IMG'
+				? e.target.parentNode.dataset.link
+				: e.target.dataset.link;
 
-			if (
-				name.substring(0, 7) === 'recipe:' ||
+		if (
+			name.substring(0, 7) === 'recipe:' ||
         name.substring(0, 11) === 'ingredient:'
-			) {
-				setTab('crockpot');
+		) {
+			setTab('crockpot');
 
-				if (name.substring(0, 7) === 'recipe:') {
-					name = '*' + name.substring(7);
-				}
-
-				recipeHighlighted = matchingNames(recipes, name);
-				recipeTable.update(true);
-			} else {
-				if (foodHighlight !== name) {
-					foodHighlight = name;
-					foodHighlighted = matchingNames(food, name);
-				} else {
-					foodHighlight = '';
-					foodHighlighted.length = 0;
-				}
-
-				foodTable.update(true);
+			if (name.substring(0, 7) === 'recipe:') {
+				name = '*' + name.substring(7);
 			}
-		};
 
-		const setRecipeHighlight = e => {
-			const name = !e.target
-				? e
-				: e.target.tagName === 'IMG'
-					? e.target.parentNode.dataset.link
-					: e.target.dataset.link;
-			const modename = name.substring(name.indexOf(':') + 1);
+			recipeHighlighted = matchingNames(recipes, name);
+			recipeTable.update(true);
+		} else {
+			setTab('foodlist');
 
-			if (!!modes[modename]) {
-				recipeHighlighted = matchingNames(recipes, name);
-				recipeTable.update(true);
-			} else {
-				setTab('foodlist');
+			if (foodHighlight !== name) {
 				foodHighlight = name;
 				foodHighlighted = matchingNames(food, name);
-				foodTable.update(true);
+			} else {
+				foodHighlight = '';
+				foodHighlighted.length = 0;
 			}
-		};
 
-		const testFoodHighlight = item => {
-			return foodHighlighted.indexOf(item) !== -1;
-		};
+			foodTable.update(true);
+		}
+	};
 
-		const testRecipeHighlight = item => {
-			return recipeHighlighted.indexOf(item) !== -1;
-		};
+	const setFoodHighlight = e => {
+		let name = !e.target
+			? e
+			: e.target.tagName === 'IMG'
+				? e.target.parentNode.dataset.link
+				: e.target.dataset.link;
 
-		const testmode = item => {
-			return (item.modeMask & modeMask) !== 0;
-		};
+		if (
+			name.substring(0, 7) === 'recipe:' ||
+        name.substring(0, 11) === 'ingredient:'
+		) {
+			setTab('crockpot');
 
-		const foodTable = makeSortableTable(
-			{
-				'': '',
-				Name: 'name',
-				[headings.health]: 'health',
-				[headings.hunger]: 'hunger',
-				[headings.sanity]: 'sanity',
-				[headings.perish]: 'perish',
-				Info: '',
-				'Mode:DLC or Game Mode required': 'modeMask',
-			},
-			Array.prototype.slice.call(food),
-			makeFoodRow,
-			'name',
-			false,
-			setFoodHighlight,
-			testFoodHighlight,
-			testmode,
-		);
+			if (name.substring(0, 7) === 'recipe:') {
+				name = '*' + name.substring(7);
+			}
 
-		const recipeTable = makeSortableTable(
-			{
-				'': '',
-				Name: 'name',
-				[headings.health]: 'health',
-				[headings.hunger]: 'hunger',
-				[headings.sanity]: 'sanity',
-				[headings.perish]: 'perish',
-				'Cook Time': 'cooktime',
-				'Priority:One of the highest priority recipes for a combination will be made':
+			recipeHighlighted = matchingNames(recipes, name);
+			recipeTable.update(true);
+		} else {
+			if (foodHighlight !== name) {
+				foodHighlight = name;
+				foodHighlighted = matchingNames(food, name);
+			} else {
+				foodHighlight = '';
+				foodHighlighted.length = 0;
+			}
+
+			foodTable.update(true);
+		}
+	};
+
+	const setRecipeHighlight = e => {
+		const name = !e.target
+			? e
+			: e.target.tagName === 'IMG'
+				? e.target.parentNode.dataset.link
+				: e.target.dataset.link;
+		const modename = name.substring(name.indexOf(':') + 1);
+
+		if (!!modes[modename]) {
+			recipeHighlighted = matchingNames(recipes, name);
+			recipeTable.update(true);
+		} else {
+			setTab('foodlist');
+			foodHighlight = name;
+			foodHighlighted = matchingNames(food, name);
+			foodTable.update(true);
+		}
+	};
+
+	const testFoodHighlight = item => {
+		return foodHighlighted.indexOf(item) !== -1;
+	};
+
+	const testRecipeHighlight = item => {
+		return recipeHighlighted.indexOf(item) !== -1;
+	};
+
+	const testmode = item => {
+		return (item.modeMask & modeMask) !== 0;
+	};
+
+	const foodTable = makeSortableTable(
+		{
+			'': '',
+			Name: 'name',
+			[headings.health]: 'health',
+			[headings.hunger]: 'hunger',
+			[headings.sanity]: 'sanity',
+			[headings.perish]: 'perish',
+			Info: '',
+			'Mode:DLC or Game Mode required': 'modeMask',
+		},
+		Array.prototype.slice.call(food),
+		makeFoodRow,
+		'name',
+		false,
+		setFoodHighlight,
+		testFoodHighlight,
+		testmode,
+	);
+
+	const recipeTable = makeSortableTable(
+		{
+			'': '',
+			Name: 'name',
+			[headings.health]: 'health',
+			[headings.hunger]: 'hunger',
+			[headings.sanity]: 'sanity',
+			[headings.perish]: 'perish',
+			'Cook Time': 'cooktime',
+			'Priority:One of the highest priority recipes for a combination will be made':
           'priority',
-				'Requires:Dim+struck items cannot be used': '',
-				Notes: '',
-				'Mode:DLC or Game Mode required': 'modeMask',
-			},
-			Array.prototype.slice.call(recipes),
-			makeRecipeRow,
-			'name',
-			false,
-			setRecipeHighlight,
-			testRecipeHighlight,
-			testmode,
-		);
+			'Requires:Dim+struck items cannot be used': '',
+			Notes: '',
+			'Mode:DLC or Game Mode required': 'modeMask',
+		},
+		Array.prototype.slice.call(recipes),
+		makeRecipeRow,
+		'name',
+		false,
+		setRecipeHighlight,
+		testRecipeHighlight,
+		testmode,
+	);
 
-		foodElement.appendChild(foodTable);
-		recipesElement.appendChild(recipeTable);
+	foodElement.appendChild(foodTable);
+	recipesElement.appendChild(recipeTable);
 
-		modeRefreshers.push(() => {
-			foodTable.update();
-			recipeTable.update();
-		});
-	})();
+	modeRefreshers.push(() => {
+		foodTable.update();
+		recipeTable.update();
+	});
 
 	// statistics analyzer
 	const ingredientToIcon = (a, b) => {
@@ -1783,8 +1815,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				}
 			};
 
-			let coords;
-
 			if (parent.id === 'ingredients') {
 				//simulator
 				updateRecipes = () => {
@@ -1912,6 +1942,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 							ingredients,
 							makeFoodRow,
 							'name',
+							false,
+							setHighlight,
 						);
 
 						discoverfood.appendChild(foodTable);
@@ -1936,6 +1968,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 								inventoryrecipes,
 								makeRecipeRow,
 								'name',
+								false,
+								setHighlight,
 							);
 
 							discover.appendChild(table);

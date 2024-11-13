@@ -4,16 +4,25 @@ Provides some tools for avoiding starvation
 in a game named after the task.
 
 
-## Using
+## Use
 
 Live version - [foodguide.bluehexagons.com](https://foodguide.bluehexagons.com)
 
 github.io - [bluehexagons.github.io/foodguide/...](https://bluehexagons.github.io/foodguide/html/index.htm)
 
-Old URL, now backup - [bluehexagons.com/foodguide](https://bluehexagons.com/foodguide)
+
+### Running Offline
+
+This Food Guide must be run on a web server for most browsers to properly open it. With NodeJS installed, an easy way to run this offline is by hosting it with the http-server package:
+
+```bash
+npx http-server
+```
+
+Using the defaults, it should become accessible locally in a browser on 127.0.0.1:8080.
 
 
-## Desktop version (foodguide-app)
+### Desktop version (foodguide-app)
 
 The [foodguide-app](https://github.com/bluehexagons/foodguide-app) repository has source code and release
 builds for a thin Electron wrapper around this project.

@@ -756,7 +756,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		return tr;
 	};
 
-	const wikiaHref = name => {
+	const fandomHref = name => {
 		if (name && name.startsWith('Sum:')) {
 			return name.substring(name.indexOf(':') + 1);
 		}
@@ -963,7 +963,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		}
 
 		const nEights = ((Math.abs(n) % 1) * 8) | 0;
-		let fractStr = nEights < 1 || nEights > 7 ? '' : fractionChars[nEights];
+		const fractStr = nEights < 1 || nEights > 7 ? '' : fractionChars[nEights];
 
 		n = Math.floor(n);
 		return (n > 0 ? '+' + n : n) + fractStr;
@@ -1049,7 +1049,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		return cells(
 			'td',
 			item.img ? item.img + ':' + item.name : '',
-			wikiaHref(item.name),
+			fandomHref(item.name),
 			health,
 			hunger,
 			sanity,
@@ -1068,7 +1068,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, pl } from './utils.js';
 		return cells(
 			'td',
 			item.img ? item.img + ':' + item.name : '',
-			wikiaHref(item.name),
+			fandomHref(item.name),
 			sign(ihealth) + pct(health, ihealth),
 			sign(ihunger) + pct(hunger, ihunger),
 			isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity),

@@ -29,7 +29,7 @@ body {
   background-repeat: repeat;
   width: 100%;
   min-height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
 }
 
 #content {
@@ -309,7 +309,12 @@ h3 {
 }
 
 p {
-  margin-top: 0pt;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+p:last-child {
+  margin-bottom: 0;
 }
 
 table {
@@ -398,9 +403,8 @@ span.link img {
 }
 
 #footer {
-  padding-left: 10px;
   margin-top: 20px;
-  padding: 4px 10px;
+  padding: 10px 10px;
   color: #444;
   text-align: center;
   background-color: rgba(255,255,255,0.6);
@@ -568,24 +572,13 @@ strong {
   border-bottom: 4px solid #ccb !important;
 }
 
-.github-link {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: block;
-}
-
 @media(max-width: 1000px) {
   #navbar .listmenu {
     margin-top: 5px;
     display: block;
   }
 }
-@media(max-width: 1150px) {
-  .github-link {
-    display: none;
-  }
-}
+
 @media(max-width: 767px) {
   .ingredientdropdown {
     overflow: auto;

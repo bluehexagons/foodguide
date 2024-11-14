@@ -15,6 +15,11 @@
 	</head>
 	<body id="background">
 		<div id="content">
+			<noscript>
+				<h1>
+					Sorry, this Food Guide requires JavaScript and a modern web browser.
+				</h1>
+			</noscript>
 			<div id="main">
 				<ul id="navbar">
 					<span class="listmenu">
@@ -88,16 +93,19 @@
 					<p>
 						This is an unofficial tool to help avoid starvation in
 						<a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a>,
-						an uncompromising wilderness survival game full of science and magic,
-						by <a href="https://klei.com/" target="_blank">Klei Entertainment</a>,
-						available on <a href="https://store.steampowered.com/app/219740/" target="_blank">Steam</a>.
+						an uncompromising wilderness survival game full of science and magic by
+						<a href="https://klei.com/" target="_blank">Klei Entertainment</a>.
 					</p>
 					<p>
-						This tool requires a modern web browser, such as a recent version of Firefox, Chrome, Edge, or Safari.
+						This page requires a modern web browser, such as a recent version of Firefox, Chrome, Edge, or Safari, and runs locally using JavaScript.
 					</p>
 
 					<p>
-						Maintained as a community effort. Last content addition: <strong>August 6, 2023</strong>
+						Open-source and maintained as a community effort on GitHub: <a href="https://github.com/bluehexagons/foodguide" target="_blank">github.com/bluehexagons/foodguide</a>.
+					</p>
+
+					<p>
+						Last content addition: <strong>August 6, 2023</strong>
 					</p>
 
 					<h2>
@@ -223,30 +231,24 @@
 			</div>
 
 			<div id="footer">
-				<a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a>
-				&copy; <a href="https://klei.com/">Klei Entertainment</a>.
-				
-				Unofficial food guide <a href="https://github.com/bluehexagons/foodguide">source code</a> made available under the
-				<a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.
+				<p>
+					<a href="https://www.klei.com/games/dont-starve" target="_blank">Don't Starve</a>
+					&copy; <a href="https://klei.com/" target="_blank">Klei Entertainment</a>.
+					
+					Unofficial food guide <a href="https://github.com/bluehexagons/foodguide" target="_blank">source code</a> made available under the
+					<a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.
+				</p>
+				<p>
+					<a href="https://github.com/bluehexagons/foodguide" target="_blank">Source Code on GitHub</a>
+					|
+					<a href="https://github.com/bluehexagons/foodguide/issues" target="_blank">Bugs and Feature Reports</a>
+				</p>
 			</div>
-
-			<a class="github-link" href="https://github.com/bluehexagons/foodguide" target="_blank">
-				<img
-					decoding="async"
-					loading="lazy"
-					width="120"
-					height="120"
-					src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149"
-					class="attachment-full size-full"
-					alt="Fork me on GitHub"
-					data-recalc-dims="1"
-				>
-			</a>
-
-			<script type="module" src="foodguide.js"></script>
-			<script nomodule>
-				alert('Please use a modern browser! This tool requires ES module support.');
-			</script>
 		</div>
+
+		<script type="module" src="foodguide.js"></script>
+		<script nomodule>
+			alert('Please use a modern browser! This tool requires ES module support.');
+		</script>
 	</body>
 </html>

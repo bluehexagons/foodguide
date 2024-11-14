@@ -23,15 +23,13 @@ body {
 
 #background {
   background-blend-mode: multiply;
-  background: var(--backgroundColor) url('../img/backgroundstripes.png');
+  background: var(--backgroundColor) url('./background.svg');
   background-size: 100%;
-  background-attachment: fixed;
+  background-attachment: scroll;
+  background-repeat: repeat;
   width: 100%;
   min-height: 100%;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  z-index: -1;
+  overflow: auto;
 }
 
 #content {

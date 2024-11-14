@@ -1,0 +1,71 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  version="1.1"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  viewBox="0 0 1000 1000"
+  width="1000"
+  height="1000"
+>
+  <defs>
+    <filter
+      id="filter"
+      color-interpolation-filters="sRGB"
+    >
+      <feTurbulence
+        type="turbulence"
+        baseFrequency="0.01"
+        numOctaves="7"
+        seed="4728397"
+        stitchTiles="stitch"
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        result="turbulence"
+      />
+
+      <feColorMatrix type="saturate" values="0.9" in="turbulence" result="desaturated" />
+
+      <feSpecularLighting
+        surfaceScale="1"
+        specularConstant="0.4"
+        specularExponent="20"
+        lighting-color="#ccc"
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        in="desaturated"
+        result="specularLighting"
+      >
+        <feDistantLight azimuth="9" elevation="34" />
+      </feSpecularLighting>
+
+      <feDiffuseLighting
+        surfaceScale="1"
+        specularConstant="0.9"
+        specularExponent="20"
+        lighting-color="#333"
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        in="desaturated"
+        result="diffuseLighting"
+      >
+        <feDistantLight azimuth="9" elevation="34" />
+      </feDiffuseLighting>
+      <feComposite
+        in="diffuseLighting"
+        in2="specularLighting"
+        operator="arithmetic"
+        k1="0"
+        k2="1"
+        k3="1"
+        k4="0"
+      />
+    </filter>
+  </defs>
+
+  <rect width="1000" height="1000" filter="url(#filter)" />
+</svg>

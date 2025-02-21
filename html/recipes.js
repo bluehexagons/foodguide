@@ -805,6 +805,22 @@ export const recipes = {
 	//	                       DON'T STARVE HAMLET RECIPES                            \\
 	//--------------------------------------------------------------------------------\\
 
+	meated_nettle: {
+		name: 'Meated Nettles',
+		test: (cooker, names, tags) => {
+			return tags.antihistamine && tags.antihistamine >= 2 && tags.meat && tags.meat >= 1;
+		},
+		requirements: [TAG('antihistamine', COMPARE('>=',2)), TAG('meat', COMPARE('>=', 1))],
+		priority: 1,
+		foodtype: 'meat',
+		health: healthing_med,
+		hunger: calories_med,
+		perish: perish_fast,
+		sanity: sanity_tiny,
+		cooktime: 1,
+		note: 'Prevents hayfever for 600 seconds (1.25 days)',
+		mode: 'hamlet',
+	},
 	nettlelosange: {
 		name: 'Nettle Rolls',
 		test: (cooker, names, tags) => {

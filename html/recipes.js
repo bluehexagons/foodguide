@@ -813,7 +813,7 @@ export const recipes = {
 		requirements: [TAG('antihistamine', COMPARE('>=',2)), TAG('meat', COMPARE('>=', 1))],
 		priority: 1,
 		foodtype: 'meat',
-		health: healthing_med,
+		health: healing_med,
 		hunger: calories_large,
 		perish: perish_fastish,
 		sanity: sanity_tiny,

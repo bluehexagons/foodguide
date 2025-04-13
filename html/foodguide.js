@@ -746,7 +746,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		node.setAttribute('target', '_blank');
 		node.setAttribute(
 			'href',
-			'https://dontstarve.fandom.com/wiki/' + name.replace(/\s/g, '_'),
+			'https://dontstarve.wiki.gg/wiki/' + name.replace(/\s/g, '_'),
 		);
 
 		const text = document.createTextNode(name);

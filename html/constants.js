@@ -1,90 +1,93 @@
-export const calories_per_day = 75,
-	seg_time = 30,
-	total_day_time = seg_time * 16,
-	day_segs = 10,
-	dusk_segs = 4,
-	night_segs = 2,
-	day_time = seg_time * day_segs,
-	dusk_time = seg_time * dusk_segs,
-	night_time = seg_time * night_segs,
+/**
+ * Game constants for Don't Starve food calculations
+ * @type {number}
+ */
 
-	perish_warp = 1,
+export const seg_time = 30;
+export const day_segs = 10;
+export const dusk_segs = 4;
+export const night_segs = 2;
 
-	stack_size_largeitem = 10,
-	stack_size_meditem = 20,
-	stack_size_smallitem = 40,
+export const day_time = seg_time * day_segs;
+export const dusk_time = seg_time * dusk_segs;
+export const night_time = seg_time * night_segs;
+export const total_day_time = seg_time * 16;
 
-	healing_tiny = 1,
-	healing_small = 3,
-	healing_medsmall = 8,
-	healing_med = 20,
-	healing_medlarge = 30,
-	healing_large = 40,
-	healing_huge = 60,
-	healing_morehuge = 75,
-	healing_superhuge = 100,
+export const base_cook_time = night_time * 0.3333;
+export const buff_food_temp_duration = day_time;
+export const cold_food_bonus_temp = -40;
+export const hot_food_bonus_temp = 40;
+export const food_temp_average = 10;
+export const food_temp_brief = 5;
+export const food_temp_long = 15;
 
-	sanity_supertiny = 1,
-	sanity_tiny = 5,
-	sanity_small = 10,
-	sanity_med = 15,
-	sanity_medlarge = 20,
-	sanity_large = 33,
-	sanity_huge = 50,
+export const defaultStatMultipliers = {
+	raw: 1,
+	dried: 1,
+	cooked: 1,
+	recipe: 1,
+};
 
-	perish_one_day = 1 * total_day_time * perish_warp,
-	perish_two_day = 2 * total_day_time * perish_warp,
-	perish_superfast = 3 * total_day_time * perish_warp,
-	perish_fast = 6 * total_day_time * perish_warp,
-	perish_fastish = 8 * total_day_time * perish_warp,
-	perish_med = 10 * total_day_time * perish_warp,
-	perish_slow = 15 * total_day_time * perish_warp,
-	perish_preserved = 20 * total_day_time * perish_warp,
-	perish_superslow = 40 * total_day_time * perish_warp,
+export const calories_per_day = 75;
+export const calories_huge = calories_per_day; // crockpot foods
+export const calories_large = calories_per_day / 2; // cooked meat
+export const calories_med = calories_per_day / 3; // meat
+export const calories_medsmall = calories_per_day / 4;
+export const calories_small = calories_per_day / 6; // veggies
+export const calories_tiny = calories_per_day / 8; // berries
+export const calories_superhuge = calories_per_day * 2; // crockpot foods
+export const calories_morehuge = 100; // todo: make this the same logic as game data
 
-	dry_superfast = 0.25 * total_day_time,
-	dry_veryfast = 0.5 * total_day_time,
-	dry_fast = total_day_time,
-	dry_med = 2 * total_day_time,
+export const healing_tiny = 1;
+export const healing_small = 3;
+export const healing_medsmall = 8;
+export const healing_med = 20;
+export const healing_medlarge = 30;
+export const healing_large = 40;
+export const healing_huge = 60;
+export const healing_morehuge = 75;
+export const healing_superhuge = 100;
 
-	calories_tiny = calories_per_day / 8, // berries
-	calories_small = calories_per_day / 6, // veggies
-	calories_medsmall = calories_per_day / 4,
-	calories_med = calories_per_day / 3, // meat
-	calories_large = calories_per_day / 2, // cooked meat
-	calories_huge = calories_per_day, // crockpot foods?
-	calories_morehuge = 100, // todo: make this the same logic as game data
-	calories_superhuge = calories_per_day * 2, // crockpot foods?
+export const sanity_supertiny = 1;
+export const sanity_tiny = 5;
+export const sanity_small = 10;
+export const sanity_med = 15;
+export const sanity_medlarge = 20;
+export const sanity_large = 33;
+export const sanity_huge = 50;
 
-	hot_food_bonus_temp = 40,
-	cold_food_bonus_temp = -40,
-	food_temp_brief = 5,
-	food_temp_average = 10,
-	food_temp_long = 15,
-	buff_food_temp_duration = day_time,
+export const spoiled_food_health = 0;
+export const spoiled_food_hunger = 0.5;
+export const spoiled_health = -1;
+export const spoiled_hunger = -10;
+export const stale_food_health = 0.333;
+export const stale_food_hunger = 0.667;
 
-	spoiled_health = -1,
-	spoiled_hunger = -10,
-	perish_fridge_mult = .5,
-	perish_ground_mult = 1.5,
-	perish_global_mult = 1,
-	perish_winter_mult = .75,
-	perish_summer_mult = 1.25,
+export const perish_warp = 1;
+export const perish_global_mult = 1;
+export const perish_ground_mult = 1.5;
+export const perish_fridge_mult = 0.5;
+export const perish_summer_mult = 1.25;
+export const perish_winter_mult = 0.75;
 
-	stale_food_hunger = .667,
-	spoiled_food_hunger = .5,
+export const perish_one_day = 1 * total_day_time * perish_warp;
+export const perish_two_day = 2 * total_day_time * perish_warp;
+export const perish_superfast = 3 * total_day_time * perish_warp;
+export const perish_fast = 6 * total_day_time * perish_warp;
+export const perish_fastish = 8 * total_day_time * perish_warp;
+export const perish_med = 10 * total_day_time * perish_warp;
+export const perish_slow = 15 * total_day_time * perish_warp;
+export const perish_preserved = 20 * total_day_time * perish_warp;
+export const perish_superslow = 40 * total_day_time * perish_warp;
 
-	stale_food_health = .333,
-	spoiled_food_health = 0,
+export const dry_superfast = 0.25 * total_day_time;
+export const dry_veryfast = 0.5 * total_day_time;
+export const dry_fast = total_day_time;
+export const dry_med = 2 * total_day_time;
 
-	base_cook_time = night_time * .3333,
-
-	defaultStatMultipliers = {
-		raw: 1,
-		dried: 1,
-		cooked: 1,
-		recipe: 1,
-	};
+export const stack_size_largeitem = 10;
+export const stack_size_meditem = 20;
+export const stack_size_smallitem = 40;
 
 export const VANILLA = 1;
 export const GIANTS = 1 << 1;
@@ -151,7 +154,7 @@ export const modes = {
 	},
 
 	together: {
-		name: 'Don\'t Starve Together',
+		name: "Don't Starve Together",
 		img: 'together.png',
 		bit: TOGETHER,
 		mask: TOGETHER,
@@ -159,7 +162,7 @@ export const modes = {
 	},
 
 	warlydst: {
-		name: 'Warly Don\'t Starve Together',
+		name: "Warly Don't Starve Together",
 		img: 'warlyDST.png',
 		bit: WARLYDST,
 		mask: TOGETHER | WARLYDST,

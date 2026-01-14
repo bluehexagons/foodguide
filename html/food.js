@@ -42,8 +42,7 @@ import {
 import { makeLinkable } from './utils.js';
 
 export const food = {
-	
-	//--------------------------------------------------------------------------------\\	
+	//--------------------------------------------------------------------------------\\
 	//	               DON'T STARVE VANILLA INGREDIENTS + EDIBLES                     \\
 	//--------------------------------------------------------------------------------\\
 
@@ -475,7 +474,7 @@ export const food = {
 		perish: perish_med,
 	},
 	minotaurhorn: {
-		name: 'Guardian\'s Horn',
+		name: "Guardian's Horn",
 		uncookable: true,
 		ismeat: true,
 		health: healing_huge,
@@ -843,7 +842,7 @@ export const food = {
 		stack: stack_size_smallitem,
 	},
 
-	//--------------------------------------------------------------------------------\\	
+	//--------------------------------------------------------------------------------\\
 	//	               DON'T STARVE REIGN OF GIANTS INGREDIENTS                       \\
 	//--------------------------------------------------------------------------------\\
 
@@ -903,7 +902,7 @@ export const food = {
 		note: 'Gives 90 seconds of light',
 	},
 	glommerfuel: {
-		name: 'Glommer\'s Goop',
+		name: "Glommer's Goop",
 		uncookable: true,
 		health: healing_large,
 		hunger: calories_tiny,
@@ -911,7 +910,7 @@ export const food = {
 		mode: 'giants',
 	},
 
-	//--------------------------------------------------------------------------------\\	
+	//--------------------------------------------------------------------------------\\
 	//	                   DON'T STARVE SHIPWRECKED INGREDIENTS                       \\
 	//--------------------------------------------------------------------------------\\
 
@@ -1453,7 +1452,7 @@ export const food = {
 		mode: 'shipwrecked',
 	},
 
-	//--------------------------------------------------------------------------------\\	
+	//--------------------------------------------------------------------------------\\
 	//	                     DON'T STARVE HAMLET INGREDIENTS                          \\
 	//--------------------------------------------------------------------------------\\
 
@@ -1604,7 +1603,7 @@ export const food = {
 		mode: 'hamlet',
 	},
 
-	//--------------------------------------------------------------------------------\\	
+	//--------------------------------------------------------------------------------\\
 	//	                       DON'T STARVE HAMLET EDIBLES                            \\
 	//--------------------------------------------------------------------------------\\
 
@@ -1786,10 +1785,10 @@ export const food = {
 		mode: 'hamlet',
 	},
 
-	//--------------------------------------------------------------------------------\\	
+	//--------------------------------------------------------------------------------\\
 	//	                   DON'T STARVE TOGETHER INGREDIENTS                          \\
 	//--------------------------------------------------------------------------------\\
-	
+
 	//PORTED INGREDIENTS FROM DS + DLC's GET THE DST SUFFIX TO DIFFERENTIATE FROM THE DS VERSION OF THE INGREDIENT\\
 
 	acorn_dst: {
@@ -1949,14 +1948,14 @@ export const food = {
 	},
 
 	foliage_dst: {
-		 name: 'Foliage',
-		 uncookable: true,
-		 health: healing_tiny,
-		 hunger: 0,
-		 sanity: 0,
-		 perish: perish_fast,
-		 stack: stack_size_smallitem,
-		 mode: 'together',
+		name: 'Foliage',
+		uncookable: true,
+		health: healing_tiny,
+		hunger: 0,
+		sanity: 0,
+		perish: perish_fast,
+		stack: stack_size_smallitem,
+		mode: 'together',
 	},
 	goatmilk_dst: {
 		name: 'Electric Milk',
@@ -2240,7 +2239,7 @@ export const food = {
 		mode: 'together',
 	},
 	minotaurhorn_dst: {
-		name: 'Guardian\'s Horn',
+		name: "Guardian's Horn",
 		uncookable: true,
 		ismeat: true,
 		health: healing_huge,
@@ -2426,7 +2425,7 @@ export const food = {
 	},
 	trunk_winter_dst: {
 		name: 'Winter Koalefant Trunk',
-		basename: 'KoalefantB',//so it shows up next to summer trunk on sim
+		basename: 'KoalefantB', //so it shows up next to summer trunk on sim
 		ismeat: true,
 		health: healing_medlarge,
 		hunger: calories_large,
@@ -2477,7 +2476,6 @@ export const food = {
 		sanity: 0,
 		cook: 'carrot_cooked_dst',
 		stack: stack_size_smallitem,
-		cook: 'carrot_cooked_dst',
 		mode: 'together',
 	},
 	carrot_cooked_dst: {
@@ -2639,7 +2637,7 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together',
 	},
-	
+
 	berries_dst: {
 		name: 'Berries',
 		isfruit: true,
@@ -2716,7 +2714,7 @@ export const food = {
 	},
 	wormlight_dst: {
 		name: 'Glow Berry',
-		basename:'GlowberryNormal',//so it's to the right of lesser glowberries
+		basename: 'GlowberryNormal', //so it's to the right of lesser glowberries
 		isfruit: true,
 		fruit: 1,
 		health: healing_medsmall + healing_small,
@@ -2727,14 +2725,14 @@ export const food = {
 		mode: 'together',
 	},
 	glommerfuel_dst: {
-		name: 'Glommer\'s Goop',
+		name: "Glommer's Goop",
 		uncookable: true,
 		health: healing_large,
 		hunger: calories_tiny,
 		sanity: -sanity_huge,
 		mode: 'together',
 	},
-	//Lobsters exist in both games but were difficult to port. 
+	//Lobsters exist in both games but were difficult to port.
 	// For simplicity's sake, the prefab name for lobsters in DST will be referred to as wobster.
 	// Their display name will have DST added to it due to a conflict since their image name is the same as SW
 	wobster: {
@@ -2768,18 +2766,18 @@ export const food = {
 		stack: stack_size_smallitem,
 		mode: 'together',
 	},
-	
+
 	//DST EXCLUSIVE INGREDIENTS DO NOT GET THE 'dst' SUFFIX\\
-	
+
 	/*
 I (lakhnish) tried to add the 'dst' suffix to some ingredients below (i.e. kelp) and the simulator would break for reasons I don't understand.
 For example: the Jelly Beans recipe has a specific for Royal Jelly and needed the prefabname to match royal_jelly_dst in order for the simulator to actually load. 
 However, if I do the same for kelp and rename it to kelp_dst, the simulator would stop loading entirely and idk why.
 */
-	
+
 	wormlight_lesser: {
 		name: 'Lesser Glow Berry',
-		basename:'GlowberryLesser', //so it's next to glowberries
+		basename: 'GlowberryLesser', //so it's next to glowberries
 		isfruit: true,
 		fruit: 0.5,
 		health: healing_small,
@@ -3203,7 +3201,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 
 	//All the small ocean fish
 	//Don't add what they rot or cook into, it seems to break the simulator.
-	//basename is just so they are grouped together. They used to be all over the place and it was annoying to navigate. 
+	//basename is just so they are grouped together. They used to be all over the place and it was annoying to navigate.
 
 	oceanfish_small_1_inv: {
 		name: 'Runty Guppy',
@@ -3364,7 +3362,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_one_day,
 		skip: true,
 		mode: 'together',
-	},	
+	},
 	oceanfish_medium_8_inv: {
 		name: 'Ice Bream',
 		basename: 'oceanBig7',
@@ -3376,7 +3374,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_one_day,
 		skip: true,
 		mode: 'together',
-	},	
+	},
 	oceanfish_medium_9_inv: {
 		name: 'Sweetish Fish',
 		basename: 'oceanBig9',
@@ -3386,7 +3384,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_one_day,
 		skip: true,
 		mode: 'together',
-	},	
+	},
 
 	// DST Return of Them: Troubled Waters food
 	barnacle: {
@@ -3400,7 +3398,6 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		cook: 'barnacle_cooked',
 		perish: perish_fast,
 		stack: stack_size_meditem,
-		cook: 'barnacle_cooked',
 		mode: 'together',
 	},
 	barnacle_cooked: {
@@ -3429,7 +3426,6 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		perish: perish_med,
 		stack: stack_size_smallitem,
 		note: 'Puts the player to sleep',
-		cook: 'moon_mushroom_cooked',
 		mode: 'together',
 	},
 	moon_mushroom_cooked: {
@@ -3456,7 +3452,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		defaultExclude: true,
 		mode: 'together',
 	},
-	
+
 	// DST Return of Them: Waterlogged beta
 	fig: {
 		name: 'Fig',
@@ -3532,7 +3528,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 };
 
 for (const key in food) {
-	if (!food.hasOwnProperty(key)) {
+	if (!Object.prototype.hasOwnProperty.call(food, key)) {
 		continue;
 	}
 
@@ -3543,11 +3539,11 @@ for (const key in food) {
 	f.id = key;
 	f.nameObject = {};
 	f.nameObject[key] = 1;
-	f.img = 'img/' + f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase() + '.png';
+	f.img = `img/${f.name.replace(/ /g, '_').replace(/'/g, '').toLowerCase()}.png`;
 	f.preparationType = f.preparationType || 'raw';
 
-	if (food[key + '_cooked']) {
-		f.cook = food[key + '_cooked'];
+	if (food[`${key}_cooked`]) {
+		f.cook = food[`${key}_cooked`];
 	}
 
 	if (typeof f.cook === 'string') {
@@ -3558,7 +3554,7 @@ for (const key in food) {
 		f.cook.raw = f;
 		f.cook.cooked = true;
 		if (!f.cook.basename) {
-			f.cook.basename = (f.basename || f.name) + '.';
+			f.cook.basename = `${f.basename || f.name}.`;
 		}
 	}
 
@@ -3571,13 +3567,13 @@ for (const key in food) {
 	f.modeMask = modes[f.mode].bit;
 
 	f.modeMask = modes[f.mode].bit || 0;
-	f.modeNode = makeLinkable('[tag:' + f.mode + '|img/' + modes[f.mode].img + ']');
+	f.modeNode = makeLinkable(`[tag:${f.mode}|img/${modes[f.mode].img}]`);
 
 	if (typeof f.raw === 'string') {
 		f.raw = food[f.raw];
 		f.cooked = true;
 		if (!f.basename) {
-			f.basename = (f.raw.basename || f.raw.name) + '.';
+			f.basename = `${f.raw.basename || f.raw.name}.`;
 		}
 	}
 
@@ -3589,7 +3585,7 @@ for (const key in food) {
 		f.dry.wet = f;
 		f.dry.rackdried = true;
 		if (!f.dry.basename) {
-			f.dry.basename = (f.basename || f.name) + '..';
+			f.dry.basename = `${f.basename || f.name}..`;
 		}
 	}
 
@@ -3597,7 +3593,7 @@ for (const key in food) {
 		f.rackdried = true;
 		f.wet = food[f.wet];
 		if (!f.basename) {
-			f.basename = (f.wet.basename || f.wet.name) + '..';
+			f.basename = `${f.wet.basename || f.wet.name}..`;
 		}
 	}
 

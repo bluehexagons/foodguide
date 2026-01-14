@@ -1,0 +1,30 @@
+{
+  "name": "foodguide",
+  "version": "1.0.0",
+  "description": "Unofficial Don't Starve food guide and recipe calculator",
+  "main": "html/index.htm",
+  "type": "module",
+  "scripts": {
+    "dev": "npx http-server html -p 8080 -o",
+    "lint": "eslint html/**/*.js",
+    "lint:fix": "eslint html/**/*.js --fix",
+    "format": "prettier --write html/**/*.js",
+    "format:check": "prettier --check html/**/*.js",
+    "test": "node --test",
+    "typecheck": "jsdoc -t node_modules/@typescript-eslint/dist/types.d.ts -r html/**/*.js"
+  },
+  "keywords": ["dont-starve", "food", "recipes", "game", "guide"],
+  "author": "bluehexagons",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-jsdoc": "^48.0.0",
+    "http-server": "^14.1.1",
+    "jsdoc": "^4.0.2",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

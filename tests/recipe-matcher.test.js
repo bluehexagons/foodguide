@@ -15,7 +15,6 @@ import { accumulateIngredients } from '../html/utils.js';
 import { recipes } from '../html/recipes.js';
 import { defaultStatMultipliers } from '../html/constants.js';
 
-// Shorthand: build names/tags from an ingredient list
 const accumulate = items => {
 	const names = {};
 	const tags = {};

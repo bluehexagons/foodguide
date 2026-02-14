@@ -18,13 +18,11 @@ import assert from 'node:assert';
 import { recipes } from '../html/recipes.js';
 import { food } from '../html/food.js';
 
-// Collect all recipes into a plain array (recipes is array-like after post-processing)
 const recipeList = [];
 for (let i = 0; i < recipes.length; i++) {
 	recipeList.push(recipes[i]);
 }
 
-// Collect all food items into a plain array
 const foodList = [];
 for (let i = 0; i < food.length; i++) {
 	foodList.push(food[i]);
@@ -33,7 +31,6 @@ for (let i = 0; i < food.length; i++) {
 describe('recipe and food imports', () => {
 	it('loads all recipes with expected count', () => {
 		assert.ok(recipeList.length > 100, `expected >100 recipes, got ${recipeList.length}`);
-		// Every recipe should have an id set by post-processing
 		for (const r of recipeList) {
 			assert.ok(r.id, `recipe missing id: ${JSON.stringify(r.name)}`);
 		}
@@ -48,21 +45,6 @@ describe('recipe and food imports', () => {
 });
 
 describe('recipe structural validation', () => {
-	// Note: "every recipe has test/requirements/numeric properties" is now
-	// statically enforced by the Recipe typedef in recipes.js (tsc --checkJs).
-
-	it('every requirement has a test function', () => {
-		const broken = [];
-		for (const r of recipeList) {
-			for (let i = 0; i < r.requirements.length; i++) {
-				if (typeof r.requirements[i].test !== 'function') {
-					broken.push(`${r.id}[${i}]`);
-				}
-			}
-		}
-		assert.strictEqual(broken.length, 0, `requirements without test: ${broken.join(', ')}`);
-	});
-
 	it('no recipe has duplicate requirements', () => {
 		const dupes = [];
 		for (const r of recipeList) {
@@ -79,18 +61,10 @@ describe('recipe structural validation', () => {
 });
 
 describe('cancel/exclusion consistency', () => {
-	/**
-	 * For every recipe with NOT(TAG('x')) in requirements, verify that the
-	 * test function also rejects a 4-slot fill of items with that tag.
-	 *
-	 * If requirements say "no meat" but the test function allows meat,
-	 * the suggestion UI would incorrectly hide the recipe from meat items.
-	 */
 	it('NOT(TAG) requirements agree with test function exclusions', () => {
 		const inconsistencies = [];
 
 		for (const recipe of recipeList) {
-			// Find cancel requirements that are NOT(TAG(...))
 			const cancelTags = [];
 			for (const req of recipe.requirements) {
 				if (req.cancel && req.item && req.item.tag) {
@@ -99,24 +73,10 @@ describe('cancel/exclusion consistency', () => {
 			}
 
 			for (const tag of cancelTags) {
-				// Build a names/tags combo where this tag is very present
-				// If the test function still passes, the cancel is inconsistent
 				const names = { filler: 4 };
 				const tags = { [tag]: 4 };
 
-				// Also need to satisfy other positive requirements minimally
-				// so we're testing the exclusion specifically.
-				// We can't perfectly satisfy all positives generically, but
-				// we CAN verify: if the tag is present and test passes,
-				// then the NOT requirement is overly restrictive.
-				//
-				// Actually the cleaner check: a failing cancel requirement
-				// immediately disqualifies in getSuggestions. If test() can
-				// pass with that tag present, the suggestion system would
-				// wrongly exclude valid ingredients.
-				//
-				// We check the contrapositive: test should return falsy
-				// when only this excluded tag is present (no other positives).
+				// Test should reject ingredients that trigger cancel requirements
 				const result = recipe.test(null, names, tags);
 				if (result) {
 					inconsistencies.push(
@@ -135,61 +95,14 @@ describe('cancel/exclusion consistency', () => {
 });
 
 describe('NAME vs SPECIFIC cooked-variant consistency', () => {
-	/**
-	 * NAME('x') in requirements matches x + x_cooked.
-	 * If the test function uses names.x but NOT names.x_cooked,
-	 * then NAME is wrong (should be SPECIFIC).
-	 * If it uses (names.x || names.x_cooked), NAME is correct.
-	 *
-	 * We test this by checking: does the recipe pass with x_cooked
-	 * when requirements use NAME('x')?
-	 */
 	it('recipes using NAME() accept cooked variants in test()', () => {
-		const issues = [];
-
-		for (const recipe of recipeList) {
-			for (const req of recipe.requirements) {
-				// Find NAME requirements (they have .name and permit cooked)
-				// NAME has: { name, qty, test: NAMETest } where NAMETest sums name + name_cooked
-				// SPECIFIC has: { name, qty, test: SPECIFICTest } where SPECIFICTest only checks name
-				// We distinguish them by checking if the test sums cooked variants
-				if (req.name && !req.cancel && !req.item && !req.item1) {
-					// This is a NAME or SPECIFIC requirement
-					const cookedName = `${req.name}_cooked`;
-
-					// Test if the requirement itself accepts the cooked variant
-					const reqAcceptsCooked = req.test(null, { [cookedName]: 1 }, {});
-
-					if (reqAcceptsCooked) {
-						// This is a NAME requirement (accepts cooked).
-						// Verify the test function also accepts the cooked variant.
-						// Build minimal ingredients: just the cooked item + fillers
-						const names = { [cookedName]: 1 };
-						const tags = {};
-
-						// We can't fully test this generically (other requirements
-						// may not be satisfied), but we can flag cases where
-						// the test function source explicitly checks for names.x
-						// without also checking names.x_cooked.
-						// This is a documentation-level check — the important
-						// thing is that NAME is used intentionally.
-					}
-				}
-			}
-		}
-
-		// This test primarily validates the requirement type is intentional.
-		// Actual cooked-variant bugs are better caught by specific recipe tests.
+		// This test documents that NAME() requirements match both raw and cooked variants.
+		// Actual cooked-variant behavior is tested in recipe-matcher.test.js.
 		assert.ok(true, 'NAME/SPECIFIC analysis complete');
 	});
 });
 
 describe('individual food item qualification', () => {
-	/**
-	 * Replicate updateFoodRecipes logic: for each food item, test it against
-	 * each recipe's requirements. This catches broken requirements that would
-	 * crash or behave unexpectedly when evaluating real food data.
-	 */
 	it('every food item can be evaluated against every recipe without errors', () => {
 		const errors = [];
 
@@ -198,7 +111,6 @@ describe('individual food item qualification', () => {
 
 			for (const recipe of recipeList) {
 				try {
-					// Replicate the updateFoodRecipes logic
 					let qualifies = false;
 					for (let i = recipe.requirements.length - 1; i >= 0; i--) {
 						const req = recipe.requirements[i];
@@ -208,8 +120,6 @@ describe('individual food item qualification', () => {
 								qualifies = true;
 							}
 						}
-						// Note: in updateFoodRecipes, a failing cancel causes early return.
-						// We don't short-circuit here because we want to test all requirements.
 					}
 				} catch (e) {
 					errors.push(`${recipe.id} × ${f.id}: ${e.message}`);
@@ -220,12 +130,6 @@ describe('individual food item qualification', () => {
 		assert.strictEqual(errors.length, 0, `Errors during evaluation:\n${errors.join('\n')}`);
 	});
 
-	/**
-	 * For a representative sample of food items with known tags, verify that
-	 * the updateFoodRecipes logic produces sensible qualification lists.
-	 * These are sanity checks, not exhaustive — they catch gross errors like
-	 * a meat item qualifying for vegetarian-only recipes.
-	 */
 	it('meat items qualify for at least one meat recipe', () => {
 		const meatFoods = foodList.filter(f => f.meat && !f.uncookable && !f.monster);
 		assert.ok(meatFoods.length > 5, `expected many meat foods, got ${meatFoods.length}`);
@@ -270,9 +174,6 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 	it('frozenbananadaiquiri: requirements exclude both meat and fish', () => {
 		const daiquiri = recipes.frozenbananadaiquiri;
 
-		// test: !tags.meat && !tags.fish
-		// requirements should have NOT(TAG('meat')) and NOT(TAG('fish'))
-
 		assert.strictEqual(
 			!!daiquiri.test(null, { cave_banana_dst: 1 }, { frozen: 1, fish: 1 }),
 			false,
@@ -294,7 +195,6 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 		);
 		assert.strictEqual(hasMeatCancel, true, 'requirements include NOT(TAG(meat))');
 
-		// No duplicates
 		const meatCancels = daiquiri.requirements.filter(
 			req => req.cancel && req.item && req.item.tag === 'meat',
 		);

@@ -41,6 +41,43 @@ import { food } from './food.js';
 import { AND, COMPARE, NAME, NOT, OR, SPECIFIC, TAG } from './functions.js';
 import { makeLinkable, pl, stats } from './utils.js';
 
+/**
+ * @typedef {import('./functions.js').Requirement} Requirement
+ */
+
+/**
+ * @typedef {Object} Recipe
+ * @property {string} name - Display name
+ * @property {(cooker: any, names: Record<string, number>, tags: Record<string, number>) => any} test - Authoritative matching function
+ * @property {Requirement[]} requirements - Declarative requirements for suggestions UI
+ * @property {number} priority - Higher priority wins when multiple recipes match
+ * @property {number} cooktime - Cook time multiplier
+ * @property {number} health - Health restored (0 for non-food like Amberosia)
+ * @property {number} hunger - Hunger restored (0 for non-food like Amberosia)
+ * @property {number} [sanity] - Sanity restored
+ * @property {number} [perish] - Spoilage time
+ * @property {string} [foodtype] - Food category
+ * @property {string} [mode] - Game mode/DLC
+ * @property {number} [temperature] - Temperature modifier
+ * @property {number} [temperatureduration] - Duration of temperature effect
+ * @property {number} [temperaturebump] - Instant temperature change
+ * @property {string} [note] - Extra info
+ * @property {string[]} [tags] - Tags on the cooked dish
+ * @property {number} [weight] - Tiebreaker weight
+ * @property {boolean} [trash] - Marks as trash/failure result
+ * @property {string} [rot] - Recipe key this becomes when spoiled
+ * @property {string} [requires] - Human-readable requirements string (set by post-processing)
+ * @property {string} [id] - Recipe key (set by post-processing)
+ * @property {string} [lowerName] - Lowercase name (set by post-processing)
+ * @property {string} [img] - Image path (set by post-processing)
+ * @property {number} [match] - Match counter (set by post-processing)
+ * @property {number} [modeMask] - Bit mask for mode filtering (set by post-processing)
+ * @property {string} [preparationType] - Always 'recipe' (set by post-processing)
+ * @property {boolean} [vanilla] - True if vanilla mode (set by post-processing)
+ * @property {*} [modeNode] - Linkable mode node (set by post-processing)
+ */
+
+/** @type {Record<string, Recipe> & {length?: number, forEach?: Function, filter?: Function, sort?: Function, byName?: (name: string) => Recipe | undefined}} */
 export const recipes = {
 	//--------------------------------------------------------------------------------\\
 	//	                       DON'T STARVE VANILLA RECIPES                           \\
@@ -1369,7 +1406,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.meat && tags.veggie && tags.veggie >= 0.5 && !tags.inedible;
 		},
-		requirements: [TAG('egg'), TAG('meat'), TAG('veggie', COMPARE('>', 0.5)), NOT(TAG('inedible'))],
+		requirements: [TAG('egg'), TAG('meat'), TAG('veggie', COMPARE('>=', 0.5)), NOT(TAG('inedible'))],
 		priority: 5,
 		foodtype: 'meat',
 		health: healing_large,
@@ -2053,7 +2090,7 @@ export const recipes = {
 		},
 		requirements: [
 			NAME('potato'),
-			NAME('twigs'),
+			SPECIFIC('twigs_dst'),
 			OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))),
 			NOT(TAG('meat')),
 			TAG('inedible', COMPARE('<=', 2)),
@@ -2292,7 +2329,7 @@ export const recipes = {
 			NAME('cave_banana'),
 			TAG('frozen', COMPARE('>=', 1)),
 			NOT(TAG('meat')),
-			NOT(TAG('meat')),
+			NOT(TAG('fish')),
 		],
 		priority: 2,
 		foodtype: 'goodies',
@@ -2573,6 +2610,8 @@ export const recipes = {
 		},
 		requirements: [NAME('refined_dust')],
 		priority: 100,
+		health: 0,
+		hunger: 0,
 		cooktime: 2,
 		note: 'Used to feed Dust Moths, cannot be eaten by the player',
 		mode: 'together',

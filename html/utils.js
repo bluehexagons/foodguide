@@ -5,12 +5,21 @@
  * @returns {HTMLImageElement} Cached image element
  */
 export const makeImage = (() => {
-	const canvas = document.createElement('canvas');
-	const ctx = canvas.getContext('2d');
+	let canvas;
+	let ctx;
 	const cache = new Map();
 	const queue = [];
 	let activeLoads = 0;
 	const MAX_CONCURRENT_LOADS = 6;
+
+	const ensureCanvas = () => {
+		if (!canvas) {
+			canvas = document.createElement('canvas');
+			ctx = canvas.getContext('2d');
+			canvas.width = 64;
+			canvas.height = 64;
+		}
+	};
 
 	const finishWaiters = (url, src) => {
 		const entry = cache.get(url);
@@ -27,6 +36,7 @@ export const makeImage = (() => {
 	};
 
 	const renderToCache = async url => {
+		ensureCanvas();
 		try {
 			const response = await fetch(url);
 			if (!response.ok) {
@@ -119,9 +129,6 @@ export const makeImage = (() => {
 		return img;
 	};
 
-	canvas.width = 64;
-	canvas.height = 64;
-
 	makeImage.queue = queueImage;
 
 	return makeImage;
@@ -157,6 +164,8 @@ export const makeLinkable = (() => {
 		const results = processed && processed.split(linkSearch);
 
 		if (!results || results.length === 1) {
+			return processed;
+		} else if (typeof document === 'undefined') {
 			return processed;
 		} else {
 			const fragment = document.createDocumentFragment();

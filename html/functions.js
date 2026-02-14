@@ -1,20 +1,66 @@
 import { food } from './food.js';
 
+/**
+ * @typedef {Object} IngredientNames
+ * @property {number} [key] - Count of each ingredient by id
+ */
+
+/**
+ * @typedef {Record<string, number>} IngredientTags
+ */
+
+/**
+ * @typedef {(cooker: any, names: IngredientNames, tags: IngredientTags) => any} RequirementTestFn
+ */
+
+/**
+ * @typedef {Object} Requirement
+ * @property {RequirementTestFn} test
+ * @property {() => string} toString
+ * @property {boolean} [cancel]
+ * @property {string} [name]
+ * @property {string} [tag]
+ * @property {CompareQty | NoQty} [qty]
+ * @property {Requirement} [item]
+ * @property {Requirement} [item1]
+ * @property {Requirement} [item2]
+ */
+
+/**
+ * @typedef {Object} CompareQty
+ * @property {string} op
+ * @property {number} qty
+ * @property {(qty: number) => boolean} test
+ * @property {() => string} toString
+ */
+
+/**
+ * @typedef {Object} NoQty
+ * @property {(qty: number) => boolean} test
+ * @property {() => string} toString
+ */
+
+/** @this {{ item1: Requirement, item2: Requirement }} */
 const ANDTest = function (cooker, names, tags) {
 	return this.item1.test(cooker, names, tags) && this.item2.test(cooker, names, tags);
 };
+/** @this {{ item1: Requirement, item2: Requirement }} */
 const ORTest = function (cooker, names, tags) {
 	return this.item1.test(cooker, names, tags) || this.item2.test(cooker, names, tags);
 };
+/** @this {{ name: string }} */
 const NAMETest = function (_cooker, names, _tags) {
 	return (names[this.name] || 0) + (names[`${this.name}_cooked`] || 0);
 };
+/** @this {{ item: Requirement }} */
 const NOTTest = function (cooker, names, tags) {
 	return !this.item.test(cooker, names, tags);
 };
+/** @this {{ name: string }} */
 const SPECIFICTest = function (_cooker, names, _tags) {
 	return names[this.name];
 };
+/** @this {{ tag: string }} */
 const TAGTest = function (_cooker, _names, tags) {
 	return tags[this.tag];
 };
@@ -43,7 +89,7 @@ const TAGString = function () {
 
 /**
  * Comparison operators for recipe requirements
- * @type {Object.<string, function(number): boolean>}
+ * @type {Record<string, (this: CompareQty, qty: number) => boolean>}
  */
 export const COMPARISONS = {
 	'='(qty) {
@@ -65,7 +111,7 @@ export const COMPARISONS = {
 
 /**
  * Default quantity checker - returns true if quantity exists
- * @type {Object}
+ * @type {NoQty}
  */
 export const NOQTY = {
 	test: qty => {
@@ -77,10 +123,10 @@ export const NOQTY = {
 };
 
 /**
- * Creates comparison requirement
+ * Creates comparison quantity object
  * @param {string} op - Comparison operator (=, >, <, >=, <=)
  * @param {number} qty - Quantity to compare against
- * @returns {Object} Comparison requirement object
+ * @returns {CompareQty}
  */
 export const COMPARE = (op, qty) => {
 	return { op, qty, test: COMPARISONS[op], toString: COMPAREString };
@@ -88,25 +134,59 @@ export const COMPARE = (op, qty) => {
 
 /**
  * Creates AND requirement between two items
- * @param {Object} item1 - First requirement
- * @param {Object} item2 - Second requirement
- * @returns {Object} AND requirement object
+ * @param {Requirement} item1
+ * @param {Requirement} item2
+ * @returns {Requirement}
  */
 export const AND = (item1, item2) => {
 	return { item1, item2, test: ANDTest, toString: ANDString, cancel: item1.cancel && item2.cancel };
 };
+
+/**
+ * Creates OR requirement between two items
+ * @param {Requirement} item1
+ * @param {Requirement} item2
+ * @returns {Requirement}
+ */
 export const OR = (item1, item2) => {
 	return { item1, item2, test: ORTest, toString: ORString, cancel: item1.cancel || item2.cancel };
 };
+
+/**
+ * Creates NOT requirement (cancels matching)
+ * @param {Requirement} item
+ * @returns {Requirement}
+ */
 export const NOT = item => {
 	return { item, test: NOTTest, toString: NOTString, cancel: true };
 };
+
+/**
+ * Creates NAME requirement (permits cooked variant)
+ * @param {string} name - Ingredient id
+ * @param {CompareQty | NoQty} [qty]
+ * @returns {Requirement}
+ */
 export const NAME = (name, qty) => {
 	return { name, qty: qty || NOQTY, test: NAMETest, toString: NAMEString };
-}; //permits cooked variant
+};
+
+/**
+ * Creates SPECIFIC requirement (disallows cooked/uncooked variant)
+ * @param {string} name - Ingredient id
+ * @param {CompareQty | NoQty} [qty]
+ * @returns {Requirement}
+ */
 export const SPECIFIC = (name, qty) => {
 	return { name, qty: qty || NOQTY, test: SPECIFICTest, toString: SPECIFICString };
-}; //disallows cooked/uncooked variant
+};
+
+/**
+ * Creates TAG requirement
+ * @param {string} tag - Tag name
+ * @param {CompareQty | NoQty} [qty]
+ * @returns {Requirement}
+ */
 export const TAG = (tag, qty) => {
 	return { tag, qty: qty || NOQTY, test: TAGTest, toString: TAGString };
 };

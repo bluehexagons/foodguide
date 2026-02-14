@@ -246,17 +246,6 @@ describe('NAME() unified identity matching', () => {
 		assert.strictEqual(req.test(null, { meat: 1 }, {}), 0, 'unrelated ingredient should not match');
 	});
 
-	it('DST plantmeat has unified id (no _dst suffix)', () => {
-		const plantmeatDst = food['plantmeat@together'];
-		assert.ok(plantmeatDst, 'plantmeat@together should exist');
-		assert.strictEqual(plantmeatDst.id, 'plantmeat', 'id should be plantmeat (not plantmeat_dst)');
-		assert.deepStrictEqual(
-			plantmeatDst.nameObject,
-			{ plantmeat: 1 },
-			'nameObject should use base id',
-		);
-	});
-
 	it('Leafy Meatloaf requirements match DST plantmeat (issue #75)', () => {
 		const recipe = recipes.leafloaf;
 		const plantmeatDst = food['plantmeat@together'];

@@ -13,16 +13,22 @@
     "test": "node --test",
     "typecheck": "jsdoc -t node_modules/@typescript-eslint/dist/types.d.ts -r html/**/*.js"
   },
-  "keywords": ["dont-starve", "food", "recipes", "game", "guide"],
+  "keywords": [
+    "dont-starve",
+    "food",
+    "recipes",
+    "game",
+    "guide"
+  ],
   "author": "bluehexagons",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
-    "eslint": "^9.0.0",
-    "eslint-plugin-jsdoc": "^48.0.0",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "eslint-plugin-jsdoc": "^62.5.4",
     "http-server": "^14.1.1",
     "jsdoc": "^4.0.2",
-    "prettier": "^3.2.5"
+    "prettier": "^3.8.1"
   },
   "engines": {
     "node": ">=18.0.0"

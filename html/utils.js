@@ -224,9 +224,7 @@ export const isBestStat = {
  * @returns {string} Pluralized string
  */
 export const pl = (str, n, suffix) => {
-	return n === 1
-		? str
-		: `${str}${suffix || 'ies'}`;
+	return n === 1 ? str : `${str}${suffix || 'ies'}`;
 };
 
 /**

@@ -880,14 +880,14 @@ import {
 		const result =
 			!isNaN(base) && base !== val
 				? ` (${sign(
-						(
-							(base < val
-								? (val - base) / Math.abs(base)
-								: base > val
-									? -(base - val) / Math.abs(base)
-									: 0) * 100
-						).toFixed(0),
-					)}%)`
+					(
+						(base < val
+							? (val - base) / Math.abs(base)
+							: base > val
+								? -(base - val) / Math.abs(base)
+								: 0) * 100
+					).toFixed(0),
+				)}%)`
 				: '';
 
 		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;

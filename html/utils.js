@@ -275,8 +275,12 @@ export const accumulateIngredients = (items, names, tags, statMultipliers) => {
  * @returns {string} Pluralized string
  */
 export const pl = (str, n, suffix) => {
-	if (n === 1) return str;
-	if (suffix) return `${str}${suffix}`;
+	if (n === 1) {
+		return str;
+	}
+	if (suffix) {
+		return `${str}${suffix}`;
+	}
 	if (str.endsWith('y') && !/[aeiou]y$/.test(str)) {
 		return `${str.slice(0, -1)}ies`;
 	}

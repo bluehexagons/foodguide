@@ -35,7 +35,6 @@ import {
 	modes,
 	perish_fridge_mult,
 	perish_ground_mult,
-	perish_preserved,
 	perish_summer_mult,
 	perish_winter_mult,
 	sanity_small,
@@ -47,8 +46,6 @@ import {
 import { food } from './food.js';
 import { recipes, updateFoodRecipes } from './recipes.js';
 import {
-	isBestStat,
-	isStat,
 	accumulateIngredients,
 	makeImage,
 	makeLinkable,
@@ -880,14 +877,14 @@ import {
 		const result =
 			!isNaN(base) && base !== val
 				? ` (${sign(
-						(
-							(base < val
-								? (val - base) / Math.abs(base)
-								: base > val
-									? -(base - val) / Math.abs(base)
-									: 0) * 100
-						).toFixed(0),
-					)}%)`
+					(
+						(base < val
+							? (val - base) / Math.abs(base)
+							: base > val
+								? -(base - val) / Math.abs(base)
+								: 0) * 100
+					).toFixed(0),
+				)}%)`
 				: '';
 
 		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;

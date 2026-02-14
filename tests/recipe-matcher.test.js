@@ -13,6 +13,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { accumulateIngredients } from '../html/utils.js';
 import { recipes } from '../html/recipes.js';
+import { food } from '../html/food.js';
+import { NAME, TAG, NOT, OR } from '../html/functions.js';
 import { defaultStatMultipliers } from '../html/constants.js';
 
 const accumulate = items => {
@@ -213,5 +215,130 @@ describe('recipe matching with priority', () => {
 		const matches = candidates.filter(r => !!r.test(null, names, tags));
 
 		assert.strictEqual(matches.length, 0);
+	});
+});
+
+describe('NAME() unified identity matching', () => {
+	it('NAME matches base ingredient', () => {
+		const req = NAME('plantmeat');
+		assert.ok(req.test(null, { plantmeat: 1 }, {}), 'should match plantmeat');
+	});
+
+	it('NAME matches cooked variant of ingredient', () => {
+		const req = NAME('plantmeat');
+		assert.ok(req.test(null, { plantmeat_cooked: 1 }, {}), 'should match plantmeat_cooked');
+	});
+
+	it('NAME still matches non-dst variants', () => {
+		const req = NAME('plantmeat');
+		assert.ok(req.test(null, { plantmeat: 1 }, {}), 'should match plantmeat');
+		assert.ok(req.test(null, { plantmeat_cooked: 1 }, {}), 'should match plantmeat_cooked');
+	});
+
+	it('NAME sums base and cooked variants', () => {
+		const req = NAME('plantmeat');
+		const result = req.test(null, { plantmeat: 1, plantmeat_cooked: 1 }, {});
+		assert.strictEqual(result, 2, 'should sum both variants');
+	});
+
+	it('NAME returns 0 when no variant matches', () => {
+		const req = NAME('plantmeat');
+		assert.strictEqual(req.test(null, { meat: 1 }, {}), 0, 'unrelated ingredient should not match');
+	});
+
+	it('DST plantmeat has unified id (no _dst suffix)', () => {
+		const plantmeatDst = food['plantmeat@together'];
+		assert.ok(plantmeatDst, 'plantmeat@together should exist');
+		assert.strictEqual(plantmeatDst.id, 'plantmeat', 'id should be plantmeat (not plantmeat_dst)');
+		assert.deepStrictEqual(
+			plantmeatDst.nameObject,
+			{ plantmeat: 1 },
+			'nameObject should use base id',
+		);
+	});
+
+	it('Leafy Meatloaf requirements match DST plantmeat (issue #75)', () => {
+		const recipe = recipes.leafloaf;
+		const plantmeatDst = food['plantmeat@together'];
+		let qualifies = false;
+
+		for (const req of recipe.requirements) {
+			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
+				if (!req.cancel) qualifies = true;
+			} else if (req.cancel) {
+				qualifies = false;
+				break;
+			}
+		}
+
+		assert.ok(qualifies, 'DST plantmeat should qualify for Leafy Meatloaf via requirements');
+	});
+
+	it('Butter Muffin requirements match DST butterflywings (issue #74)', () => {
+		const recipe = recipes.butterflymuffin_dst;
+		const wingsDst = food['butterflywings@together'];
+		let qualifies = false;
+
+		for (const req of recipe.requirements) {
+			if (req.test(null, wingsDst.nameObject, wingsDst)) {
+				if (!req.cancel) qualifies = true;
+			} else if (req.cancel) {
+				qualifies = false;
+				break;
+			}
+		}
+
+		assert.ok(qualifies, 'DST butterflywings should qualify for Butter Muffin via requirements');
+	});
+
+	it('Veggie Burger requirements match DST plantmeat (issue #75)', () => {
+		const recipe = recipes.leafymeatburger;
+		const plantmeatDst = food['plantmeat@together'];
+		let qualifies = false;
+
+		for (const req of recipe.requirements) {
+			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
+				if (!req.cancel) qualifies = true;
+			} else if (req.cancel) {
+				qualifies = false;
+				break;
+			}
+		}
+
+		assert.ok(qualifies, 'DST plantmeat should qualify for Veggie Burger via requirements');
+	});
+
+	it('Beefy Greens requirements match DST plantmeat (issue #75)', () => {
+		const recipe = recipes.meatysalad;
+		const plantmeatDst = food['plantmeat@together'];
+		let qualifies = false;
+
+		for (const req of recipe.requirements) {
+			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
+				if (!req.cancel) qualifies = true;
+			} else if (req.cancel) {
+				qualifies = false;
+				break;
+			}
+		}
+
+		assert.ok(qualifies, 'DST plantmeat should qualify for Beefy Greens via requirements');
+	});
+
+	it('Jelly Salad requirements match DST plantmeat (issue #75)', () => {
+		const recipe = recipes.leafymeatsouffle;
+		const plantmeatDst = food['plantmeat@together'];
+		let qualifies = false;
+
+		for (const req of recipe.requirements) {
+			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
+				if (!req.cancel) qualifies = true;
+			} else if (req.cancel) {
+				qualifies = false;
+				break;
+			}
+		}
+
+		assert.ok(qualifies, 'DST plantmeat should qualify for Jelly Salad via requirements');
 	});
 });

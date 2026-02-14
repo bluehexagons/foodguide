@@ -68,6 +68,7 @@ import { makeLinkable, pl, stats } from './utils.js';
  * @property {string} [rot] - Recipe key this becomes when spoiled
  * @property {string} [requires] - Human-readable requirements string (set by post-processing)
  * @property {string} [id] - Recipe key (set by post-processing)
+ * @property {string} [key] - Lookup key in recipes object (set by post-processing)
  * @property {string} [lowerName] - Lowercase name (set by post-processing)
  * @property {string} [img] - Image path (set by post-processing)
  * @property {number} [match] - Match counter (set by post-processing)
@@ -1155,7 +1156,7 @@ export const recipes = {
 		name: 'Butter Muffin',
 		test: (cooker, names, tags) => {
 			return (
-				(names.butterflywings_dst || names.moonbutterflywings) &&
+				(names.butterflywings || names.moonbutterflywings) &&
 				!tags.meat &&
 				tags.veggie &&
 				tags.veggie >= 0.5
@@ -1180,7 +1181,7 @@ export const recipes = {
 	frogglebunwich_dst: {
 		name: 'Froggle Bunwich',
 		test: (cooker, names, tags) => {
-			return (names.froglegs_dst || names.froglegs_cooked_dst) && tags.veggie && tags.veggie >= 0.5;
+			return (names.froglegs || names.froglegs_cooked) && tags.veggie && tags.veggie >= 0.5;
 		},
 		requirements: [NAME('froglegs'), TAG('veggie', COMPARE('>=', 0.5))],
 		priority: 1,
@@ -1211,7 +1212,7 @@ export const recipes = {
 	pumpkincookie_dst: {
 		name: 'Pumpkin Cookie',
 		test: (cooker, names, tags) => {
-			return (names.pumpkin_dst || names.pumpkin_cooked_dst) && tags.sweetener && tags.sweetener >= 2;
+			return (names.pumpkin || names.pumpkin_cooked) && tags.sweetener && tags.sweetener >= 2;
 		},
 		requirements: [NAME('pumpkin'), TAG('sweetener', COMPARE('>=', 2))],
 		priority: 10,
@@ -1227,7 +1228,7 @@ export const recipes = {
 	stuffedeggplant_dst: {
 		name: 'Stuffed Eggplant',
 		test: (cooker, names, tags) => {
-			return (names.eggplant_dst || names.eggplant_cooked_dst) && tags.veggie && tags.veggie > 1;
+			return (names.eggplant || names.eggplant_cooked) && tags.veggie && tags.veggie > 1;
 		},
 		requirements: [NAME('eggplant'), TAG('veggie', COMPARE('>', 1))],
 		priority: 1,
@@ -1244,11 +1245,11 @@ export const recipes = {
 	fishsticks_dst: {
 		name: 'Fishsticks',
 		test: (cooker, names, tags) => {
-			return tags.fish && names.twigs_dst && tags.inedible && tags.inedible <= 1;
+			return tags.fish && names.twigs && tags.inedible && tags.inedible <= 1;
 		},
 		requirements: [
 			TAG('fish'),
-			SPECIFIC('twigs_dst'),
+			SPECIFIC('twigs'),
 			TAG('inedible'),
 			TAG('inedible', COMPARE('<=', 1)),
 		],
@@ -1264,9 +1265,9 @@ export const recipes = {
 	honeynuggets_dst: {
 		name: 'Honey Nuggets',
 		test: (cooker, names, tags) => {
-			return names.honey_dst && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+			return names.honey && tags.meat && tags.meat <= 1.5 && !tags.inedible;
 		},
-		requirements: [SPECIFIC('honey_dst'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
+		requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 		priority: 2,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1280,9 +1281,9 @@ export const recipes = {
 	honeyham_dst: {
 		name: 'Honey Ham',
 		test: (cooker, names, tags) => {
-			return names.honey_dst && tags.meat && tags.meat > 1.5 && !tags.inedible;
+			return names.honey && tags.meat && tags.meat > 1.5 && !tags.inedible;
 		},
-		requirements: [SPECIFIC('honey_dst'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
+		requirements: [SPECIFIC('honey'), TAG('meat', COMPARE('>', 1.5)), NOT(TAG('inedible'))],
 		priority: 2,
 		foodtype: 'meat',
 		health: healing_medlarge,
@@ -1298,7 +1299,7 @@ export const recipes = {
 	dragonpie_dst: {
 		name: 'Dragonpie',
 		test: (cooker, names, tags) => {
-			return (names.dragonfruit_dst || names.dragonfruit_cooked_dst) && !tags.meat;
+			return (names.dragonfruit || names.dragonfruit_cooked) && !tags.meat;
 		},
 		requirements: [NAME('dragonfruit'), NOT(TAG('meat'))],
 		priority: 1,
@@ -1317,7 +1318,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (
 				tags.meat &&
-				names.twigs_dst &&
+				names.twigs &&
 				(!tags.monster || tags.monster <= 1) &&
 				tags.inedible &&
 				tags.inedible <= 1
@@ -1325,7 +1326,7 @@ export const recipes = {
 		},
 		requirements: [
 			TAG('meat'),
-			SPECIFIC('twigs_dst'),
+			SPECIFIC('twigs'),
 			OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))),
 			TAG('inedible'),
 			TAG('inedible', COMPARE('<=', 1)),
@@ -1342,9 +1343,9 @@ export const recipes = {
 	mandrakesoup_dst: {
 		name: 'Mandrake Soup',
 		test: (cooker, names, _tags) => {
-			return names.mandrake_dst;
+			return names.mandrake;
 		},
-		requirements: [SPECIFIC('mandrake_dst')],
+		requirements: [SPECIFIC('mandrake')],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_superhuge,
@@ -1420,15 +1421,15 @@ export const recipes = {
 		name: 'Turkey Dinner',
 		test: (cooker, names, tags) => {
 			return (
-				names.drumstick_dst &&
-				names.drumstick_dst > 1 &&
+				names.drumstick &&
+				names.drumstick > 1 &&
 				tags.meat &&
 				tags.meat > 1 &&
 				((tags.veggie && tags.veggie >= 0.5) || tags.fruit)
 			);
 		},
 		requirements: [
-			SPECIFIC('drumstick_dst', COMPARE('>', 1)),
+			SPECIFIC('drumstick', COMPARE('>', 1)),
 			TAG('meat', COMPARE('>', 1)),
 			OR(TAG('veggie', COMPARE('>=', 0.5)), TAG('fruit')),
 		],
@@ -1495,15 +1496,12 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (
 				tags.fish &&
-				(names.corn_dst ||
-					names.corn_cooked_dst ||
-					names.oceanfish_small_5_inv ||
-					names.oceanfish_medium_5_inv)
+				(names.corn || names.corn_cooked || names.oceanfish_small_5_inv || names.oceanfish_medium_5_inv)
 			);
 		},
 		requirements: [
 			TAG('fish'),
-			OR(NAME('corn_dst'), OR(NAME('oceanfish_small_5_inv'), NAME('oceanfish_medium_5_inv'))),
+			OR(NAME('corn'), OR(NAME('oceanfish_small_5_inv'), NAME('oceanfish_medium_5_inv'))),
 		],
 		priority: 10,
 		foodtype: 'meat',
@@ -1519,15 +1517,12 @@ export const recipes = {
 		name: 'Waffles',
 		test: (cooker, names, tags) => {
 			return (
-				names.butter_dst &&
-				(names.berries_dst ||
-					names.berries_cooked_dst ||
-					names.berries_juicy ||
-					names.berries_juicy_cooked) &&
+				names.butter &&
+				(names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) &&
 				tags.egg
 			);
 		},
-		requirements: [SPECIFIC('butter_dst'), NAME('berries'), TAG('egg')],
+		requirements: [SPECIFIC('butter'), NAME('berries'), TAG('egg')],
 		priority: 10,
 		foodtype: 'veggie',
 		health: healing_huge,
@@ -1556,17 +1551,14 @@ export const recipes = {
 		name: 'Powdercake',
 		test: (cooker, names, _tags) => {
 			return (
-				names.twigs_dst &&
-				names.honey_dst &&
-				(names.corn_dst ||
-					names.corn_cooked_dst ||
-					names.oceanfish_small_5_inv ||
-					names.oceanfish_medium_5_inv)
+				names.twigs &&
+				names.honey &&
+				(names.corn || names.corn_cooked || names.oceanfish_small_5_inv || names.oceanfish_medium_5_inv)
 			);
 		},
 		requirements: [
-			SPECIFIC('twigs_dst'),
-			SPECIFIC('honey_dst'),
+			SPECIFIC('twigs'),
+			SPECIFIC('honey'),
 			OR(NAME('corn'), OR(NAME('oceanfish_small_5_inv'), NAME('oceanfish_medium_5_inv'))),
 		],
 		priority: 10,
@@ -1583,8 +1575,8 @@ export const recipes = {
 		name: 'Unagi',
 		test: (cooker, names, _tags) => {
 			return (
-				(names.cutlichen_dst || names.kelp || names.kelp_cooked || names.kelp_dried) &&
-				(names.eel_dst || names.eel_cooked_dst || names.pondeel)
+				(names.cutlichen || names.kelp || names.kelp_cooked || names.kelp_dried) &&
+				(names.eel || names.eel_cooked || names.pondeel)
 			);
 		},
 		requirements: [OR(NAME('cutlichen'), NAME('kelp')), OR(NAME('eel'), NAME('pondeel'))],
@@ -1616,7 +1608,7 @@ export const recipes = {
 		name: 'Flower Salad',
 		test: (cooker, names, tags) => {
 			return (
-				names.cactusflower_dst &&
+				names.cactusflower &&
 				tags.veggie &&
 				tags.veggie >= 2 &&
 				!tags.meat &&
@@ -1627,7 +1619,7 @@ export const recipes = {
 			);
 		},
 		requirements: [
-			SPECIFIC('cactusflower_dst'),
+			SPECIFIC('cactusflower'),
 			TAG('veggie', COMPARE('>=', 2)),
 			NOT(TAG('meat')),
 			NOT(TAG('inedible')),
@@ -1680,19 +1672,12 @@ export const recipes = {
 	watermelonicle_dst: {
 		name: 'Melonsicle',
 		test: (cooker, names, tags) => {
-			return (
-				names.watermelon_dst &&
-				tags.frozen &&
-				names.twigs_dst &&
-				!tags.meat &&
-				!tags.veggie &&
-				!tags.egg
-			);
+			return names.watermelon && tags.frozen && names.twigs && !tags.meat && !tags.veggie && !tags.egg;
 		},
 		requirements: [
-			SPECIFIC('watermelon_dst'),
+			SPECIFIC('watermelon'),
 			TAG('frozen'),
-			SPECIFIC('twigs_dst'),
+			SPECIFIC('twigs'),
 			NOT(TAG('meat')),
 			NOT(TAG('veggie')),
 			NOT(TAG('egg')),
@@ -1712,13 +1697,10 @@ export const recipes = {
 		name: 'Trail Mix',
 		test: (cooker, names, tags) => {
 			return (
-				(names.acorn_dst || names.acorn_cooked_dst) &&
+				(names.acorn || names.acorn_cooked) &&
 				tags.seed &&
 				tags.seed >= 1 &&
-				(names.berries_dst ||
-					names.berries_cooked_dst ||
-					names.berries_juicy ||
-					names.berries_juicy_cooked) &&
+				(names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) &&
 				tags.fruit &&
 				tags.fruit >= 1 &&
 				!tags.meat &&
@@ -1767,11 +1749,11 @@ export const recipes = {
 	guacamole_dst: {
 		name: 'Guacamole',
 		test: (cooker, names, tags) => {
-			return names.mole_dst && (names.rock_avocado_fruit_ripe || names.cactusmeat_dst) && !tags.fruit;
+			return names.mole && (names.rock_avocado_fruit_ripe || names.cactusmeat) && !tags.fruit;
 		},
 		requirements: [
-			SPECIFIC('mole_dst'),
-			OR(SPECIFIC('rock_avocado_fruit_ripe'), SPECIFIC('cactusmeat_dst')),
+			SPECIFIC('mole'),
+			OR(SPECIFIC('rock_avocado_fruit_ripe'), SPECIFIC('cactusmeat')),
 			NOT(TAG('fruit')),
 		],
 		priority: 10,
@@ -1787,9 +1769,9 @@ export const recipes = {
 		name: 'Banana Pop',
 		test: (cooker, names, tags) => {
 			return (
-				(names.cave_banana_dst || names.cave_banana_cooked_dst) &&
+				(names.cave_banana || names.cave_banana_cooked) &&
 				tags.frozen &&
-				names.twigs_dst &&
+				names.twigs &&
 				!tags.meat &&
 				!tags.fish
 			);
@@ -1797,7 +1779,7 @@ export const recipes = {
 		requirements: [
 			NAME('cave_banana'),
 			TAG('frozen'),
-			SPECIFIC('twigs_dst'),
+			SPECIFIC('twigs'),
 			NOT(TAG('meat')),
 			NOT(TAG('fish')),
 		],
@@ -1868,7 +1850,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (
 				names.wobster &&
-				names.butter_dst &&
+				names.butter &&
 				tags.meat &&
 				tags.meat >= 1 &&
 				tags.fish &&
@@ -1878,7 +1860,7 @@ export const recipes = {
 		},
 		requirements: [
 			SPECIFIC('wobster'),
-			SPECIFIC('butter_dst'),
+			SPECIFIC('butter'),
 			TAG('meat', COMPARE('>=', 1)),
 			TAG('fish', COMPARE('>=', 1)),
 			NOT(TAG('frozen')),
@@ -1952,7 +1934,7 @@ export const recipes = {
 		name: 'Vegetable Stinger',
 		test: (cooker, names, tags) => {
 			return (
-				(names.asparagus_dst || names.asparagus_cooked_dst || names.tomato || names.tomato_cooked) &&
+				(names.asparagus || names.asparagus_cooked || names.tomato || names.tomato_cooked) &&
 				tags.veggie &&
 				tags.veggie > 2 &&
 				tags.frozen &&
@@ -1982,7 +1964,7 @@ export const recipes = {
 		name: 'Asparagus Soup',
 		test: (cooker, names, tags) => {
 			return (
-				(names.asparagus_dst || names.asparagus_cooked_dst) &&
+				(names.asparagus || names.asparagus_cooked) &&
 				tags.veggie &&
 				tags.veggie > 2 &&
 				!tags.meat &&
@@ -2081,7 +2063,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (
 				(names.potato || names.potato_cooked) &&
-				names.twigs_dst &&
+				names.twigs &&
 				(!tags.monster || tags.monster <= 1) &&
 				!tags.meat &&
 				tags.inedible &&
@@ -2090,7 +2072,7 @@ export const recipes = {
 		},
 		requirements: [
 			NAME('potato'),
-			SPECIFIC('twigs_dst'),
+			SPECIFIC('twigs'),
 			OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))),
 			NOT(TAG('meat')),
 			TAG('inedible', COMPARE('<=', 2)),
@@ -2174,18 +2156,13 @@ export const recipes = {
 	shroomcake: {
 		name: 'Mushy Cake',
 		test: (cooker, names, _tags) => {
-			return (
-				names.moon_mushroom &&
-				names.red_mushroom_dst &&
-				names.blue_mushroom_dst &&
-				names.green_mushroom_dst
-			);
+			return names.moon_mushroom && names.red_mushroom && names.blue_mushroom && names.green_mushroom;
 		},
 		requirements: [
 			SPECIFIC('moon_mushroom'),
-			SPECIFIC('red_mushroom_dst'),
-			SPECIFIC('blue_mushroom_dst'),
-			SPECIFIC('green_mushroom_dst'),
+			SPECIFIC('red_mushroom'),
+			SPECIFIC('blue_mushroom'),
+			SPECIFIC('green_mushroom'),
 		],
 		priority: 30,
 		foodtype: 'goodies',
@@ -2242,7 +2219,7 @@ export const recipes = {
 		name: 'Fig-Stuffed Trunk',
 		test: (cooker, names, _tags) => {
 			return (
-				(names.trunk_summer_dst || names.trunk_cooked_dst || names.trunk_winter_dst) &&
+				(names.trunk_summer || names.trunk_summer_cooked || names.trunk_winter) &&
 				(names.fig || names.fig_cooked)
 			);
 		},
@@ -2276,7 +2253,7 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (
 				(names.fig || names.fig_cooked) &&
-				names.twigs_dst &&
+				names.twigs &&
 				tags.meat &&
 				tags.meat >= 1 &&
 				(!tags.monster || tags.monster <= 1)
@@ -2284,7 +2261,7 @@ export const recipes = {
 		},
 		requirements: [
 			NAME('fig'),
-			SPECIFIC('twigs_dst'),
+			SPECIFIC('twigs'),
 			TAG('meat', COMPARE('>=', 1)),
 			OR(NOT(TAG('monster')), TAG('monster', COMPARE('<=', 1))),
 		],
@@ -2302,7 +2279,7 @@ export const recipes = {
 	frognewton: {
 		name: 'Figgy Frogwich',
 		test: (cooker, names, _tags) => {
-			return (names.fig || names.fig_cooked) && (names.froglegs_dst || names.froglegs_cooked_dst);
+			return (names.fig || names.fig_cooked) && (names.froglegs || names.froglegs_cooked);
 		},
 		requirements: [NAME('fig'), NAME('froglegs')],
 		priority: 1,
@@ -2318,7 +2295,7 @@ export const recipes = {
 		name: 'Frozen Banana Daiquiri',
 		test: (cooker, names, tags) => {
 			return (
-				(names.cave_banana_dst || names.cave_banana_cooked_dst) &&
+				(names.cave_banana || names.cave_banana_cooked) &&
 				tags.frozen &&
 				tags.frozen >= 1 &&
 				!tags.meat &&
@@ -2369,7 +2346,7 @@ export const recipes = {
 		name: 'Banana Shake',
 		test: (cooker, names, tags) => {
 			return (
-				(names.cave_banana_dst || 0) + (names.cave_banana_cooked_dst || 0) >= 2 &&
+				(names.cave_banana || 0) + (names.cave_banana_cooked || 0) >= 2 &&
 				!tags.meat &&
 				!tags.fish &&
 				!tags.monster
@@ -2429,9 +2406,9 @@ export const recipes = {
 	talleggs: {
 		name: 'Tall Scotch Eggs',
 		test: (cooker, names, tags) => {
-			return names.tallbirdegg_dst && tags.veggie && tags.veggie >= 1;
+			return names.tallbirdegg && tags.veggie && tags.veggie >= 1;
 		},
-		requirements: [SPECIFIC('tallbirdegg_dst'), TAG('veggie', COMPARE('>=', 1))],
+		requirements: [SPECIFIC('tallbirdegg'), TAG('veggie', COMPARE('>=', 1))],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_huge,
@@ -2519,7 +2496,7 @@ export const recipes = {
 	leafloaf: {
 		name: 'Leafy Meatloaf',
 		test: (cooker, names, _tags) => {
-			return (names.plantmeat_dst || 0) + (names.plantmeat_cooked_dst || 0) >= 2;
+			return (names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2;
 		},
 		requirements: [NAME('plantmeat', COMPARE('>=', 2))],
 		priority: 25,
@@ -2535,7 +2512,7 @@ export const recipes = {
 		name: 'Veggie Burger',
 		test: (cooker, names, tags) => {
 			return (
-				(names.plantmeat_dst || names.plantmeat_cooked_dst) &&
+				(names.plantmeat || names.plantmeat_cooked) &&
 				(names.onion || names.onion_cooked) &&
 				tags.veggie &&
 				tags.veggie >= 2
@@ -2555,7 +2532,7 @@ export const recipes = {
 		name: 'Jelly Salad',
 		test: (cooker, names, tags) => {
 			return (
-				(names.plantmeat_dst || 0) + (names.plantmeat_cooked_dst || 0) >= 2 &&
+				(names.plantmeat || 0) + (names.plantmeat_cooked || 0) >= 2 &&
 				tags.sweetener &&
 				tags.sweetener >= 2
 			);
@@ -2573,7 +2550,7 @@ export const recipes = {
 	meatysalad: {
 		name: 'Beefy Greens',
 		test: (cooker, names, tags) => {
-			return (names.plantmeat_dst || names.plantmeat_cooked_dst) && tags.veggie && tags.veggie >= 3;
+			return (names.plantmeat || names.plantmeat_cooked) && tags.veggie && tags.veggie >= 3;
 		},
 		requirements: [NAME('plantmeat'), TAG('veggie', COMPARE('>=', 3))],
 		priority: 25,
@@ -2663,7 +2640,7 @@ export const recipes = {
 		name: 'Glow Berry Mousse',
 		test: (cooker, names, tags) => {
 			return (
-				(names.wormlight_dst || (names.wormlight_lesser && names.wormlight_lesser >= 2)) &&
+				(names.wormlight || (names.wormlight_lesser && names.wormlight_lesser >= 2)) &&
 				tags.fruit &&
 				tags.fruit >= 2 &&
 				!tags.meat &&
@@ -2671,7 +2648,7 @@ export const recipes = {
 			);
 		},
 		requirements: [
-			OR(SPECIFIC('wormlight_dst'), SPECIFIC('wormlight_lesser', COMPARE('>=', 2))),
+			OR(SPECIFIC('wormlight'), SPECIFIC('wormlight_lesser', COMPARE('>=', 2))),
 			TAG('fruit', COMPARE('>=', 2)),
 			NOT(TAG('meat')),
 			NOT(TAG('inedible')),
@@ -2691,7 +2668,7 @@ export const recipes = {
 		name: 'Fish Cordon Bleu',
 		test: (cooker, names, tags) => {
 			return (
-				(names.froglegs_dst || 0) + (names.froglegs_cooked_dst || 0) >= 2 &&
+				(names.froglegs || 0) + (names.froglegs_cooked || 0) >= 2 &&
 				tags.fish &&
 				tags.fish >= 1 &&
 				!tags.inedible
@@ -2716,7 +2693,7 @@ export const recipes = {
 		name: 'Hot Dragon Chili Salad',
 		test: (cooker, names, tags) => {
 			return (
-				(names.dragonfruit_dst || names.dragonfruit_cooked_dst) &&
+				(names.dragonfruit || names.dragonfruit_cooked) &&
 				(names.pepper || names.pepper_cooked) &&
 				!tags.meat &&
 				!tags.inedible &&
@@ -2745,9 +2722,7 @@ export const recipes = {
 		name: 'Asparagazpacho',
 		test: (cooker, names, tags) => {
 			return (
-				(names.asparagus_dst || 0) + (names.asparagus_cooked_dst || 0) >= 2 &&
-				tags.frozen &&
-				tags.frozen >= 2
+				(names.asparagus || 0) + (names.asparagus_cooked || 0) >= 2 && tags.frozen && tags.frozen >= 2
 			);
 		},
 		requirements: [NAME('asparagus', COMPARE('>=', 2)), TAG('frozen', COMPARE('>=', 2))],
@@ -2807,9 +2782,9 @@ export const recipes = {
 	freshfruitcrepes_dst: {
 		name: 'Fresh Fruit Crepes',
 		test: (cooker, names, tags) => {
-			return tags.fruit && tags.fruit >= 1.5 && names.butter_dst && names.honey_dst;
+			return tags.fruit && tags.fruit >= 1.5 && names.butter && names.honey;
 		},
-		requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter_dst'), SPECIFIC('honey_dst')],
+		requirements: [TAG('fruit', COMPARE('>=', 1.5)), SPECIFIC('butter'), SPECIFIC('honey')],
 		priority: 30,
 		foodtype: 'veggie',
 		health: healing_huge,
@@ -2875,6 +2850,7 @@ for (const key in recipes) {
 	recipes[key].match = 0;
 	recipes[key].name = recipes[key].name || key;
 	recipes[key].id = key;
+	recipes[key].key = key;
 	recipes[key].lowerName = recipes[key].name.toLowerCase();
 	recipes[key].weight = recipes[key].weight || 1;
 	recipes[key].priority = recipes[key].priority || 0;

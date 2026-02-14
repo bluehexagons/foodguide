@@ -880,14 +880,14 @@ import {
 		const result =
 			!isNaN(base) && base !== val
 				? ` (${sign(
-					(
-						(base < val
-							? (val - base) / Math.abs(base)
-							: base > val
-								? -(base - val) / Math.abs(base)
-								: 0) * 100
-					).toFixed(0),
-				)}%)`
+						(
+							(base < val
+								? (val - base) / Math.abs(base)
+								: base > val
+									? -(base - val) / Math.abs(base)
+									: 0) * 100
+						).toFixed(0),
+					)}%)`
 				: '';
 
 		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;
@@ -1154,7 +1154,7 @@ import {
 				}
 				hasTable = true;
 
-				const checkExcludes = item => excludedIngredients.has(item.id);
+				const checkExcludes = item => excludedIngredients.has(item.key);
 				const checkIngredient = function (item) {
 					return this.includes(food[item]);
 				};
@@ -1245,7 +1245,7 @@ import {
 				if (excludeDefault) {
 					for (const ingredient of ingredients
 						.filter(ingredient => ingredient.defaultExclude)
-						.map(ingredient => ingredient.id)) {
+						.map(ingredient => ingredient.key)) {
 						excludedIngredients.add(ingredient);
 					}
 
@@ -1369,10 +1369,10 @@ import {
 
 				idealIngredients.forEach(item => {
 					const img = makeImage(item.img);
-					img.dataset.id = item.id;
+					img.dataset.id = item.key;
 					img.addEventListener('click', toggleFilter, false);
 					img.addEventListener('contextmenu', toggleExclude, false);
-					if (excludedIngredients.has(item.id)) {
+					if (excludedIngredients.has(item.key)) {
 						img.className = 'excluded';
 					}
 					img.title = item.name;
@@ -1479,7 +1479,7 @@ import {
 
 	const setSlot = (slotElement, item) => {
 		if (item !== null) {
-			slotElement.dataset.id = item.id;
+			slotElement.dataset.id = item.key;
 		} else {
 			if (slotElement.nextElementSibling && getSlot(slotElement.nextElementSibling) !== null) {
 				setSlot(slotElement, getSlot(slotElement.nextElementSibling));
@@ -1606,7 +1606,7 @@ import {
 				name.appendChild(document.createTextNode(item.name));
 				li.appendChild(name);
 
-				li.dataset.id = item.id;
+				li.dataset.id = item.key;
 
 				li.addEventListener('mousedown', pickItem, false);
 				this.appendChild(li);
@@ -1664,7 +1664,7 @@ import {
 				const matches = matchingNames(from, name, allowUncookable);
 
 				if (matches.length === 1) {
-					appendSlot(matches[0].id);
+					appendSlot(matches[0].key);
 				} else {
 					picker.value = name;
 					refreshPicker();
@@ -1845,6 +1845,11 @@ import {
 
 					if (state && state[index]) {
 						state[index].forEach(id => {
+							// Migrate old _dst IDs to unified format
+							if (id && !food[id] && id.endsWith('_dst')) {
+								const baseId = id.slice(0, -4);
+								id = food[`${baseId}@together`] ? `${baseId}@together` : baseId;
+							}
 							if (food[id]) {
 								appendSlot(id);
 							}
@@ -2163,7 +2168,7 @@ import {
 				if (limited) {
 					const serialized = Array.prototype.map.call(slots, slot => {
 						const item = getSlot(slot);
-						return item ? item.id : null;
+						return item ? item.key : null;
 					});
 					obj.pickers[index] = serialized;
 				} else {

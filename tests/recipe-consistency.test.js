@@ -175,12 +175,12 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 		const daiquiri = recipes.frozenbananadaiquiri;
 
 		assert.strictEqual(
-			!!daiquiri.test(null, { cave_banana_dst: 1 }, { frozen: 1, fish: 1 }),
+			!!daiquiri.test(null, { cave_banana: 1 }, { frozen: 1, fish: 1 }),
 			false,
 			'test rejects fish',
 		);
 		assert.strictEqual(
-			!!daiquiri.test(null, { cave_banana_dst: 1 }, { frozen: 1, meat: 1 }),
+			!!daiquiri.test(null, { cave_banana: 1 }, { frozen: 1, meat: 1 }),
 			false,
 			'test rejects meat',
 		);
@@ -219,25 +219,28 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 		assert.strictEqual(veggieReq.qty.op, '>=', 'requirement uses >= to match test');
 	});
 
-	it('potatotornado: requirements use SPECIFIC(twigs_dst) matching test function', () => {
+	it('potatotornado: requirements use SPECIFIC(twigs) matching test function', () => {
 		const tornado = recipes.potatotornado;
 
 		// Wiki: "1 Potato, Twigs and two fillers" (DST recipe)
-		// test: names.twigs_dst
-		// requirements: SPECIFIC('twigs_dst')
+		// test: names.twigs
+		// requirements: SPECIFIC('twigs')
+		// With unified identity, both vanilla and DST twigs have id 'twigs'.
+		// The recipe is mode-restricted to 'together', so mode filtering
+		// handles which items are shown — the test function just checks names.twigs.
 
 		assert.strictEqual(
 			!!tornado.test(null, { potato: 1, twigs: 1 }, { veggie: 1, inedible: 1 }),
-			false,
-			'test rejects vanilla twigs',
+			true,
+			'test accepts twigs (unified identity)',
 		);
 		assert.strictEqual(
-			!!tornado.test(null, { potato: 1, twigs_dst: 1 }, { veggie: 1, inedible: 1 }),
-			true,
-			'test accepts twigs_dst',
+			!!tornado.test(null, { potato: 1 }, { veggie: 1, inedible: 1 }),
+			false,
+			'test rejects missing twigs',
 		);
 
-		const twigsReq = tornado.requirements.find(req => req.name === 'twigs_dst');
-		assert.ok(twigsReq, 'requirements use SPECIFIC(twigs_dst)');
+		const twigsReq = tornado.requirements.find(req => req.name === 'twigs');
+		assert.ok(twigsReq, 'requirements use SPECIFIC(twigs)');
 	});
 });

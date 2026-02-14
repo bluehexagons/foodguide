@@ -46,7 +46,15 @@ import {
 } from './constants.js';
 import { food } from './food.js';
 import { recipes, updateFoodRecipes } from './recipes.js';
-import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './utils.js';
+import {
+	isBestStat,
+	isStat,
+	accumulateIngredients,
+	makeImage,
+	makeLinkable,
+	makeElement,
+	pl,
+} from './utils.js';
 
 (() => {
 	const modeRefreshers = [];
@@ -60,24 +68,20 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	 * @param {number} mask - Bit mask for selected game modes
 	 */
 	const setMode = mask => {
-		try {
-			statMultipliers = {};
+		statMultipliers = {};
 
-			for (const i in defaultStatMultipliers) {
-				if (Object.prototype.hasOwnProperty.call(defaultStatMultipliers, i)) {
-					statMultipliers[i] = defaultStatMultipliers[i];
-				}
+		for (const i in defaultStatMultipliers) {
+			if (Object.prototype.hasOwnProperty.call(defaultStatMultipliers, i)) {
+				statMultipliers[i] = defaultStatMultipliers[i];
 			}
+		}
 
-			modeMask = mask;
+		modeMask = mask;
 
-			updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
+		updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
 
-			if (document.getElementById('statistics')?.hasChildNodes()) {
-				document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
-			}
-		} catch (error) {
-			console.error('Error setting mode:', error);
+		if (document.getElementById('statistics')?.hasChildNodes()) {
+			document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
 		}
 
 		for (let i = 0; i < modeTab.childNodes.length; i++) {
@@ -295,51 +299,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		};
 	})();
 
-	/**
-	 * Sets ingredient values for recipe calculations
-	 * @param {Array} items - Array of food items
-	 * @param {Object} names - Name accumulator object
-	 * @param {Object} tags - Tag accumulator object
-	 */
-	const setIngredientValues = (items, names, tags) => {
-		try {
-			for (let i = 0; i < items.length; i++) {
-				const item = items[i];
-
-				if (item !== null) {
-					names[item.id] = 1 + (names[item.id] || 0);
-
-					for (const k in item) {
-						if (Object.prototype.hasOwnProperty.call(item, k)) {
-							if (k !== 'perish' && !isNaN(item[k])) {
-								let val = item[k];
-
-								if (isStat[k]) {
-									val *= statMultipliers[item.preparationType];
-								} else if (isBestStat[k]) {
-									val *= statMultipliers[item[`${k}Type`]];
-								}
-
-								tags[k] = val + (tags[k] || 0);
-							} else if (k === 'perish') {
-								tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
-							}
-						}
-					}
-				}
-			}
-		} catch (error) {
-			console.error('Error setting ingredient values:', error);
-		}
-	};
-
 	const getSuggestions = (() => {
 		return (recipeList, items, exclude, itemComplete) => {
 			const names = {};
 			const tags = {};
 
 			recipeList.length = 0;
-			setIngredientValues(items, names, tags);
+			accumulateIngredients(items, names, tags, statMultipliers);
 
 			outer: for (let i = 0; i < recipes.length; i++) {
 				let valid = false;
@@ -379,7 +345,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			const tags = {};
 
 			recipeList.length = 0;
-			setIngredientValues(items, names, tags);
+			accumulateIngredients(items, names, tags, statMultipliers);
 
 			for (let i = 0; i < recipes.length; i++) {
 				if ((recipes[i].modeMask & modeMask) !== 0 && recipes[i].test(null, names, tags)) {
@@ -534,7 +500,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			let created = null;
 			let multiple = false;
 
-			setIngredientValues(ingredients, names, tags);
+			accumulateIngredients(ingredients, names, tags, statMultipliers);
 
 			tags.hunger = tags.bestHunger; // * statMultipliers[tags.bestHungerType];
 			tags.health = tags.bestHealth; // * statMultipliers[tags.bestHealthType];

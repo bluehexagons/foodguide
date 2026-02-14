@@ -1,3 +1,5 @@
+import { perish_preserved } from './constants.js';
+
 /**
  * Creates optimized images with caching and lazy loading
  * @param {string} url - Image URL to load
@@ -223,6 +225,46 @@ export const isBestStat = {
 	bestHunger: true,
 	bestHealth: true,
 	bestSanity: true,
+};
+
+/**
+ * Accumulates ingredient properties into names and tags objects.
+ *
+ * For each non-null item, counts its id in `names` and sums numeric
+ * properties into `tags` (applying stat multipliers based on preparation
+ * type). Perish values use the minimum across all items.
+ *
+ * @param {Array} items - Array of ingredient objects (may contain nulls)
+ * @param {Record<string, number>} names - Name count accumulator (mutated)
+ * @param {Record<string, number>} tags - Tag value accumulator (mutated)
+ * @param {Record<string, number>} statMultipliers - Multipliers keyed by preparation type
+ */
+export const accumulateIngredients = (items, names, tags, statMultipliers) => {
+	for (let i = 0; i < items.length; i++) {
+		const item = items[i];
+
+		if (item !== null) {
+			names[item.id] = 1 + (names[item.id] || 0);
+
+			for (const k in item) {
+				if (Object.prototype.hasOwnProperty.call(item, k)) {
+					if (k !== 'perish' && !isNaN(item[k])) {
+						let val = item[k];
+
+						if (isStat[k]) {
+							val *= statMultipliers[item.preparationType] ?? 1;
+						} else if (isBestStat[k]) {
+							val *= statMultipliers[item[`${k}Type`]] ?? 1;
+						}
+
+						tags[k] = val + (tags[k] || 0);
+					} else if (k === 'perish') {
+						tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
+					}
+				}
+			}
+		}
+	}
 };
 
 /**

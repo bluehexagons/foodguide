@@ -92,7 +92,9 @@ import {
 		for (let i = 0; i < modeTab.childNodes.length; i++) {
 			const btn = modeTab.childNodes[i];
 			const mode = baseModes[btn.dataset.mode];
-			if (!mode) continue;
+			if (!mode) {
+				continue;
+			}
 			btn.className = 'mode-button';
 			if (btn.dataset.mode === currentBaseMode) {
 				btn.classList.add('selected');
@@ -106,7 +108,9 @@ import {
 		for (let i = 0; i < characterTab.childNodes.length; i++) {
 			const btn = characterTab.childNodes[i];
 			const char = characters[btn.dataset.character];
-			if (!char) continue;
+			if (!char) {
+				continue;
+			}
 			btn.className = 'mode-button';
 			const applicable = char.applicableModes.includes(currentBaseMode);
 			if (!applicable) {
@@ -619,7 +623,7 @@ import {
 					if (storage.character && characters[storage.character]) {
 						currentCharacter = storage.character;
 					}
-				} else if (storage.modeMask != null) {
+				} else if (storage.modeMask !== null) {
 					// Migrate from old format: reverse-lookup modeMask to baseMode + character
 					const oldMask = storage.modeMask;
 
@@ -648,7 +652,9 @@ import {
 									break;
 								}
 							}
-							if (currentCharacter) break;
+							if (currentCharacter) {
+								break;
+							}
 						}
 					}
 					// If no character match, try base modes
@@ -939,19 +945,18 @@ import {
 	};
 
 	const pct = (base, val) => {
-		const result =
-			!isNaN(base) && base !== val
-				? ` (${sign(
-						(
-							(base < val
-								? (val - base) / Math.abs(base)
-								: base > val
-									? -(base - val) / Math.abs(base)
-									: 0) * 100
-						).toFixed(0),
-					)}%)`
-				: '';
-
+		if (isNaN(base) || base === val) {
+			return '';
+		}
+		let percentChange;
+		if (base < val) {
+			percentChange = (val - base) / Math.abs(base);
+		} else if (base > val) {
+			percentChange = -(base - val) / Math.abs(base);
+		} else {
+			percentChange = 0;
+		}
+		const result = ` (${sign((percentChange * 100).toFixed(0))}%)`;
 		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;
 	};
 
@@ -2246,7 +2251,9 @@ import {
 
 	const selectBaseMode = e => {
 		const modeName = e.target.dataset.mode;
-		if (!modeName || !baseModes[modeName]) return;
+		if (!modeName || !baseModes[modeName]) {
+			return;
+		}
 		currentBaseMode = modeName;
 		// Clear character if not applicable to the new base mode
 		if (
@@ -2261,9 +2268,13 @@ import {
 
 	const selectCharacter = e => {
 		const charName = e.target.dataset.character;
-		if (!charName || !characters[charName]) return;
+		if (!charName || !characters[charName]) {
+			return;
+		}
 		// Ignore clicks on characters not applicable to current base mode
-		if (!characters[charName].applicableModes.includes(currentBaseMode)) return;
+		if (!characters[charName].applicableModes.includes(currentBaseMode)) {
+			return;
+		}
 		// Toggle: clicking the already-selected character deselects it
 		currentCharacter = currentCharacter === charName ? null : charName;
 		setMode();

@@ -39,6 +39,7 @@ import {
 } from './constants.js';
 import { food } from './food.js';
 import { AND, COMPARE, NAME, NOT, OR, SPECIFIC, TAG } from './functions.js';
+import { applyModeMetadata } from './mode-utils.js';
 import { makeLinkable, pl, stats } from './utils.js';
 
 /**
@@ -2857,14 +2858,11 @@ for (const key in recipes) {
 	recipes[key].img =
 		`img/${recipes[key].name.replace(/ /g, '_').replace(/'/g, '').toLowerCase()}.png`;
 
-	if (recipes[key].mode) {
-		recipes[key][recipes[key].mode] = true;
-	} else {
-		recipes[key].vanilla = true;
+	if (!recipes[key].mode) {
 		recipes[key].mode = 'vanilla';
 	}
 
-	recipes[key].modeMask = modes[recipes[key].mode].bit;
+	applyModeMetadata(recipes[key], modes);
 
 	if (recipes[key].requirements) {
 		const requirements = recipes[key].requirements.slice();

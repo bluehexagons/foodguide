@@ -89,16 +89,21 @@ export const stack_size_largeitem = 10;
 export const stack_size_meditem = 20;
 export const stack_size_smallitem = 40;
 
+// Base game mode bits
 export const VANILLA = 1;
 export const GIANTS = 1 << 1;
 export const SHIPWRECKED = 1 << 2;
 export const TOGETHER = 1 << 3;
-export const WARLY = 1 << 4;
 export const HAMLET = 1 << 5;
+
+// Character variant bits
+export const WARLY = 1 << 4;
 export const WARLYHAM = 1 << 6;
 export const WARLYDST = 1 << 7;
+export const WEBBER = 1 << 8;
 
-export const modes = {
+// Base game modes (no character variants)
+export const baseModes = {
 	vanilla: {
 		name: 'Vanilla',
 		img: 'vanilla.png',
@@ -123,33 +128,11 @@ export const modes = {
 		color: '#50c1cc',
 	},
 
-	warly: {
-		name: 'Warly Shipwrecked',
-		img: 'warly.png',
-		bit: WARLY,
-		mask: VANILLA | GIANTS | SHIPWRECKED | WARLY,
-		multipliers: {
-			raw: 0.7,
-			dried: 0.8,
-			cooked: 0.9,
-			recipe: 1.2,
-		},
-		color: '#50c1cc',
-	},
-
 	hamlet: {
 		name: 'Hamlet',
 		img: 'hamlet.png',
 		bit: HAMLET,
 		mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
-		color: '#ffdf93',
-	},
-
-	warlyham: {
-		name: 'Warly Hamlet',
-		img: 'warlyHAM.png',
-		bit: WARLYHAM,
-		mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
 		color: '#ffdf93',
 	},
 
@@ -159,6 +142,69 @@ export const modes = {
 		bit: TOGETHER,
 		mask: TOGETHER,
 		color: '#c0c0c0',
+	},
+};
+
+// Character variants with their special mechanics
+// Note: Warly in Shipwrecked has special stat multipliers that make raw/dried/cooked
+// ingredients less effective but recipes more effective. This reflects Warly's
+// character trait where he's a chef who prefers prepared meals.
+export const characters = {
+	warly: {
+		name: 'Warly',
+		img: 'warly.png',
+		bit: WARLY,
+		// Warly can be played in Shipwrecked, Hamlet, and DST
+		applicableModes: ['shipwrecked', 'hamlet', 'together'],
+		// Multipliers are mode-specific; only Shipwrecked has them
+		multipliers: {
+			shipwrecked: {
+				raw: 0.7,
+				dried: 0.8,
+				cooked: 0.9,
+				recipe: 1.2,
+			},
+		},
+		color: '#50c1cc',
+	},
+
+	webber: {
+		name: 'Webber',
+		img: 'webber.png',
+		bit: WEBBER,
+		// Webber can be played in RoG, Shipwrecked, Hamlet, and DST
+		applicableModes: ['giants', 'shipwrecked', 'hamlet', 'together'],
+		// Webber has no special food multipliers
+		multipliers: {},
+		color: '#8b7355',
+	},
+};
+
+// Combined modes lookup table
+// Used by recipes.js and food.js for data initialization (looking up bit/img by mode name).
+// Multipliers and character logic are handled by the `characters` object and mode-utils.js.
+export const modes = {
+	vanilla: baseModes.vanilla,
+	giants: baseModes.giants,
+	shipwrecked: baseModes.shipwrecked,
+	hamlet: baseModes.hamlet,
+	together: baseModes.together,
+
+	// Character-specific recipe/food modes (needed for data lookup by mode name)
+	warly: {
+		name: 'Warly Shipwrecked',
+		img: 'warly.png',
+		bit: WARLY,
+		mask: VANILLA | GIANTS | SHIPWRECKED | WARLY,
+		color: '#50c1cc',
+	},
+
+	warlyham: {
+		name: 'Warly Hamlet',
+		img: 'warlyHAM.png',
+		bit: WARLYHAM,
+		mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
+		color: '#ffdf93',
 	},
 
 	warlydst: {

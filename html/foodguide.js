@@ -29,7 +29,12 @@ import {
 	HAMLET,
 	SHIPWRECKED,
 	VANILLA,
+	WARLY,
+	WARLYHAM,
+	WARLYDST,
 	base_cook_time,
+	baseModes,
+	characters,
 	defaultStatMultipliers,
 	headings,
 	modes,
@@ -45,62 +50,76 @@ import {
 } from './constants.js';
 import { food } from './food.js';
 import { recipes, updateFoodRecipes } from './recipes.js';
+import { accumulateIngredients, makeImage, makeLinkable, makeElement, pl } from './utils.js';
 import {
-	accumulateIngredients,
-	makeImage,
-	makeLinkable,
-	makeElement,
-	pl,
-} from './utils.js';
+	matchesMode,
+	excludesMode,
+	getActiveMultipliers,
+	calculateModeMask,
+} from './mode-utils.js';
 
 (() => {
 	const modeRefreshers = [];
 
 	let statMultipliers = defaultStatMultipliers;
 
-	let modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET;
+	// Two-tier mode state: base game mode + optional character
+	let currentBaseMode = 'hamlet';
+	let currentCharacter = null;
+	let modeMask = baseModes[currentBaseMode].mask;
 
 	/**
-	 * Sets game mode and updates UI accordingly
-	 * @param {number} mask - Bit mask for selected game modes
+	 * Sets game mode and updates UI accordingly.
+	 * Called when the user selects a base game mode or toggles a character.
 	 */
-	const setMode = mask => {
-		statMultipliers = {};
+	const setMode = () => {
+		modeMask = calculateModeMask(currentBaseMode, currentCharacter, baseModes, characters);
+		statMultipliers = getActiveMultipliers(
+			currentBaseMode,
+			currentCharacter,
+			baseModes,
+			characters,
+			defaultStatMultipliers,
+		);
 
-		for (const i in defaultStatMultipliers) {
-			if (Object.prototype.hasOwnProperty.call(defaultStatMultipliers, i)) {
-				statMultipliers[i] = defaultStatMultipliers[i];
-			}
-		}
-
-		modeMask = mask;
-
-		updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
+		updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask)));
 
 		if (document.getElementById('statistics')?.hasChildNodes()) {
 			document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
 		}
 
+		// Update base mode button states
 		for (let i = 0; i < modeTab.childNodes.length; i++) {
-			const img = modeTab.childNodes[i];
-			const mode = modes[img.dataset.mode];
-			img.className = 'mode-button';
-			if (modeMask === mode.mask) {
-				img.classList.add('selected');
-				img.style.backgroundColor = mode.color;
-			} else if ((modeMask & mode.bit) !== 0) {
-				img.classList.add('enabled');
-				img.style.backgroundColor = 'white';
+			const btn = modeTab.childNodes[i];
+			const mode = baseModes[btn.dataset.mode];
+			if (!mode) continue;
+			btn.className = 'mode-button';
+			if (btn.dataset.mode === currentBaseMode) {
+				btn.classList.add('selected');
+				btn.style.backgroundColor = mode.color;
 			} else {
-				img.style.backgroundColor = 'transparent';
+				btn.style.backgroundColor = 'transparent';
 			}
+		}
 
-			if (mode.multipliers && (modeMask & mode.bit) !== 0) {
-				for (const foodtype in mode.multipliers) {
-					if (Object.prototype.hasOwnProperty.call(mode.multipliers, foodtype)) {
-						statMultipliers[foodtype] *= mode.multipliers[foodtype];
-					}
-				}
+		// Update character button states
+		for (let i = 0; i < characterTab.childNodes.length; i++) {
+			const btn = characterTab.childNodes[i];
+			const char = characters[btn.dataset.character];
+			if (!char) continue;
+			btn.className = 'mode-button';
+			const applicable = char.applicableModes.includes(currentBaseMode);
+			if (!applicable) {
+				btn.classList.add('disabled');
+				btn.style.backgroundColor = 'transparent';
+				btn.style.opacity = '0.15';
+			} else if (btn.dataset.character === currentCharacter) {
+				btn.classList.add('selected');
+				btn.style.backgroundColor = char.color;
+				btn.style.opacity = '';
+			} else {
+				btn.style.backgroundColor = 'transparent';
+				btn.style.opacity = '';
 			}
 		}
 
@@ -108,15 +127,10 @@ import {
 			modeRefreshers[i]();
 		}
 
-		const modeOrder = ['together', 'hamlet', 'shipwrecked', 'giants', 'vanilla'];
-
 		// Set the background color based on selected game mode
-		for (let i = 0; i < modeOrder.length; i++) {
-			const mode = modes[modeOrder[i]];
-			if ((modeMask & mode.bit) !== 0) {
-				document.getElementById('background').style['background-color'] = mode.color;
-				return;
-			}
+		const bgMode = baseModes[currentBaseMode];
+		if (bgMode) {
+			document.getElementById('background').style['background-color'] = bgMode.color;
 		}
 	};
 
@@ -139,7 +153,7 @@ import {
 		let wordstarts;
 
 		const allowedFilter = element => {
-			if ((!allowUncookable && element.uncookable) || (element.modeMask & modeMask) === 0) {
+			if ((!allowUncookable && element.uncookable) || excludesMode(element.modeMask, modeMask)) {
 				element.match = 0;
 				return false;
 			}
@@ -307,7 +321,7 @@ import {
 			outer: for (let i = 0; i < recipes.length; i++) {
 				let valid = false;
 
-				if ((recipes[i].modeMask & modeMask) === 0) {
+				if (excludesMode(recipes[i].modeMask, modeMask)) {
 					continue;
 				}
 
@@ -345,7 +359,7 @@ import {
 			accumulateIngredients(items, names, tags, statMultipliers);
 
 			for (let i = 0; i < recipes.length; i++) {
-				if ((recipes[i].modeMask & modeMask) !== 0 && recipes[i].test(null, names, tags)) {
+				if (matchesMode(recipes[i].modeMask, modeMask) && recipes[i].test(null, names, tags)) {
 					recipeList.push(recipes[i]);
 				}
 			}
@@ -458,7 +472,7 @@ import {
 		const updateRecipeCrunchData = () => {
 			recipeCrunchData.recipes = recipes
 				.filter(item => {
-					return !item.trash && (item.modeMask & modeMask) !== 0 && item.foodtype !== 'roughage';
+					return !item.trash && matchesMode(item.modeMask, modeMask) && item.foodtype !== 'roughage';
 				})
 				.sort((a, b) => {
 					return b.priority - a.priority;
@@ -597,7 +611,55 @@ import {
 				if (storage.activeTab && tabs[storage.activeTab]) {
 					activeTab = tabs[storage.activeTab];
 					activePage = elements[storage.activeTab];
-					modeMask = storage.modeMask || modes.together.mask;
+				}
+
+				// New format: baseMode + character
+				if (storage.baseMode && baseModes[storage.baseMode]) {
+					currentBaseMode = storage.baseMode;
+					if (storage.character && characters[storage.character]) {
+						currentCharacter = storage.character;
+					}
+				} else if (storage.modeMask != null) {
+					// Migrate from old format: reverse-lookup modeMask to baseMode + character
+					const oldMask = storage.modeMask;
+
+					// Handle legacy exact masks first
+					if (oldMask === (VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM)) {
+						// Legacy warlyham mode (119)
+						currentBaseMode = 'hamlet';
+						currentCharacter = 'warly';
+					} else if (oldMask === (VANILLA | GIANTS | SHIPWRECKED | WARLY)) {
+						// Legacy warly mode in Shipwrecked (23)
+						currentBaseMode = 'shipwrecked';
+						currentCharacter = 'warly';
+					} else if (oldMask === (TOGETHER | WARLYDST)) {
+						// Legacy warlydst mode (136)
+						currentBaseMode = 'together';
+						currentCharacter = 'warly';
+					} else {
+						// Try character variant modes first (more specific)
+						for (const charName in characters) {
+							const char = characters[charName];
+							for (const baseModeName of char.applicableModes) {
+								const charMask = calculateModeMask(baseModeName, charName, baseModes, characters);
+								if (oldMask === charMask) {
+									currentBaseMode = baseModeName;
+									currentCharacter = charName;
+									break;
+								}
+							}
+							if (currentCharacter) break;
+						}
+					}
+					// If no character match, try base modes
+					if (!currentCharacter) {
+						for (const modeName in baseModes) {
+							if (oldMask === baseModes[modeName].mask) {
+								currentBaseMode = modeName;
+								break;
+							}
+						}
+					}
 				}
 			}
 		} catch (err) {
@@ -620,6 +682,9 @@ import {
 
 				obj = JSON.parse(window.localStorage.foodGuideState);
 				obj.activeTab = activeTab.dataset.tab;
+				obj.baseMode = currentBaseMode;
+				obj.character = currentCharacter;
+				// Keep modeMask for backward compatibility during migration
 				obj.modeMask = modeMask;
 				window.localStorage.foodGuideState = JSON.stringify(obj);
 			} catch (err) {
@@ -877,14 +942,14 @@ import {
 		const result =
 			!isNaN(base) && base !== val
 				? ` (${sign(
-					(
-						(base < val
-							? (val - base) / Math.abs(base)
-							: base > val
-								? -(base - val) / Math.abs(base)
-								: 0) * 100
-					).toFixed(0),
-				)}%)`
+						(
+							(base < val
+								? (val - base) / Math.abs(base)
+								: base > val
+									? -(base - val) / Math.abs(base)
+									: 0) * 100
+						).toFixed(0),
+					)}%)`
 				: '';
 
 		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;
@@ -1053,7 +1118,7 @@ import {
 	};
 
 	const testmode = item => {
-		return (item.modeMask & modeMask) !== 0;
+		return matchesMode(item.modeMask, modeMask);
 	};
 
 	const foodTable = makeSortableTable(
@@ -1236,7 +1301,7 @@ import {
 				if (i === null) {
 					ingredients = food;
 				}
-				ingredients = ingredients.filter(f => (f.modeMask & modeMask) !== 0);
+				ingredients = ingredients.filter(f => matchesMode(f.modeMask, modeMask));
 				i = ingredients.length;
 
 				if (excludeDefault) {
@@ -1390,7 +1455,7 @@ import {
 				makableButton.after(makableDiv);
 				makableDiv.appendChild(makableFootnote);
 
-				updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
+				updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask)));
 
 				getRealRecipesFromCollection(
 					idealIngredients,
@@ -2179,35 +2244,72 @@ import {
 		}
 	})();
 
-	const showmode = e => {
-		setMode(modes[e.target.dataset.mode].mask);
+	const selectBaseMode = e => {
+		const modeName = e.target.dataset.mode;
+		if (!modeName || !baseModes[modeName]) return;
+		currentBaseMode = modeName;
+		// Clear character if not applicable to the new base mode
+		if (
+			currentCharacter &&
+			characters[currentCharacter] &&
+			!characters[currentCharacter].applicableModes.includes(currentBaseMode)
+		) {
+			currentCharacter = null;
+		}
+		setMode();
 	};
 
-	const togglemode = e => {
-		setMode(modeMask ^ modes[e.target.dataset.mode].bit);
-		e.preventDefault();
+	const selectCharacter = e => {
+		const charName = e.target.dataset.character;
+		if (!charName || !characters[charName]) return;
+		// Ignore clicks on characters not applicable to current base mode
+		if (!characters[charName].applicableModes.includes(currentBaseMode)) return;
+		// Toggle: clicking the already-selected character deselects it
+		currentCharacter = currentCharacter === charName ? null : charName;
+		setMode();
 	};
 
+	// Base game mode buttons
 	const modeTab = document.createElement('li');
 	navbar.insertBefore(modeTab, navbar.firstChild);
 	modeTab.className = 'mode';
 
-	for (const name in modes) {
+	for (const name in baseModes) {
 		const modeButton = document.createElement('div');
 
 		modeButton.dataset.mode = name;
-		modeButton.addEventListener('click', showmode, false);
-		modeButton.addEventListener('contextmenu', togglemode, false);
+		modeButton.addEventListener('click', selectBaseMode, false);
 
-		modeButton.title = `${modes[name].name}\nleft-click to select\nright-click to toggle`;
-		// Other setup happens in setMode
+		modeButton.title = `${baseModes[name].name}\nclick to select`;
 
-		const img = makeImage(`img/${modes[name].img}`);
+		const img = makeImage(`img/${baseModes[name].img}`);
 		img.title = name;
+		img.dataset.mode = name;
 		modeButton.appendChild(img);
 
 		modeTab.appendChild(modeButton);
 	}
 
-	setMode(modeMask);
+	// Character variant buttons
+	const characterTab = document.createElement('li');
+	navbar.insertBefore(characterTab, modeTab.nextSibling);
+	characterTab.className = 'mode';
+
+	for (const name in characters) {
+		const charButton = document.createElement('div');
+
+		charButton.dataset.character = name;
+		charButton.addEventListener('click', selectCharacter, false);
+
+		charButton.title = `${characters[name].name}\nclick to toggle`;
+
+		const img = makeImage(`img/${characters[name].img}`);
+		img.title = name;
+		img.dataset.character = name;
+		charButton.appendChild(img);
+
+		characterTab.appendChild(charButton);
+	}
+
+	setMode();
 })();

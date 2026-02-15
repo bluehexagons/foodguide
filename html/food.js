@@ -39,6 +39,7 @@ import {
 	stack_size_smallitem,
 	total_day_time,
 } from './constants.js';
+import { applyModeMetadata } from './mode-utils.js';
 import { makeLinkable } from './utils.js';
 
 export const food = {
@@ -2721,8 +2722,7 @@ for (const key in food) {
 		f.mode = 'vanilla';
 	}
 
-	f[f.mode] = true;
-	f.modeMask = modes[f.mode].bit || 0;
+	applyModeMetadata(f, modes);
 	f.modeNode = makeLinkable(`[tag:${f.mode}|img/${modes[f.mode].img}]`);
 
 	// For resolving cross-references: prefer the mode-specific instance if it exists

@@ -21,6 +21,17 @@ body {
 	--backgroundColor: var(--light);
 }
 
+/* Base icon styles for sprite-sheet-backed span elements */
+.icon {
+	display: inline-block;
+	width: 64px;
+	height: 64px;
+	background-repeat: no-repeat;
+	background-origin: content-box;
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
 #background {
 	background-blend-mode: multiply;
 	background: var(--backgroundColor) url('./background.svg');
@@ -109,7 +120,7 @@ a:hover {
 	position: relative;
 }
 
-.ingredient img {
+.ingredient :is(img, .icon) {
 	display: block;
 	width: 64px;
 	height: 64px;
@@ -232,13 +243,13 @@ a:hover {
 	background: #eaeaea;
 }
 
-.ingredientdropdown .item img {
+.ingredientdropdown .item :is(img, .icon) {
 	width: 20px;
 	height: 20px;
 	margin-right: 4px;
 }
 
-.ingredientdropdown.hidetext .item img {
+.ingredientdropdown.hidetext .item :is(img, .icon) {
 	margin-right: 0;
 }
 
@@ -290,7 +301,7 @@ a:hover {
 .ingredientdropdown.hidetext div .text {
 	display: none;
 }
-.ingredientdropdown.hidetext div .item img {
+.ingredientdropdown.hidetext div .item :is(img, .icon) {
 	width: 40px;
 	height: 40px;
 }
@@ -368,7 +379,7 @@ td .cellRow:nth-child(n + 2) {
 	margin-top: 1px;
 }
 
-td img {
+td :is(img, .icon) {
 	width: 32px;
 	height: 32px;
 }
@@ -424,7 +435,7 @@ table.links span.link.strike {
 	border: 1px solid #bbb;
 }
 
-span.link img {
+span.link :is(img, .icon) {
 	width: 20px;
 	height: 20px;
 	margin-bottom: -2px;
@@ -459,7 +470,7 @@ button.makablebutton {
 	cursor: pointer;
 }
 
-div.recipeFilter img {
+div.recipeFilter :is(img, .icon) {
 	opacity: 0.6;
 	margin: 4px;
 	padding-left: 2px;
@@ -468,30 +479,30 @@ div.recipeFilter img {
 	padding-top: 1px;
 	display: inline-block;
 	border: 1px solid #999;
-	background: #ddd;
+	background-color: #ddd;
 	border-radius: 3px;
 	cursor: pointer;
 }
 
-div.recipeFilter img:hover {
+div.recipeFilter :is(img, .icon):hover {
 	opacity: 0.8;
 }
 
-div.recipeFilter img.selected {
+div.recipeFilter :is(img, .icon).selected {
 	opacity: 1;
 	border-width: 3px;
 	margin: 2px;
 }
 
-div.recipeFilter img.excluded {
+div.recipeFilter :is(img, .icon).excluded {
 	opacity: 0.8;
 	border-color: #711;
 	border-width: 3px;
 	margin: 2px;
-	background: #fcc;
+	background-color: #fcc;
 }
 
-div.foodFilter img {
+div.foodFilter :is(img, .icon) {
 	width: 32px;
 	height: 32px;
 	opacity: 0.4;
@@ -502,27 +513,27 @@ div.foodFilter img {
 	padding-top: 1px;
 	display: inline-block;
 	border: 1px solid #999;
-	background: #ddd;
+	background-color: #ddd;
 	border-radius: 3px;
 	cursor: pointer;
 }
 
-div.foodFilter img:hover {
+div.foodFilter :is(img, .icon):hover {
 	opacity: 0.8;
 }
 
-div.foodFilter img.selected {
+div.foodFilter :is(img, .icon).selected {
 	border-width: 3px;
 	margin: 2px;
 	opacity: 1;
 }
 
-div.foodFilter img.excluded {
+div.foodFilter :is(img, .icon).excluded {
 	border-width: 3px;
 	border-color: #711;
 	margin: 2px;
 	opacity: 0.8;
-	background: #fcc;
+	background-color: #fcc;
 }
 
 strong {
@@ -540,7 +551,7 @@ strong {
 	position: relative;
 }
 
-#navbar li.mode img {
+#navbar li.mode :is(img, .icon) {
 	width: 100%;
 	height: 100%;
 	border: none;
@@ -627,7 +638,7 @@ strong {
 		min-width: 690px;
 	}
 
-	.ingredientdropdown div .item img {
+	.ingredientdropdown div .item :is(img, .icon) {
 		width: 40px;
 		height: 40px;
 	}

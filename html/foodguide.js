@@ -59,6 +59,10 @@ import {
 } from './mode-utils.js';
 
 (() => {
+	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
+	const resolveIconTarget = el =>
+		el.tagName === 'IMG' || el.classList.contains('icon') ? el.parentNode : el;
+
 	const modeRefreshers = [];
 
 	let statMultipliers = defaultStatMultipliers;
@@ -699,9 +703,9 @@ import {
 		});
 	})();
 
-	const queue = img => {
-		if (img.dataset.pending) {
-			makeImage.queue(img, img.dataset.pending);
+	const queue = icon => {
+		if (icon.dataset.src) {
+			makeImage.queue(icon, icon.dataset.src);
 		}
 	};
 
@@ -715,7 +719,7 @@ import {
 
 			if (cell instanceof DocumentFragment) {
 				td.appendChild(cell.cloneNode(true));
-				Array.prototype.forEach.call(td.getElementsByTagName('img'), queue);
+				Array.prototype.forEach.call(td.querySelectorAll('.icon'), queue);
 			} else if (celltext.indexOf('img/') === 0) {
 				let imgurl = celltext;
 				let title = celltext;
@@ -1036,11 +1040,7 @@ import {
 	let recipeHighlighted = [];
 
 	const setHighlight = e => {
-		let name = !e.target
-			? e
-			: e.target.tagName === 'IMG'
-				? e.target.parentNode.dataset.link
-				: e.target.dataset.link;
+		let name = !e.target ? e : resolveIconTarget(e.target).dataset.link;
 
 		if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
 			setTab('crockpot');
@@ -1067,11 +1067,7 @@ import {
 	};
 
 	const setFoodHighlight = e => {
-		let name = !e.target
-			? e
-			: e.target.tagName === 'IMG'
-				? e.target.parentNode.dataset.link
-				: e.target.dataset.link;
+		let name = !e.target ? e : resolveIconTarget(e.target).dataset.link;
 
 		if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
 			setTab('crockpot');
@@ -1096,11 +1092,7 @@ import {
 	};
 
 	const setRecipeHighlight = e => {
-		const name = !e.target
-			? e
-			: e.target.tagName === 'IMG'
-				? e.target.parentNode.dataset.link
-				: e.target.dataset.link;
+		const name = !e.target ? e : resolveIconTarget(e.target).dataset.link;
 		const modename = name.substring(name.indexOf(':') + 1);
 
 		if (!!modes[modename]) {
@@ -1692,7 +1684,7 @@ import {
 			};
 
 			const removeSlot = e => {
-				const target = e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
+				const target = resolveIconTarget(e.target);
 
 				if (limited) {
 					if (getSlot(target) !== null) {
@@ -1726,8 +1718,7 @@ import {
 			};
 
 			const searchFor = e => {
-				const name =
-					e.target.tagName === 'IMG' ? e.target.parentNode.dataset.link : e.target.dataset.link;
+				const name = resolveIconTarget(e.target).dataset.link;
 				const matches = matchingNames(from, name, allowUncookable);
 
 				if (matches.length === 1) {

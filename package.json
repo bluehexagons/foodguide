@@ -11,7 +11,9 @@
 		"format": "prettier --write html/**/*.js",
 		"format:check": "prettier --check html/**/*.js",
 		"test": "node --test",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"generate-sprites": "node scripts/generate-sprites.js",
+		"postinstall": "node scripts/generate-sprites.js"
 	},
 	"keywords": [
 		"dont-starve",
@@ -33,5 +35,8 @@
 	},
 	"engines": {
 		"node": ">=18.0.0"
+	},
+	"dependencies": {
+		"sharp": "^0.34.5"
 	}
 }

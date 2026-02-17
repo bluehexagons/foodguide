@@ -1,137 +1,133 @@
 import { perish_preserved } from './constants.js';
 
 /**
- * Creates optimized images with caching and lazy loading
- * @param {string} url - Image URL to load
- * @param {number} [d] - Optional dimension parameter
- * @returns {HTMLImageElement} Cached image element
+ * Creates icon elements using a pre-generated sprite sheet for efficient
+ * rendering. Falls back to individual image files if the sprite sheet
+ * manifest is not available.
+ *
+ * Returns <span> elements with the class "icon" styled via CSS
+ * background-image and background-position from the sprite sheet.
+ * Uses percentage-based background-size and background-position so that
+ * icons scale correctly at any display size (20px, 32px, 40px, 64px, etc.)
+ *
+ * @param {string} url - Image URL (e.g. "img/carrot.png")
+ * @returns {HTMLSpanElement} Icon element
  */
 export const makeImage = (() => {
-	let canvas;
-	let ctx;
-	const cache = new Map();
-	const queue = [];
-	let activeLoads = 0;
-	const MAX_CONCURRENT_LOADS = 6;
+	/** @type {null | {cellSize: number, columns: number, rows: number, sheets: string[], images: Record<string, {sheet: number, col: number, row: number}>}} */
+	let manifest = null;
 
-	const ensureCanvas = () => {
-		if (!canvas) {
-			canvas = document.createElement('canvas');
-			ctx = canvas.getContext('2d');
-			canvas.width = 64;
-			canvas.height = 64;
-		}
-	};
+	/** @type {boolean} */
+	let manifestLoaded = false;
 
-	const finishWaiters = (url, src) => {
-		const entry = cache.get(url);
-		if (!entry || !entry.waiters) {
-			return;
-		}
-		entry.waiters.forEach(img => {
-			if (img.dataset.pending === url) {
-				delete img.dataset.pending;
-				img.src = src;
-			}
-		});
-		delete entry.waiters;
-	};
-
-	const renderToCache = async url => {
-		ensureCanvas();
-		try {
-			const response = await fetch(url);
-			if (!response.ok) {
-				throw new Error(`Image request failed: ${response.status}`);
-			}
-			const blob = await response.blob();
-			const bitmap = await createImageBitmap(blob);
-
-			ctx.clearRect(0, 0, 64, 64);
-			ctx.drawImage(bitmap, 0, 0, 64, 64);
-			if (typeof bitmap.close === 'function') {
-				bitmap.close();
-			}
-
-			const pngBlob = await new Promise((resolve, reject) => {
-				canvas.toBlob(
-					result => (result ? resolve(result) : reject(new Error('Blob failed'))),
-					'image/png',
-				);
-			});
-			const cachedUrl = URL.createObjectURL(pngBlob);
-			const existing = cache.get(url);
-			cache.set(url, { status: 'ready', src: cachedUrl, waiters: existing && existing.waiters });
-			finishWaiters(url, cachedUrl);
-		} catch {
-			const existing = cache.get(url);
-			cache.set(url, { status: 'ready', src: url, waiters: existing && existing.waiters });
-			finishWaiters(url, url);
-		}
-	};
-
-	const scheduleLoads = () => {
-		while (activeLoads < MAX_CONCURRENT_LOADS && queue.length > 0) {
-			const url = queue.shift();
-			const entry = cache.get(url);
-			if (!entry || entry.status !== 'loading') {
-				continue;
-			}
-			activeLoads += 1;
-			renderToCache(url)
-				.catch(() => {})
-				.finally(() => {
-					activeLoads -= 1;
-					scheduleLoads();
-				});
-		}
-	};
+	/** @type {Array<{el: HTMLSpanElement, url: string}>} */
+	const pending = [];
 
 	/**
-	 * Queues image for loading when cached
-	 * @param {HTMLImageElement} img - Image element
-	 * @param {string} url - Image URL
+	 * Applies sprite sheet background to an icon element.
+	 * Uses percentage-based positioning so the sprite scales with the
+	 * element's CSS dimensions regardless of context.
+	 * @param {HTMLSpanElement} el
+	 * @param {string} url
 	 */
-	const queueImage = (img, url) => {
-		img.dataset.pending = url;
-		const existing = cache.get(url);
-		if (existing && existing.status === 'ready') {
-			delete img.dataset.pending;
-			img.src = existing.src;
-			return;
-		}
-		if (!existing) {
-			cache.set(url, { status: 'loading', waiters: [img] });
-			queue.push(url);
-			scheduleLoads();
-			return;
-		}
-		existing.waiters.push(img);
-	};
-
-	/**
-	 * Main image creation function
-	 * @param {string} url - Image URL
-	 * @param {number} [d] - Optional dimension
-	 * @returns {HTMLImageElement} Image element
-	 */
-	const makeImage = (url, d) => {
-		const img = new Image(d);
-		img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
-
-		img.width = 64;
-		img.height = 64;
-
-		const cached = cache.get(url);
-		if (cached && cached.status === 'ready') {
-			img.src = cached.src;
+	const applySprite = (el, url) => {
+		const entry = manifest && manifest.images[url];
+		if (entry) {
+			const cols = manifest.columns;
+			const rows = manifest.rows;
+			el.style.backgroundImage = `url('${manifest.sheets[entry.sheet]}')`;
+			// Scale sprite so each cell fills the element exactly
+			el.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
+			// Position using percentage formula: col/(cols-1)*100%, row/(rows-1)*100%
+			const xPct = cols > 1 ? (entry.col / (cols - 1)) * 100 : 0;
+			const yPct = rows > 1 ? (entry.row / (rows - 1)) * 100 : 0;
+			el.style.backgroundPosition = `${xPct}% ${yPct}%`;
 		} else {
-			queueImage(img, url);
+			// Image not in sprite sheet; fall back to individual file
+			el.style.backgroundImage = `url('${url}')`;
+			el.style.backgroundSize = 'contain';
 		}
-		return img;
 	};
 
-	makeImage.queue = queueImage;
+	// Load sprite manifest
+	if (typeof fetch !== 'undefined') {
+		fetch('img/sprites/sprites.json')
+			.then(r => {
+				if (!r.ok) {
+					throw new Error(`${r.status}`);
+				}
+				return r.json();
+			})
+			.then(data => {
+				manifest = data;
+				manifestLoaded = true;
+				// Apply sprites to any elements created before manifest loaded
+				for (const item of pending) {
+					applySprite(item.el, item.url);
+				}
+				pending.length = 0;
+			})
+			.catch(() => {
+				manifestLoaded = true;
+				// No sprite sheet available; apply individual image fallbacks
+				for (const item of pending) {
+					applySprite(item.el, item.url);
+				}
+				pending.length = 0;
+			});
+	}
+
+	/**
+	 * Re-applies sprite background to an icon element (used when cloning nodes)
+	 * @param {HTMLSpanElement} el - Icon element
+	 * @param {string} url - Image URL
+	 */
+	const queueIcon = (el, url) => {
+		if (manifestLoaded) {
+			applySprite(el, url);
+		} else {
+			pending.push({ el, url });
+		}
+	};
+
+	/**
+	 * Main icon creation function
+	 * @param {string} url - Image URL (e.g. "img/carrot.png")
+	 * @returns {HTMLSpanElement} Icon element
+	 */
+	const makeImage = url => {
+		const el = document.createElement('span');
+		el.className = 'icon';
+		el.dataset.src = url;
+		el.setAttribute('role', 'img');
+
+		// Sync aria-label whenever title is set so screen readers can announce the icon.
+		Object.defineProperty(el, 'title', {
+			get() {
+				return this.getAttribute('title') || '';
+			},
+			set(v) {
+				this.setAttribute('title', v);
+				this.setAttribute('aria-label', v);
+			},
+			configurable: true,
+		});
+
+		if (manifestLoaded) {
+			applySprite(el, url);
+		} else {
+			pending.push({ el, url });
+		}
+
+		return el;
+	};
+
+	/**
+	 * Re-applies sprite to cloned icon elements
+	 * @param {HTMLSpanElement} el - Icon element
+	 * @param {string} url - Image URL
+	 */
+	makeImage.queue = queueIcon;
 
 	return makeImage;
 })();

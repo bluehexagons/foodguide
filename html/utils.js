@@ -1,81 +1,169 @@
+import { perish_preserved } from './constants.js';
+
+/**
+ * Creates icon elements using a pre-generated sprite sheet for efficient
+ * rendering. Falls back to individual image files if the sprite sheet
+ * manifest is not available.
+ *
+ * Returns <span> elements with the class "icon" styled via CSS
+ * background-image and background-position from the sprite sheet.
+ * Uses percentage-based background-size and background-position so that
+ * icons scale correctly at any display size (20px, 32px, 40px, 64px, etc.)
+ *
+ * @param {string} url - Image URL (e.g. "img/carrot.png")
+ * @returns {HTMLSpanElement} Icon element
+ */
 export const makeImage = (() => {
-	const canvas = document.createElement('canvas');
-	const ctx = canvas.getContext('2d');
-	const images = {};
-	let requests = [];
+	/** @type {null | {cellSize: number, columns: number, rows: number, sheets: string[], images: Record<string, {sheet: number, col: number, row: number}>}} */
+	let manifest = null;
 
-	const cacheImage = url => {
-		const renderToCache = async (url, imageElement) => {
-			ctx.clearRect(0, 0, 64, 64);
-			ctx.drawImage(imageElement, 0, 0, 64, 64);
-			const blob = await new Promise(done => canvas.toBlob(done, 'image/png'));
-			images[url] = URL.createObjectURL(blob);
+	/** @type {boolean} */
+	let manifestLoaded = false;
 
-			requests.filter(request => request.url === url).forEach(request => {
-				delete request.img.dataset.pending;
+	/** @type {Array<{el: HTMLSpanElement, url: string}>} */
+	const pending = [];
 
-				request.img.src = images[url] || url;
-			});
-
-			requests = requests.filter(request => request.url !== url);
-		};
-
-		return e => {
-			renderToCache(url, e.target);
-		};
-	};
-
-	const queue = (img, url) => {
-		img.dataset.pending = url;
-		requests.push({url, img});
-	};
-
-	const makeImage = (url, d) => {
-		const img = new Image(d);
-		img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
-
-		img.width = 64;
-		img.height = 64;
-
-		if (images[url]) {
-			//image is cached
-			img.src = images[url];
-		} else if (images[url] === null) {
-			//image is waiting to be loaded
-			queue(img, url, d);
+	/**
+	 * Applies sprite sheet background to an icon element.
+	 * Uses percentage-based positioning so the sprite scales with the
+	 * element's CSS dimensions regardless of context.
+	 * @param {HTMLSpanElement} el
+	 * @param {string} url
+	 */
+	const applySprite = (el, url) => {
+		const entry = manifest && manifest.images[url];
+		if (entry) {
+			const cols = manifest.columns;
+			const rows = manifest.rows;
+			el.style.backgroundImage = `url('${manifest.sheets[entry.sheet]}')`;
+			// Scale sprite so each cell fills the element exactly
+			el.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;
+			// Position using percentage formula: col/(cols-1)*100%, row/(rows-1)*100%
+			const xPct = cols > 1 ? (entry.col / (cols - 1)) * 100 : 0;
+			const yPct = rows > 1 ? (entry.row / (rows - 1)) * 100 : 0;
+			el.style.backgroundPosition = `${xPct}% ${yPct}%`;
 		} else {
-			//image has not been cached
-			images[url] = null;
-			const dummy = new Image();
-			dummy.addEventListener('load', cacheImage(url), false);
-			dummy.src = url;
-			queue(img, url);
+			// Image not in sprite sheet; fall back to individual file
+			el.style.backgroundImage = `url('${url}')`;
+			el.style.backgroundSize = 'contain';
 		}
-		return img;
 	};
 
-	canvas.width = 64;
-	canvas.height = 64;
+	// Load sprite manifest
+	if (typeof fetch !== 'undefined') {
+		fetch('img/sprites/sprites.json')
+			.then(r => {
+				if (!r.ok) {
+					throw new Error(`${r.status}`);
+				}
+				return r.json();
+			})
+			.then(data => {
+				manifest = data;
+				manifestLoaded = true;
+				// Apply sprites to any elements created before manifest loaded
+				for (const item of pending) {
+					applySprite(item.el, item.url);
+				}
+				pending.length = 0;
+			})
+			.catch(() => {
+				manifestLoaded = true;
+				// No sprite sheet available; apply individual image fallbacks
+				for (const item of pending) {
+					applySprite(item.el, item.url);
+				}
+				pending.length = 0;
+			});
+	}
 
-	makeImage.queue = queue;
+	/**
+	 * Re-applies sprite background to an icon element (used when cloning nodes)
+	 * @param {HTMLSpanElement} el - Icon element
+	 * @param {string} url - Image URL
+	 */
+	const queueIcon = (el, url) => {
+		if (manifestLoaded) {
+			applySprite(el, url);
+		} else {
+			pending.push({ el, url });
+		}
+	};
+
+	/**
+	 * Main icon creation function
+	 * @param {string} url - Image URL (e.g. "img/carrot.png")
+	 * @returns {HTMLSpanElement} Icon element
+	 */
+	const makeImage = url => {
+		const el = document.createElement('span');
+		el.className = 'icon';
+		el.dataset.src = url;
+		el.setAttribute('role', 'img');
+
+		// Sync aria-label whenever title is set so screen readers can announce the icon.
+		Object.defineProperty(el, 'title', {
+			get() {
+				return this.getAttribute('title') || '';
+			},
+			set(v) {
+				this.setAttribute('title', v);
+				this.setAttribute('aria-label', v);
+			},
+			configurable: true,
+		});
+
+		if (manifestLoaded) {
+			applySprite(el, url);
+		} else {
+			pending.push({ el, url });
+		}
+
+		return el;
+	};
+
+	/**
+	 * Re-applies sprite to cloned icon elements
+	 * @param {HTMLSpanElement} el - Icon element
+	 * @param {string} url - Image URL
+	 */
+	makeImage.queue = queueIcon;
 
 	return makeImage;
 })();
 
+/**
+ * Parses text with linkable content syntax into interactive elements
+ * @param {string} str - Text with link syntax [id|text|classes]
+ * @returns {DocumentFragment|string} Parsed content or original string
+ */
 export const makeLinkable = (() => {
-	const linkSearch = /\[([^\|]*)\|([^\|\]]*)\|?([^\|\]]*)\]/;
-	const leftSearch = /([^\|]\]\[[^\|]+\|[^\|\]]+)\|?([^\|\](?:left)]*)(?=\])/g;
-	const rightSearch = /(\[[^\|]+\|[^\|\]]+)\|?([^\|\]]*)(?=\]\[)(?!\]\[\|)/g;
-	const addLeftClass = (_a, b, c) => { return b + '|' + (c.length === 0 ? 'left' : c + ' left'); };
-	const addRightClass = (_a, b, c) => { return b + '|' + (c.length === 0 ? 'right' : c + ' right'); };
+	const linkSearch = /\[([^|]*)\|([^|\]]*)\|?([^|\]]*)\]/;
+	const leftSearch = /([^|]\]\[[^|]+\|[^|\]]+)\|?([^|\](?:left)]*)(?=\])/g;
+	const rightSearch = /(\[[^|]+\|[^|\]]+)\|?([^|\]]*)(?=\]\[)(?!\]\[\|)/g;
+	const addLeftClass = (_a, b, c) => {
+		return `${b}|${c.length === 0 ? 'left' : `${c} left`}`;
+	};
+	const addRightClass = (_a, b, c) => {
+		return `${b}|${c.length === 0 ? 'right' : `${c} right`}`;
+	};
 	const titleCase = /_(\w)/g;
-	const toTitleCase = (_a, b) => { return ' ' + b.toUpperCase(); };
+	const toTitleCase = (_a, b) => {
+		return ` ${b.toUpperCase()}`;
+	};
 
 	return str => {
-		const processed = str && str.replace(leftSearch, addLeftClass).replace(leftSearch, addLeftClass).replace(rightSearch, addRightClass);
+		const processed =
+			str &&
+			str
+				.replace(leftSearch, addLeftClass)
+				.replace(leftSearch, addLeftClass)
+				.replace(rightSearch, addRightClass);
 		const results = processed && processed.split(linkSearch);
 
 		if (!results || results.length === 1) {
+			return processed;
+		} else if (typeof document === 'undefined') {
 			return processed;
 		} else {
 			const fragment = document.createDocumentFragment();
@@ -102,7 +190,9 @@ export const makeLinkable = (() => {
 						const url = results[i + 1].split(' ')[0];
 						const image = makeImage(url);
 
-						image.title = (url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)).split('.')[0];
+						image.title = (
+							url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)
+						).split('.')[0];
 						span.appendChild(image);
 					} else {
 						span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
@@ -133,10 +223,73 @@ export const isBestStat = {
 	bestSanity: true,
 };
 
-export const pl = (str, n, plr) => {
-	return n === 1 ? str : str + (plr || 's');
+/**
+ * Accumulates ingredient properties into names and tags objects.
+ *
+ * For each non-null item, counts its id in `names` and sums numeric
+ * properties into `tags` (applying stat multipliers based on preparation
+ * type). Perish values use the minimum across all items.
+ *
+ * @param {Array} items - Array of ingredient objects (may contain nulls)
+ * @param {Record<string, number>} names - Name count accumulator (mutated)
+ * @param {Record<string, number>} tags - Tag value accumulator (mutated)
+ * @param {Record<string, number>} statMultipliers - Multipliers keyed by preparation type
+ */
+export const accumulateIngredients = (items, names, tags, statMultipliers) => {
+	for (let i = 0; i < items.length; i++) {
+		const item = items[i];
+
+		if (item !== null) {
+			names[item.id] = 1 + (names[item.id] || 0);
+
+			for (const k in item) {
+				if (Object.prototype.hasOwnProperty.call(item, k)) {
+					if (k !== 'perish' && !isNaN(item[k])) {
+						let val = item[k];
+
+						if (isStat[k]) {
+							val *= statMultipliers[item.preparationType] ?? 1;
+						} else if (isBestStat[k]) {
+							val *= statMultipliers[item[`${k}Type`]] ?? 1;
+						}
+
+						tags[k] = val + (tags[k] || 0);
+					} else if (k === 'perish') {
+						tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
+					}
+				}
+			}
+		}
+	}
 };
 
+/**
+ * Simple pluralization helper
+ * @param {string} str - Base string
+ * @param {number} n - Count
+ * @param {string} [suffix] - Custom plural suffix
+ * @returns {string} Pluralized string
+ */
+export const pl = (str, n, suffix) => {
+	if (n === 1) {
+		return str;
+	}
+	if (suffix) {
+		return `${str}${suffix}`;
+	}
+	if (str.endsWith('y') && !/[aeiou]y$/.test(str)) {
+		return `${str.slice(0, -1)}ies`;
+	}
+	return `${str}s`;
+};
+
+/**
+ * Creates DOM element with optional text and class
+ * @param {string} tagName - HTML tag name
+ * @param {string} [textContent] - Optional text content
+ * @param {string} [className] - Optional CSS class
+ * @returns {HTMLElement} Created element
+ */
 export const makeElement = (tagName, textContent, className) => {
 	const el = document.createElement(tagName);
 

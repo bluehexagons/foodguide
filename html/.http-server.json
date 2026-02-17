@@ -1,0 +1,10 @@
+{
+	"cors": true,
+	"cache": "-1",
+	"etag": false,
+	"showDir": true,
+	"autoIndex": true,
+	"ext": false,
+	"gzip": true,
+	"brotli": false
+}

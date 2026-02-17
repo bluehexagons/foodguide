@@ -1,0 +1,258 @@
+/* Header: title bar, mode selector, tab navigation */
+
+/* Unified header container */
+.site-header {
+	background: var(--header-bg);
+	overflow: hidden;
+	transition: background-color var(--transition-normal);
+}
+
+/* Top row: title + mode selectors */
+.header-top {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 14px;
+	flex-wrap: wrap;
+}
+
+.site-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: rgba(255, 255, 255, 0.9);
+	white-space: nowrap;
+	margin-right: auto;
+	letter-spacing: -0.01em;
+}
+
+/* Mode selector sections */
+.mode-section {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.mode-label {
+	font-size: 11px;
+	color: rgba(255, 255, 255, 0.45);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	margin-right: 2px;
+	white-space: nowrap;
+}
+
+.mode-divider {
+	width: 1px;
+	height: 24px;
+	background: rgba(255, 255, 255, 0.15);
+	margin: 0 6px;
+	flex-shrink: 0;
+}
+
+.mode-btn {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 5px;
+	border: 2px solid transparent;
+	opacity: 0.4;
+	transition: all var(--transition-fast);
+	background: rgba(255, 255, 255, 0.08);
+	position: relative;
+}
+
+.mode-btn :is(img, .icon) {
+	width: 24px;
+	height: 24px;
+	border-radius: 3px;
+	display: block;
+}
+
+.mode-btn:hover {
+	opacity: 0.75;
+	background: rgba(255, 255, 255, 0.18);
+	border-color: rgba(255, 255, 255, 0.15);
+}
+
+.mode-btn.selected {
+	opacity: 1;
+	background: rgba(255, 255, 255, 0.2);
+	border-color: rgba(255, 255, 255, 0.4);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.mode-btn.disabled {
+	opacity: 0.12;
+	cursor: default;
+	pointer-events: none;
+}
+
+/* DLC and character sections: hidden when not applicable */
+.dlc-section.hidden,
+.char-section.hidden {
+	display: none;
+}
+
+/* Tab navigation - bottom row of header */
+#navbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	background: rgba(0, 0, 0, 0.15);
+	border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#navbar .listmenu {
+	display: contents;
+}
+
+#navbar li {
+	display: inline-flex;
+	align-items: center;
+	list-style-type: none;
+	padding: 7px 14px;
+	margin: 0;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 500;
+	color: rgba(255, 255, 255, 0.55);
+	transition: all var(--transition-fast);
+	position: relative;
+	white-space: nowrap;
+}
+
+#navbar li:hover {
+	color: rgba(255, 255, 255, 0.85);
+	background: rgba(255, 255, 255, 0.1);
+}
+
+#navbar li.selected {
+	color: var(--dark);
+	font-weight: 600;
+	background: var(--bg-secondary);
+}
+
+#navbar li a {
+	color: rgba(255, 255, 255, 0.45);
+	text-decoration: none;
+	font-size: 12px;
+}
+
+#navbar li a:hover {
+	color: rgba(255, 255, 255, 0.7);
+}
+
+/* Responsive: medium screens */
+@media (max-width: 1100px) {
+	.header-top {
+		padding: 8px 10px;
+		gap: 8px;
+	}
+
+	.mode-divider {
+		display: none;
+	}
+
+	.mode-section {
+		gap: 3px;
+	}
+
+	.mode-btn {
+		width: 34px;
+		height: 34px;
+	}
+
+	.mode-btn :is(img, .icon) {
+		width: 26px;
+		height: 26px;
+	}
+
+	#navbar li {
+		padding: 6px 10px;
+		font-size: 12px;
+	}
+}
+
+/* Responsive: small screens */
+@media (max-width: 767px) {
+	.header-top {
+		padding: 6px 8px;
+		gap: 6px;
+	}
+
+	.site-title {
+		font-size: 13px;
+		width: 100%;
+	}
+
+	.mode-btn {
+		width: 30px;
+		height: 30px;
+	}
+
+	.mode-btn :is(img, .icon) {
+		width: 22px;
+		height: 22px;
+	}
+
+	#navbar {
+		gap: 0;
+	}
+
+	#navbar li {
+		padding: 5px 8px;
+		font-size: 12px;
+	}
+}
+
+/* Theme toggle button */
+#theme-toggle {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 5px;
+	border: 2px solid transparent;
+	opacity: 0.5;
+	transition: all var(--transition-fast);
+	background: rgba(255, 255, 255, 0.08);
+	position: relative;
+	color: rgba(255, 255, 255, 0.9);
+	font-size: 18px;
+	padding: 0;
+}
+
+#theme-toggle:hover {
+	opacity: 0.8;
+	background: rgba(255, 255, 255, 0.18);
+	border-color: rgba(255, 255, 255, 0.15);
+}
+
+#theme-toggle:active {
+	opacity: 1;
+}
+
+@media (max-width: 1000px) {
+	#theme-toggle {
+		width: 34px;
+		height: 34px;
+	}
+}
+
+@media (max-width: 767px) {
+	#theme-toggle {
+		width: 30px;
+		height: 30px;
+		font-size: 16px;
+	}
+}

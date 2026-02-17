@@ -1,0 +1,671 @@
+/* Components: ingredient picker, dropdowns, buttons, filters, search */
+
+/* Ingredient list and slots */
+.ingredientlist {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-top: 16px;
+}
+
+.ingredient {
+	margin: 0;
+	overflow: hidden;
+	cursor: pointer;
+	background: url('../img/background.png');
+	background-size: cover;
+	position: relative;
+	border-radius: 6px;
+	border: 2px solid var(--border-light);
+	transition: all var(--transition-fast);
+	width: 72px;
+	height: 72px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Empty slot styling */
+.ingredient:empty {
+	border: 2px solid transparent;
+	position: relative;
+	/* Keep the background image from parent */
+}
+
+/* Plus icon for empty slots */
+.ingredient:empty::before {
+	content: '+';
+	font-size: 32px;
+	color: var(--fg-primary);
+	opacity: 0.7;
+	position: absolute;
+	line-height: 1;
+	transition: all var(--transition-fast);
+	text-shadow:
+		0 0 3px var(--bg-primary),
+		0 0 6px var(--bg-primary),
+		0 0 9px var(--bg-primary);
+}
+
+/* Hover effects */
+.ingredient:hover {
+	border-color: var(--header-accent);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ingredient:empty:hover {
+	border-color: var(--header-accent);
+}
+
+.ingredient:empty:hover::before {
+	opacity: 0.8;
+	color: var(--header-accent);
+}
+
+.ingredient :is(img, .icon) {
+	display: block;
+	width: 64px;
+	height: 64px;
+	border: none;
+	margin: 0;
+	position: relative;
+	z-index: 1;
+}
+
+/* When slot has content, adjust styling */
+.ingredient:has(img),
+.ingredient:has(.icon) {
+	padding: 4px;
+	background-color: transparent;
+	border: 2px solid var(--border-light);
+}
+
+/* Search selector toggle */
+.searchselector {
+	display: inline-block;
+	padding: 0 0 0 2px;
+	line-height: 22px;
+	vertical-align: bottom;
+	border: 1px solid var(--medium);
+	border-right: none;
+	height: 100%;
+	background: var(--table-hover);
+	color: var(--fg-primary);
+	border-radius: 3px 0 0 3px;
+	transition: border-bottom-left-radius 100ms ease;
+	cursor: pointer;
+}
+
+.searchselector.retracted::after {
+	content: '';
+	margin-left: 3px;
+	margin-right: 2px;
+	width: 0;
+	height: 0;
+	display: inline-block;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 5px solid var(--fg-tertiary);
+	margin-bottom: 2px;
+}
+
+.searchselector.extended::after {
+	content: '';
+	margin-left: 3px;
+	margin-right: 2px;
+	width: 0;
+	height: 0;
+	display: inline-block;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 5px solid var(--fg-tertiary);
+	margin-bottom: 2px;
+}
+
+.searchselector:active {
+	background-color: var(--medium);
+}
+
+/* Search dropdown */
+.searchdropdown {
+	z-index: 2;
+	position: absolute;
+	height: 0;
+	overflow: hidden;
+	border-radius: 0 0 3px 3px;
+	transition:
+		height 200ms ease,
+		border-top-left-radius 100ms ease;
+	border-top-left-radius: 3px;
+}
+
+.searchdropdown div {
+	background: var(--lighter);
+	border: 1px solid var(--medium);
+	border-top: none;
+	cursor: pointer;
+	padding: 0 2px;
+	color: var(--fg-primary);
+}
+
+/* Ingredient picker input */
+.ingredientpicker {
+	border: 1px solid var(--medium);
+	padding: 4px 8px;
+	height: auto;
+	border-radius: 0 5px 5px 0;
+	font-size: 14px;
+	outline: none;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	transition: border-color var(--transition-fast);
+}
+
+.ingredientpicker:hover,
+.ingredientpicker:focus {
+	border-color: var(--medium);
+}
+
+/* Ingredient dropdown */
+.ingredientdropdown {
+	display: block;
+	z-index: 1;
+	max-height: 400px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	border: 1px solid var(--medium);
+	border-radius: 3px;
+	background: var(--bg-primary);
+	padding: 4px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ingredientdropdown div {
+	margin: 4px 0;
+	padding: 0;
+	margin-bottom: 4px;
+	text-align: justify;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.ingredientdropdown .item {
+	border: 1px solid var(--border-light);
+	font-size: 12pt;
+	padding: 2px 6px;
+	white-space: nowrap;
+	text-align: center;
+	line-height: 20px;
+	display: inline-flex;
+	align-content: center;
+	vertical-align: middle;
+	overflow: hidden;
+	list-style-type: none;
+	cursor: pointer;
+	border-radius: 5px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	transition: all var(--transition-fast);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ingredientdropdown .item :is(img, .icon) {
+	width: 20px;
+	height: 20px;
+	margin-right: 4px;
+}
+
+.ingredientdropdown.hidetext .item :is(img, .icon) {
+	margin-right: 0;
+}
+
+.ingredientdropdown .item .text {
+	vertical-align: middle;
+}
+
+.ingredientdropdown .item:hover {
+	background: var(--table-hover);
+	border-color: var(--medium);
+}
+
+.ingredientdropdown .item:active {
+	background: var(--table-bg);
+}
+
+.ingredientdropdown .item.selected {
+	background: var(--selected-bg);
+	border-color: var(--selected-border);
+}
+
+.ingredientdropdown .item.faded {
+	background: var(--medium);
+	color: var(--fg-tertiary);
+}
+
+.ingredientdropdown.hidetext div .text {
+	display: none;
+}
+
+.ingredientdropdown.hidetext div .item :is(img, .icon) {
+	width: 40px;
+	height: 40px;
+}
+
+/* List mode - one item per line with icon + name */
+.ingredientdropdown.listmode .item {
+	display: block;
+	width: 100%;
+	margin: 0 0 2px 0;
+	padding: 6px 8px;
+}
+
+.ingredientdropdown.listmode .item :is(img, .icon) {
+	width: 24px;
+	height: 24px;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+.ingredientdropdown.listmode .item .text {
+	vertical-align: middle;
+	font-size: 14px;
+}
+
+/* Toggle, clear, sort, and display mode controls */
+.toggleingredients,
+.sortingredients,
+.displaymodeingredients {
+	color: var(--fg-primary);
+	display: inline-block;
+	padding: 4px 8px;
+	cursor: pointer;
+	border: 1px solid var(--medium);
+	border-radius: 3px;
+	background: var(--bg-primary);
+	margin-left: 8px;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 12px;
+	opacity: 0.7;
+	transition: all var(--transition-fast);
+	position: relative;
+	white-space: nowrap;
+}
+
+.toggleingredients:hover,
+.sortingredients:hover,
+.displaymodeingredients:hover {
+	opacity: 1;
+	background: var(--table-hover);
+	border-color: var(--light);
+}
+
+.clearingredients {
+	color: var(--fg-primary);
+	display: inline-block;
+	cursor: pointer;
+	border: 1px solid var(--medium);
+	background: var(--bg-primary);
+	text-align: center;
+	vertical-align: middle;
+	font-size: 20px;
+	line-height: 1;
+	width: 24px;
+	height: 24px;
+	border-radius: 3px;
+	opacity: 0.5;
+	transition: all var(--transition-fast);
+	float: right;
+	margin-left: 8px;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.clearingredients:hover {
+	opacity: 1;
+	background: #fee;
+	border-color: #c55;
+	color: #c55;
+}
+
+/* Dropdown styles for sort and display mode */
+.sortdropdown,
+.displaymodedropdown {
+	position: fixed;
+	background: var(--bg-primary);
+	border: 1px solid var(--medium);
+	border-radius: 3px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 140px;
+	z-index: 10;
+}
+
+.sortdropdown div,
+.displaymodedropdown div {
+	color: var(--fg-primary);
+	transition: background var(--transition-fast);
+}
+
+.sortdropdown div:hover,
+.displaymodedropdown div:hover {
+	background: var(--table-hover) !important;
+}
+
+.sortdropdown div:first-child,
+.displaymodedropdown div:first-child {
+	border-top: 1px solid var(--medium);
+	border-radius: 3px 3px 0 0;
+}
+
+.sortdropdown div:last-child,
+.displaymodedropdown div:last-child {
+	border-radius: 0 0 3px 3px;
+}
+
+/* Makable / statistics buttons */
+button.makablebutton {
+	font-size: 14pt;
+	margin: 4px;
+	padding: 6px 12px;
+	display: inline-block;
+	border: 1px solid var(--medium);
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	border-radius: 5px;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+}
+
+button.makablebutton:hover {
+	background: var(--table-hover);
+	border-color: var(--light);
+}
+
+/* Recipe filter icons */
+div.recipeFilter :is(img, .icon) {
+	opacity: 0.6;
+	margin: 4px;
+	padding: 1px 2px;
+	display: inline-block;
+	border: 2px solid var(--medium);
+	background-color: var(--table-bg);
+	border-radius: 3px;
+	cursor: pointer;
+	position: relative;
+	transition: all var(--transition-fast);
+}
+
+div.recipeFilter :is(img, .icon):hover {
+	opacity: 0.8;
+	transform: scale(1.05);
+}
+
+div.recipeFilter :is(img, .icon).selected {
+	opacity: 1;
+	border-color: var(--light);
+	box-shadow:
+		0 0 0 1px var(--light),
+		0 0 8px var(--light);
+}
+
+div.recipeFilter :is(img, .icon).selected::after {
+	content: '✓';
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	background: var(--light);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
+}
+
+div.recipeFilter :is(img, .icon).excluded {
+	opacity: 0.8;
+	border-color: var(--excluded-border);
+	background-color: var(--excluded-bg);
+	filter: grayscale(0.5);
+	box-shadow: 0 0 0 1px var(--excluded-border);
+}
+
+div.recipeFilter :is(img, .icon).excluded::after {
+	content: '✕';
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	background: var(--excluded-border);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
+}
+
+/* Food filter icons */
+div.foodFilter :is(img, .icon) {
+	width: 40px;
+	height: 40px;
+	opacity: 0.4;
+	margin: 6px;
+	padding: 2px;
+	display: inline-block;
+	border: 2px solid var(--medium);
+	background-color: var(--table-bg);
+	border-radius: 5px;
+	cursor: pointer;
+	position: relative;
+	transition: all var(--transition-fast);
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	box-sizing: border-box;
+}
+
+div.foodFilter :is(img, .icon):hover {
+	opacity: 0.8;
+	transform: scale(1.08);
+	border-color: var(--light);
+}
+
+div.foodFilter :is(img, .icon):active {
+	transform: scale(0.95);
+}
+
+div.foodFilter :is(img, .icon).selected {
+	border-color: var(--light);
+	opacity: 1;
+	box-shadow:
+		0 0 0 1px var(--light),
+		0 0 8px var(--light);
+}
+
+div.foodFilter :is(img, .icon).selected::after {
+	content: '✓';
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	background: var(--light);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+div.foodFilter :is(img, .icon).excluded {
+	border-color: var(--excluded-border);
+	opacity: 0.8;
+	background-color: var(--excluded-bg);
+	filter: grayscale(0.6);
+	box-shadow: 0 0 0 1px var(--excluded-border);
+}
+
+div.foodFilter :is(img, .icon).excluded::after {
+	content: '✕';
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	background: var(--excluded-border);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Grinder/Statistics container */
+.makableContainer {
+	margin: 8px 0;
+	padding: 12px;
+	background: var(--bg-primary);
+	border: 1px solid var(--medium);
+	border-radius: 5px;
+}
+
+.makableSummary {
+	font-size: 14pt;
+	margin-bottom: 12px;
+	padding: 8px;
+	background: var(--table-bg);
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	color: var(--fg-primary);
+}
+
+.makableFootnote {
+	font-size: 11pt;
+	color: var(--fg-secondary);
+	margin-bottom: 8px;
+	padding: 4px 8px;
+	font-style: italic;
+}
+
+.makableFilterHelp {
+	font-size: 10pt;
+	color: var(--fg-secondary);
+	margin-bottom: 12px;
+	padding: 6px 12px;
+	background: var(--table-bg);
+	border-left: 3px solid var(--medium);
+	border-radius: 3px;
+	opacity: 0.9;
+}
+
+button.deleteButton,
+button.pauseButton,
+button.showMoreButton {
+	font-size: 12pt;
+	padding: 4px 12px;
+	border: 1px solid var(--medium);
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	border-radius: 3px;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+}
+
+button.deleteButton:hover,
+button.pauseButton:hover,
+button.showMoreButton:hover {
+	background: var(--table-hover);
+	border-color: var(--light);
+}
+
+button.deleteButton {
+	background: var(--excluded-bg);
+	border-color: var(--excluded-border);
+}
+
+button.deleteButton:hover {
+	background: var(--excluded-border);
+}
+
+button.makablebutton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+button.makablebutton:disabled:hover {
+	background: var(--bg-primary);
+	border-color: var(--medium);
+}
+
+/* Responsive: small screens */
+@media (max-width: 767px) {
+	.ingredientdropdown {
+		overflow: auto;
+	}
+
+	.ingredientdropdown div {
+		min-width: 690px;
+	}
+
+	.ingredientdropdown div .item :is(img, .icon) {
+		width: 40px;
+		height: 40px;
+	}
+
+	.toggleingredients {
+		display: none;
+	}
+
+	.ingredientdropdown div .text {
+		display: none;
+	}
+
+	/* Increase touch targets on mobile */
+	div.foodFilter :is(img, .icon) {
+		width: 48px;
+		height: 48px;
+		margin: 8px;
+	}
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+	div.foodFilter :is(img, .icon) {
+		width: 48px;
+		height: 48px;
+		margin: 8px;
+	}
+
+	div.recipeFilter :is(img, .icon) {
+		margin: 6px;
+		padding: 3px;
+	}
+
+	.makableFilterHelp {
+		font-size: 11pt;
+		padding: 8px 12px;
+	}
+}

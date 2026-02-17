@@ -1,0 +1,45 @@
+{
+	"name": "foodguide",
+	"version": "1.0.0",
+	"description": "Unofficial Don't Starve food guide and recipe calculator",
+	"main": "html/index.htm",
+	"type": "module",
+	"scripts": {
+		"dev": "npx http-server html -p 8080 -o",
+		"lint": "eslint html/**/*.js",
+		"lint:fix": "eslint html/**/*.js --fix",
+		"format": "prettier --write html/**/*.js",
+		"format:check": "prettier --check html/**/*.js",
+		"check": "npm run format && npm run lint",
+		"fix": "npm run format && npm run lint:fix",
+		"test": "node --test",
+		"typecheck": "tsc --noEmit",
+		"generate-sprites": "node scripts/generate-sprites.js",
+		"postinstall": "node scripts/generate-sprites.js"
+	},
+	"keywords": [
+		"dont-starve",
+		"food",
+		"recipes",
+		"game",
+		"guide"
+	],
+	"author": "bluehexagons",
+	"license": "Apache-2.0",
+	"devDependencies": {
+		"@eslint/js": "^9.39.2",
+		"eslint": "^9.39.2",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-jsdoc": "^62.5.4",
+		"http-server": "^14.1.1",
+		"jsdoc": "^4.0.2",
+		"prettier": "^3.8.1",
+		"typescript": "^5.9.3"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"dependencies": {
+		"sharp": "^0.34.5"
+	}
+}

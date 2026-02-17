@@ -1,0 +1,17 @@
+[
+	{
+		"id": "deploy-foodguide",
+		"execute-command": "/opt/foodguide/deploy.sh",
+		"command-working-directory": "/opt/foodguide",
+		"trigger-rule": {
+			"match": {
+				"type": "value",
+				"value": "{{getenv \"WEBHOOK_SECRET\"}}",
+				"parameter": {
+					"source": "header",
+					"name": "X-Webhook-Secret"
+				}
+			}
+		}
+	}
+]

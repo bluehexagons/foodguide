@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 
 /*
@@ -24,98 +25,229 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 import {
-	GIANTS,
-	HAMLET,
-	SHIPWRECKED,
-	VANILLA,
 	base_cook_time,
+	baseModes,
+	characters,
 	defaultStatMultipliers,
+	dlcOptions,
+	gameVersions,
 	headings,
 	modes,
 	perish_fridge_mult,
 	perish_ground_mult,
-	perish_preserved,
 	perish_summer_mult,
 	perish_winter_mult,
 	sanity_small,
 	spoiled_food_hunger,
 	stale_food_health,
 	stale_food_hunger,
+	TOGETHER,
+	WARLY,
 	total_day_time,
 } from './constants.js';
 import { food } from './food.js';
 import { recipes, updateFoodRecipes } from './recipes.js';
-import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './utils.js';
+import { accumulateIngredients, makeImage, makeLinkable, makeElement, pl } from './utils.js';
+import {
+	matchesMode,
+	excludesMode,
+	getActiveMultipliers,
+	calculateModeMask,
+	calculateCharMask,
+	isCharacterApplicable,
+} from './mode-utils.js';
 
 (() => {
+	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
+	const resolveIconTarget = el =>
+		el.tagName === 'IMG' || el.classList.contains('icon') ? el.parentNode : el;
+
 	const modeRefreshers = [];
 
 	let statMultipliers = defaultStatMultipliers;
 
-	let modeMask = VANILLA | GIANTS | SHIPWRECKED | HAMLET;
+	// Mode state: game version + DLC toggles + optional character
+	let currentVersion = 'together';
+	let activeDlc = { giants: false, shipwrecked: false };
+	let currentCharacter = null;
+	let modeMask = gameVersions[currentVersion].baseMask;
+	let charMask = 0;
 
-	const setMode = mask => {
-		statMultipliers = {};
+	// Theme state: 'auto', 'light', or 'dark'
+	let currentTheme = localStorage.getItem('foodGuideTheme') || 'auto';
 
-		for (const i in defaultStatMultipliers) {
-			if (defaultStatMultipliers.hasOwnProperty(i)) {
-				statMultipliers[i] = defaultStatMultipliers[i];
-			}
-		}
+	/**
+	 * Initializes theme based on saved preference and browser settings.
+	 */
+	const initTheme = () => {
+		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		const effectiveTheme = currentTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : currentTheme;
 
-		modeMask = mask;
+		document.documentElement.setAttribute('data-theme', effectiveTheme);
+		updateThemeToggle();
+	};
 
-		updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
-
-		if (document.getElementById('statistics').hasChildNodes) {
-			document
-				.getElementById('statistics')
-				.replaceChildren(makeRecipeGrinder(null, true));
-		}
-
-		for (let i = 0; i < modeTab.childNodes.length; i++) {
-			const img = modeTab.childNodes[i];
-			const mode = modes[img.dataset.mode];
-			img.className = 'mode-button';
-			if (modeMask === mode.mask) {
-				img.classList.add('selected');
-				img.style.backgroundColor = mode.color;
-			} else if ((modeMask & mode.bit) !== 0) {
-				img.classList.add('enabled');
-				img.style.backgroundColor = 'white';
+	/**
+	 * Updates the theme toggle button display.
+	 * Shows the icon for the current effective theme.
+	 * - 🌙 (moon) = light theme is currently active
+	 * - ☀️ (sun) = dark theme is currently active
+	 */
+	const updateThemeToggle = () => {
+		const btn = document.getElementById('theme-toggle');
+		if (btn) {
+			// Determine what theme is actually being displayed
+			let isEffectivelyDark;
+			if (currentTheme === 'auto') {
+				// Check OS preference
+				isEffectivelyDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 			} else {
-				img.style.backgroundColor = 'transparent';
+				// Use explicit setting
+				isEffectivelyDark = currentTheme === 'dark';
 			}
 
-			if (mode.multipliers && (modeMask & mode.bit) !== 0) {
-				for (const foodtype in mode.multipliers) {
-					if (mode.multipliers.hasOwnProperty(foodtype)) {
-						statMultipliers[foodtype] *= mode.multipliers[foodtype];
-					}
-				}
+			// Show icon for current theme
+			btn.textContent = isEffectivelyDark ? '☀️' : '🌙';
+		}
+	};
+
+	/**
+	 * Toggles between light and dark themes.
+	 * Once the user manually sets a theme, it stays in the light/dark cycle.
+	 */
+	const toggleTheme = () => {
+		// If in auto mode, switch to the opposite of current effective theme
+		if (currentTheme === 'auto') {
+			const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			currentTheme = isDark ? 'light' : 'dark';
+		} else {
+			// Otherwise, toggle between light and dark
+			currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+		}
+		localStorage.setItem('foodGuideTheme', currentTheme);
+		initTheme();
+	};
+
+	// Initialize theme on page load
+	initTheme();
+
+	// Attach theme toggle button listener
+	const themeBtn = document.getElementById('theme-toggle');
+	if (themeBtn) {
+		themeBtn.addEventListener('click', toggleTheme);
+	}
+
+	// Listen for OS theme changes when in auto mode
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', _e => {
+		if (currentTheme === 'auto') {
+			initTheme();
+		}
+	});
+
+	/**
+	 * Determines if the Mode column should be shown in tables.
+	 * In DST mode, the Mode column is hidden unless Warly is selected.
+	 * In other game modes, the Mode column is always shown.
+	 */
+	const shouldShowModeColumn = () => {
+		// Check if we're in DST mode
+		const isDST = (modeMask & TOGETHER) !== 0 && currentVersion === 'together';
+		// Check if Warly is selected
+		const isWarlySelected = (charMask & WARLY) !== 0;
+
+		// Show Mode column if: not in DST, OR in DST with Warly selected
+		return !isDST || isWarlySelected;
+	};
+
+	/**
+	 * Returns autoHide array for tables, conditionally including 'Mode' column.
+	 */
+	const getAutoHideColumns = baseColumns => {
+		const columns = [...baseColumns];
+		if (!shouldShowModeColumn() && !columns.includes('Mode')) {
+			columns.push('Mode');
+		}
+		return columns;
+	};
+
+	/**
+	 * Sets game mode and updates UI accordingly.
+	 * Called when the user selects a version, toggles DLC, or toggles a character.
+	 */
+	const setMode = () => {
+		modeMask = calculateModeMask(
+			currentVersion,
+			activeDlc,
+			currentCharacter,
+			gameVersions,
+			dlcOptions,
+			characters,
+		);
+		charMask = calculateCharMask(currentCharacter, currentVersion, activeDlc, characters);
+		statMultipliers = getActiveMultipliers(
+			currentVersion,
+			activeDlc,
+			currentCharacter,
+			characters,
+			defaultStatMultipliers,
+		);
+
+		updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
+
+		if (document.getElementById('statistics')?.hasChildNodes()) {
+			document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
+		}
+
+		// Update version button states
+		const versionButtons = modePanel.querySelectorAll('.version-btn');
+		for (const btn of versionButtons) {
+			const ver = gameVersions[btn.dataset.version];
+			if (!ver) {
+				continue;
 			}
+			btn.classList.toggle('selected', btn.dataset.version === currentVersion);
+		}
+
+		// Show/hide DLC section (only visible for 'dontstarve')
+		const dlcSection = modePanel.querySelector('.dlc-section');
+		const dlcDivider = modePanel.querySelector('.dlc-divider');
+		if (dlcSection) {
+			dlcSection.classList.toggle('hidden', currentVersion !== 'dontstarve');
+		}
+		if (dlcDivider) {
+			dlcDivider.style.display = currentVersion === 'dontstarve' ? '' : 'none';
+		}
+
+		// Update DLC toggle states
+		const dlcButtons = modePanel.querySelectorAll('.dlc-btn');
+		for (const btn of dlcButtons) {
+			const dlcKey = btn.dataset.dlc;
+			btn.classList.toggle('selected', !!activeDlc[dlcKey]);
+		}
+
+		// Update character button states and visibility
+		const charSection = modePanel.querySelector('.char-section');
+		const charDivider = modePanel.querySelector('.char-divider');
+		const charButtons = modePanel.querySelectorAll('.char-btn');
+		let anyCharApplicable = false;
+		for (const btn of charButtons) {
+			const charName = btn.dataset.character;
+			const applicable = isCharacterApplicable(charName, currentVersion, activeDlc, characters);
+			if (applicable) {
+				anyCharApplicable = true;
+			}
+			btn.classList.toggle('disabled', !applicable);
+			btn.classList.toggle('selected', applicable && charName === currentCharacter);
+		}
+		if (charSection) {
+			charSection.classList.toggle('hidden', !anyCharApplicable);
+		}
+		if (charDivider) {
+			charDivider.style.display = anyCharApplicable ? '' : 'none';
 		}
 
 		for (let i = 0; i < modeRefreshers.length; i++) {
 			modeRefreshers[i]();
-		}
-
-		const modeOrder = [
-			'together',
-			'hamlet',
-			'shipwrecked',
-			'giants',
-			'vanilla',
-		];
-
-		// Set the background color based on selected game mode
-		for (let i = 0; i < modeOrder.length; i++) {
-			const mode = modes[modeOrder[i]];
-			if ((modeMask & mode.bit) !== 0) {
-				document.getElementById('background').style['background-color'] =
-          mode.color;
-				return;
-			}
 		}
 	};
 
@@ -140,7 +272,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		const allowedFilter = element => {
 			if (
 				(!allowUncookable && element.uncookable) ||
-        (element.modeMask & modeMask) === 0
+				excludesMode(element.modeMask, modeMask, element.charMask, charMask)
 			) {
 				element.match = 0;
 				return false;
@@ -152,7 +284,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		const filter = element => {
 			if (
 				element.lowerName.indexOf(name) === 0 ||
-        (element.raw && element.raw.lowerName.indexOf(name) === 0)
+				(element.raw && element.raw.lowerName.indexOf(name) === 0)
 			) {
 				element.match = 3;
 			} else if (wordstarts.test(element.lowerName) === 0) {
@@ -195,11 +327,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			let failed = true;
 
 			while (i < recipe.requirements.length) {
-				const result = recipe.requirements[i].test(
-					null,
-					ingredient.nameObject,
-					ingredient,
-				);
+				const result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
 				if (recipe.requirements[i].cancel) {
 					if (!result) {
 						failed = true;
@@ -221,11 +349,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 		const like = element => {
 			return (element.match =
-        element.lowerName === name ||
-        (element.raw && element.raw.lowerName === name) ||
-        (element.cook && element.cook.lowerName === name)
-        	? 1
-        	: 0);
+				element.lowerName === name ||
+				(element.raw && element.raw.lowerName === name) ||
+				(element.cook && element.cook.lowerName === name)
+					? 1
+					: 0);
 		};
 
 		const byMatch = (a, b) => {
@@ -294,39 +422,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				return arr.filter(like).sort(byMatch);
 			} else {
 				// Otherwise, do a string comparison
-				wordstarts = new RegExp('\\b' + name + '.*');
-				anywhere = new RegExp('\\b' + name.split('').join('.*') + '.*');
+				wordstarts = new RegExp(`\\b${name}.*`);
+				anywhere = new RegExp(`\\b${name.split('').join('.*')}.*`);
 
 				return arr.filter(filter).sort(byMatch);
 			}
 		};
 	})();
-
-	const setIngredientValues = (items, names, tags) => {
-		for (let i = 0; i < items.length; i++) {
-			const item = items[i];
-
-			if (item !== null) {
-				names[item.id] = 1 + (names[item.id] || 0);
-
-				for (const k in item) {
-					if (item.hasOwnProperty(k) && k !== 'perish' && !isNaN(item[k])) {
-						let val = item[k];
-
-						if (isStat[k]) {
-							val *= statMultipliers[item.preparationType];
-						} else if (isBestStat[k]) {
-							val *= statMultipliers[item[k + 'Type']];
-						}
-
-						tags[k] = val + (tags[k] || 0);
-					} else if (k === 'perish') {
-						tags[k] = Math.min(tags[k] || perish_preserved, item[k]);
-					}
-				}
-			}
-		}
-	};
 
 	const getSuggestions = (() => {
 		return (recipeList, items, exclude, itemComplete) => {
@@ -334,12 +436,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			const tags = {};
 
 			recipeList.length = 0;
-			setIngredientValues(items, names, tags);
+			accumulateIngredients(items, names, tags, statMultipliers);
 
 			outer: for (let i = 0; i < recipes.length; i++) {
 				let valid = false;
 
-				if ((recipes[i].modeMask & modeMask) === 0) {
+				if (excludesMode(recipes[i].modeMask, modeMask, recipes[i].charMask, charMask)) {
 					continue;
 				}
 
@@ -374,12 +476,12 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			const tags = {};
 
 			recipeList.length = 0;
-			setIngredientValues(items, names, tags);
+			accumulateIngredients(items, names, tags, statMultipliers);
 
 			for (let i = 0; i < recipes.length; i++) {
 				if (
-					(recipes[i].modeMask & modeMask) !== 0 &&
-          recipes[i].test(null, names, tags)
+					matchesMode(recipes[i].modeMask, modeMask, recipes[i].charMask, charMask) &&
+					recipes[i].test(null, names, tags)
 				) {
 					recipeList.push(recipes[i]);
 				}
@@ -431,42 +533,26 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 	document
 		.getElementById('stalehealth')
-		.appendChild(
-			document.createTextNode(Math.round(stale_food_health * 1000) / 10 + '%'),
-		);
+		.appendChild(document.createTextNode(`${Math.round(stale_food_health * 1000) / 10}%`));
 	document
 		.getElementById('stalehunger')
-		.appendChild(
-			document.createTextNode(Math.round(stale_food_hunger * 1000) / 10 + '%'),
-		);
+		.appendChild(document.createTextNode(`${Math.round(stale_food_hunger * 1000) / 10}%`));
 	document
 		.getElementById('spoiledhunger')
-		.appendChild(
-			document.createTextNode(Math.round(spoiled_food_hunger * 1000) / 10 + '%'),
-		);
-	document
-		.getElementById('spoiledsanity')
-		.appendChild(document.createTextNode(sanity_small));
+		.appendChild(document.createTextNode(`${Math.round(spoiled_food_hunger * 1000) / 10}%`));
+	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_small));
 	document
 		.getElementById('perishground')
-		.appendChild(
-			document.createTextNode(Math.round(perish_ground_mult * 1000) / 10 + '%'),
-		);
+		.appendChild(document.createTextNode(`${Math.round(perish_ground_mult * 1000) / 10}%`));
 	document
 		.getElementById('perishwinter')
-		.appendChild(
-			document.createTextNode(Math.round(perish_winter_mult * 1000) / 10 + '%'),
-		);
+		.appendChild(document.createTextNode(`${Math.round(perish_winter_mult * 1000) / 10}%`));
 	document
 		.getElementById('perishsummer')
-		.appendChild(
-			document.createTextNode(Math.round(perish_summer_mult * 1000) / 10 + '%'),
-		);
+		.appendChild(document.createTextNode(`${Math.round(perish_summer_mult * 1000) / 10}%`));
 	document
 		.getElementById('perishfridge')
-		.appendChild(
-			document.createTextNode(Math.round(perish_fridge_mult * 1000) / 10 + '%'),
-		);
+		.appendChild(document.createTextNode(`${Math.round(perish_fridge_mult * 1000) / 10}%`));
 
 	const combinationGenerator = (length, callback, startPos) => {
 		const size = 4;
@@ -504,20 +590,15 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		};
 	};
 
-	const getRealRecipesFromCollection = (
-		items,
-		mainCallback,
-		chunkCallback,
-		endCallback,
-	) => {
+	const getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
 		const recipeCrunchData = {};
 		const updateRecipeCrunchData = () => {
 			recipeCrunchData.recipes = recipes
 				.filter(item => {
 					return (
 						!item.trash &&
-            (item.modeMask & modeMask) !== 0 &&
-            item.foodtype !== 'roughage'
+						matchesMode(item.modeMask, modeMask, item.charMask, charMask) &&
+						item.foodtype !== 'roughage'
 					);
 				})
 				.sort((a, b) => {
@@ -544,6 +625,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		let renderedTo = 0;
 		let lastTime;
 		let block = 100;
+		let paused = false;
+		let timeoutId = null;
 
 		const foodFromIndex = index => {
 			return items[index];
@@ -557,23 +640,16 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			let created = null;
 			let multiple = false;
 
-			setIngredientValues(ingredients, names, tags);
+			accumulateIngredients(ingredients, names, tags, statMultipliers);
 
 			tags.hunger = tags.bestHunger; // * statMultipliers[tags.bestHungerType];
 			tags.health = tags.bestHealth; // * statMultipliers[tags.bestHealthType];
 			tags.sanity = tags.bestSanity; // * statMultipliers[tags.bestSanityType];
 
-			const matches = recipeCrunchData.recipes.filter(recipe =>
-				recipe.test(null, names, tags),
-			);
-			const maxPriority = matches.reduce(
-				(max, recipe) => Math.max(recipe.priority, max),
-				-Infinity,
-			);
+			const matches = recipeCrunchData.recipes.filter(recipe => recipe.test(null, names, tags));
+			const maxPriority = matches.reduce((max, recipe) => Math.max(recipe.priority, max), -Infinity);
 
-			for (const recipe of matches.filter(
-				recipe => recipe.priority >= maxPriority,
-			)) {
+			for (const recipe of matches.filter(recipe => recipe.priority >= maxPriority)) {
 				if (created !== null) {
 					multiple = true;
 					created.multiple = true;
@@ -592,11 +668,15 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		const getCombinations = combinationGenerator(items.length, callback);
 
 		const computeNextBlock = () => {
+			if (paused) {
+				return;
+			}
+
 			const start = Date.now();
 			let end = false;
 
 			if (getCombinations(block)) {
-				setTimeout(computeNextBlock, 0);
+				timeoutId = setTimeout(computeNextBlock, 0);
 			} else {
 				end = true;
 			}
@@ -612,6 +692,24 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		};
 
 		computeNextBlock();
+
+		// Return control object
+		return {
+			pause: () => {
+				paused = true;
+				if (timeoutId !== null) {
+					clearTimeout(timeoutId);
+					timeoutId = null;
+				}
+			},
+			resume: () => {
+				if (paused) {
+					paused = false;
+					computeNextBlock();
+				}
+			},
+			isPaused: () => paused,
+		};
 	};
 
 	let setTab;
@@ -634,6 +732,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			activePage = elements[tabID];
 			activeTab.className = 'selected';
 			activePage.style.display = 'block';
+
+			// Initialize statistics tab content on first visit
+			if (tabID === 'statistics' && !activePage.hasChildNodes()) {
+				activePage.appendChild(makeRecipeGrinder(null, true));
+			}
 		};
 
 		for (let i = 0; i < navtabs.length; i++) {
@@ -641,9 +744,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 			if (navtab.dataset.tab) {
 				tabs[navtab.dataset.tab] = navtab;
-				elements[navtab.dataset.tab] = document.getElementById(
-					navtab.dataset.tab,
-				);
+				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
 				elements[navtab.dataset.tab].style.display = 'none';
 				navtab.addEventListener(
 					'selectstart',
@@ -666,7 +767,78 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				if (storage.activeTab && tabs[storage.activeTab]) {
 					activeTab = tabs[storage.activeTab];
 					activePage = elements[storage.activeTab];
-					modeMask = storage.modeMask || modes.together.mask;
+				}
+
+				// New format: version + dlc + character
+				if (storage.version && gameVersions[storage.version]) {
+					currentVersion = storage.version;
+					if (storage.dlc && typeof storage.dlc === 'object') {
+						activeDlc = {
+							giants: !!storage.dlc.giants,
+							shipwrecked: !!storage.dlc.shipwrecked,
+						};
+					}
+					if (storage.character && characters[storage.character]) {
+						currentCharacter = storage.character;
+					}
+				} else if (storage.baseMode && baseModes[storage.baseMode]) {
+					// Migrate from previous format (baseMode + character)
+					const bm = storage.baseMode;
+					if (bm === 'together') {
+						currentVersion = 'together';
+					} else if (bm === 'hamlet') {
+						currentVersion = 'hamlet';
+					} else if (bm === 'shipwrecked') {
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: true };
+					} else if (bm === 'giants') {
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: false };
+					} else {
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: false, shipwrecked: false };
+					}
+					if (storage.character && characters[storage.character]) {
+						currentCharacter = storage.character;
+					}
+				} else if (storage.modeMask !== null) {
+					// Migrate from oldest format: reverse-lookup modeMask.
+					// Old bit values: VANILLA=1, GIANTS=2, SHIPWRECKED=4, TOGETHER=8,
+					// WARLY=16, HAMLET=32, WARLYHAM=64, WARLYDST=128, WEBBER=256
+					const oldMask = storage.modeMask;
+
+					if (oldMask === 119) {
+						// 1|2|4|32|16|64 = VANILLA|GIANTS|SHIPWRECKED|HAMLET|WARLY|WARLYHAM
+						currentVersion = 'hamlet';
+						currentCharacter = 'warly';
+					} else if (oldMask === 23) {
+						// 1|2|4|16 = VANILLA|GIANTS|SHIPWRECKED|WARLY
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: true };
+						currentCharacter = 'warly';
+					} else if (oldMask === 136) {
+						// 8|128 = TOGETHER|WARLYDST
+						currentVersion = 'together';
+						currentCharacter = 'warly';
+					} else if (oldMask === 39) {
+						// 1|2|4|32 = VANILLA|GIANTS|SHIPWRECKED|HAMLET
+						currentVersion = 'hamlet';
+					} else if (oldMask === 7) {
+						// 1|2|4 = VANILLA|GIANTS|SHIPWRECKED
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: true };
+					} else if (oldMask === 3) {
+						// 1|2 = VANILLA|GIANTS
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: false };
+					} else if (oldMask === 1) {
+						// VANILLA
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: false, shipwrecked: false };
+					} else if (oldMask === 8) {
+						// TOGETHER
+						currentVersion = 'together';
+					}
 				}
 			}
 		} catch (err) {
@@ -689,6 +861,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 				obj = JSON.parse(window.localStorage.foodGuideState);
 				obj.activeTab = activeTab.dataset.tab;
+				obj.version = currentVersion;
+				obj.dlc = { ...activeDlc };
+				obj.character = currentCharacter;
+				// Keep modeMask for backward compatibility during migration
 				obj.modeMask = modeMask;
 				window.localStorage.foodGuideState = JSON.stringify(obj);
 			} catch (err) {
@@ -697,9 +873,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		});
 	})();
 
-	const queue = img => {
-		if (img.dataset.pending) {
-			makeImage.queue(img, img.dataset.pending);
+	const queue = icon => {
+		if (icon.dataset.src) {
+			makeImage.queue(icon, icon.dataset.src);
 		}
 	};
 
@@ -713,7 +889,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 			if (cell instanceof DocumentFragment) {
 				td.appendChild(cell.cloneNode(true));
-				Array.prototype.forEach.call(td.getElementsByTagName('img'), queue);
+				Array.prototype.forEach.call(td.querySelectorAll('.icon'), queue);
 			} else if (celltext.indexOf('img/') === 0) {
 				let imgurl = celltext;
 				let title = celltext;
@@ -744,17 +920,14 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 		const node = document.createElement('a');
 		node.setAttribute('target', '_blank');
-		node.setAttribute(
-			'href',
-			'https://dontstarve.wiki.gg/wiki/' + name.replace(/\s/g, '_'),
-		);
+		node.setAttribute('href', `https://dontstarve.wiki.gg/wiki/${name.replace(/\s/g, '_')}`);
 
 		const text = document.createTextNode(name);
 		node.appendChild(text);
 
 		return node;
 	};
-	
+
 	const fractionChars = ['\u215b', '\u00bc', '\u215c', '\u00bd', '\u215d', '\u00be', '\u215e'];
 
 	const makeSortableTable = (
@@ -768,6 +941,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		filterCallback,
 		startRow,
 		maxRows,
+		columnConfig,
 	) => {
 		let table;
 		let sorting;
@@ -776,11 +950,50 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		let lastHighlight;
 		let rows;
 
+		// Column visibility state
+		const headerKeys = Object.keys(headers);
+		const hiddenColumns = new Set();
+		let autoMode = true; // start in auto mode (responsive hiding)
+		let autoHiddenColumns;
+		if (columnConfig && columnConfig.autoHide) {
+			const indices = headerKeys
+				.map((h, i) => [h, i])
+				.filter(([h]) => {
+					const label = h.indexOf(':') === -1 ? h : h.split(':')[0];
+					return columnConfig.autoHide.includes(label);
+				})
+				.map(([, i]) => i);
+			autoHiddenColumns = new Set(indices);
+		} else {
+			autoHiddenColumns = new Set();
+		}
+
+		const isNarrow = () => window.innerWidth <= 900;
+
+		const getEffectiveHidden = () => {
+			if (autoMode && isNarrow()) {
+				// Merge manual hidden + auto-hidden
+				return new Set([...hiddenColumns, ...autoHiddenColumns]);
+			}
+			return hiddenColumns;
+		};
+
+		const applyColumnVisibility = () => {
+			if (!table) {
+				return;
+			}
+			const effective = getEffectiveHidden();
+			const allRows = table.querySelectorAll('tr');
+			for (const row of allRows) {
+				const cells = row.children;
+				for (let i = 0; i < cells.length; i++) {
+					cells[i].classList.toggle('col-hidden', effective.has(i));
+				}
+			}
+		};
+
 		const generateAndHighlight = (item, index, array) => {
-			if (
-				(!maxRows || rows < maxRows) &&
-        (!filterCallback || filterCallback(item))
-			) {
+			if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
 				const row = rowGenerator(item);
 
 				if (highlightCallback && highlightCallback(item, array)) {
@@ -821,13 +1034,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						const sa = a[sortBy];
 						const sb = b[sortBy];
 
-						return !isNaN(sa) && !isNaN(sb)
-							? sb - sa
-							: isNaN(sa) && isNaN(sb)
-								? 0
-								: isNaN(sa)
-									? 1
-									: -1;
+						return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
 					});
 				}
 
@@ -863,9 +1070,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 				if (headers[header]) {
 					if (headers[header] === sorting) {
-						th.style.background = invertSort ? '#555' : '#ccc';
-						th.style.color = invertSort ? '#ccc' : '#555';
-						th.style.borderRadius = '4px';
+						th.classList.add(invertSort ? 'sort-desc' : 'sort-asc');
 					}
 
 					th.style.cursor = 'pointer';
@@ -888,13 +1093,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			if (linkCallback) {
 				table.className = 'links';
 
-				Array.prototype.forEach.call(
-					table.getElementsByClassName('link'),
-					element => {
-						element.addEventListener('click', linkCallback, false);
-					},
-				);
+				Array.prototype.forEach.call(table.getElementsByClassName('link'), element => {
+					element.addEventListener('click', linkCallback, false);
+				});
 			}
+
+			// Apply column visibility after building the table
+			applyColumnVisibility();
 
 			if (oldTable) {
 				oldTable.parentNode.replaceChild(table, oldTable);
@@ -903,17 +1108,16 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			if (scrollHighlight) {
 				if (
 					firstHighlight &&
-          firstHighlight.offsetTop +
-            table.offsetTop +
-            mainElement.offsetTop +
-            firstHighlight.offsetHeight >
-            window.scrollY + window.innerHeight
+					firstHighlight.offsetTop +
+						table.offsetTop +
+						mainElement.offsetTop +
+						firstHighlight.offsetHeight >
+						window.scrollY + window.innerHeight
 				) {
 					firstHighlight.scrollIntoView(true);
 				} else if (
 					lastHighlight &&
-          lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop <
-            window.scrollY
+					lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop < window.scrollY
 				) {
 					lastHighlight.scrollIntoView(false);
 				}
@@ -926,16 +1130,150 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			create();
 		}
 
-		table.update = scrollHighlight => {
+		const update = scrollHighlight => {
+			// Save current scroll position before rebuilding table
+			const currentScrollY = window.scrollY;
+			const currentScrollX = window.scrollX;
+
 			create(null, null, scrollHighlight);
+
+			// Restore scroll position after table rebuild
+			// Use requestAnimationFrame to ensure DOM has updated
+			requestAnimationFrame(() => {
+				window.scrollTo(currentScrollX, currentScrollY);
+			});
 		};
 
-		table.setMaxRows = max => {
+		const setMaxRows = max => {
 			maxRows = max;
-			table.update();
+			update();
 		};
 
-		return table;
+		// Wrap in scroll container + optional column toggle bar
+		if (columnConfig && columnConfig.toggleable) {
+			const container = document.createElement('div');
+
+			// Column toggle bar
+			const toggleBar = document.createElement('div');
+			toggleBar.className = 'column-toggle-bar';
+
+			const label = document.createElement('span');
+			label.className = 'col-toggle-label';
+			label.textContent = 'Columns';
+			toggleBar.appendChild(label);
+
+			// Auto button
+			const autoBtn = document.createElement('button');
+			autoBtn.textContent = 'Auto';
+			autoBtn.className = autoMode ? 'active' : '';
+			autoBtn.title = 'Automatically hide less-important columns on narrow screens';
+			autoBtn.addEventListener('click', () => {
+				autoMode = !autoMode;
+				autoBtn.className = autoMode ? 'active' : '';
+				applyColumnVisibility();
+				updateToggleButtons();
+			});
+			toggleBar.appendChild(autoBtn);
+
+			const toggleButtons = [];
+
+			const updateToggleButtons = () => {
+				const effective = getEffectiveHidden();
+				for (const { btn, colIndex } of toggleButtons) {
+					btn.className = effective.has(colIndex) ? '' : 'active';
+				}
+			};
+
+			for (let i = 0; i < headerKeys.length; i++) {
+				const header = headerKeys[i];
+				const colLabel = header.indexOf(':') === -1 ? header : header.split(':')[0];
+
+				// Skip empty-label columns (icon column)
+				if (!colLabel) {
+					continue;
+				}
+
+				// Skip columns not marked as toggleable
+				if (columnConfig.columns && !columnConfig.columns.includes(colLabel)) {
+					continue;
+				}
+
+				const btn = document.createElement('button');
+				btn.textContent = colLabel;
+				btn.className = getEffectiveHidden().has(i) ? '' : 'active';
+
+				const colIndex = i;
+				btn.addEventListener('click', () => {
+					if (hiddenColumns.has(colIndex)) {
+						hiddenColumns.delete(colIndex);
+					} else {
+						hiddenColumns.add(colIndex);
+					}
+					applyColumnVisibility();
+					updateToggleButtons();
+				});
+
+				toggleBar.appendChild(btn);
+				toggleButtons.push({ btn, colIndex });
+			}
+
+			container.appendChild(toggleBar);
+
+			// Scroll wrapper
+			const scrollWrapper = document.createElement('div');
+			scrollWrapper.className = 'table-scroll-wrapper';
+			scrollWrapper.appendChild(table);
+			container.appendChild(scrollWrapper);
+
+			// Listen for resize to update auto-hide
+			let resizeTimeout;
+			window.addEventListener('resize', () => {
+				clearTimeout(resizeTimeout);
+				resizeTimeout = setTimeout(() => {
+					if (autoMode) {
+						applyColumnVisibility();
+						updateToggleButtons();
+					}
+				}, 150);
+			});
+
+			// Proxy update to also reapply column visibility
+			container.update = scrollHighlight => {
+				update(scrollHighlight);
+				applyColumnVisibility();
+			};
+			container.setMaxRows = setMaxRows;
+
+			// Method to update auto-hide columns dynamically (for mode changes)
+			container.updateAutoHide = newAutoHideLabels => {
+				if (!newAutoHideLabels) {
+					return;
+				}
+				const indices = headerKeys
+					.map((h, i) => [h, i])
+					.filter(([h]) => {
+						const label = h.indexOf(':') === -1 ? h : h.split(':')[0];
+						return newAutoHideLabels.includes(label);
+					})
+					.map(([, i]) => i);
+				autoHiddenColumns = new Set(indices);
+				applyColumnVisibility();
+				updateToggleButtons();
+			};
+
+			return container;
+		}
+
+		// No column config — just wrap in scroll wrapper
+		const scrollWrapper = document.createElement('div');
+		scrollWrapper.className = 'table-scroll-wrapper';
+		scrollWrapper.appendChild(table);
+
+		// Proxy update/setMaxRows through wrapper
+		scrollWrapper.update = (...args) => update(...args);
+		scrollWrapper.setMaxRows = (...args) => setMaxRows(...args);
+
+		return scrollWrapper;
 	};
 
 	const sign = n => {
@@ -947,7 +1285,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		const fractStr = nEights < 1 || nEights > 7 ? '' : fractionChars[nEights];
 
 		n = Math.floor(n);
-		return (n > 0 ? '+' + n : n) + fractStr;
+		return (n > 0 ? `+${n}` : n) + fractStr;
 	};
 
 	const rawpct = (base, val) => {
@@ -959,24 +1297,19 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	};
 
 	const pct = (base, val) => {
-		const result =
-      !isNaN(base) && base !== val
-      	? ' (' +
-          sign(
-          	(
-          		(base < val
-          			? (val - base) / Math.abs(base)
-          			: base > val
-          				? -(base - val) / Math.abs(base)
-          				: 0) * 100
-          	).toFixed(0),
-          ) +
-          '%)'
-      	: '';
-
-		return result.indexOf('Infinity') === -1
-			? result
-			: ' (' + sign(val - base) + ')';
+		if (isNaN(base) || base === val) {
+			return '';
+		}
+		let percentChange;
+		if (base < val) {
+			percentChange = (val - base) / Math.abs(base);
+		} else if (base > val) {
+			percentChange = -(base - val) / Math.abs(base);
+		} else {
+			percentChange = 0;
+		}
+		const result = ` (${sign((percentChange * 100).toFixed(0))}%)`;
+		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;
 	};
 
 	const makeFoodRow = item => {
@@ -986,50 +1319,35 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		let sanity = isNaN(item.sanity) ? '' : item.sanity * mult;
 		let perish = isNaN(item.perish)
 			? 'Never'
-			: item.perish / total_day_time +
-        ' ' +
-        pl('day', item.perish / total_day_time);
+			: `${item.perish / total_day_time} ${pl('day', item.perish / total_day_time)}`;
 
 		if (item.cook) {
 			const cookmult = statMultipliers[item.cook.preparationType];
 
 			if ((item.cook.health || 0) !== (item.health || 0)) {
-				health +=
-          ' (' +
-          sign((item.cook.health || 0) * cookmult - (item.health || 0)) +
-          ')';
+				health += ` (${sign((item.cook.health || 0) * cookmult - (item.health || 0))})`;
 			}
 			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
-				hunger +=
-          ' (' +
-          sign((item.cook.hunger || 0) * cookmult - (item.hunger || 0)) +
-          ')';
+				hunger += ` (${sign((item.cook.hunger || 0) * cookmult - (item.hunger || 0))})`;
 			}
 			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
-				sanity +=
-          ' (' +
-          sign((item.cook.sanity || 0) * cookmult - (item.sanity || 0)) +
-          ')';
+				sanity += ` (${sign((item.cook.sanity || 0) * cookmult - (item.sanity || 0))})`;
 			}
 			if ((item.cook.perish || 0) !== (item.perish || 0)) {
-				const dayDifference =
-          ((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
+				const dayDifference = ((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
 				if (isNaN(dayDifference)) {
 					perish += ' (to Never)';
 				} else {
-					perish +=
-            ' (' +
-            (item.perish
-            	? sign(dayDifference)
-            	: 'to ' + item.cook.perish / total_day_time) +
-            ')';
+					perish += ` (${
+						item.perish ? sign(dayDifference) : `to ${item.cook.perish / total_day_time}`
+					})`;
 				}
 			}
 		}
 
 		return cells(
 			'td',
-			item.img ? item.img + ':' + item.name : '',
+			item.img ? `${item.img}:${item.name}` : '',
 			fandomHref(item.name),
 			health,
 			hunger,
@@ -1048,17 +1366,15 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 		return cells(
 			'td',
-			item.img ? item.img + ':' + item.name : '',
+			item.img ? `${item.img}:${item.name}` : '',
 			fandomHref(item.name),
 			sign(ihealth) + pct(health, ihealth),
 			sign(ihunger) + pct(hunger, ihunger),
 			isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity),
 			isNaN(item.perish)
 				? 'Never'
-				: item.perish / total_day_time +
-            ' ' +
-            pl('day', item.perish / total_day_time),
-			((item.cooktime * base_cook_time + 0.5) | 0) + ' secs',
+				: `${item.perish / total_day_time} ${pl('day', item.perish / total_day_time)}`,
+			`${(item.cooktime * base_cook_time + 0.5) | 0} secs`,
 			item.priority || '0',
 			item.requires || '',
 			item.note || '',
@@ -1072,20 +1388,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	let recipeHighlighted = [];
 
 	const setHighlight = e => {
-		let name = !e.target
-			? e
-			: e.target.tagName === 'IMG'
-				? e.target.parentNode.dataset.link
-				: e.target.dataset.link;
+		let name = !e.target ? e : resolveIconTarget(e.target).dataset.link;
 
-		if (
-			name.substring(0, 7) === 'recipe:' ||
-        name.substring(0, 11) === 'ingredient:'
-		) {
+		if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
 			setTab('crockpot');
 
 			if (name.substring(0, 7) === 'recipe:') {
-				name = '*' + name.substring(7);
+				name = `*${name.substring(7)}`;
 			}
 
 			recipeHighlighted = matchingNames(recipes, name);
@@ -1106,20 +1415,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	};
 
 	const setFoodHighlight = e => {
-		let name = !e.target
-			? e
-			: e.target.tagName === 'IMG'
-				? e.target.parentNode.dataset.link
-				: e.target.dataset.link;
+		let name = !e.target ? e : resolveIconTarget(e.target).dataset.link;
 
-		if (
-			name.substring(0, 7) === 'recipe:' ||
-        name.substring(0, 11) === 'ingredient:'
-		) {
+		if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
 			setTab('crockpot');
 
 			if (name.substring(0, 7) === 'recipe:') {
-				name = '*' + name.substring(7);
+				name = `*${name.substring(7)}`;
 			}
 
 			recipeHighlighted = matchingNames(recipes, name);
@@ -1138,11 +1440,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	};
 
 	const setRecipeHighlight = e => {
-		const name = !e.target
-			? e
-			: e.target.tagName === 'IMG'
-				? e.target.parentNode.dataset.link
-				: e.target.dataset.link;
+		const name = !e.target ? e : resolveIconTarget(e.target).dataset.link;
 		const modename = name.substring(name.indexOf(':') + 1);
 
 		if (!!modes[modename]) {
@@ -1165,7 +1463,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	};
 
 	const testmode = item => {
-		return (item.modeMask & modeMask) !== 0;
+		return matchesMode(item.modeMask, modeMask, item.charMask, charMask);
 	};
 
 	const foodTable = makeSortableTable(
@@ -1186,6 +1484,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		setFoodHighlight,
 		testFoodHighlight,
 		testmode,
+		undefined,
+		undefined,
+		{
+			toggleable: true,
+			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
+			autoHide: getAutoHideColumns(['Sanity']),
+		},
 	);
 
 	const recipeTable = makeSortableTable(
@@ -1197,8 +1502,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			[headings.sanity]: 'sanity',
 			[headings.perish]: 'perish',
 			'Cook Time': 'cooktime',
-			'Priority:One of the highest priority recipes for a combination will be made':
-          'priority',
+			'Priority:One of the highest priority recipes for a combination will be made': 'priority',
 			'Requires:Dim+struck items cannot be used': '',
 			Notes: '',
 			'Mode:DLC or Game Mode required': 'modeMask',
@@ -1210,6 +1514,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		setRecipeHighlight,
 		testRecipeHighlight,
 		testmode,
+		undefined,
+		undefined,
+		{
+			toggleable: true,
+			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
+			autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
+		},
 	);
 
 	foodElement.appendChild(foodTable);
@@ -1218,11 +1529,18 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	modeRefreshers.push(() => {
 		foodTable.update();
 		recipeTable.update();
+		// Update auto-hide columns based on new mode
+		if (foodTable.updateAutoHide) {
+			foodTable.updateAutoHide(getAutoHideColumns(['Sanity']));
+		}
+		if (recipeTable.updateAutoHide) {
+			recipeTable.updateAutoHide(getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']));
+		}
 	});
 
 	// statistics analyzer
 	const ingredientToIcon = (a, b) => {
-		return a + '[ingredient:' + food[b.id].name + '|' + food[b.id].img + ']';
+		return `${a}[ingredient:${food[b.id].name}|${food[b.id].img}]`;
 	};
 
 	const makeRecipeGrinder = (ingredients, excludeDefault) => {
@@ -1230,9 +1548,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		let hasTable = false;
 
 		makableButton.appendChild(
-			document.createTextNode(
-				'Calculate efficient recipes (may take some time)',
-			),
+			document.createTextNode('Calculate efficient recipes (may take some time)'),
 		);
 		makableButton.className = 'makablebutton';
 		const initializeGrinder = () =>
@@ -1247,15 +1563,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 				let selectedRecipe;
 				let selectedRecipeElement;
-				let makableRecipe;
-				let makableSummary;
-				let makableFootnote;
-				let makableFilter;
-				let customFilterHolder;
-				let customFilterInput;
-				let made;
-				let makableDiv;
-				let makableTable;
+				let made = [];
 
 				const deleteButton = document.createElement('button');
 				deleteButton.appendChild(document.createTextNode('Clear results'));
@@ -1263,86 +1571,131 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				deleteButton.addEventListener('click', () => {
 					makableButton.parentNode.removeChild(makableDiv);
 					hasTable = false;
+					makableButton.textContent = 'Calculate efficient recipes (may take some time)';
+					makableButton.disabled = false;
 				});
 				if (hasTable) {
 					makableButton.parentNode.removeChild(makableButton.nextSibling);
 				}
 				hasTable = true;
 
-				const checkExcludes = item => excludedIngredients.has(item.id);
+				const checkExcludes = item => excludedIngredients.has(item.key);
 				const checkIngredient = function (item) {
 					return this.includes(food[item]);
 				};
 
-				const toggleFilter = e => {
-					if (excludedIngredients.has(e.target.dataset.id)) {
-						excludedIngredients.delete(e.target.dataset.id);
+				// Cycle through filter states: normal -> required -> excluded -> normal
+				const cycleFilterState = (target, reverse = false) => {
+					const id = target.dataset.id;
+					const isRequired = usedIngredients.has(id);
+					const isExcluded = excludedIngredients.has(id);
+
+					// Determine current state
+					let currentState = 'normal';
+					if (isRequired) {
+						currentState = 'required';
+					} else if (isExcluded) {
+						currentState = 'excluded';
 					}
-					if (usedIngredients.has(e.target.dataset.id)) {
-						usedIngredients.delete(e.target.dataset.id);
-						e.target.className = '';
+
+					// Cycle to next state
+					let nextState;
+					if (reverse) {
+						// Reverse cycle for right-click: normal -> excluded -> required -> normal
+						if (currentState === 'normal') {
+							nextState = 'excluded';
+						} else if (currentState === 'excluded') {
+							nextState = 'required';
+						} else {
+							nextState = 'normal';
+						}
 					} else {
-						usedIngredients.add(e.target.dataset.id);
-						e.target.className = 'selected';
+						// Forward cycle for left-click: normal -> required -> excluded -> normal
+						if (currentState === 'normal') {
+							nextState = 'required';
+						} else if (currentState === 'required') {
+							nextState = 'excluded';
+						} else {
+							nextState = 'normal';
+						}
+					}
+
+					// Clear current state
+					usedIngredients.delete(id);
+					excludedIngredients.delete(id);
+					target.classList.remove('selected', 'excluded');
+
+					// Apply next state
+					if (nextState === 'required') {
+						usedIngredients.add(id);
+						target.classList.add('selected');
+					} else if (nextState === 'excluded') {
+						excludedIngredients.add(id);
+						target.classList.add('excluded');
 					}
 
 					makableTable.update();
 				};
 
+				const toggleFilter = e => {
+					cycleFilterState(e.target, false);
+				};
+
 				const toggleExclude = e => {
-					if (usedIngredients.has(e.target.dataset.id)) {
-						usedIngredients.delete(e.target.dataset.id);
-					}
-
-					if (excludedIngredients.has(e.target.dataset.id)) {
-						excludedIngredients.delete(e.target.dataset.id);
-						e.target.className = '';
-					} else {
-						excludedIngredients.add(e.target.dataset.id);
-						e.target.className = 'excluded';
-					}
-
-					makableTable.update();
-
+					cycleFilterState(e.target, true);
 					e.preventDefault();
 				};
 
 				const setRecipe = e => {
-					if (selectedRecipeElement) {
-						selectedRecipeElement.className = '';
+					const target = e.target;
+					const recipeId = target.dataset.recipe;
+
+					// Clear all recipe selections first
+					for (const el of makableRecipe.childNodes) {
+						el.classList.remove('selected', 'excluded');
 					}
 
-					for (const e of makableRecipe.childNodes) {
-						e.className = '';
-					}
-
-					excludedRecipes.clear();
-
-					if (selectedRecipe === e.target.dataset.recipe) {
+					// Cycle through: normal -> selected -> excluded -> normal
+					if (excludedRecipes.has(recipeId)) {
+						// Currently excluded -> go to normal
+						excludedRecipes.delete(recipeId);
+						selectedRecipeElement = null;
+						selectedRecipe = null;
+					} else if (selectedRecipe === recipeId) {
+						// Currently selected -> go to excluded
+						excludedRecipes.add(recipeId);
+						target.classList.add('excluded');
 						selectedRecipeElement = null;
 						selectedRecipe = null;
 					} else {
-						selectedRecipe = e.target.dataset.recipe;
-						selectedRecipeElement = e.target;
-						e.target.className = 'selected';
+						// Normal or other recipe selected -> select this one
+						excludedRecipes.clear();
+						selectedRecipe = recipeId;
+						selectedRecipeElement = target;
+						target.classList.add('selected');
 					}
 
 					makableTable.update();
 				};
 
 				const excludeRecipe = e => {
+					const target = e.target;
+					const recipeId = target.dataset.recipe;
+
+					// Clear selection
 					if (selectedRecipeElement) {
-						selectedRecipeElement.className = '';
+						selectedRecipeElement.classList.remove('selected');
 						selectedRecipeElement = null;
 						selectedRecipe = null;
 					}
 
-					if (excludedRecipes.has(e.target.dataset.recipe)) {
-						excludedRecipes.delete(e.target.dataset.recipe);
-						e.target.className = '';
+					// Toggle excluded state (shortcut for right-click)
+					if (excludedRecipes.has(recipeId)) {
+						excludedRecipes.delete(recipeId);
+						target.classList.remove('excluded');
 					} else {
-						excludedRecipes.add(e.target.dataset.recipe);
-						e.target.className = 'excluded';
+						excludedRecipes.add(recipeId);
+						target.classList.add('excluded');
 					}
 
 					makableTable.update();
@@ -1354,13 +1707,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				if (i === null) {
 					ingredients = food;
 				}
-				ingredients = ingredients.filter(f => (f.modeMask & modeMask) !== 0);
+				ingredients = ingredients.filter(f => matchesMode(f.modeMask, modeMask, f.charMask, charMask));
 				i = ingredients.length;
 
 				if (excludeDefault) {
 					for (const ingredient of ingredients
 						.filter(ingredient => ingredient.defaultExclude)
-						.map(ingredient => ingredient.id)) {
+						.map(ingredient => ingredient.key)) {
 						excludedIngredients.add(ingredient);
 					}
 
@@ -1381,24 +1734,24 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 					if (!ingredients[i].skip) {
 						if (
 							!ingredients[i].uncookable &&
-              (!ingredients[i].cooked || ingredients[i].ideal) &&
-              idealIngredients.indexOf(ingredients[i]) === -1
+							(!ingredients[i].cooked || ingredients[i].ideal) &&
+							idealIngredients.indexOf(ingredients[i]) === -1
 						) {
 							tryPush(ingredients[i]);
 						}
 					} else {
 						if (
 							ingredients[i].cook &&
-              !ingredients[i].cook.uncookable &&
-              !ingredients[i].cook.skip &&
-              idealIngredients.indexOf(ingredients[i].cook) === -1
+							!ingredients[i].cook.uncookable &&
+							!ingredients[i].cook.skip &&
+							idealIngredients.indexOf(ingredients[i].cook) === -1
 						) {
 							tryPush(ingredients[i].cook);
 						} else if (
 							ingredients[i].dry &&
-              !ingredients[i].dry.uncookable &&
-              !ingredients[i].dry.skip &&
-              idealIngredients.indexOf(ingredients[i].dry) === -1
+							!ingredients[i].dry.uncookable &&
+							!ingredients[i].dry.skip &&
+							idealIngredients.indexOf(ingredients[i].dry) === -1
 						) {
 							tryPush(ingredients[i].dry);
 						}
@@ -1406,18 +1759,18 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 					if (
 						ingredients[i].cooked &&
-            !ingredients[i].raw.uncookable &&
-            !ingredients[i].raw.skip &&
-            idealIngredients.indexOf(ingredients[i].raw) === -1
+						!ingredients[i].raw.uncookable &&
+						!ingredients[i].raw.skip &&
+						idealIngredients.indexOf(ingredients[i].raw) === -1
 					) {
 						tryPush(ingredients[i].raw);
 					}
 
 					if (
 						ingredients[i].rackdried &&
-            !ingredients[i].wet.uncookable &&
-            !ingredients[i].wet.skip &&
-            idealIngredients.indexOf(ingredients[i].wet) === -1
+						!ingredients[i].wet.uncookable &&
+						!ingredients[i].wet.skip &&
+						idealIngredients.indexOf(ingredients[i].wet) === -1
 					) {
 						tryPush(ingredients[i].wet);
 					}
@@ -1425,7 +1778,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 				made = [];
 
-				makableTable = makeSortableTable(
+				const makableTable = makeSortableTable(
 					{
 						'': '',
 						Name: 'name',
@@ -1444,19 +1797,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 							item.img ? item.img : '',
 							item.name,
 							sign(item.health),
-							sign(data.healthpls) +
-                ' (' +
-                sign((data.healthpct * 100) | 0) +
-                '%)',
+							`${sign(data.healthpls)} (${sign((data.healthpct * 100) | 0)}%)`,
 							sign(item.hunger),
-							sign(data.hungerpls) +
-                ' (' +
-                sign((data.hungerpct * 100) | 0) +
-                '%)',
-							makeLinkable(
-								data.ingredients.reduce(ingredientToIcon, '') +
-                  (data.multiple ? '*' : ''),
-							),
+							`${sign(data.hungerpls)} (${sign((data.hungerpct * 100) | 0)}%)`,
+							makeLinkable(data.ingredients.reduce(ingredientToIcon, '') + (data.multiple ? '*' : '')),
 						);
 					},
 					'hungerpls',
@@ -1465,41 +1809,56 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 					null,
 					data =>
 						(!selectedRecipe || data.recipe.id === selectedRecipe) &&
-            !excludedRecipes.has(data.recipe.id) &&
-            (excludedIngredients.size == 0 ||
-              !data.ingredients.some(checkExcludes)) &&
-            [...usedIngredients].every(checkIngredient, data.ingredients),
+						!excludedRecipes.has(data.recipe.id) &&
+						(excludedIngredients.size === 0 || !data.ingredients.some(checkExcludes)) &&
+						[...usedIngredients].every(checkIngredient, data.ingredients),
 					0,
 					25,
+					{
+						toggleable: true,
+						columns: ['Health', 'Health+', 'Hunger', 'Hunger+', 'Ingredients'],
+						autoHide: ['Health+', 'Hunger+'],
+					},
 				);
 
-				makableDiv = document.createElement('div');
+				const makableDiv = document.createElement('div');
+				makableDiv.className = 'makableContainer';
 
-				makableSummary = document.createElement('div');
-				makableSummary.appendChild(
-					document.createTextNode('Computing combinations..'),
-				);
+				const makableSummary = document.createElement('div');
+				makableSummary.className = 'makableSummary';
+				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
 
-				makableFootnote = document.createElement('div');
+				const makableFootnote = document.createElement('div');
+				makableFootnote.className = 'makableFootnote';
 				makableFootnote.appendChild(
 					document.createTextNode('* combination has multiple possible results'),
 				);
 
-				makableDiv.appendChild(makableSummary);
+				const filterHelp = document.createElement('div');
+				filterHelp.className = 'makableFilterHelp';
+				filterHelp.appendChild(
+					document.createTextNode(
+						'Click ingredients/recipes to cycle: normal → required (✓) → excluded (✕). Right-click for quick exclude.',
+					),
+				);
 
-				makableRecipe = document.createElement('div');
+				makableDiv.appendChild(makableSummary);
+				makableDiv.appendChild(makableFootnote);
+				makableDiv.appendChild(filterHelp);
+
+				const makableRecipe = document.createElement('div');
 				makableRecipe.className = 'recipeFilter';
 				makableDiv.appendChild(makableRecipe);
 
-				makableFilter = document.createElement('div');
+				const makableFilter = document.createElement('div');
 				makableFilter.className = 'foodFilter';
 
 				idealIngredients.forEach(item => {
 					const img = makeImage(item.img);
-					img.dataset.id = item.id;
+					img.dataset.id = item.key;
 					img.addEventListener('click', toggleFilter, false);
 					img.addEventListener('contextmenu', toggleExclude, false);
-					if (excludedIngredients.has(item.id)) {
+					if (excludedIngredients.has(item.key)) {
 						img.className = 'excluded';
 					}
 					img.title = item.name;
@@ -1508,9 +1867,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 				makableDiv.appendChild(makableFilter);
 
-				customFilterHolder = document.createElement('div');
+				const customFilterHolder = document.createElement('div');
 
-				customFilterInput = document.createElement('input');
+				const customFilterInput = document.createElement('input');
 				customFilterInput.type = 'text';
 				customFilterInput.placeholder = 'use custom filter';
 				customFilterInput.className = 'customFilterInput';
@@ -1520,9 +1879,19 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				makableButton.after(makableDiv);
 				makableDiv.appendChild(makableFootnote);
 
-				updateFoodRecipes(recipes.filter(r => (modeMask & r.modeMask) !== 0));
+				updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
 
-				getRealRecipesFromCollection(
+				// Create pause button upfront
+				const pauseButton = document.createElement('button');
+				pauseButton.appendChild(document.createTextNode('Pause'));
+				pauseButton.className = 'pauseButton';
+				let isCalculating = true;
+
+				// Set button state BEFORE starting calculation
+				makableButton.textContent = 'Calculating...';
+				makableButton.disabled = true;
+
+				const calculationControl = getRealRecipesFromCollection(
 					idealIngredients,
 					data => {
 						// row update
@@ -1537,9 +1906,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 							makableRecipes.splice(i, 0, data.recipe.id);
 
-							const img = makeImage(
-								recipes[makableRecipes[i].toLowerCase()].img,
-							);
+							const img = makeImage(recipes[makableRecipes[i].toLowerCase()].img);
 
 							img.dataset.recipe = makableRecipes[i];
 							img.addEventListener('click', setRecipe, false);
@@ -1573,30 +1940,91 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						made.push(data);
 					},
 					() => {
-						makableSummary.firstChild.textContent =
-              'Found ' +
-              made.length +
-              ' valid recipes.. (you can change Food Guide tabs during this process)';
+						// Chunk callback - show pause button if this is called (meaning async operation)
+						if (isCalculating && !pauseButton.parentNode) {
+							makableSummary.appendChild(pauseButton);
+						}
+						makableSummary.firstChild.textContent = `Found ${
+							made.length
+						} valid recipes.. (you can change Food Guide tabs during this process)`;
 					},
 					() => {
 						//computation finished
+						isCalculating = false;
+
+						// Remove pause button if it exists
+						if (pauseButton.parentNode) {
+							pauseButton.parentNode.removeChild(pauseButton);
+						}
+
 						window.analysis = {
 							made,
 						};
 
-						makableTable.setMaxRows(250);
-						makableSummary.firstChild.textContent =
-              'Found ' + made.length + ' valid recipes.';
+						// Start with a reasonable batch size
+						makableTable.setMaxRows(500);
+
+						// Add "Show more" functionality if there are many results
+						const showMoreButton = document.createElement('button');
+						showMoreButton.appendChild(document.createTextNode('Show more results'));
+						showMoreButton.className = 'showMoreButton';
+						let currentLimit = 500;
+						showMoreButton.addEventListener('click', () => {
+							currentLimit += 500;
+							makableTable.setMaxRows(currentLimit);
+							if (currentLimit >= made.length) {
+								showMoreButton.style.display = 'none';
+							}
+							showMoreButton.textContent = `Show more results (${Math.min(currentLimit, made.length)} of ${made.length})`;
+						});
+
+						const summaryText = `Found ${made.length} valid recipes.`;
+						makableSummary.firstChild.textContent = summaryText;
+
+						if (made.length > 500) {
+							showMoreButton.textContent = `Show more results (500 of ${made.length})`;
+							makableSummary.appendChild(showMoreButton);
+						}
 
 						makableSummary.appendChild(deleteButton);
+						makableButton.textContent = 'Calculate efficient recipes (may take some time)';
+						makableButton.disabled = false;
 					},
 				);
+
+				// Add pause/resume button functionality
+				pauseButton.addEventListener('click', () => {
+					if (calculationControl.isPaused()) {
+						calculationControl.resume();
+						pauseButton.textContent = 'Pause';
+						makableSummary.firstChild.textContent = `Found ${
+							made.length
+						} valid recipes.. (you can change Food Guide tabs during this process)`;
+					} else {
+						calculationControl.pause();
+						pauseButton.textContent = 'Resume';
+						makableSummary.firstChild.textContent = `Found ${made.length} valid recipes (paused)`;
+					}
+				});
 			})();
 
 		makableButton.addEventListener('click', initializeGrinder, false);
 
 		return makableButton;
 	};
+
+	// Initialize statistics tab if it's the active tab on page load
+	try {
+		if (window.localStorage.foodGuideState) {
+			const storage = JSON.parse(window.localStorage.foodGuideState);
+			const statisticsEl = document.getElementById('statistics');
+			if (storage.activeTab === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
+				statisticsEl.appendChild(makeRecipeGrinder(null, true));
+			}
+		}
+	} catch {
+		// Silently ignore localStorage errors
+	}
 
 	const highest = (array, property) => {
 		return array.reduce((previous, current) => {
@@ -1610,12 +2038,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 	const setSlot = (slotElement, item) => {
 		if (item !== null) {
-			slotElement.dataset.id = item.id;
+			slotElement.dataset.id = item.key;
 		} else {
-			if (
-				slotElement.nextElementSibling &&
-        getSlot(slotElement.nextElementSibling) !== null
-			) {
+			if (slotElement.nextElementSibling && getSlot(slotElement.nextElementSibling) !== null) {
 				setSlot(slotElement, getSlot(slotElement.nextElementSibling));
 				setSlot(slotElement.nextElementSibling, null);
 
@@ -1645,7 +2070,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 	const getSlot = slotElement => {
 		return (
 			slotElement &&
-      (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null)
+			slotElement.dataset &&
+			(food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null)
 		);
 	};
 
@@ -1655,7 +2081,6 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 		while (i--) {
 			const searchSelector = document.createElement('span');
-			let searchSelectorControls;
 			const dropdown = document.createElement('div');
 			let ul = document.createElement('ul');
 			const picker = pickers[i];
@@ -1664,7 +2089,9 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			const from = picker.dataset.type === 'recipes' ? recipes : food;
 			const allowUncookable = !picker.dataset.cookable;
 			let parent = picker.nextElementSibling;
-			while (!parent.classList.contains('ingredientlist')) parent = parent.nextElementSibling;
+			while (!parent.classList.contains('ingredientlist')) {
+				parent = parent.nextElementSibling;
+			}
 			let slots = parent.getElementsByClassName('ingredient');
 			let limited;
 			let ingredients = [];
@@ -1677,11 +2104,28 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			const discover = document.getElementById('discover');
 			const makable = document.getElementById('makable');
 			const clear = document.createElement('span');
-			const toggleText = document.createElement('span');
 
 			const pickItem = e => {
 				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
-				const result = appendSlot(target.dataset.id);
+				const id = target.dataset.id;
+
+				// In Discovery mode (unlimited), toggle: remove if already added
+				if (!limited && slots.indexOf(id) !== -1) {
+					// Find and remove the existing slot
+					const children = Array.from(parent.children);
+					const existingSlot = children.find(child => child.dataset.id === id);
+					if (existingSlot) {
+						const i = slots.indexOf(id);
+						slots.splice(i, 1);
+						parent.removeChild(existingSlot);
+						ensureEmptySlot();
+						updateRecipes();
+					}
+					e && e.preventDefault && e.preventDefault();
+					return;
+				}
+
+				const result = appendSlot(id);
 
 				if (result !== -1) {
 					e && e.preventDefault && e.preventDefault();
@@ -1689,6 +2133,30 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			};
 
 			let displaying = false;
+
+			const ensureEmptySlot = () => {
+				// Only for unlimited mode (Discovery page)
+				if (limited) {
+					return;
+				}
+
+				// Remove all existing empty slots first
+				const existingEmptySlots = parent.querySelectorAll('.ingredient:empty');
+				existingEmptySlots.forEach(slot => {
+					// Only remove if it has no dataset.id (our placeholder slots)
+					if (!slot.dataset.id) {
+						parent.removeChild(slot);
+					}
+				});
+
+				// Add a single empty slot at the end
+				const emptySlot = document.createElement('span');
+				emptySlot.className = 'ingredient';
+				emptySlot.addEventListener('click', () => {
+					picker.focus();
+				});
+				parent.appendChild(emptySlot);
+			};
 
 			const appendSlot = id => {
 				const item = food[id] || recipes[id] || null;
@@ -1719,6 +2187,10 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						setSlot(i, item);
 						i.addEventListener('click', removeSlot, false);
 						parent.appendChild(i);
+
+						// Ensure there's always an empty "+" slot at the end
+						ensureEmptySlot();
+
 						if (loaded) {
 							updateRecipes();
 						}
@@ -1742,7 +2214,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				name.appendChild(document.createTextNode(item.name));
 				li.appendChild(name);
 
-				li.dataset.id = item.id;
+				li.dataset.id = item.key;
 
 				li.addEventListener('mousedown', pickItem, false);
 				this.appendChild(li);
@@ -1761,8 +2233,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			};
 
 			const removeSlot = e => {
-				const target =
-          e.target.tagName === 'IMG' ? e.target.parentNode : e.target;
+				const target = resolveIconTarget(e.target);
 
 				if (limited) {
 					if (getSlot(target) !== null) {
@@ -1770,12 +2241,20 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						updateRecipes();
 
 						return target.dataset.id;
+					} else {
+						// Empty slot clicked - focus the search bar
+						picker.focus();
+						return null;
 					}
 				} else {
 					const i = slots.indexOf(target.dataset.id);
 
 					slots.splice(i, 1);
 					parent.removeChild(target);
+
+					// Ensure there's always an empty "+" slot at the end
+					ensureEmptySlot();
+
 					updateRecipes();
 
 					return slots[i] || null;
@@ -1784,11 +2263,13 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 			const refreshPicker = () => {
 				searchSelectorControls.splitTag();
-				const names = matchingNames(
-					from,
-					searchSelectorControls.getSearch(),
-					allowUncookable,
-				);
+				let names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+
+				// Apply additional sorting based on user preference
+				const sortType = sortControls.getSortType();
+				if (sortType !== 'default') {
+					names = sortIngredients(names, sortType);
+				}
 
 				dropdown.removeChild(ul);
 
@@ -1797,18 +2278,51 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				names.forEach(liIntoPicker, ul);
 
 				dropdown.appendChild(ul);
+			};
 
+			// Sorting function for ingredients
+			const sortIngredients = (items, sortType) => {
+				const sorted = [...items]; // Create a copy to avoid mutating original
+
+				switch (sortType) {
+					case 'health':
+						return sorted.sort((a, b) => {
+							const aVal = (a.health || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal = (b.health || 0) * (statMultipliers[b.preparationType] || 1);
+							return bVal - aVal || a.name.localeCompare(b.name);
+						});
+					case 'hunger':
+						return sorted.sort((a, b) => {
+							const aVal = (a.hunger || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal = (b.hunger || 0) * (statMultipliers[b.preparationType] || 1);
+							return bVal - aVal || a.name.localeCompare(b.name);
+						});
+					case 'sanity':
+						return sorted.sort((a, b) => {
+							const aVal = (a.sanity || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal = (b.sanity || 0) * (statMultipliers[b.preparationType] || 1);
+							return bVal - aVal || a.name.localeCompare(b.name);
+						});
+					case 'perish':
+						return sorted.sort((a, b) => {
+							// Treat 'never' perish as infinite (very high value)
+							const aVal = a.perish || 999999;
+							const bVal = b.perish || 999999;
+							return aVal - bVal || a.name.localeCompare(b.name);
+						});
+					case 'name':
+						return sorted.sort((a, b) => a.name.localeCompare(b.name));
+					default:
+						return sorted;
+				}
 			};
 
 			const searchFor = e => {
-				const name =
-          e.target.tagName === 'IMG'
-          	? e.target.parentNode.dataset.link
-          	: e.target.dataset.link;
+				const name = resolveIconTarget(e.target).dataset.link;
 				const matches = matchingNames(from, name, allowUncookable);
 
 				if (matches.length === 1) {
-					appendSlot(matches[0].id);
+					appendSlot(matches[0].key);
 				} else {
 					picker.value = name;
 					refreshPicker();
@@ -1836,8 +2350,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 							[headings.sanity]: 'sanity',
 							[headings.perish]: 'perish',
 							'Cook Time': 'cooktime',
-							'Priority:One of the highest priority recipes for a combination will be made':
-                'priority',
+							'Priority:One of the highest priority recipes for a combination will be made': 'priority',
 							'Requires:Dim, struck items cannot be used': '',
 							Notes: '',
 							'Mode:DLC or Game Mode required': 'modeMask',
@@ -1850,9 +2363,14 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						true,
 						searchFor,
 						(item, array) => {
-							return (
-								array.length > 0 && item.priority === highest(array, 'priority')
-							);
+							return array.length > 0 && item.priority === highest(array, 'priority');
+						},
+						undefined,
+						undefined,
+						{
+							toggleable: true,
+							columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
+							autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 						},
 					);
 
@@ -1870,9 +2388,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						getSuggestions(suggestions, ingredients, cooking);
 
 						if (suggestions.length > 0) {
-							results.appendChild(
-								makeElement('p', 'Add more ingredients to make:'),
-							);
+							results.appendChild(makeElement('p', 'Add more ingredients to make:'));
 							table = makeSortableTable(
 								{
 									'': '',
@@ -1882,8 +2398,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 									[headings.sanity]: 'sanity',
 									[headings.perish]: 'perish',
 									'Cook Time': 'cooktime',
-									'Priority:One of the highest priority recipes for a combination will be made':
-                    'priority',
+									'Priority:One of the highest priority recipes for a combination will be made': 'priority',
 									'Requires:Dim, struck items cannot be used': '',
 									Notes: '',
 									'Mode:DLC or Game Mode required': 'modeMask',
@@ -1895,27 +2410,41 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 								'priority',
 								false,
 								searchFor,
+								undefined,
+								undefined,
+								undefined,
+								undefined,
+								{
+									toggleable: true,
+									columns: [
+										'Health',
+										'Hunger',
+										'Sanity',
+										'Perish',
+										'Cook Time',
+										'Priority',
+										'Notes',
+										'Mode',
+									],
+									autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
+								},
 							);
 							results.appendChild(table);
 						}
 					}
 
 					ul &&
-            ul.firstChild &&
-            Array.prototype.forEach.call(
-            	ul.getElementsByTagName('span'),
-            	updateFaded,
-            );
+						ul.firstChild &&
+						Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
 				};
 			} else if (parent.id === 'inventory') {
 				//discovery
 				updateRecipes = () => {
-					ingredients = Array.prototype.map.call(
-						parent.getElementsByClassName('ingredient'),
-						slot => {
+					ingredients = Array.prototype.map
+						.call(parent.getElementsByClassName('ingredient'), slot => {
 							return getSlot(slot);
-						},
-					);
+						})
+						.filter(item => item !== null); // Filter out empty slots
 
 					if (discoverfood.firstChild) {
 						discoverfood.removeChild(discoverfood.firstChild);
@@ -1944,6 +2473,15 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 							'name',
 							false,
 							setHighlight,
+							undefined,
+							undefined,
+							undefined,
+							undefined,
+							{
+								toggleable: true,
+								columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
+								autoHide: getAutoHideColumns(['Sanity']),
+							},
 						);
 
 						discoverfood.appendChild(foodTable);
@@ -1959,8 +2497,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 									[headings.sanity]: 'sanity',
 									[headings.perish]: 'perish',
 									'Cook Time': 'cooktime',
-									'Priority:One of the highest priority recipes for a combination will be made':
-                    'priority',
+									'Priority:One of the highest priority recipes for a combination will be made': 'priority',
 									'Requires:Dim, struck items cannot be used': '',
 									Notes: '',
 									'Mode:DLC or Game Mode required': 'modeMask',
@@ -1970,6 +2507,24 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 								'name',
 								false,
 								setHighlight,
+								undefined,
+								undefined,
+								undefined,
+								undefined,
+								{
+									toggleable: true,
+									columns: [
+										'Health',
+										'Hunger',
+										'Sanity',
+										'Perish',
+										'Cook Time',
+										'Priority',
+										'Notes',
+										'Mode',
+									],
+									autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
+								},
 							);
 
 							discover.appendChild(table);
@@ -1978,12 +2533,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						}
 					}
 
-					if (ul &&
-            ul.firstChild) {
-						Array.prototype.forEach.call(
-            	ul.getElementsByTagName('span'),
-            	updateFaded,
-						);
+					if (ul && ul.firstChild) {
+						Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
 					}
 				};
 			}
@@ -2006,6 +2557,11 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 
 					if (state && state[index]) {
 						state[index].forEach(id => {
+							// Migrate old _dst IDs to unified format
+							if (id && !food[id] && id.endsWith('_dst')) {
+								const baseId = id.slice(0, -4);
+								id = food[`${baseId}@together`] ? `${baseId}@together` : baseId;
+							}
 							if (food[id]) {
 								appendSlot(id);
 							}
@@ -2017,10 +2573,125 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			}
 
 			loaded = true;
+
+			// Ensure Discovery page starts with an empty "+" slot
+			ensureEmptySlot();
+
+			// Sort controls for ingredient picker
+			const sortControls = (() => {
+				const sortButton = document.createElement('span');
+				const sortDropdown = document.createElement('div');
+				const sortOptions = [
+					{ value: 'default', label: 'Sort: Default' },
+					{ value: 'name', label: 'Sort: Name' },
+					{ value: 'health', label: 'Sort: Health' },
+					{ value: 'hunger', label: 'Sort: Hunger' },
+					{ value: 'sanity', label: 'Sort: Sanity' },
+					{ value: 'perish', label: 'Sort: Perish' },
+				];
+
+				let currentSort = 'default';
+				let isOpen = false;
+
+				// Try to load saved sort preference from localStorage
+				try {
+					if (window.localStorage.foodGuideSortPreference) {
+						const saved = JSON.parse(window.localStorage.foodGuideSortPreference);
+						if (saved && saved[index] !== undefined) {
+							currentSort = saved[index];
+						}
+					}
+				} catch (err) {
+					console.warn('Unable to load sort preference', err);
+				}
+
+				sortButton.className = 'sortingredients';
+				sortButton.textContent = sortOptions.find(opt => opt.value === currentSort).label;
+				sortButton.style.cursor = 'pointer';
+
+				sortDropdown.className = 'sortdropdown';
+				sortDropdown.style.display = 'none';
+
+				sortOptions.forEach(option => {
+					const optionEl = document.createElement('div');
+					optionEl.textContent = option.label;
+					optionEl.dataset.value = option.value;
+					optionEl.style.padding = '4px 8px';
+					optionEl.style.cursor = 'pointer';
+					optionEl.style.background = 'var(--bg-primary)';
+					optionEl.style.border = '1px solid var(--medium)';
+					optionEl.style.borderTop = 'none';
+
+					if (option.value === currentSort) {
+						optionEl.style.background = 'var(--selected-bg)';
+					}
+
+					optionEl.addEventListener('click', () => {
+						currentSort = option.value;
+						sortButton.textContent = option.label;
+
+						// Update all options' backgrounds
+						Array.from(sortDropdown.children).forEach(child => {
+							if (child.dataset.value === currentSort) {
+								child.style.background = 'var(--selected-bg)';
+							} else {
+								child.style.background = 'var(--bg-primary)';
+							}
+						});
+
+						// Save to localStorage
+						try {
+							let saved = {};
+							if (window.localStorage.foodGuideSortPreference) {
+								saved = JSON.parse(window.localStorage.foodGuideSortPreference);
+							}
+							saved[index] = currentSort;
+							window.localStorage.foodGuideSortPreference = JSON.stringify(saved);
+						} catch (err) {
+							console.warn('Unable to save sort preference', err);
+						}
+
+						sortDropdown.style.display = 'none';
+						isOpen = false;
+						refreshPicker();
+					});
+
+					sortDropdown.appendChild(optionEl);
+				});
+
+				sortButton.addEventListener('click', e => {
+					e.stopPropagation();
+					isOpen = !isOpen;
+					if (isOpen) {
+						// Position dropdown below button
+						const rect = sortButton.getBoundingClientRect();
+						sortDropdown.style.left = `${rect.left}px`;
+						sortDropdown.style.top = `${rect.bottom + 2}px`;
+						sortDropdown.style.display = 'block';
+					} else {
+						sortDropdown.style.display = 'none';
+					}
+				});
+
+				// Close dropdown when clicking outside
+				document.addEventListener('click', e => {
+					if (isOpen && !sortDropdown.contains(e.target) && e.target !== sortButton) {
+						sortDropdown.style.display = 'none';
+						isOpen = false;
+					}
+				});
+
+				return {
+					getSortType: () => currentSort,
+					getButton: () => sortButton,
+					getDropdown: () => sortDropdown,
+				};
+			})();
+
 			searchSelector.className = 'searchselector retracted';
 			searchSelector.appendChild(document.createTextNode('name'));
 
-			searchSelectorControls = (() => {
+			const searchSelectorControls = (() => {
 				const dropdown = document.createElement('div');
 				let extended = false;
 				let extendedHeight = null;
@@ -2057,9 +2728,8 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 					if (extendedHeight === null) {
 						dropdown.style.height = 'auto';
 						dropdown.style.left = searchSelector.offsetLeft;
-						dropdown.style.top =
-              searchSelector.offsetTop + searchSelector.offsetHeight;
-						extendedHeight = dropdown.offsetHeight + 'px';
+						dropdown.style.top = searchSelector.offsetTop + searchSelector.offsetHeight;
+						extendedHeight = `${dropdown.offsetHeight}px`;
 						dropdown.style.height = '0px';
 					}
 
@@ -2068,9 +2738,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 					searchSelector.style.borderBottomLeftRadius = '0px';
 					dropdown.style.borderTopLeftRadius = '0px';
 					dropdown.style.width = 'auto';
-					dropdown.style.width =
-            Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1) +
-            'px';
+					dropdown.style.width = `${Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1)}px`;
 
 					if (retractTimer !== null) {
 						clearTimeout(retractTimer);
@@ -2110,7 +2778,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 						const parts = picker.value.split(tagsplit);
 
 						if (parts.length === 2) {
-							const tag = parts[0].toLowerCase() + ':';
+							const tag = `${parts[0].toLowerCase()}:`;
 							const name = parts[1];
 							for (let i = 0; i < searchTypes.length; i++) {
 								if (tag === searchTypes[i].prefix) {
@@ -2215,11 +2883,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			);
 
 			(() => {
-				const names = matchingNames(
-					from,
-					searchSelectorControls.getSearch(),
-					allowUncookable,
-				);
+				const names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
 
 				dropdown.removeChild(ul);
 				ul = document.createElement('div');
@@ -2229,17 +2893,52 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 			})();
 
 			clear.className = 'clearingredients';
-			clear.appendChild(document.createTextNode('clear'));
+			clear.appendChild(document.createTextNode('×'));
+			clear.title = 'Clear search or remove all ingredients';
 
 			clear.addEventListener(
 				'click',
 				() => {
-					if (
-						picker.value === '' &&
-            searchSelectorControls.getTag() === 'name'
-					) {
-						while (getSlot(parent.firstChild)) {
-							removeSlot({ target: parent.firstChild });
+					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
+						// Check if there are any ingredients to clear
+						let hasIngredients = false;
+						for (let i = 0; i < parent.children.length; i++) {
+							if (getSlot(parent.children[i])) {
+								hasIngredients = true;
+								break;
+							}
+						}
+
+						// Warn user on Discovery tab (unlimited mode) before clearing
+						if (
+							hasIngredients &&
+							!limited &&
+							!confirm('Are you sure you want to clear all ingredients from your inventory?')
+						) {
+							return;
+						}
+
+						// Clear all ingredients - handle limited vs unlimited mode differently
+						if (limited) {
+							// Limited mode: clear from last to first to avoid
+							// setSlot's shift-left logic moving items around
+							for (let i = slots.length - 1; i >= 0; i--) {
+								if (getSlot(slots[i])) {
+									setSlot(slots[i], null);
+								}
+							}
+							updateRecipes();
+						} else {
+							// Unlimited mode: remove elements directly, then rebuild
+							const children = Array.from(parent.children);
+							children.forEach(child => {
+								if (getSlot(child)) {
+									parent.removeChild(child);
+								}
+							});
+							slots.length = 0;
+							ensureEmptySlot();
+							updateRecipes();
 						}
 					} else {
 						picker.value = '';
@@ -2250,51 +2949,137 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				false,
 			);
 
-			clear.addEventListener(
-				'mouseover',
-				() => {
-					if (
-						picker.value === '' &&
-            searchSelectorControls.getTag() === 'name'
-					) {
-						clear.firstChild.textContent = 'clear chosen ingredients';
+			// Display mode controls (Icons / Names / List)
+			const displayModeControls = (() => {
+				const displayButton = document.createElement('span');
+				const displayDropdown = document.createElement('div');
+				const displayModes = [
+					{ value: 'names', label: 'Display: Names' },
+					{ value: 'icons', label: 'Display: Icons' },
+					{ value: 'list', label: 'Display: List' },
+				];
+
+				let currentMode = 'names';
+				let isOpen = false;
+
+				// Try to load saved display mode from localStorage
+				try {
+					if (window.localStorage.foodGuideDisplayMode) {
+						const saved = JSON.parse(window.localStorage.foodGuideDisplayMode);
+						if (saved && saved[index] !== undefined) {
+							currentMode = saved[index];
+						}
 					}
-				},
-				false,
-			);
+				} catch (err) {
+					console.warn('Unable to load display mode preference', err);
+				}
 
-			clear.addEventListener(
-				'mouseout',
-				() => {
-					if (clear.firstChild.textContent !== 'clear') {
-						clear.firstChild.textContent = 'clear';
-					}
-				},
-				false,
-			);
+				displayButton.className = 'displaymodeingredients';
+				displayButton.textContent = displayModes.find(opt => opt.value === currentMode).label;
+				displayButton.style.cursor = 'pointer';
 
-			toggleText.className = 'toggleingredients enabled';
+				displayDropdown.className = 'displaymodedropdown';
+				displayDropdown.style.display = 'none';
 
-			toggleText.addEventListener(
-				'click',
-				() => {
-					if (toggleText.classList.contains('enabled')) {
-						toggleText.classList.remove('enabled');
+				const applyDisplayMode = mode => {
+					dropdown.classList.remove('hidetext', 'listmode');
+					if (mode === 'icons') {
 						dropdown.classList.add('hidetext');
-						toggleText.firstChild.textContent = 'Show names';
-					} else {
-						toggleText.classList.add('enabled');
-						dropdown.classList.remove('hidetext');
-						toggleText.firstChild.textContent = 'Icons only';
+					} else if (mode === 'list') {
+						dropdown.classList.add('listmode');
 					}
-				},
-				false,
-			);
+				};
 
-			toggleText.appendChild(document.createTextNode('Icons only'));
-			parent.parentNode.insertBefore(toggleText, parent);
+				// Apply initial mode
+				applyDisplayMode(currentMode);
 
+				displayModes.forEach(option => {
+					const optionEl = document.createElement('div');
+					optionEl.textContent = option.label;
+					optionEl.dataset.value = option.value;
+					optionEl.style.padding = '4px 8px';
+					optionEl.style.cursor = 'pointer';
+					optionEl.style.background = 'var(--bg-primary)';
+					optionEl.style.border = '1px solid var(--medium)';
+					optionEl.style.borderTop = 'none';
+
+					if (option.value === currentMode) {
+						optionEl.style.background = 'var(--selected-bg)';
+					}
+
+					optionEl.addEventListener('click', () => {
+						currentMode = option.value;
+						displayButton.textContent = option.label;
+
+						// Update all options' backgrounds
+						Array.from(displayDropdown.children).forEach(child => {
+							if (child.dataset.value === currentMode) {
+								child.style.background = 'var(--selected-bg)';
+							} else {
+								child.style.background = 'var(--bg-primary)';
+							}
+						});
+
+						// Apply display mode
+						applyDisplayMode(currentMode);
+
+						// Save to localStorage
+						try {
+							let saved = {};
+							if (window.localStorage.foodGuideDisplayMode) {
+								saved = JSON.parse(window.localStorage.foodGuideDisplayMode);
+							}
+							saved[index] = currentMode;
+							window.localStorage.foodGuideDisplayMode = JSON.stringify(saved);
+						} catch (err) {
+							console.warn('Unable to save display mode preference', err);
+						}
+
+						displayDropdown.style.display = 'none';
+						isOpen = false;
+					});
+
+					displayDropdown.appendChild(optionEl);
+				});
+
+				displayButton.addEventListener('click', e => {
+					e.stopPropagation();
+					isOpen = !isOpen;
+					if (isOpen) {
+						// Position dropdown below button
+						const rect = displayButton.getBoundingClientRect();
+						displayDropdown.style.left = `${rect.left}px`;
+						displayDropdown.style.top = `${rect.bottom + 2}px`;
+						displayDropdown.style.display = 'block';
+					} else {
+						displayDropdown.style.display = 'none';
+					}
+				});
+
+				// Close dropdown when clicking outside
+				document.addEventListener('click', e => {
+					if (isOpen && !displayDropdown.contains(e.target) && e.target !== displayButton) {
+						displayDropdown.style.display = 'none';
+						isOpen = false;
+					}
+				});
+
+				return {
+					getButton: () => displayButton,
+					getDropdown: () => displayDropdown,
+				};
+			})();
+
+			parent.parentNode.insertBefore(displayModeControls.getButton(), parent);
+			parent.parentNode.insertBefore(displayModeControls.getDropdown(), parent);
+
+			// Insert sort controls
+			parent.parentNode.insertBefore(sortControls.getButton(), parent);
+			parent.parentNode.insertBefore(sortControls.getDropdown(), parent);
+
+			// Insert clear button (will be styled to the right)
 			parent.parentNode.insertBefore(clear, parent);
+
 			parent.parentNode.insertBefore(dropdown, parent);
 
 			picker.addEventListener('keydown', _ => {
@@ -2337,7 +3122,7 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 				if (limited) {
 					const serialized = Array.prototype.map.call(slots, slot => {
 						const item = getSlot(slot);
-						return item ? item.id : null;
+						return item ? item.key : null;
 					});
 					obj.pickers[index] = serialized;
 				} else {
@@ -2351,36 +3136,146 @@ import { isBestStat, isStat, makeImage, makeLinkable, makeElement, pl } from './
 		}
 	})();
 
-	const showmode = e => {
-		setMode(modes[e.target.dataset.mode].mask);
+	// --- Mode selector UI ---
+
+	const selectVersion = e => {
+		const target = resolveIconTarget(e.target);
+		const versionName = target.dataset.version;
+		if (!versionName || !gameVersions[versionName]) {
+			return;
+		}
+		currentVersion = versionName;
+		// Clear character if not applicable to the new version
+		if (
+			currentCharacter &&
+			!isCharacterApplicable(currentCharacter, currentVersion, activeDlc, characters)
+		) {
+			currentCharacter = null;
+		}
+		setMode();
 	};
 
-	const togglemode = e => {
-		setMode(modeMask ^ modes[e.target.dataset.mode].bit);
-		e.preventDefault();
+	const toggleDlc = e => {
+		const target = resolveIconTarget(e.target);
+		const dlcKey = target.dataset.dlc;
+		if (!dlcKey || !dlcOptions[dlcKey]) {
+			return;
+		}
+		activeDlc[dlcKey] = !activeDlc[dlcKey];
+		// Clear character if no longer applicable
+		if (
+			currentCharacter &&
+			!isCharacterApplicable(currentCharacter, currentVersion, activeDlc, characters)
+		) {
+			currentCharacter = null;
+		}
+		setMode();
 	};
 
-	const modeTab = document.createElement('li');
-	navbar.insertBefore(modeTab, navbar.firstChild);
-	modeTab.className = 'mode';
+	const selectCharacter = e => {
+		const target = resolveIconTarget(e.target);
+		const charName = target.dataset.character;
+		if (!charName || !characters[charName]) {
+			return;
+		}
+		if (!isCharacterApplicable(charName, currentVersion, activeDlc, characters)) {
+			return;
+		}
+		currentCharacter = currentCharacter === charName ? null : charName;
+		setMode();
+	};
 
-	for (const name in modes) {
-		const modeButton = document.createElement('div');
+	// Build mode selectors into the header
+	const headerTop = document.querySelector('.header-top');
+	const modePanel = headerTop; // mode buttons are injected directly into header-top
 
-		modeButton.dataset.mode = name;
-		modeButton.addEventListener('click', showmode, false);
-		modeButton.addEventListener('contextmenu', togglemode, false);
+	// Section: Game version
+	const versionSection = document.createElement('div');
+	versionSection.className = 'mode-section';
 
-		modeButton.title =
-      modes[name].name + '\nleft-click to select\nright-click to toggle';
-		// Other setup happens in setMode
+	const versionLabel = document.createElement('span');
+	versionLabel.className = 'mode-label';
+	versionLabel.textContent = 'Game';
+	versionSection.appendChild(versionLabel);
 
-		const img = makeImage('img/' + modes[name].img);
-		img.title = name;
-		modeButton.appendChild(img);
+	for (const name in gameVersions) {
+		const btn = document.createElement('div');
+		btn.className = 'mode-btn version-btn';
+		btn.dataset.version = name;
+		btn.addEventListener('click', selectVersion, false);
+		btn.title = gameVersions[name].name;
 
-		modeTab.appendChild(modeButton);
+		const img = makeImage(`img/${gameVersions[name].img}`);
+		img.title = gameVersions[name].name;
+		img.dataset.version = name;
+		btn.appendChild(img);
+
+		versionSection.appendChild(btn);
 	}
 
-	setMode(modeMask);
+	headerTop.appendChild(versionSection);
+
+	// Divider (DLC)
+	const divider1 = document.createElement('div');
+	divider1.className = 'mode-divider dlc-divider';
+	headerTop.appendChild(divider1);
+
+	// Section: DLC toggles (only for 'dontstarve')
+	const dlcSection = document.createElement('div');
+	dlcSection.className = 'mode-section dlc-section';
+
+	const dlcLabel = document.createElement('span');
+	dlcLabel.className = 'mode-label';
+	dlcLabel.textContent = 'DLC';
+	dlcSection.appendChild(dlcLabel);
+
+	for (const name in dlcOptions) {
+		const btn = document.createElement('div');
+		btn.className = 'mode-btn dlc-btn';
+		btn.dataset.dlc = name;
+		btn.addEventListener('click', toggleDlc, false);
+		btn.title = `${dlcOptions[name].name}\nclick to toggle`;
+
+		const img = makeImage(`img/${dlcOptions[name].img}`);
+		img.title = dlcOptions[name].name;
+		img.dataset.dlc = name;
+		btn.appendChild(img);
+
+		dlcSection.appendChild(btn);
+	}
+
+	headerTop.appendChild(dlcSection);
+
+	// Divider (Character)
+	const divider2 = document.createElement('div');
+	divider2.className = 'mode-divider char-divider';
+	headerTop.appendChild(divider2);
+
+	// Section: Character selection
+	const charSection = document.createElement('div');
+	charSection.className = 'mode-section char-section';
+
+	const charLabel = document.createElement('span');
+	charLabel.className = 'mode-label';
+	charLabel.textContent = 'Char';
+	charSection.appendChild(charLabel);
+
+	for (const name in characters) {
+		const btn = document.createElement('div');
+		btn.className = 'mode-btn char-btn';
+		btn.dataset.character = name;
+		btn.addEventListener('click', selectCharacter, false);
+		btn.title = `${characters[name].name}\nclick to toggle`;
+
+		const img = makeImage(`img/${characters[name].img}`);
+		img.title = characters[name].name;
+		img.dataset.character = name;
+		btn.appendChild(img);
+
+		charSection.appendChild(btn);
+	}
+
+	headerTop.appendChild(charSection);
+
+	setMode();
 })();

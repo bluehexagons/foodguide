@@ -87,28 +87,41 @@ import {
 
 	/**
 	 * Updates the theme toggle button display.
+	 * Shows the icon for the current effective theme.
+	 * - 🌙 (moon) = light theme is currently active
+	 * - ☀️ (sun) = dark theme is currently active
 	 */
 	const updateThemeToggle = () => {
 		const btn = document.getElementById('theme-toggle');
 		if (btn) {
-			const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			// Determine what theme is actually being displayed
+			let isEffectivelyDark;
 			if (currentTheme === 'auto') {
-				btn.textContent = isDark ? '☀️' : '🌙';
-			} else if (currentTheme === 'dark') {
-				btn.textContent = '☀️';
+				// Check OS preference
+				isEffectivelyDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 			} else {
-				btn.textContent = '🌙';
+				// Use explicit setting
+				isEffectivelyDark = currentTheme === 'dark';
 			}
+
+			// Show icon for current theme
+			btn.textContent = isEffectivelyDark ? '☀️' : '🌙';
 		}
 	};
 
 	/**
-	 * Cycles through theme options: auto -> light -> dark -> auto
+	 * Toggles between light and dark themes.
+	 * Once the user manually sets a theme, it stays in the light/dark cycle.
 	 */
 	const toggleTheme = () => {
-		const modes = ['auto', 'light', 'dark'];
-		const currentIndex = modes.indexOf(currentTheme);
-		currentTheme = modes[(currentIndex + 1) % modes.length];
+		// If in auto mode, switch to the opposite of current effective theme
+		if (currentTheme === 'auto') {
+			const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			currentTheme = isDark ? 'light' : 'dark';
+		} else {
+			// Otherwise, toggle between light and dark
+			currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+		}
 		localStorage.setItem('foodGuideTheme', currentTheme);
 		initTheme();
 	};

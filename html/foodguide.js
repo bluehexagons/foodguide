@@ -138,7 +138,7 @@ import {
 	}
 
 	// Listen for OS theme changes when in auto mode
-	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', _e => {
 		if (currentTheme === 'auto') {
 			initTheme();
 		}
@@ -1558,17 +1558,11 @@ import {
 				const usedIngredients = new Set();
 				const excludedIngredients = new Set();
 				const excludedRecipes = new Set();
-				let makableTable;
-				let makableDiv;
 
 				let i = ingredients ? ingredients.length : null;
 
 				let selectedRecipe;
 				let selectedRecipeElement;
-				let makableSummary;
-				let makableFootnote;
-				let makableFilter;
-				let makableRecipe;
 				let made = [];
 
 				const deleteButton = document.createElement('button');
@@ -1784,7 +1778,7 @@ import {
 
 				made = [];
 
-				makableTable = makeSortableTable(
+				const makableTable = makeSortableTable(
 					{
 						'': '',
 						Name: 'name',
@@ -1827,14 +1821,14 @@ import {
 					},
 				);
 
-				makableDiv = document.createElement('div');
+				const makableDiv = document.createElement('div');
 				makableDiv.className = 'makableContainer';
 
-				makableSummary = document.createElement('div');
+				const makableSummary = document.createElement('div');
 				makableSummary.className = 'makableSummary';
 				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
 
-				makableFootnote = document.createElement('div');
+				const makableFootnote = document.createElement('div');
 				makableFootnote.className = 'makableFootnote';
 				makableFootnote.appendChild(
 					document.createTextNode('* combination has multiple possible results'),
@@ -1852,11 +1846,11 @@ import {
 				makableDiv.appendChild(makableFootnote);
 				makableDiv.appendChild(filterHelp);
 
-				makableRecipe = document.createElement('div');
+				const makableRecipe = document.createElement('div');
 				makableRecipe.className = 'recipeFilter';
 				makableDiv.appendChild(makableRecipe);
 
-				makableFilter = document.createElement('div');
+				const makableFilter = document.createElement('div');
 				makableFilter.className = 'foodFilter';
 
 				idealIngredients.forEach(item => {
@@ -2028,7 +2022,7 @@ import {
 				statisticsEl.appendChild(makeRecipeGrinder(null, true));
 			}
 		}
-	} catch (err) {
+	} catch {
 		// Silently ignore localStorage errors
 	}
 
@@ -2142,7 +2136,9 @@ import {
 
 			const ensureEmptySlot = () => {
 				// Only for unlimited mode (Discovery page)
-				if (limited) return;
+				if (limited) {
+					return;
+				}
 
 				// Remove all existing empty slots first
 				const existingEmptySlots = parent.querySelectorAll('.ingredient:empty');

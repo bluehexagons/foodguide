@@ -10,6 +10,8 @@
 		"lint:fix": "eslint html/**/*.js --fix",
 		"format": "prettier --write html/**/*.js",
 		"format:check": "prettier --check html/**/*.js",
+		"check": "npm run format && npm run lint",
+		"fix": "npm run format && npm run lint:fix",
 		"test": "node --test",
 		"typecheck": "tsc --noEmit",
 		"generate-sprites": "node scripts/generate-sprites.js",
@@ -27,6 +29,7 @@
 	"devDependencies": {
 		"@eslint/js": "^9.39.2",
 		"eslint": "^9.39.2",
+		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-jsdoc": "^62.5.4",
 		"http-server": "^14.1.1",
 		"jsdoc": "^4.0.2",

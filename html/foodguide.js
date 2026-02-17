@@ -625,6 +625,8 @@ import {
 		let renderedTo = 0;
 		let lastTime;
 		let block = 100;
+		let paused = false;
+		let timeoutId = null;
 
 		const foodFromIndex = index => {
 			return items[index];
@@ -666,11 +668,15 @@ import {
 		const getCombinations = combinationGenerator(items.length, callback);
 
 		const computeNextBlock = () => {
+			if (paused) {
+				return;
+			}
+
 			const start = Date.now();
 			let end = false;
 
 			if (getCombinations(block)) {
-				setTimeout(computeNextBlock, 0);
+				timeoutId = setTimeout(computeNextBlock, 0);
 			} else {
 				end = true;
 			}
@@ -686,6 +692,24 @@ import {
 		};
 
 		computeNextBlock();
+
+		// Return control object
+		return {
+			pause: () => {
+				paused = true;
+				if (timeoutId !== null) {
+					clearTimeout(timeoutId);
+					timeoutId = null;
+				}
+			},
+			resume: () => {
+				if (paused) {
+					paused = false;
+					computeNextBlock();
+				}
+			},
+			isPaused: () => paused,
+		};
 	};
 
 	let setTab;
@@ -708,6 +732,11 @@ import {
 			activePage = elements[tabID];
 			activeTab.className = 'selected';
 			activePage.style.display = 'block';
+
+			// Initialize statistics tab content on first visit
+			if (tabID === 'statistics' && !activePage.hasChildNodes()) {
+				activePage.appendChild(makeRecipeGrinder(null, true));
+			}
 		};
 
 		for (let i = 0; i < navtabs.length; i++) {
@@ -1102,7 +1131,17 @@ import {
 		}
 
 		const update = scrollHighlight => {
+			// Save current scroll position before rebuilding table
+			const currentScrollY = window.scrollY;
+			const currentScrollX = window.scrollX;
+
 			create(null, null, scrollHighlight);
+
+			// Restore scroll position after table rebuild
+			// Use requestAnimationFrame to ensure DOM has updated
+			requestAnimationFrame(() => {
+				window.scrollTo(currentScrollX, currentScrollY);
+			});
 		};
 
 		const setMaxRows = max => {
@@ -1519,17 +1558,18 @@ import {
 				const usedIngredients = new Set();
 				const excludedIngredients = new Set();
 				const excludedRecipes = new Set();
+				let makableTable;
+				let makableDiv;
 
 				let i = ingredients ? ingredients.length : null;
 
 				let selectedRecipe;
 				let selectedRecipeElement;
-				const makableSummary = makeElement('div');
-				const makableFootnote = makeElement('div');
-				const makableFilter = makeElement('div');
-				const customFilterHolder = makeElement('div');
-				const customFilterInput = makeElement('input');
-				const made = [];
+				let makableSummary;
+				let makableFootnote;
+				let makableFilter;
+				let makableRecipe;
+				let made = [];
 
 				const deleteButton = document.createElement('button');
 				deleteButton.appendChild(document.createTextNode('Clear results'));
@@ -1537,6 +1577,8 @@ import {
 				deleteButton.addEventListener('click', () => {
 					makableButton.parentNode.removeChild(makableDiv);
 					hasTable = false;
+					makableButton.textContent = 'Calculate efficient recipes (may take some time)';
+					makableButton.disabled = false;
 				});
 				if (hasTable) {
 					makableButton.parentNode.removeChild(makableButton.nextSibling);
@@ -1548,75 +1590,118 @@ import {
 					return this.includes(food[item]);
 				};
 
-				const toggleFilter = e => {
-					if (excludedIngredients.has(e.target.dataset.id)) {
-						excludedIngredients.delete(e.target.dataset.id);
+				// Cycle through filter states: normal -> required -> excluded -> normal
+				const cycleFilterState = (target, reverse = false) => {
+					const id = target.dataset.id;
+					const isRequired = usedIngredients.has(id);
+					const isExcluded = excludedIngredients.has(id);
+
+					// Determine current state
+					let currentState = 'normal';
+					if (isRequired) {
+						currentState = 'required';
+					} else if (isExcluded) {
+						currentState = 'excluded';
 					}
-					if (usedIngredients.has(e.target.dataset.id)) {
-						usedIngredients.delete(e.target.dataset.id);
-						e.target.className = '';
+
+					// Cycle to next state
+					let nextState;
+					if (reverse) {
+						// Reverse cycle for right-click: normal -> excluded -> required -> normal
+						if (currentState === 'normal') {
+							nextState = 'excluded';
+						} else if (currentState === 'excluded') {
+							nextState = 'required';
+						} else {
+							nextState = 'normal';
+						}
 					} else {
-						usedIngredients.add(e.target.dataset.id);
-						e.target.className = 'selected';
+						// Forward cycle for left-click: normal -> required -> excluded -> normal
+						if (currentState === 'normal') {
+							nextState = 'required';
+						} else if (currentState === 'required') {
+							nextState = 'excluded';
+						} else {
+							nextState = 'normal';
+						}
+					}
+
+					// Clear current state
+					usedIngredients.delete(id);
+					excludedIngredients.delete(id);
+					target.classList.remove('selected', 'excluded');
+
+					// Apply next state
+					if (nextState === 'required') {
+						usedIngredients.add(id);
+						target.classList.add('selected');
+					} else if (nextState === 'excluded') {
+						excludedIngredients.add(id);
+						target.classList.add('excluded');
 					}
 
 					makableTable.update();
 				};
 
+				const toggleFilter = e => {
+					cycleFilterState(e.target, false);
+				};
+
 				const toggleExclude = e => {
-					if (usedIngredients.has(e.target.dataset.id)) {
-						usedIngredients.delete(e.target.dataset.id);
-					}
-
-					if (excludedIngredients.has(e.target.dataset.id)) {
-						excludedIngredients.delete(e.target.dataset.id);
-						e.target.className = '';
-					} else {
-						excludedIngredients.add(e.target.dataset.id);
-						e.target.className = 'excluded';
-					}
-
-					makableTable.update();
-
+					cycleFilterState(e.target, true);
 					e.preventDefault();
 				};
 
 				const setRecipe = e => {
-					if (selectedRecipeElement) {
-						selectedRecipeElement.className = '';
+					const target = e.target;
+					const recipeId = target.dataset.recipe;
+
+					// Clear all recipe selections first
+					for (const el of makableRecipe.childNodes) {
+						el.classList.remove('selected', 'excluded');
 					}
 
-					for (const e of makableRecipe.childNodes) {
-						e.className = '';
-					}
-
-					excludedRecipes.clear();
-
-					if (selectedRecipe === e.target.dataset.recipe) {
+					// Cycle through: normal -> selected -> excluded -> normal
+					if (excludedRecipes.has(recipeId)) {
+						// Currently excluded -> go to normal
+						excludedRecipes.delete(recipeId);
+						selectedRecipeElement = null;
+						selectedRecipe = null;
+					} else if (selectedRecipe === recipeId) {
+						// Currently selected -> go to excluded
+						excludedRecipes.add(recipeId);
+						target.classList.add('excluded');
 						selectedRecipeElement = null;
 						selectedRecipe = null;
 					} else {
-						selectedRecipe = e.target.dataset.recipe;
-						selectedRecipeElement = e.target;
-						e.target.className = 'selected';
+						// Normal or other recipe selected -> select this one
+						excludedRecipes.clear();
+						selectedRecipe = recipeId;
+						selectedRecipeElement = target;
+						target.classList.add('selected');
 					}
 
 					makableTable.update();
 				};
 
 				const excludeRecipe = e => {
+					const target = e.target;
+					const recipeId = target.dataset.recipe;
+
+					// Clear selection
 					if (selectedRecipeElement) {
-						selectedRecipeElement.className = '';
+						selectedRecipeElement.classList.remove('selected');
 						selectedRecipeElement = null;
 						selectedRecipe = null;
 					}
 
-					if (excludedRecipes.has(e.target.dataset.recipe)) {
-						excludedRecipes.delete(e.target.dataset.recipe);
-						e.target.className = '';
+					// Toggle excluded state (shortcut for right-click)
+					if (excludedRecipes.has(recipeId)) {
+						excludedRecipes.delete(recipeId);
+						target.classList.remove('excluded');
 					} else {
-						excludedRecipes.add(e.target.dataset.recipe);
-						e.target.className = 'excluded';
+						excludedRecipes.add(recipeId);
+						target.classList.add('excluded');
 					}
 
 					makableTable.update();
@@ -1743,16 +1828,29 @@ import {
 				);
 
 				makableDiv = document.createElement('div');
+				makableDiv.className = 'makableContainer';
 
 				makableSummary = document.createElement('div');
+				makableSummary.className = 'makableSummary';
 				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
 
 				makableFootnote = document.createElement('div');
+				makableFootnote.className = 'makableFootnote';
 				makableFootnote.appendChild(
 					document.createTextNode('* combination has multiple possible results'),
 				);
 
+				const filterHelp = document.createElement('div');
+				filterHelp.className = 'makableFilterHelp';
+				filterHelp.appendChild(
+					document.createTextNode(
+						'Click ingredients/recipes to cycle: normal → required (✓) → excluded (✕). Right-click for quick exclude.',
+					),
+				);
+
 				makableDiv.appendChild(makableSummary);
+				makableDiv.appendChild(makableFootnote);
+				makableDiv.appendChild(filterHelp);
 
 				makableRecipe = document.createElement('div');
 				makableRecipe.className = 'recipeFilter';
@@ -1775,9 +1873,9 @@ import {
 
 				makableDiv.appendChild(makableFilter);
 
-				customFilterHolder = document.createElement('div');
+				const customFilterHolder = document.createElement('div');
 
-				customFilterInput = document.createElement('input');
+				const customFilterInput = document.createElement('input');
 				customFilterInput.type = 'text';
 				customFilterInput.placeholder = 'use custom filter';
 				customFilterInput.className = 'customFilterInput';
@@ -1789,7 +1887,17 @@ import {
 
 				updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
 
-				getRealRecipesFromCollection(
+				// Create pause button upfront
+				const pauseButton = document.createElement('button');
+				pauseButton.appendChild(document.createTextNode('Pause'));
+				pauseButton.className = 'pauseButton';
+				let isCalculating = true;
+
+				// Set button state BEFORE starting calculation
+				makableButton.textContent = 'Calculating...';
+				makableButton.disabled = true;
+
+				const calculationControl = getRealRecipesFromCollection(
 					idealIngredients,
 					data => {
 						// row update
@@ -1838,28 +1946,91 @@ import {
 						made.push(data);
 					},
 					() => {
+						// Chunk callback - show pause button if this is called (meaning async operation)
+						if (isCalculating && !pauseButton.parentNode) {
+							makableSummary.appendChild(pauseButton);
+						}
 						makableSummary.firstChild.textContent = `Found ${
 							made.length
 						} valid recipes.. (you can change Food Guide tabs during this process)`;
 					},
 					() => {
 						//computation finished
+						isCalculating = false;
+
+						// Remove pause button if it exists
+						if (pauseButton.parentNode) {
+							pauseButton.parentNode.removeChild(pauseButton);
+						}
+
 						window.analysis = {
 							made,
 						};
 
-						makableTable.setMaxRows(250);
-						makableSummary.firstChild.textContent = `Found ${made.length} valid recipes.`;
+						// Start with a reasonable batch size
+						makableTable.setMaxRows(500);
+
+						// Add "Show more" functionality if there are many results
+						const showMoreButton = document.createElement('button');
+						showMoreButton.appendChild(document.createTextNode('Show more results'));
+						showMoreButton.className = 'showMoreButton';
+						let currentLimit = 500;
+						showMoreButton.addEventListener('click', () => {
+							currentLimit += 500;
+							makableTable.setMaxRows(currentLimit);
+							if (currentLimit >= made.length) {
+								showMoreButton.style.display = 'none';
+							}
+							showMoreButton.textContent = `Show more results (${Math.min(currentLimit, made.length)} of ${made.length})`;
+						});
+
+						const summaryText = `Found ${made.length} valid recipes.`;
+						makableSummary.firstChild.textContent = summaryText;
+
+						if (made.length > 500) {
+							showMoreButton.textContent = `Show more results (500 of ${made.length})`;
+							makableSummary.appendChild(showMoreButton);
+						}
 
 						makableSummary.appendChild(deleteButton);
+						makableButton.textContent = 'Calculate efficient recipes (may take some time)';
+						makableButton.disabled = false;
 					},
 				);
+
+				// Add pause/resume button functionality
+				pauseButton.addEventListener('click', () => {
+					if (calculationControl.isPaused()) {
+						calculationControl.resume();
+						pauseButton.textContent = 'Pause';
+						makableSummary.firstChild.textContent = `Found ${
+							made.length
+						} valid recipes.. (you can change Food Guide tabs during this process)`;
+					} else {
+						calculationControl.pause();
+						pauseButton.textContent = 'Resume';
+						makableSummary.firstChild.textContent = `Found ${made.length} valid recipes (paused)`;
+					}
+				});
 			})();
 
 		makableButton.addEventListener('click', initializeGrinder, false);
 
 		return makableButton;
 	};
+
+	// Initialize statistics tab if it's the active tab on page load
+	try {
+		if (window.localStorage.foodGuideState) {
+			const storage = JSON.parse(window.localStorage.foodGuideState);
+			const statisticsEl = document.getElementById('statistics');
+			if (storage.activeTab === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
+				statisticsEl.appendChild(makeRecipeGrinder(null, true));
+			}
+		}
+	} catch (err) {
+		// Silently ignore localStorage errors
+	}
 
 	const highest = (array, property) => {
 		return array.reduce((previous, current) => {

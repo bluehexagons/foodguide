@@ -391,60 +391,233 @@ div.recipeFilter :is(img, .icon) {
 	margin: 4px;
 	padding: 1px 2px;
 	display: inline-block;
-	border: 1px solid var(--medium);
+	border: 2px solid var(--medium);
 	background-color: var(--table-bg);
 	border-radius: 3px;
 	cursor: pointer;
+	position: relative;
+	transition: all var(--transition-fast);
 }
 
 div.recipeFilter :is(img, .icon):hover {
 	opacity: 0.8;
+	transform: scale(1.05);
 }
 
 div.recipeFilter :is(img, .icon).selected {
 	opacity: 1;
-	border-width: 3px;
-	margin: 2px;
+	border-color: var(--light);
+	box-shadow:
+		0 0 0 1px var(--light),
+		0 0 8px var(--light);
+}
+
+div.recipeFilter :is(img, .icon).selected::after {
+	content: '✓';
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	background: var(--light);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
 }
 
 div.recipeFilter :is(img, .icon).excluded {
 	opacity: 0.8;
 	border-color: var(--excluded-border);
-	border-width: 3px;
-	margin: 2px;
 	background-color: var(--excluded-bg);
+	filter: grayscale(0.5);
+	box-shadow: 0 0 0 1px var(--excluded-border);
+}
+
+div.recipeFilter :is(img, .icon).excluded::after {
+	content: '✕';
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	background: var(--excluded-border);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
 }
 
 /* Food filter icons */
 div.foodFilter :is(img, .icon) {
-	width: 32px;
-	height: 32px;
+	width: 40px;
+	height: 40px;
 	opacity: 0.4;
-	margin: 4px;
-	padding: 1px 2px;
+	margin: 6px;
+	padding: 2px;
 	display: inline-block;
-	border: 1px solid var(--medium);
+	border: 2px solid var(--medium);
 	background-color: var(--table-bg);
-	border-radius: 3px;
+	border-radius: 5px;
 	cursor: pointer;
+	position: relative;
+	transition: all var(--transition-fast);
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	box-sizing: border-box;
 }
 
 div.foodFilter :is(img, .icon):hover {
 	opacity: 0.8;
+	transform: scale(1.08);
+	border-color: var(--light);
+}
+
+div.foodFilter :is(img, .icon):active {
+	transform: scale(0.95);
 }
 
 div.foodFilter :is(img, .icon).selected {
-	border-width: 3px;
-	margin: 2px;
+	border-color: var(--light);
 	opacity: 1;
+	box-shadow:
+		0 0 0 1px var(--light),
+		0 0 8px var(--light);
+}
+
+div.foodFilter :is(img, .icon).selected::after {
+	content: '✓';
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	background: var(--light);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 div.foodFilter :is(img, .icon).excluded {
-	border-width: 3px;
 	border-color: var(--excluded-border);
-	margin: 2px;
 	opacity: 0.8;
 	background-color: var(--excluded-bg);
+	filter: grayscale(0.6);
+	box-shadow: 0 0 0 1px var(--excluded-border);
+}
+
+div.foodFilter :is(img, .icon).excluded::after {
+	content: '✕';
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	background: var(--excluded-border);
+	color: var(--bg-primary);
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 16px;
+	font-weight: bold;
+	border: 2px solid var(--bg-primary);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Grinder/Statistics container */
+.makableContainer {
+	margin: 8px 0;
+	padding: 12px;
+	background: var(--bg-primary);
+	border: 1px solid var(--medium);
+	border-radius: 5px;
+}
+
+.makableSummary {
+	font-size: 14pt;
+	margin-bottom: 12px;
+	padding: 8px;
+	background: var(--table-bg);
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	color: var(--fg-primary);
+}
+
+.makableFootnote {
+	font-size: 11pt;
+	color: var(--fg-secondary);
+	margin-bottom: 8px;
+	padding: 4px 8px;
+	font-style: italic;
+}
+
+.makableFilterHelp {
+	font-size: 10pt;
+	color: var(--fg-secondary);
+	margin-bottom: 12px;
+	padding: 6px 12px;
+	background: var(--table-bg);
+	border-left: 3px solid var(--medium);
+	border-radius: 3px;
+	opacity: 0.9;
+}
+
+button.deleteButton,
+button.pauseButton,
+button.showMoreButton {
+	font-size: 12pt;
+	padding: 4px 12px;
+	border: 1px solid var(--medium);
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	border-radius: 3px;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+}
+
+button.deleteButton:hover,
+button.pauseButton:hover,
+button.showMoreButton:hover {
+	background: var(--table-hover);
+	border-color: var(--light);
+}
+
+button.deleteButton {
+	background: var(--excluded-bg);
+	border-color: var(--excluded-border);
+}
+
+button.deleteButton:hover {
+	background: var(--excluded-border);
+}
+
+button.makablebutton:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+button.makablebutton:disabled:hover {
+	background: var(--bg-primary);
+	border-color: var(--medium);
 }
 
 /* Responsive: small screens */
@@ -468,5 +641,31 @@ div.foodFilter :is(img, .icon).excluded {
 
 	.ingredientdropdown div .text {
 		display: none;
+	}
+
+	/* Increase touch targets on mobile */
+	div.foodFilter :is(img, .icon) {
+		width: 48px;
+		height: 48px;
+		margin: 8px;
+	}
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+	div.foodFilter :is(img, .icon) {
+		width: 48px;
+		height: 48px;
+		margin: 8px;
+	}
+
+	div.recipeFilter :is(img, .icon) {
+		margin: 6px;
+		padding: 3px;
+	}
+
+	.makableFilterHelp {
+		font-size: 11pt;
+		padding: 8px 12px;
 	}
 }

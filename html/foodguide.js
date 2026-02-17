@@ -41,6 +41,8 @@ import {
 	spoiled_food_hunger,
 	stale_food_health,
 	stale_food_hunger,
+	TOGETHER,
+	WARLY,
 	total_day_time,
 } from './constants.js';
 import { food } from './food.js';
@@ -179,6 +181,32 @@ import {
 			}
 			btn.classList.toggle('selected', btn.dataset.version === currentVersion);
 		}
+
+		/**
+		 * Determines if the Mode column should be shown in tables.
+		 * In DST mode, the Mode column is hidden unless Warly is selected.
+		 * In other game modes, the Mode column is always shown.
+		 */
+		const shouldShowModeColumn = () => {
+			// Check if we're in DST mode
+			const isDST = (modeMask & TOGETHER) !== 0 && currentVersion === 'together';
+			// Check if Warly is selected
+			const isWarlySelected = (charMask & WARLY) !== 0;
+
+			// Show Mode column if: not in DST, OR in DST with Warly selected
+			return !isDST || isWarlySelected;
+		};
+
+		/**
+		 * Returns autoHide array for tables, conditionally including 'Mode' column.
+		 */
+		const getAutoHideColumns = baseColumns => {
+			const columns = [...baseColumns];
+			if (!shouldShowModeColumn() && !columns.includes('Mode')) {
+				columns.push('Mode');
+			}
+			return columns;
+		};
 
 		// Show/hide DLC section (only visible for 'dontstarve')
 		const dlcSection = modePanel.querySelector('.dlc-section');
@@ -1405,7 +1433,7 @@ import {
 		{
 			toggleable: true,
 			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
-			autoHide: ['Sanity', 'Mode'],
+			autoHide: getAutoHideColumns(['Sanity']),
 		},
 	);
 
@@ -1435,7 +1463,7 @@ import {
 		{
 			toggleable: true,
 			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
-			autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+			autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 		},
 	);
 
@@ -1900,11 +1928,16 @@ import {
 				// Only for unlimited mode (Discovery page)
 				if (limited) return;
 
-				// Check if there's already an empty slot
-				const existingEmptySlot = parent.querySelector('.ingredient:empty');
-				if (existingEmptySlot) return;
+				// Remove all existing empty slots first
+				const existingEmptySlots = parent.querySelectorAll('.ingredient:empty');
+				existingEmptySlots.forEach(slot => {
+					// Only remove if it has no dataset.id (our placeholder slots)
+					if (!slot.dataset.id) {
+						parent.removeChild(slot);
+					}
+				});
 
-				// Add an empty slot at the end
+				// Add a single empty slot at the end
 				const emptySlot = document.createElement('span');
 				emptySlot.className = 'ingredient';
 				emptySlot.addEventListener('click', () => {
@@ -2018,7 +2051,13 @@ import {
 
 			const refreshPicker = () => {
 				searchSelectorControls.splitTag();
-				const names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+				let names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+
+				// Apply additional sorting based on user preference
+				const sortType = sortControls.getSortType();
+				if (sortType !== 'default') {
+					names = sortIngredients(names, sortType);
+				}
 
 				dropdown.removeChild(ul);
 
@@ -2027,6 +2066,43 @@ import {
 				names.forEach(liIntoPicker, ul);
 
 				dropdown.appendChild(ul);
+			};
+
+			// Sorting function for ingredients
+			const sortIngredients = (items, sortType) => {
+				const sorted = [...items]; // Create a copy to avoid mutating original
+
+				switch (sortType) {
+					case 'health':
+						return sorted.sort((a, b) => {
+							const aVal = (a.health || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal = (b.health || 0) * (statMultipliers[b.preparationType] || 1);
+							return bVal - aVal || a.name.localeCompare(b.name);
+						});
+					case 'hunger':
+						return sorted.sort((a, b) => {
+							const aVal = (a.hunger || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal = (b.hunger || 0) * (statMultipliers[b.preparationType] || 1);
+							return bVal - aVal || a.name.localeCompare(b.name);
+						});
+					case 'sanity':
+						return sorted.sort((a, b) => {
+							const aVal = (a.sanity || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal = (b.sanity || 0) * (statMultipliers[b.preparationType] || 1);
+							return bVal - aVal || a.name.localeCompare(b.name);
+						});
+					case 'perish':
+						return sorted.sort((a, b) => {
+							// Treat 'never' perish as infinite (very high value)
+							const aVal = a.perish || 999999;
+							const bVal = b.perish || 999999;
+							return aVal - bVal || a.name.localeCompare(b.name);
+						});
+					case 'name':
+						return sorted.sort((a, b) => a.name.localeCompare(b.name));
+					default:
+						return sorted;
+				}
 			};
 
 			const searchFor = e => {
@@ -2082,7 +2158,7 @@ import {
 						{
 							toggleable: true,
 							columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
-							autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+							autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 						},
 					);
 
@@ -2138,7 +2214,7 @@ import {
 										'Notes',
 										'Mode',
 									],
-									autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+									autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 								},
 							);
 							results.appendChild(table);
@@ -2192,7 +2268,7 @@ import {
 							{
 								toggleable: true,
 								columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
-								autoHide: ['Sanity', 'Mode'],
+								autoHide: getAutoHideColumns(['Sanity']),
 							},
 						);
 
@@ -2235,7 +2311,7 @@ import {
 										'Notes',
 										'Mode',
 									],
-									autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+									autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 								},
 							);
 
@@ -2288,6 +2364,112 @@ import {
 
 			// Ensure Discovery page starts with an empty "+" slot
 			ensureEmptySlot();
+
+			// Sort controls for ingredient picker
+			const sortControls = (() => {
+				const sortButton = document.createElement('span');
+				const sortDropdown = document.createElement('div');
+				const sortOptions = [
+					{ value: 'default', label: 'Sort: Default' },
+					{ value: 'name', label: 'Sort: Name' },
+					{ value: 'health', label: 'Sort: Health' },
+					{ value: 'hunger', label: 'Sort: Hunger' },
+					{ value: 'sanity', label: 'Sort: Sanity' },
+					{ value: 'perish', label: 'Sort: Perish' },
+				];
+
+				let currentSort = 'default';
+				let isOpen = false;
+
+				// Try to load saved sort preference from localStorage
+				try {
+					if (window.localStorage.foodGuideSortPreference) {
+						const saved = JSON.parse(window.localStorage.foodGuideSortPreference);
+						if (saved && saved[index] !== undefined) {
+							currentSort = saved[index];
+						}
+					}
+				} catch (err) {
+					console.warn('Unable to load sort preference', err);
+				}
+
+				sortButton.className = 'sortingredients';
+				sortButton.textContent = sortOptions.find(opt => opt.value === currentSort).label;
+				sortButton.style.cursor = 'pointer';
+
+				sortDropdown.className = 'sortdropdown';
+				sortDropdown.style.display = 'none';
+				sortDropdown.style.position = 'absolute';
+				sortDropdown.style.zIndex = '10';
+				sortDropdown.style.marginTop = '2px';
+
+				sortOptions.forEach(option => {
+					const optionEl = document.createElement('div');
+					optionEl.textContent = option.label;
+					optionEl.dataset.value = option.value;
+					optionEl.style.padding = '4px 8px';
+					optionEl.style.cursor = 'pointer';
+					optionEl.style.background = 'var(--bg-primary)';
+					optionEl.style.border = '1px solid var(--medium)';
+					optionEl.style.borderTop = 'none';
+
+					if (option.value === currentSort) {
+						optionEl.style.background = 'var(--selected-bg)';
+					}
+
+					optionEl.addEventListener('click', () => {
+						currentSort = option.value;
+						sortButton.textContent = option.label;
+
+						// Update all options' backgrounds
+						Array.from(sortDropdown.children).forEach(child => {
+							if (child.dataset.value === currentSort) {
+								child.style.background = 'var(--selected-bg)';
+							} else {
+								child.style.background = 'var(--bg-primary)';
+							}
+						});
+
+						// Save to localStorage
+						try {
+							let saved = {};
+							if (window.localStorage.foodGuideSortPreference) {
+								saved = JSON.parse(window.localStorage.foodGuideSortPreference);
+							}
+							saved[index] = currentSort;
+							window.localStorage.foodGuideSortPreference = JSON.stringify(saved);
+						} catch (err) {
+							console.warn('Unable to save sort preference', err);
+						}
+
+						sortDropdown.style.display = 'none';
+						isOpen = false;
+						refreshPicker();
+					});
+
+					sortDropdown.appendChild(optionEl);
+				});
+
+				sortButton.addEventListener('click', e => {
+					e.stopPropagation();
+					isOpen = !isOpen;
+					sortDropdown.style.display = isOpen ? 'block' : 'none';
+				});
+
+				// Close dropdown when clicking outside
+				document.addEventListener('click', e => {
+					if (isOpen && !sortDropdown.contains(e.target) && e.target !== sortButton) {
+						sortDropdown.style.display = 'none';
+						isOpen = false;
+					}
+				});
+
+				return {
+					getSortType: () => currentSort,
+					getButton: () => sortButton,
+					getDropdown: () => sortDropdown,
+				};
+			})();
 
 			searchSelector.className = 'searchselector retracted';
 			searchSelector.appendChild(document.createTextNode('name'));
@@ -2494,7 +2676,8 @@ import {
 			})();
 
 			clear.className = 'clearingredients';
-			clear.appendChild(document.createTextNode('clear'));
+			clear.appendChild(document.createTextNode('×'));
+			clear.title = 'Clear search or remove all ingredients';
 
 			clear.addEventListener(
 				'click',
@@ -2512,25 +2695,7 @@ import {
 				false,
 			);
 
-			clear.addEventListener(
-				'mouseover',
-				() => {
-					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
-						clear.firstChild.textContent = 'clear chosen ingredients';
-					}
-				},
-				false,
-			);
-
-			clear.addEventListener(
-				'mouseout',
-				() => {
-					if (clear.firstChild.textContent !== 'clear') {
-						clear.firstChild.textContent = 'clear';
-					}
-				},
-				false,
-			);
+			// Remove the hover event listeners for changing text since we're using title instead
 
 			toggleText.className = 'toggleingredients enabled';
 
@@ -2553,7 +2718,13 @@ import {
 			toggleText.appendChild(document.createTextNode('Icons only'));
 			parent.parentNode.insertBefore(toggleText, parent);
 
+			// Insert sort controls
+			parent.parentNode.insertBefore(sortControls.getButton(), parent);
+			parent.parentNode.insertBefore(sortControls.getDropdown(), parent);
+
+			// Insert clear button (will be styled to the right)
 			parent.parentNode.insertBefore(clear, parent);
+
 			parent.parentNode.insertBefore(dropdown, parent);
 
 			picker.addEventListener('keydown', _ => {

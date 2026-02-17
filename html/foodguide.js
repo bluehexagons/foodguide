@@ -145,6 +145,32 @@ import {
 	});
 
 	/**
+	 * Determines if the Mode column should be shown in tables.
+	 * In DST mode, the Mode column is hidden unless Warly is selected.
+	 * In other game modes, the Mode column is always shown.
+	 */
+	const shouldShowModeColumn = () => {
+		// Check if we're in DST mode
+		const isDST = (modeMask & TOGETHER) !== 0 && currentVersion === 'together';
+		// Check if Warly is selected
+		const isWarlySelected = (charMask & WARLY) !== 0;
+
+		// Show Mode column if: not in DST, OR in DST with Warly selected
+		return !isDST || isWarlySelected;
+	};
+
+	/**
+	 * Returns autoHide array for tables, conditionally including 'Mode' column.
+	 */
+	const getAutoHideColumns = baseColumns => {
+		const columns = [...baseColumns];
+		if (!shouldShowModeColumn() && !columns.includes('Mode')) {
+			columns.push('Mode');
+		}
+		return columns;
+	};
+
+	/**
 	 * Sets game mode and updates UI accordingly.
 	 * Called when the user selects a version, toggles DLC, or toggles a character.
 	 */
@@ -181,32 +207,6 @@ import {
 			}
 			btn.classList.toggle('selected', btn.dataset.version === currentVersion);
 		}
-
-		/**
-		 * Determines if the Mode column should be shown in tables.
-		 * In DST mode, the Mode column is hidden unless Warly is selected.
-		 * In other game modes, the Mode column is always shown.
-		 */
-		const shouldShowModeColumn = () => {
-			// Check if we're in DST mode
-			const isDST = (modeMask & TOGETHER) !== 0 && currentVersion === 'together';
-			// Check if Warly is selected
-			const isWarlySelected = (charMask & WARLY) !== 0;
-
-			// Show Mode column if: not in DST, OR in DST with Warly selected
-			return !isDST || isWarlySelected;
-		};
-
-		/**
-		 * Returns autoHide array for tables, conditionally including 'Mode' column.
-		 */
-		const getAutoHideColumns = baseColumns => {
-			const columns = [...baseColumns];
-			if (!shouldShowModeColumn() && !columns.includes('Mode')) {
-				columns.push('Mode');
-			}
-			return columns;
-		};
 
 		// Show/hide DLC section (only visible for 'dontstarve')
 		const dlcSection = modePanel.querySelector('.dlc-section');
@@ -1205,6 +1205,23 @@ import {
 			};
 			container.setMaxRows = setMaxRows;
 
+			// Method to update auto-hide columns dynamically (for mode changes)
+			container.updateAutoHide = newAutoHideLabels => {
+				if (!newAutoHideLabels) {
+					return;
+				}
+				const indices = headerKeys
+					.map((h, i) => [h, i])
+					.filter(([h]) => {
+						const label = h.indexOf(':') === -1 ? h : h.split(':')[0];
+						return newAutoHideLabels.includes(label);
+					})
+					.map(([, i]) => i);
+				autoHiddenColumns = new Set(indices);
+				applyColumnVisibility();
+				updateToggleButtons();
+			};
+
 			return container;
 		}
 
@@ -1473,6 +1490,13 @@ import {
 	modeRefreshers.push(() => {
 		foodTable.update();
 		recipeTable.update();
+		// Update auto-hide columns based on new mode
+		if (foodTable.updateAutoHide) {
+			foodTable.updateAutoHide(getAutoHideColumns(['Sanity']));
+		}
+		if (recipeTable.updateAutoHide) {
+			recipeTable.updateAutoHide(getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']));
+		}
 	});
 
 	// statistics analyzer

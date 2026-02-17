@@ -1935,7 +1935,6 @@ import {
 			const discover = document.getElementById('discover');
 			const makable = document.getElementById('makable');
 			const clear = document.createElement('span');
-			const toggleText = document.createElement('span');
 
 			const pickItem = e => {
 				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
@@ -2423,9 +2422,6 @@ import {
 
 				sortDropdown.className = 'sortdropdown';
 				sortDropdown.style.display = 'none';
-				sortDropdown.style.position = 'absolute';
-				sortDropdown.style.zIndex = '10';
-				sortDropdown.style.marginTop = '2px';
 
 				sortOptions.forEach(option => {
 					const optionEl = document.createElement('div');
@@ -2477,7 +2473,15 @@ import {
 				sortButton.addEventListener('click', e => {
 					e.stopPropagation();
 					isOpen = !isOpen;
-					sortDropdown.style.display = isOpen ? 'block' : 'none';
+					if (isOpen) {
+						// Position dropdown below button
+						const rect = sortButton.getBoundingClientRect();
+						sortDropdown.style.left = `${rect.left}px`;
+						sortDropdown.style.top = `${rect.bottom + 2}px`;
+						sortDropdown.style.display = 'block';
+					} else {
+						sortDropdown.style.display = 'none';
+					}
 				});
 
 				// Close dropdown when clicking outside
@@ -2719,28 +2723,129 @@ import {
 				false,
 			);
 
-			// Remove the hover event listeners for changing text since we're using title instead
+			// Display mode controls (Icons / Names / List)
+			const displayModeControls = (() => {
+				const displayButton = document.createElement('span');
+				const displayDropdown = document.createElement('div');
+				const displayModes = [
+					{ value: 'names', label: 'Display: Names' },
+					{ value: 'icons', label: 'Display: Icons' },
+					{ value: 'list', label: 'Display: List' },
+				];
 
-			toggleText.className = 'toggleingredients enabled';
+				let currentMode = 'names';
+				let isOpen = false;
 
-			toggleText.addEventListener(
-				'click',
-				() => {
-					if (toggleText.classList.contains('enabled')) {
-						toggleText.classList.remove('enabled');
-						dropdown.classList.add('hidetext');
-						toggleText.firstChild.textContent = 'Show names';
-					} else {
-						toggleText.classList.add('enabled');
-						dropdown.classList.remove('hidetext');
-						toggleText.firstChild.textContent = 'Icons only';
+				// Try to load saved display mode from localStorage
+				try {
+					if (window.localStorage.foodGuideDisplayMode) {
+						const saved = JSON.parse(window.localStorage.foodGuideDisplayMode);
+						if (saved && saved[index] !== undefined) {
+							currentMode = saved[index];
+						}
 					}
-				},
-				false,
-			);
+				} catch (err) {
+					console.warn('Unable to load display mode preference', err);
+				}
 
-			toggleText.appendChild(document.createTextNode('Icons only'));
-			parent.parentNode.insertBefore(toggleText, parent);
+				displayButton.className = 'displaymodeingredients';
+				displayButton.textContent = displayModes.find(opt => opt.value === currentMode).label;
+				displayButton.style.cursor = 'pointer';
+
+				displayDropdown.className = 'displaymodedropdown';
+				displayDropdown.style.display = 'none';
+
+				const applyDisplayMode = mode => {
+					dropdown.classList.remove('hidetext', 'listmode');
+					if (mode === 'icons') {
+						dropdown.classList.add('hidetext');
+					} else if (mode === 'list') {
+						dropdown.classList.add('listmode');
+					}
+				};
+
+				// Apply initial mode
+				applyDisplayMode(currentMode);
+
+				displayModes.forEach(option => {
+					const optionEl = document.createElement('div');
+					optionEl.textContent = option.label;
+					optionEl.dataset.value = option.value;
+					optionEl.style.padding = '4px 8px';
+					optionEl.style.cursor = 'pointer';
+					optionEl.style.background = 'var(--bg-primary)';
+					optionEl.style.border = '1px solid var(--medium)';
+					optionEl.style.borderTop = 'none';
+
+					if (option.value === currentMode) {
+						optionEl.style.background = 'var(--selected-bg)';
+					}
+
+					optionEl.addEventListener('click', () => {
+						currentMode = option.value;
+						displayButton.textContent = option.label;
+
+						// Update all options' backgrounds
+						Array.from(displayDropdown.children).forEach(child => {
+							if (child.dataset.value === currentMode) {
+								child.style.background = 'var(--selected-bg)';
+							} else {
+								child.style.background = 'var(--bg-primary)';
+							}
+						});
+
+						// Apply display mode
+						applyDisplayMode(currentMode);
+
+						// Save to localStorage
+						try {
+							let saved = {};
+							if (window.localStorage.foodGuideDisplayMode) {
+								saved = JSON.parse(window.localStorage.foodGuideDisplayMode);
+							}
+							saved[index] = currentMode;
+							window.localStorage.foodGuideDisplayMode = JSON.stringify(saved);
+						} catch (err) {
+							console.warn('Unable to save display mode preference', err);
+						}
+
+						displayDropdown.style.display = 'none';
+						isOpen = false;
+					});
+
+					displayDropdown.appendChild(optionEl);
+				});
+
+				displayButton.addEventListener('click', e => {
+					e.stopPropagation();
+					isOpen = !isOpen;
+					if (isOpen) {
+						// Position dropdown below button
+						const rect = displayButton.getBoundingClientRect();
+						displayDropdown.style.left = `${rect.left}px`;
+						displayDropdown.style.top = `${rect.bottom + 2}px`;
+						displayDropdown.style.display = 'block';
+					} else {
+						displayDropdown.style.display = 'none';
+					}
+				});
+
+				// Close dropdown when clicking outside
+				document.addEventListener('click', e => {
+					if (isOpen && !displayDropdown.contains(e.target) && e.target !== displayButton) {
+						displayDropdown.style.display = 'none';
+						isOpen = false;
+					}
+				});
+
+				return {
+					getButton: () => displayButton,
+					getDropdown: () => displayDropdown,
+				};
+			})();
+
+			parent.parentNode.insertBefore(displayModeControls.getButton(), parent);
+			parent.parentNode.insertBefore(displayModeControls.getDropdown(), parent);
 
 			// Insert sort controls
 			parent.parentNode.insertBefore(sortControls.getButton(), parent);

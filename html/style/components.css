@@ -1,0 +1,321 @@
+/* Components: ingredient picker, dropdowns, buttons, filters, search */
+
+/* Ingredient list and slots */
+.ingredientlist {
+	display: flex;
+	gap: 5px;
+	flex-wrap: wrap;
+	margin-top: 16px;
+}
+
+.ingredient {
+	margin: 0;
+	overflow: hidden;
+	cursor: pointer;
+	background: url('../img/background.png');
+	background-size: cover;
+	position: relative;
+	border-radius: 4px;
+}
+
+.ingredient :is(img, .icon) {
+	display: block;
+	width: 64px;
+	height: 64px;
+	border: none;
+	margin: 4px;
+}
+
+/* Search selector toggle */
+.searchselector {
+	display: inline-block;
+	padding: 0 0 0 2px;
+	line-height: 22px;
+	vertical-align: bottom;
+	border: 1px solid var(--medium);
+	border-right: none;
+	height: 100%;
+	background: var(--table-hover);
+	color: var(--fg-primary);
+	border-radius: 3px 0 0 3px;
+	transition: border-bottom-left-radius 100ms ease;
+	cursor: pointer;
+}
+
+.searchselector.retracted::after {
+	content: '';
+	margin-left: 3px;
+	margin-right: 2px;
+	width: 0;
+	height: 0;
+	display: inline-block;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 5px solid var(--fg-tertiary);
+	margin-bottom: 2px;
+}
+
+.searchselector.extended::after {
+	content: '';
+	margin-left: 3px;
+	margin-right: 2px;
+	width: 0;
+	height: 0;
+	display: inline-block;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 5px solid var(--fg-tertiary);
+	margin-bottom: 2px;
+}
+
+.searchselector:active {
+	background-color: var(--medium);
+}
+
+/* Search dropdown */
+.searchdropdown {
+	z-index: 2;
+	position: absolute;
+	height: 0;
+	overflow: hidden;
+	border-radius: 0 0 3px 3px;
+	transition:
+		height 200ms ease,
+		border-top-left-radius 100ms ease;
+	border-top-left-radius: 3px;
+}
+
+.searchdropdown div {
+	background: var(--lighter);
+	border: 1px solid var(--medium);
+	border-top: none;
+	cursor: pointer;
+	padding: 0 2px;
+	color: var(--fg-primary);
+}
+
+/* Ingredient picker input */
+.ingredientpicker {
+	border: 1px solid var(--medium);
+	padding: 4px 8px;
+	height: auto;
+	border-radius: 0 5px 5px 0;
+	font-size: 14px;
+	outline: none;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	transition: border-color var(--transition-fast);
+}
+
+.ingredientpicker:hover,
+.ingredientpicker:focus {
+	border-color: var(--medium);
+}
+
+/* Ingredient dropdown */
+.ingredientdropdown {
+	display: block;
+	z-index: 1;
+}
+
+.ingredientdropdown div {
+	margin: 4px 0;
+	padding: 0;
+	margin-bottom: 4px;
+	text-align: justify;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+
+.ingredientdropdown .item {
+	border: 1px solid var(--border-light);
+	font-size: 12pt;
+	padding: 2px 6px;
+	white-space: nowrap;
+	text-align: center;
+	line-height: 20px;
+	display: inline-flex;
+	align-content: center;
+	vertical-align: middle;
+	overflow: hidden;
+	list-style-type: none;
+	cursor: pointer;
+	border-radius: 5px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	transition: all var(--transition-fast);
+}
+
+.ingredientdropdown .item :is(img, .icon) {
+	width: 20px;
+	height: 20px;
+	margin-right: 4px;
+}
+
+.ingredientdropdown.hidetext .item :is(img, .icon) {
+	margin-right: 0;
+}
+
+.ingredientdropdown .item .text {
+	vertical-align: middle;
+}
+
+.ingredientdropdown .item:hover {
+	background: var(--table-hover);
+	border-color: var(--medium);
+}
+
+.ingredientdropdown .item:active {
+	background: var(--table-bg);
+}
+
+.ingredientdropdown .item.selected {
+	background: var(--selected-bg);
+	border-color: var(--selected-border);
+}
+
+.ingredientdropdown .item.faded {
+	background: var(--medium);
+	color: var(--fg-tertiary);
+}
+
+.ingredientdropdown.hidetext div .text {
+	display: none;
+}
+
+.ingredientdropdown.hidetext div .item :is(img, .icon) {
+	width: 40px;
+	height: 40px;
+}
+
+/* Toggle and clear buttons */
+.toggleingredients,
+.clearingredients {
+	color: var(--fg-primary);
+	display: inline-block;
+	padding-left: 5px;
+	padding-right: 5px;
+	cursor: pointer;
+	border: 1px solid var(--medium);
+	margin-left: 12pt;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 75%;
+	opacity: 0.4;
+}
+
+.toggleingredients:hover,
+.clearingredients:hover {
+	opacity: 1;
+}
+
+.clearingredients {
+	color: red;
+	border: 1px solid #c55;
+}
+
+/* Makable / statistics buttons */
+button.makablebutton {
+	font-size: 14pt;
+	margin: 4px;
+	padding: 6px 12px;
+	display: inline-block;
+	border: 1px solid var(--medium);
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	border-radius: 5px;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+}
+
+button.makablebutton:hover {
+	background: var(--table-hover);
+	border-color: var(--light);
+}
+
+/* Recipe filter icons */
+div.recipeFilter :is(img, .icon) {
+	opacity: 0.6;
+	margin: 4px;
+	padding: 1px 2px;
+	display: inline-block;
+	border: 1px solid var(--medium);
+	background-color: var(--table-bg);
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+div.recipeFilter :is(img, .icon):hover {
+	opacity: 0.8;
+}
+
+div.recipeFilter :is(img, .icon).selected {
+	opacity: 1;
+	border-width: 3px;
+	margin: 2px;
+}
+
+div.recipeFilter :is(img, .icon).excluded {
+	opacity: 0.8;
+	border-color: var(--excluded-border);
+	border-width: 3px;
+	margin: 2px;
+	background-color: var(--excluded-bg);
+}
+
+/* Food filter icons */
+div.foodFilter :is(img, .icon) {
+	width: 32px;
+	height: 32px;
+	opacity: 0.4;
+	margin: 4px;
+	padding: 1px 2px;
+	display: inline-block;
+	border: 1px solid var(--medium);
+	background-color: var(--table-bg);
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+div.foodFilter :is(img, .icon):hover {
+	opacity: 0.8;
+}
+
+div.foodFilter :is(img, .icon).selected {
+	border-width: 3px;
+	margin: 2px;
+	opacity: 1;
+}
+
+div.foodFilter :is(img, .icon).excluded {
+	border-width: 3px;
+	border-color: var(--excluded-border);
+	margin: 2px;
+	opacity: 0.8;
+	background-color: var(--excluded-bg);
+}
+
+/* Responsive: small screens */
+@media (max-width: 767px) {
+	.ingredientdropdown {
+		overflow: auto;
+	}
+
+	.ingredientdropdown div {
+		min-width: 690px;
+	}
+
+	.ingredientdropdown div .item :is(img, .icon) {
+		width: 40px;
+		height: 40px;
+	}
+
+	.toggleingredients {
+		display: none;
+	}
+
+	.ingredientdropdown div .text {
+		display: none;
+	}
+}

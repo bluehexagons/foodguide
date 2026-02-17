@@ -1,0 +1,187 @@
+/* Table styling: data tables, sorting, highlighting, link spans */
+
+/* Sticky-scroll wrapper: keeps a horizontal scrollbar visible at the viewport bottom */
+.table-scroll-wrapper {
+	overflow-x: auto;
+	overflow-y: visible;
+	max-width: 100%;
+}
+
+table {
+	width: 100%;
+	font-size: 15px;
+	line-height: 22px;
+	vertical-align: middle;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+table td {
+	border-bottom: 1px solid var(--border-color);
+	border-right: 1px solid var(--border-light);
+	background: var(--table-bg);
+	padding: 4px 8px;
+	min-height: 26px;
+	min-width: 40px;
+	color: var(--fg-primary);
+}
+
+table td:first-child {
+	border-left: 1px solid var(--border-light);
+}
+
+td .cellRow:nth-child(n + 2) {
+	margin-top: 1px;
+}
+
+td :is(img, .icon) {
+	width: 32px;
+	height: 32px;
+}
+
+table tr {
+	border: none;
+}
+
+table tr:hover td {
+	background: var(--table-hover);
+}
+
+table tr.highlighted td {
+	background: var(--table-highlight);
+	border-bottom-color: var(--highlighted-border);
+}
+
+table th {
+	background: var(--header-bg, #5a6570);
+	color: var(--header-text, #fff);
+	padding: 6px 8px;
+	text-align: left;
+	font-size: 13px;
+	font-weight: 600;
+	border-bottom: 2px solid rgba(0, 0, 0, 0.3);
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	transition: background-color var(--transition-normal);
+}
+
+table th[style*='cursor'] {
+	user-select: none;
+}
+
+table th:hover {
+	filter: brightness(1.15);
+}
+
+/* Sort-active column indicator */
+table th.sort-asc {
+	background: var(--header-accent, #8a9aa8);
+	color: var(--header-bg, #5a6570);
+	border-radius: 4px;
+}
+
+table th.sort-desc {
+	background: color-mix(in srgb, var(--header-bg, #5a6570) 80%, #000);
+	color: var(--header-accent, #8a9aa8);
+	border-radius: 4px;
+}
+
+/* Column visibility: user can toggle columns on/off */
+table .col-hidden {
+	display: none;
+}
+
+/* Column toggle toolbar */
+.column-toggle-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding: 6px 0;
+	align-items: center;
+}
+
+.column-toggle-bar .col-toggle-label {
+	font-size: 11px;
+	color: var(--medium);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	margin-right: 4px;
+	white-space: nowrap;
+}
+
+.column-toggle-bar button {
+	font-size: 12px;
+	padding: 2px 8px;
+	border: 1px solid var(--border-light);
+	border-radius: 3px;
+	background: var(--bg-primary);
+	cursor: pointer;
+	color: var(--fg-tertiary);
+	transition: all var(--transition-fast);
+	white-space: nowrap;
+}
+
+.column-toggle-bar button:hover {
+	background: var(--table-hover);
+	border-color: var(--medium);
+}
+
+.column-toggle-bar button.active {
+	background: var(--header-accent, #8a9aa8);
+	border-color: var(--header-bg, #5a6570);
+	color: var(--header-text, #fff);
+}
+
+/* Linkable spans in table cells */
+table.links span.link {
+	padding: 1px 4px;
+	display: inline-block;
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	margin-bottom: 1px;
+	border-radius: 3px;
+	cursor: pointer;
+	font-size: 13px;
+	color: var(--fg-primary);
+	transition: background var(--transition-fast);
+}
+
+table.links span.link:hover {
+	background: var(--table-hover);
+}
+
+table.links span.link.left {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left: none;
+}
+
+table.links span.link.right {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+table span.link.strike {
+	text-decoration: line-through;
+	color: var(--strike-text);
+}
+
+table.links span.link.strike {
+	border-color: var(--border-light);
+}
+
+span.link :is(img, .icon) {
+	width: 20px;
+	height: 20px;
+	margin-bottom: -2px;
+	vertical-align: text-bottom;
+}
+
+.highlighted {
+	outline: 1px solid #ccb;
+}
+
+#results .highlighted td {
+	border-bottom: 4px solid #ccb !important;
+}

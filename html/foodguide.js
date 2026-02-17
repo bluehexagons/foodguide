@@ -25,17 +25,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 import {
-	GIANTS,
-	HAMLET,
-	SHIPWRECKED,
-	VANILLA,
-	WARLY,
-	WARLYHAM,
-	WARLYDST,
 	base_cook_time,
 	baseModes,
 	characters,
 	defaultStatMultipliers,
+	dlcOptions,
+	gameVersions,
 	headings,
 	modes,
 	perish_fridge_mult,
@@ -56,6 +51,8 @@ import {
 	excludesMode,
 	getActiveMultipliers,
 	calculateModeMask,
+	calculateCharMask,
+	isCharacterApplicable,
 } from './mode-utils.js';
 
 (() => {
@@ -67,78 +64,149 @@ import {
 
 	let statMultipliers = defaultStatMultipliers;
 
-	// Two-tier mode state: base game mode + optional character
-	let currentBaseMode = 'hamlet';
+	// Mode state: game version + DLC toggles + optional character
+	let currentVersion = 'together';
+	let activeDlc = { giants: false, shipwrecked: false };
 	let currentCharacter = null;
-	let modeMask = baseModes[currentBaseMode].mask;
+	let modeMask = gameVersions[currentVersion].baseMask;
+	let charMask = 0;
+
+	// Theme state: 'auto', 'light', or 'dark'
+	let currentTheme = localStorage.getItem('foodGuideTheme') || 'auto';
+
+	/**
+	 * Initializes theme based on saved preference and browser settings.
+	 */
+	const initTheme = () => {
+		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		const effectiveTheme = currentTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : currentTheme;
+
+		document.documentElement.setAttribute('data-theme', effectiveTheme);
+		updateThemeToggle();
+	};
+
+	/**
+	 * Updates the theme toggle button display.
+	 */
+	const updateThemeToggle = () => {
+		const btn = document.getElementById('theme-toggle');
+		if (btn) {
+			const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			if (currentTheme === 'auto') {
+				btn.textContent = isDark ? '☀️' : '🌙';
+			} else if (currentTheme === 'dark') {
+				btn.textContent = '☀️';
+			} else {
+				btn.textContent = '🌙';
+			}
+		}
+	};
+
+	/**
+	 * Cycles through theme options: auto -> light -> dark -> auto
+	 */
+	const toggleTheme = () => {
+		const modes = ['auto', 'light', 'dark'];
+		const currentIndex = modes.indexOf(currentTheme);
+		currentTheme = modes[(currentIndex + 1) % modes.length];
+		localStorage.setItem('foodGuideTheme', currentTheme);
+		initTheme();
+	};
+
+	// Initialize theme on page load
+	initTheme();
+
+	// Attach theme toggle button listener
+	const themeBtn = document.getElementById('theme-toggle');
+	if (themeBtn) {
+		themeBtn.addEventListener('click', toggleTheme);
+	}
+
+	// Listen for OS theme changes when in auto mode
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+		if (currentTheme === 'auto') {
+			initTheme();
+		}
+	});
 
 	/**
 	 * Sets game mode and updates UI accordingly.
-	 * Called when the user selects a base game mode or toggles a character.
+	 * Called when the user selects a version, toggles DLC, or toggles a character.
 	 */
 	const setMode = () => {
-		modeMask = calculateModeMask(currentBaseMode, currentCharacter, baseModes, characters);
-		statMultipliers = getActiveMultipliers(
-			currentBaseMode,
+		modeMask = calculateModeMask(
+			currentVersion,
+			activeDlc,
 			currentCharacter,
-			baseModes,
+			gameVersions,
+			dlcOptions,
+			characters,
+		);
+		charMask = calculateCharMask(currentCharacter, currentVersion, activeDlc, characters);
+		statMultipliers = getActiveMultipliers(
+			currentVersion,
+			activeDlc,
+			currentCharacter,
 			characters,
 			defaultStatMultipliers,
 		);
 
-		updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask)));
+		updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
 
 		if (document.getElementById('statistics')?.hasChildNodes()) {
 			document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
 		}
 
-		// Update base mode button states
-		for (let i = 0; i < modeTab.childNodes.length; i++) {
-			const btn = modeTab.childNodes[i];
-			const mode = baseModes[btn.dataset.mode];
-			if (!mode) {
+		// Update version button states
+		const versionButtons = modePanel.querySelectorAll('.version-btn');
+		for (const btn of versionButtons) {
+			const ver = gameVersions[btn.dataset.version];
+			if (!ver) {
 				continue;
 			}
-			btn.className = 'mode-button';
-			if (btn.dataset.mode === currentBaseMode) {
-				btn.classList.add('selected');
-				btn.style.backgroundColor = mode.color;
-			} else {
-				btn.style.backgroundColor = 'transparent';
-			}
+			btn.classList.toggle('selected', btn.dataset.version === currentVersion);
 		}
 
-		// Update character button states
-		for (let i = 0; i < characterTab.childNodes.length; i++) {
-			const btn = characterTab.childNodes[i];
-			const char = characters[btn.dataset.character];
-			if (!char) {
-				continue;
+		// Show/hide DLC section (only visible for 'dontstarve')
+		const dlcSection = modePanel.querySelector('.dlc-section');
+		const dlcDivider = modePanel.querySelector('.dlc-divider');
+		if (dlcSection) {
+			dlcSection.classList.toggle('hidden', currentVersion !== 'dontstarve');
+		}
+		if (dlcDivider) {
+			dlcDivider.style.display = currentVersion === 'dontstarve' ? '' : 'none';
+		}
+
+		// Update DLC toggle states
+		const dlcButtons = modePanel.querySelectorAll('.dlc-btn');
+		for (const btn of dlcButtons) {
+			const dlcKey = btn.dataset.dlc;
+			btn.classList.toggle('selected', !!activeDlc[dlcKey]);
+		}
+
+		// Update character button states and visibility
+		const charSection = modePanel.querySelector('.char-section');
+		const charDivider = modePanel.querySelector('.char-divider');
+		const charButtons = modePanel.querySelectorAll('.char-btn');
+		let anyCharApplicable = false;
+		for (const btn of charButtons) {
+			const charName = btn.dataset.character;
+			const applicable = isCharacterApplicable(charName, currentVersion, activeDlc, characters);
+			if (applicable) {
+				anyCharApplicable = true;
 			}
-			btn.className = 'mode-button';
-			const applicable = char.applicableModes.includes(currentBaseMode);
-			if (!applicable) {
-				btn.classList.add('disabled');
-				btn.style.backgroundColor = 'transparent';
-				btn.style.opacity = '0.15';
-			} else if (btn.dataset.character === currentCharacter) {
-				btn.classList.add('selected');
-				btn.style.backgroundColor = char.color;
-				btn.style.opacity = '';
-			} else {
-				btn.style.backgroundColor = 'transparent';
-				btn.style.opacity = '';
-			}
+			btn.classList.toggle('disabled', !applicable);
+			btn.classList.toggle('selected', applicable && charName === currentCharacter);
+		}
+		if (charSection) {
+			charSection.classList.toggle('hidden', !anyCharApplicable);
+		}
+		if (charDivider) {
+			charDivider.style.display = anyCharApplicable ? '' : 'none';
 		}
 
 		for (let i = 0; i < modeRefreshers.length; i++) {
 			modeRefreshers[i]();
-		}
-
-		// Set the background color based on selected game mode
-		const bgMode = baseModes[currentBaseMode];
-		if (bgMode) {
-			document.getElementById('background').style['background-color'] = bgMode.color;
 		}
 	};
 
@@ -161,7 +229,10 @@ import {
 		let wordstarts;
 
 		const allowedFilter = element => {
-			if ((!allowUncookable && element.uncookable) || excludesMode(element.modeMask, modeMask)) {
+			if (
+				(!allowUncookable && element.uncookable) ||
+				excludesMode(element.modeMask, modeMask, element.charMask, charMask)
+			) {
 				element.match = 0;
 				return false;
 			}
@@ -329,7 +400,7 @@ import {
 			outer: for (let i = 0; i < recipes.length; i++) {
 				let valid = false;
 
-				if (excludesMode(recipes[i].modeMask, modeMask)) {
+				if (excludesMode(recipes[i].modeMask, modeMask, recipes[i].charMask, charMask)) {
 					continue;
 				}
 
@@ -367,7 +438,10 @@ import {
 			accumulateIngredients(items, names, tags, statMultipliers);
 
 			for (let i = 0; i < recipes.length; i++) {
-				if (matchesMode(recipes[i].modeMask, modeMask) && recipes[i].test(null, names, tags)) {
+				if (
+					matchesMode(recipes[i].modeMask, modeMask, recipes[i].charMask, charMask) &&
+					recipes[i].test(null, names, tags)
+				) {
 					recipeList.push(recipes[i]);
 				}
 			}
@@ -480,7 +554,11 @@ import {
 		const updateRecipeCrunchData = () => {
 			recipeCrunchData.recipes = recipes
 				.filter(item => {
-					return !item.trash && matchesMode(item.modeMask, modeMask) && item.foodtype !== 'roughage';
+					return (
+						!item.trash &&
+						matchesMode(item.modeMask, modeMask, item.charMask, charMask) &&
+						item.foodtype !== 'roughage'
+					);
 				})
 				.sort((a, b) => {
 					return b.priority - a.priority;
@@ -621,54 +699,75 @@ import {
 					activePage = elements[storage.activeTab];
 				}
 
-				// New format: baseMode + character
-				if (storage.baseMode && baseModes[storage.baseMode]) {
-					currentBaseMode = storage.baseMode;
+				// New format: version + dlc + character
+				if (storage.version && gameVersions[storage.version]) {
+					currentVersion = storage.version;
+					if (storage.dlc && typeof storage.dlc === 'object') {
+						activeDlc = {
+							giants: !!storage.dlc.giants,
+							shipwrecked: !!storage.dlc.shipwrecked,
+						};
+					}
+					if (storage.character && characters[storage.character]) {
+						currentCharacter = storage.character;
+					}
+				} else if (storage.baseMode && baseModes[storage.baseMode]) {
+					// Migrate from previous format (baseMode + character)
+					const bm = storage.baseMode;
+					if (bm === 'together') {
+						currentVersion = 'together';
+					} else if (bm === 'hamlet') {
+						currentVersion = 'hamlet';
+					} else if (bm === 'shipwrecked') {
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: true };
+					} else if (bm === 'giants') {
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: false };
+					} else {
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: false, shipwrecked: false };
+					}
 					if (storage.character && characters[storage.character]) {
 						currentCharacter = storage.character;
 					}
 				} else if (storage.modeMask !== null) {
-					// Migrate from old format: reverse-lookup modeMask to baseMode + character
+					// Migrate from oldest format: reverse-lookup modeMask.
+					// Old bit values: VANILLA=1, GIANTS=2, SHIPWRECKED=4, TOGETHER=8,
+					// WARLY=16, HAMLET=32, WARLYHAM=64, WARLYDST=128, WEBBER=256
 					const oldMask = storage.modeMask;
 
-					// Handle legacy exact masks first
-					if (oldMask === (VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM)) {
-						// Legacy warlyham mode (119)
-						currentBaseMode = 'hamlet';
+					if (oldMask === 119) {
+						// 1|2|4|32|16|64 = VANILLA|GIANTS|SHIPWRECKED|HAMLET|WARLY|WARLYHAM
+						currentVersion = 'hamlet';
 						currentCharacter = 'warly';
-					} else if (oldMask === (VANILLA | GIANTS | SHIPWRECKED | WARLY)) {
-						// Legacy warly mode in Shipwrecked (23)
-						currentBaseMode = 'shipwrecked';
+					} else if (oldMask === 23) {
+						// 1|2|4|16 = VANILLA|GIANTS|SHIPWRECKED|WARLY
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: true };
 						currentCharacter = 'warly';
-					} else if (oldMask === (TOGETHER | WARLYDST)) {
-						// Legacy warlydst mode (136)
-						currentBaseMode = 'together';
+					} else if (oldMask === 136) {
+						// 8|128 = TOGETHER|WARLYDST
+						currentVersion = 'together';
 						currentCharacter = 'warly';
-					} else {
-						// Try character variant modes first (more specific)
-						for (const charName in characters) {
-							const char = characters[charName];
-							for (const baseModeName of char.applicableModes) {
-								const charMask = calculateModeMask(baseModeName, charName, baseModes, characters);
-								if (oldMask === charMask) {
-									currentBaseMode = baseModeName;
-									currentCharacter = charName;
-									break;
-								}
-							}
-							if (currentCharacter) {
-								break;
-							}
-						}
-					}
-					// If no character match, try base modes
-					if (!currentCharacter) {
-						for (const modeName in baseModes) {
-							if (oldMask === baseModes[modeName].mask) {
-								currentBaseMode = modeName;
-								break;
-							}
-						}
+					} else if (oldMask === 39) {
+						// 1|2|4|32 = VANILLA|GIANTS|SHIPWRECKED|HAMLET
+						currentVersion = 'hamlet';
+					} else if (oldMask === 7) {
+						// 1|2|4 = VANILLA|GIANTS|SHIPWRECKED
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: true };
+					} else if (oldMask === 3) {
+						// 1|2 = VANILLA|GIANTS
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: true, shipwrecked: false };
+					} else if (oldMask === 1) {
+						// VANILLA
+						currentVersion = 'dontstarve';
+						activeDlc = { giants: false, shipwrecked: false };
+					} else if (oldMask === 8) {
+						// TOGETHER
+						currentVersion = 'together';
 					}
 				}
 			}
@@ -692,7 +791,8 @@ import {
 
 				obj = JSON.parse(window.localStorage.foodGuideState);
 				obj.activeTab = activeTab.dataset.tab;
-				obj.baseMode = currentBaseMode;
+				obj.version = currentVersion;
+				obj.dlc = { ...activeDlc };
 				obj.character = currentCharacter;
 				// Keep modeMask for backward compatibility during migration
 				obj.modeMask = modeMask;
@@ -771,6 +871,7 @@ import {
 		filterCallback,
 		startRow,
 		maxRows,
+		columnConfig,
 	) => {
 		let table;
 		let sorting;
@@ -778,6 +879,48 @@ import {
 		let firstHighlight;
 		let lastHighlight;
 		let rows;
+
+		// Column visibility state
+		const headerKeys = Object.keys(headers);
+		const hiddenColumns = new Set();
+		let autoMode = true; // start in auto mode (responsive hiding)
+		let autoHiddenColumns;
+		if (columnConfig && columnConfig.autoHide) {
+			const indices = headerKeys
+				.map((h, i) => [h, i])
+				.filter(([h]) => {
+					const label = h.indexOf(':') === -1 ? h : h.split(':')[0];
+					return columnConfig.autoHide.includes(label);
+				})
+				.map(([, i]) => i);
+			autoHiddenColumns = new Set(indices);
+		} else {
+			autoHiddenColumns = new Set();
+		}
+
+		const isNarrow = () => window.innerWidth <= 900;
+
+		const getEffectiveHidden = () => {
+			if (autoMode && isNarrow()) {
+				// Merge manual hidden + auto-hidden
+				return new Set([...hiddenColumns, ...autoHiddenColumns]);
+			}
+			return hiddenColumns;
+		};
+
+		const applyColumnVisibility = () => {
+			if (!table) {
+				return;
+			}
+			const effective = getEffectiveHidden();
+			const allRows = table.querySelectorAll('tr');
+			for (const row of allRows) {
+				const cells = row.children;
+				for (let i = 0; i < cells.length; i++) {
+					cells[i].classList.toggle('col-hidden', effective.has(i));
+				}
+			}
+		};
 
 		const generateAndHighlight = (item, index, array) => {
 			if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
@@ -857,9 +1000,7 @@ import {
 
 				if (headers[header]) {
 					if (headers[header] === sorting) {
-						th.style.background = invertSort ? '#555' : '#ccc';
-						th.style.color = invertSort ? '#ccc' : '#555';
-						th.style.borderRadius = '4px';
+						th.classList.add(invertSort ? 'sort-desc' : 'sort-asc');
 					}
 
 					th.style.cursor = 'pointer';
@@ -886,6 +1027,9 @@ import {
 					element.addEventListener('click', linkCallback, false);
 				});
 			}
+
+			// Apply column visibility after building the table
+			applyColumnVisibility();
 
 			if (oldTable) {
 				oldTable.parentNode.replaceChild(table, oldTable);
@@ -916,16 +1060,123 @@ import {
 			create();
 		}
 
-		table.update = scrollHighlight => {
+		const update = scrollHighlight => {
 			create(null, null, scrollHighlight);
 		};
 
-		table.setMaxRows = max => {
+		const setMaxRows = max => {
 			maxRows = max;
-			table.update();
+			update();
 		};
 
-		return table;
+		// Wrap in scroll container + optional column toggle bar
+		if (columnConfig && columnConfig.toggleable) {
+			const container = document.createElement('div');
+
+			// Column toggle bar
+			const toggleBar = document.createElement('div');
+			toggleBar.className = 'column-toggle-bar';
+
+			const label = document.createElement('span');
+			label.className = 'col-toggle-label';
+			label.textContent = 'Columns';
+			toggleBar.appendChild(label);
+
+			// Auto button
+			const autoBtn = document.createElement('button');
+			autoBtn.textContent = 'Auto';
+			autoBtn.className = autoMode ? 'active' : '';
+			autoBtn.title = 'Automatically hide less-important columns on narrow screens';
+			autoBtn.addEventListener('click', () => {
+				autoMode = !autoMode;
+				autoBtn.className = autoMode ? 'active' : '';
+				applyColumnVisibility();
+				updateToggleButtons();
+			});
+			toggleBar.appendChild(autoBtn);
+
+			const toggleButtons = [];
+
+			const updateToggleButtons = () => {
+				const effective = getEffectiveHidden();
+				for (const { btn, colIndex } of toggleButtons) {
+					btn.className = effective.has(colIndex) ? '' : 'active';
+				}
+			};
+
+			for (let i = 0; i < headerKeys.length; i++) {
+				const header = headerKeys[i];
+				const colLabel = header.indexOf(':') === -1 ? header : header.split(':')[0];
+
+				// Skip empty-label columns (icon column)
+				if (!colLabel) {
+					continue;
+				}
+
+				// Skip columns not marked as toggleable
+				if (columnConfig.columns && !columnConfig.columns.includes(colLabel)) {
+					continue;
+				}
+
+				const btn = document.createElement('button');
+				btn.textContent = colLabel;
+				btn.className = getEffectiveHidden().has(i) ? '' : 'active';
+
+				const colIndex = i;
+				btn.addEventListener('click', () => {
+					if (hiddenColumns.has(colIndex)) {
+						hiddenColumns.delete(colIndex);
+					} else {
+						hiddenColumns.add(colIndex);
+					}
+					applyColumnVisibility();
+					updateToggleButtons();
+				});
+
+				toggleBar.appendChild(btn);
+				toggleButtons.push({ btn, colIndex });
+			}
+
+			container.appendChild(toggleBar);
+
+			// Scroll wrapper
+			const scrollWrapper = document.createElement('div');
+			scrollWrapper.className = 'table-scroll-wrapper';
+			scrollWrapper.appendChild(table);
+			container.appendChild(scrollWrapper);
+
+			// Listen for resize to update auto-hide
+			let resizeTimeout;
+			window.addEventListener('resize', () => {
+				clearTimeout(resizeTimeout);
+				resizeTimeout = setTimeout(() => {
+					if (autoMode) {
+						applyColumnVisibility();
+						updateToggleButtons();
+					}
+				}, 150);
+			});
+
+			// Proxy update to also reapply column visibility
+			container.update = scrollHighlight => {
+				update(scrollHighlight);
+				applyColumnVisibility();
+			};
+			container.setMaxRows = setMaxRows;
+
+			return container;
+		}
+
+		// No column config — just wrap in scroll wrapper
+		const scrollWrapper = document.createElement('div');
+		scrollWrapper.className = 'table-scroll-wrapper';
+		scrollWrapper.appendChild(table);
+
+		// Proxy update/setMaxRows through wrapper
+		scrollWrapper.update = (...args) => update(...args);
+		scrollWrapper.setMaxRows = (...args) => setMaxRows(...args);
+
+		return scrollWrapper;
 	};
 
 	const sign = n => {
@@ -1115,7 +1366,7 @@ import {
 	};
 
 	const testmode = item => {
-		return matchesMode(item.modeMask, modeMask);
+		return matchesMode(item.modeMask, modeMask, item.charMask, charMask);
 	};
 
 	const foodTable = makeSortableTable(
@@ -1136,6 +1387,13 @@ import {
 		setFoodHighlight,
 		testFoodHighlight,
 		testmode,
+		undefined,
+		undefined,
+		{
+			toggleable: true,
+			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
+			autoHide: ['Sanity', 'Mode'],
+		},
 	);
 
 	const recipeTable = makeSortableTable(
@@ -1159,6 +1417,13 @@ import {
 		setRecipeHighlight,
 		testRecipeHighlight,
 		testmode,
+		undefined,
+		undefined,
+		{
+			toggleable: true,
+			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
+			autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+		},
 	);
 
 	foodElement.appendChild(foodTable);
@@ -1298,7 +1563,7 @@ import {
 				if (i === null) {
 					ingredients = food;
 				}
-				ingredients = ingredients.filter(f => matchesMode(f.modeMask, modeMask));
+				ingredients = ingredients.filter(f => matchesMode(f.modeMask, modeMask, f.charMask, charMask));
 				i = ingredients.length;
 
 				if (excludeDefault) {
@@ -1405,6 +1670,11 @@ import {
 						[...usedIngredients].every(checkIngredient, data.ingredients),
 					0,
 					25,
+					{
+						toggleable: true,
+						columns: ['Health', 'Health+', 'Hunger', 'Hunger+', 'Ingredients'],
+						autoHide: ['Health+', 'Hunger+'],
+					},
 				);
 
 				makableDiv = document.createElement('div');
@@ -1452,7 +1722,7 @@ import {
 				makableButton.after(makableDiv);
 				makableDiv.appendChild(makableFootnote);
 
-				updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask)));
+				updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
 
 				getRealRecipesFromCollection(
 					idealIngredients,
@@ -1765,6 +2035,13 @@ import {
 						(item, array) => {
 							return array.length > 0 && item.priority === highest(array, 'priority');
 						},
+						undefined,
+						undefined,
+						{
+							toggleable: true,
+							columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
+							autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+						},
 					);
 
 					while (results.firstChild) {
@@ -1803,6 +2080,24 @@ import {
 								'priority',
 								false,
 								searchFor,
+								undefined,
+								undefined,
+								undefined,
+								undefined,
+								{
+									toggleable: true,
+									columns: [
+										'Health',
+										'Hunger',
+										'Sanity',
+										'Perish',
+										'Cook Time',
+										'Priority',
+										'Notes',
+										'Mode',
+									],
+									autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+								},
 							);
 							results.appendChild(table);
 						}
@@ -1846,6 +2141,15 @@ import {
 							'name',
 							false,
 							setHighlight,
+							undefined,
+							undefined,
+							undefined,
+							undefined,
+							{
+								toggleable: true,
+								columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
+								autoHide: ['Sanity', 'Mode'],
+							},
 						);
 
 						discoverfood.appendChild(foodTable);
@@ -1871,6 +2175,24 @@ import {
 								'name',
 								false,
 								setHighlight,
+								undefined,
+								undefined,
+								undefined,
+								undefined,
+								{
+									toggleable: true,
+									columns: [
+										'Health',
+										'Hunger',
+										'Sanity',
+										'Perish',
+										'Cook Time',
+										'Priority',
+										'Notes',
+										'Mode',
+									],
+									autoHide: ['Sanity', 'Cook Time', 'Notes', 'Mode'],
+								},
 							);
 
 							discover.appendChild(table);
@@ -2240,17 +2562,36 @@ import {
 		}
 	})();
 
-	const selectBaseMode = e => {
-		const modeName = e.target.dataset.mode;
-		if (!modeName || !baseModes[modeName]) {
+	// --- Mode selector UI ---
+
+	const selectVersion = e => {
+		const target = resolveIconTarget(e.target);
+		const versionName = target.dataset.version;
+		if (!versionName || !gameVersions[versionName]) {
 			return;
 		}
-		currentBaseMode = modeName;
-		// Clear character if not applicable to the new base mode
+		currentVersion = versionName;
+		// Clear character if not applicable to the new version
 		if (
 			currentCharacter &&
-			characters[currentCharacter] &&
-			!characters[currentCharacter].applicableModes.includes(currentBaseMode)
+			!isCharacterApplicable(currentCharacter, currentVersion, activeDlc, characters)
+		) {
+			currentCharacter = null;
+		}
+		setMode();
+	};
+
+	const toggleDlc = e => {
+		const target = resolveIconTarget(e.target);
+		const dlcKey = target.dataset.dlc;
+		if (!dlcKey || !dlcOptions[dlcKey]) {
+			return;
+		}
+		activeDlc[dlcKey] = !activeDlc[dlcKey];
+		// Clear character if no longer applicable
+		if (
+			currentCharacter &&
+			!isCharacterApplicable(currentCharacter, currentVersion, activeDlc, characters)
 		) {
 			currentCharacter = null;
 		}
@@ -2258,60 +2599,109 @@ import {
 	};
 
 	const selectCharacter = e => {
-		const charName = e.target.dataset.character;
+		const target = resolveIconTarget(e.target);
+		const charName = target.dataset.character;
 		if (!charName || !characters[charName]) {
 			return;
 		}
-		// Ignore clicks on characters not applicable to current base mode
-		if (!characters[charName].applicableModes.includes(currentBaseMode)) {
+		if (!isCharacterApplicable(charName, currentVersion, activeDlc, characters)) {
 			return;
 		}
-		// Toggle: clicking the already-selected character deselects it
 		currentCharacter = currentCharacter === charName ? null : charName;
 		setMode();
 	};
 
-	// Base game mode buttons
-	const modeTab = document.createElement('li');
-	navbar.insertBefore(modeTab, navbar.firstChild);
-	modeTab.className = 'mode';
+	// Build mode selectors into the header
+	const headerTop = document.querySelector('.header-top');
+	const modePanel = headerTop; // mode buttons are injected directly into header-top
 
-	for (const name in baseModes) {
-		const modeButton = document.createElement('div');
+	// Section: Game version
+	const versionSection = document.createElement('div');
+	versionSection.className = 'mode-section';
 
-		modeButton.dataset.mode = name;
-		modeButton.addEventListener('click', selectBaseMode, false);
+	const versionLabel = document.createElement('span');
+	versionLabel.className = 'mode-label';
+	versionLabel.textContent = 'Game';
+	versionSection.appendChild(versionLabel);
 
-		modeButton.title = `${baseModes[name].name}\nclick to select`;
+	for (const name in gameVersions) {
+		const btn = document.createElement('div');
+		btn.className = 'mode-btn version-btn';
+		btn.dataset.version = name;
+		btn.addEventListener('click', selectVersion, false);
+		btn.title = gameVersions[name].name;
 
-		const img = makeImage(`img/${baseModes[name].img}`);
-		img.title = name;
-		img.dataset.mode = name;
-		modeButton.appendChild(img);
+		const img = makeImage(`img/${gameVersions[name].img}`);
+		img.title = gameVersions[name].name;
+		img.dataset.version = name;
+		btn.appendChild(img);
 
-		modeTab.appendChild(modeButton);
+		versionSection.appendChild(btn);
 	}
 
-	// Character variant buttons
-	const characterTab = document.createElement('li');
-	navbar.insertBefore(characterTab, modeTab.nextSibling);
-	characterTab.className = 'mode';
+	headerTop.appendChild(versionSection);
+
+	// Divider (DLC)
+	const divider1 = document.createElement('div');
+	divider1.className = 'mode-divider dlc-divider';
+	headerTop.appendChild(divider1);
+
+	// Section: DLC toggles (only for 'dontstarve')
+	const dlcSection = document.createElement('div');
+	dlcSection.className = 'mode-section dlc-section';
+
+	const dlcLabel = document.createElement('span');
+	dlcLabel.className = 'mode-label';
+	dlcLabel.textContent = 'DLC';
+	dlcSection.appendChild(dlcLabel);
+
+	for (const name in dlcOptions) {
+		const btn = document.createElement('div');
+		btn.className = 'mode-btn dlc-btn';
+		btn.dataset.dlc = name;
+		btn.addEventListener('click', toggleDlc, false);
+		btn.title = `${dlcOptions[name].name}\nclick to toggle`;
+
+		const img = makeImage(`img/${dlcOptions[name].img}`);
+		img.title = dlcOptions[name].name;
+		img.dataset.dlc = name;
+		btn.appendChild(img);
+
+		dlcSection.appendChild(btn);
+	}
+
+	headerTop.appendChild(dlcSection);
+
+	// Divider (Character)
+	const divider2 = document.createElement('div');
+	divider2.className = 'mode-divider char-divider';
+	headerTop.appendChild(divider2);
+
+	// Section: Character selection
+	const charSection = document.createElement('div');
+	charSection.className = 'mode-section char-section';
+
+	const charLabel = document.createElement('span');
+	charLabel.className = 'mode-label';
+	charLabel.textContent = 'Char';
+	charSection.appendChild(charLabel);
 
 	for (const name in characters) {
-		const charButton = document.createElement('div');
-
-		charButton.dataset.character = name;
-		charButton.addEventListener('click', selectCharacter, false);
-
-		charButton.title = `${characters[name].name}\nclick to toggle`;
+		const btn = document.createElement('div');
+		btn.className = 'mode-btn char-btn';
+		btn.dataset.character = name;
+		btn.addEventListener('click', selectCharacter, false);
+		btn.title = `${characters[name].name}\nclick to toggle`;
 
 		const img = makeImage(`img/${characters[name].img}`);
-		img.title = name;
+		img.title = characters[name].name;
 		img.dataset.character = name;
-		charButton.appendChild(img);
+		btn.appendChild(img);
 
-		characterTab.appendChild(charButton);
+		charSection.appendChild(btn);
 	}
+
+	headerTop.appendChild(charSection);
 
 	setMode();
 })();

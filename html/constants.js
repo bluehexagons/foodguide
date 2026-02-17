@@ -94,13 +94,11 @@ export const VANILLA = 1;
 export const GIANTS = 1 << 1;
 export const SHIPWRECKED = 1 << 2;
 export const TOGETHER = 1 << 3;
-export const HAMLET = 1 << 5;
+export const HAMLET = 1 << 4;
 
-// Character variant bits
-export const WARLY = 1 << 4;
-export const WARLYHAM = 1 << 6;
-export const WARLYDST = 1 << 7;
-export const WEBBER = 1 << 8;
+// Character bits (used for charMask on character-specific recipes)
+export const WARLY = 1 << 5;
+export const WEBBER = 1 << 6;
 
 // Base game modes (no character variants)
 export const baseModes = {
@@ -145,6 +143,45 @@ export const baseModes = {
 	},
 };
 
+// Game version definitions for the UI (three top-level choices)
+export const gameVersions = {
+	together: {
+		name: "Don't Starve Together",
+		img: 'together.png',
+		// Fixed mask; DST has no DLC toggles
+		baseMask: TOGETHER,
+	},
+
+	dontstarve: {
+		name: "Don't Starve",
+		img: 'vanilla.png',
+		// Base mask before DLC; additive DLC toggles modify this
+		baseMask: VANILLA,
+	},
+
+	hamlet: {
+		name: 'Hamlet',
+		img: 'hamlet.png',
+		// Fixed mask; Hamlet includes all single-player content
+		baseMask: VANILLA | GIANTS | SHIPWRECKED | HAMLET,
+	},
+};
+
+// DLC options that can be toggled on/off (only for 'dontstarve' version)
+export const dlcOptions = {
+	giants: {
+		name: 'Reign of Giants',
+		img: 'reign_of_giants.png',
+		bit: GIANTS,
+	},
+
+	shipwrecked: {
+		name: 'Shipwrecked',
+		img: 'shipwrecked.png',
+		bit: SHIPWRECKED,
+	},
+};
+
 // Character variants with their special mechanics
 // Note: Warly in Shipwrecked has special stat multipliers that make raw/dried/cooked
 // ingredients less effective but recipes more effective. This reflects Warly's
@@ -165,7 +202,6 @@ export const characters = {
 				recipe: 1.2,
 			},
 		},
-		color: '#50c1cc',
 	},
 
 	webber: {
@@ -176,13 +212,14 @@ export const characters = {
 		applicableModes: ['giants', 'shipwrecked', 'hamlet', 'together'],
 		// Webber has no special food multipliers
 		multipliers: {},
-		color: '#8b7355',
 	},
 };
 
 // Combined modes lookup table
-// Used by recipes.js and food.js for data initialization (looking up bit/img by mode name).
-// Multipliers and character logic are handled by the `characters` object and mode-utils.js.
+// Used by recipes.js and food.js for data initialization.
+// Each entry provides the version `bit` for modeMask, and an optional `charBit` for charMask.
+// Items tagged with a character-specific mode (e.g., 'warly') will have both a modeMask
+// (which version they belong to) and a charMask (which character is required to see them).
 export const modes = {
 	vanilla: baseModes.vanilla,
 	giants: baseModes.giants,
@@ -190,28 +227,21 @@ export const modes = {
 	hamlet: baseModes.hamlet,
 	together: baseModes.together,
 
-	// Character-specific recipe/food modes (needed for data lookup by mode name)
+	// Character-specific recipe modes
+	// These recipes belong to a game version but require a specific character to be selected.
 	warly: {
-		name: 'Warly Shipwrecked',
+		name: 'Warly (Shipwrecked)',
 		img: 'warly.png',
-		bit: WARLY,
-		mask: VANILLA | GIANTS | SHIPWRECKED | WARLY,
+		bit: SHIPWRECKED,
+		charBit: WARLY,
 		color: '#50c1cc',
 	},
 
-	warlyham: {
-		name: 'Warly Hamlet',
-		img: 'warlyHAM.png',
-		bit: WARLYHAM,
-		mask: VANILLA | GIANTS | SHIPWRECKED | HAMLET | WARLY | WARLYHAM,
-		color: '#ffdf93',
-	},
-
 	warlydst: {
-		name: "Warly Don't Starve Together",
+		name: 'Warly (DST)',
 		img: 'warlyDST.png',
-		bit: WARLYDST,
-		mask: TOGETHER | WARLYDST,
+		bit: TOGETHER,
+		charBit: WARLY,
 		color: '#c0c0c0',
 	},
 };

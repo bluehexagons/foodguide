@@ -6,7 +6,7 @@
 	"bracketSpacing": true,
 	"arrowParens": "avoid",
 	"printWidth": 100,
-	"tabWidth": 1,
+	"tabWidth": 4,
 	"endOfLine": "lf",
 	"quoteProps": "as-needed"
 }

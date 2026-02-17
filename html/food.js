@@ -1889,7 +1889,7 @@ export const food = {
 	// For simplicity's sake, the prefab name for lobsters in DST will be referred to as wobster.
 	// Their display name will have DST added to it due to a conflict since their image name is the same as SW
 	wobster: {
-		name: 'Wobster DST',
+		name: 'Wobster',
 		ismeat: true,
 		meat: 1,
 		fish: 1,
@@ -1898,7 +1898,7 @@ export const food = {
 		mode: 'together',
 	},
 	wobster_dead: {
-		name: 'Dead Wobster DST',
+		name: 'Dead Wobster',
 		basename: 'Wobster.',
 		uncookable: true,
 		health: healing_tiny,
@@ -1910,7 +1910,7 @@ export const food = {
 		mode: 'together',
 	},
 	wobster_cooked: {
-		name: 'Delicious Wobster DST',
+		name: 'Delicious Wobster',
 		uncookable: true,
 		health: healing_tiny,
 		hunger: calories_small,

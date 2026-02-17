@@ -206,6 +206,41 @@ strong {
 	color: var(--fg-secondary);
 }
 
+.instructions {
+	margin-bottom: 12px;
+	line-height: 1.5;
+	color: var(--fg-primary);
+}
+
+#help {
+	max-width: 900px;
+	line-height: 1.6;
+}
+
+#help h2 {
+	margin-top: 24px;
+	padding-left: 0;
+	border-bottom: 1px solid var(--border-color);
+	padding-bottom: 8px;
+}
+
+#help h3 {
+	margin-top: 18px;
+	padding-left: 0;
+}
+
+#help p {
+	margin-bottom: 16px;
+}
+
+#help ul {
+	margin-bottom: 16px;
+}
+
+#help li {
+	margin-bottom: 8px;
+}
+
 #footer {
 	padding: 12px 16px;
 	color: var(--header-text);

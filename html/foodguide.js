@@ -1903,7 +1903,11 @@ import {
 	};
 
 	const getSlot = slotElement => {
-		return slotElement && (food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null);
+		return (
+			slotElement &&
+			slotElement.dataset &&
+			(food[slotElement.dataset.id] || recipes[slotElement.dataset.id] || null)
+		);
 	};
 
 	(() => {
@@ -1938,7 +1942,25 @@ import {
 
 			const pickItem = e => {
 				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
-				const result = appendSlot(target.dataset.id);
+				const id = target.dataset.id;
+
+				// In Discovery mode (unlimited), toggle: remove if already added
+				if (!limited && slots.indexOf(id) !== -1) {
+					// Find and remove the existing slot
+					const children = Array.from(parent.children);
+					const existingSlot = children.find(child => child.dataset.id === id);
+					if (existingSlot) {
+						const i = slots.indexOf(id);
+						slots.splice(i, 1);
+						parent.removeChild(existingSlot);
+						ensureEmptySlot();
+						updateRecipes();
+					}
+					e && e.preventDefault && e.preventDefault();
+					return;
+				}
+
+				const result = appendSlot(id);
 
 				if (result !== -1) {
 					e && e.preventDefault && e.preventDefault();
@@ -2711,8 +2733,45 @@ import {
 				'click',
 				() => {
 					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
-						while (getSlot(parent.firstChild)) {
-							removeSlot({ target: parent.firstChild });
+						// Check if there are any ingredients to clear
+						let hasIngredients = false;
+						for (let i = 0; i < parent.children.length; i++) {
+							if (getSlot(parent.children[i])) {
+								hasIngredients = true;
+								break;
+							}
+						}
+
+						// Warn user on Discovery tab (unlimited mode) before clearing
+						if (
+							hasIngredients &&
+							!limited &&
+							!confirm('Are you sure you want to clear all ingredients from your inventory?')
+						) {
+							return;
+						}
+
+						// Clear all ingredients - handle limited vs unlimited mode differently
+						if (limited) {
+							// Limited mode: clear from last to first to avoid
+							// setSlot's shift-left logic moving items around
+							for (let i = slots.length - 1; i >= 0; i--) {
+								if (getSlot(slots[i])) {
+									setSlot(slots[i], null);
+								}
+							}
+							updateRecipes();
+						} else {
+							// Unlimited mode: remove elements directly, then rebuild
+							const children = Array.from(parent.children);
+							children.forEach(child => {
+								if (getSlot(child)) {
+									parent.removeChild(child);
+								}
+							});
+							slots.length = 0;
+							ensureEmptySlot();
+							updateRecipes();
 						}
 					} else {
 						picker.value = '';

@@ -3,7 +3,7 @@
 /* Ingredient list and slots */
 .ingredientlist {
 	display: flex;
-	gap: 5px;
+	gap: 8px;
 	flex-wrap: wrap;
 	margin-top: 16px;
 }
@@ -15,7 +15,52 @@
 	background: url('../img/background.png');
 	background-size: cover;
 	position: relative;
-	border-radius: 4px;
+	border-radius: 6px;
+	border: 2px solid var(--border-light);
+	transition: all var(--transition-fast);
+	width: 72px;
+	height: 72px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Empty slot styling */
+.ingredient:empty {
+	border: 2px dashed var(--medium);
+	position: relative;
+	/* Keep the background image from parent */
+}
+
+/* Plus icon for empty slots */
+.ingredient:empty::before {
+	content: '+';
+	font-size: 32px;
+	color: var(--fg-primary);
+	opacity: 0.7;
+	position: absolute;
+	line-height: 1;
+	transition: all var(--transition-fast);
+	text-shadow:
+		0 0 3px var(--bg-primary),
+		0 0 6px var(--bg-primary),
+		0 0 9px var(--bg-primary);
+}
+
+/* Hover effects */
+.ingredient:hover {
+	border-color: var(--header-accent);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ingredient:empty:hover {
+	border-color: var(--header-accent);
+}
+
+.ingredient:empty:hover::before {
+	opacity: 0.8;
+	color: var(--header-accent);
 }
 
 .ingredient :is(img, .icon) {
@@ -23,7 +68,17 @@
 	width: 64px;
 	height: 64px;
 	border: none;
-	margin: 4px;
+	margin: 0;
+	position: relative;
+	z-index: 1;
+}
+
+/* When slot has content, adjust styling */
+.ingredient:has(img),
+.ingredient:has(.icon) {
+	padding: 4px;
+	background-color: transparent;
+	border: 2px solid var(--border-light);
 }
 
 /* Search selector toggle */

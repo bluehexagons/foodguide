@@ -1896,6 +1896,23 @@ import {
 
 			let displaying = false;
 
+			const ensureEmptySlot = () => {
+				// Only for unlimited mode (Discovery page)
+				if (limited) return;
+
+				// Check if there's already an empty slot
+				const existingEmptySlot = parent.querySelector('.ingredient:empty');
+				if (existingEmptySlot) return;
+
+				// Add an empty slot at the end
+				const emptySlot = document.createElement('span');
+				emptySlot.className = 'ingredient';
+				emptySlot.addEventListener('click', () => {
+					picker.focus();
+				});
+				parent.appendChild(emptySlot);
+			};
+
 			const appendSlot = id => {
 				const item = food[id] || recipes[id] || null;
 
@@ -1925,6 +1942,10 @@ import {
 						setSlot(i, item);
 						i.addEventListener('click', removeSlot, false);
 						parent.appendChild(i);
+
+						// Ensure there's always an empty "+" slot at the end
+						ensureEmptySlot();
+
 						if (loaded) {
 							updateRecipes();
 						}
@@ -1975,12 +1996,20 @@ import {
 						updateRecipes();
 
 						return target.dataset.id;
+					} else {
+						// Empty slot clicked - focus the search bar
+						picker.focus();
+						return null;
 					}
 				} else {
 					const i = slots.indexOf(target.dataset.id);
 
 					slots.splice(i, 1);
 					parent.removeChild(target);
+
+					// Ensure there's always an empty "+" slot at the end
+					ensureEmptySlot();
+
 					updateRecipes();
 
 					return slots[i] || null;
@@ -2123,9 +2152,11 @@ import {
 			} else if (parent.id === 'inventory') {
 				//discovery
 				updateRecipes = () => {
-					ingredients = Array.prototype.map.call(parent.getElementsByClassName('ingredient'), slot => {
-						return getSlot(slot);
-					});
+					ingredients = Array.prototype.map
+						.call(parent.getElementsByClassName('ingredient'), slot => {
+							return getSlot(slot);
+						})
+						.filter(item => item !== null); // Filter out empty slots
 
 					if (discoverfood.firstChild) {
 						discoverfood.removeChild(discoverfood.firstChild);
@@ -2254,6 +2285,10 @@ import {
 			}
 
 			loaded = true;
+
+			// Ensure Discovery page starts with an empty "+" slot
+			ensureEmptySlot();
+
 			searchSelector.className = 'searchselector retracted';
 			searchSelector.appendChild(document.createTextNode('name'));
 

@@ -44,14 +44,18 @@
 
 			<div id="main">
 				<div id="simulator">
-					<div style="margin-bottom: 6pt">Add ingredients to see what they make.</div>
+					<div style="margin-bottom: 12px; line-height: 1.5">
+						<strong>Crock Pot Simulator</strong><br />
+						Search for ingredients below, then click them to add to the pot. Click a slot to remove an
+						ingredient.
+					</div>
 					<input
 						type="text"
 						class="ingredientpicker"
 						data-type="food"
 						data-cookable="true"
 						style="width: 25%"
-						placeholder="Filter ingredients"
+						placeholder="Search ingredients..."
 					/>
 					<div id="ingredients" class="ingredientlist">
 						<span class="ingredient"></span>
@@ -63,12 +67,16 @@
 				</div>
 
 				<div id="discovery">
-					<p style="margin-bottom: 6pt">Add items in your inventory to see your options.</p>
+					<div style="margin-bottom: 12px; line-height: 1.5">
+						<strong>Inventory Discovery</strong><br />
+						Add all items in your inventory below to see what recipes you can make. Click the + to add
+						more items.
+					</div>
 					<input
 						type="text"
 						class="ingredientpicker"
 						style="width: 25%"
-						placeholder="Filter ingredients"
+						placeholder="Search ingredients..."
 					/>
 					<div id="inventory" class="ingredientlist"></div>
 					<h2>Stats about your food:</h2>

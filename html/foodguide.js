@@ -2439,6 +2439,7 @@ import {
 						},
 						undefined,
 						undefined,
+						undefined,
 						{
 							toggleable: true,
 							columns: [

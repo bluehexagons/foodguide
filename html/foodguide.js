@@ -55,6 +55,8 @@ import {
 	calculateModeMask,
 	calculateCharMask,
 	isCharacterApplicable,
+	getCharacterFoodModifiers,
+	getCharacterAbilities,
 } from './mode-utils.js';
 
 (() => {
@@ -65,6 +67,7 @@ import {
 	const modeRefreshers = [];
 
 	let statMultipliers = defaultStatMultipliers;
+	let characterFoodModifiers = { modifyItem: () => ({}) };
 
 	// Mode state: game version + DLC toggles + optional character
 	let currentVersion = 'together';
@@ -81,7 +84,8 @@ import {
 	 */
 	const initTheme = () => {
 		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		const effectiveTheme = currentTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : currentTheme;
+		const effectiveTheme =
+			currentTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : currentTheme;
 
 		document.documentElement.setAttribute('data-theme', effectiveTheme);
 		updateThemeToggle();
@@ -191,8 +195,11 @@ import {
 			characters,
 			defaultStatMultipliers,
 		);
+		characterFoodModifiers = getCharacterFoodModifiers(currentCharacter, characters);
 
-		updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
+		updateFoodRecipes(
+			recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)),
+		);
 
 		if (document.getElementById('statistics')?.hasChildNodes()) {
 			document.getElementById('statistics').replaceChildren(makeRecipeGrinder(null, true));
@@ -232,11 +239,16 @@ import {
 		let anyCharApplicable = false;
 		for (const btn of charButtons) {
 			const charName = btn.dataset.character;
-			const applicable = isCharacterApplicable(charName, currentVersion, activeDlc, characters);
+			const applicable = isCharacterApplicable(
+				charName,
+				currentVersion,
+				activeDlc,
+				characters,
+			);
 			if (applicable) {
 				anyCharApplicable = true;
 			}
-			btn.classList.toggle('disabled', !applicable);
+			btn.classList.toggle('hidden', !applicable);
 			btn.classList.toggle('selected', applicable && charName === currentCharacter);
 		}
 		if (charSection) {
@@ -646,8 +658,13 @@ import {
 			tags.health = tags.bestHealth; // * statMultipliers[tags.bestHealthType];
 			tags.sanity = tags.bestSanity; // * statMultipliers[tags.bestSanityType];
 
-			const matches = recipeCrunchData.recipes.filter(recipe => recipe.test(null, names, tags));
-			const maxPriority = matches.reduce((max, recipe) => Math.max(recipe.priority, max), -Infinity);
+			const matches = recipeCrunchData.recipes.filter(recipe =>
+				recipe.test(null, names, tags),
+			);
+			const maxPriority = matches.reduce(
+				(max, recipe) => Math.max(recipe.priority, max),
+				-Infinity,
+			);
 
 			for (const recipe of matches.filter(recipe => recipe.priority >= maxPriority)) {
 				if (created !== null) {
@@ -1034,7 +1051,13 @@ import {
 						const sa = a[sortBy];
 						const sb = b[sortBy];
 
-						return !isNaN(sa) && !isNaN(sb) ? sb - sa : isNaN(sa) && isNaN(sb) ? 0 : isNaN(sa) ? 1 : -1;
+						return !isNaN(sa) && !isNaN(sb)
+							? sb - sa
+							: isNaN(sa) && isNaN(sb)
+								? 0
+								: isNaN(sa)
+									? 1
+									: -1;
 					});
 				}
 
@@ -1117,7 +1140,8 @@ import {
 					firstHighlight.scrollIntoView(true);
 				} else if (
 					lastHighlight &&
-					lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop < window.scrollY
+					lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop <
+						window.scrollY
 				) {
 					lastHighlight.scrollIntoView(false);
 				}
@@ -1314,32 +1338,43 @@ import {
 
 	const makeFoodRow = item => {
 		const mult = statMultipliers[item.preparationType];
-		let health = sign(item.health * mult);
-		let hunger = sign(item.hunger * mult);
-		let sanity = isNaN(item.sanity) ? '' : item.sanity * mult;
+		const itemMods = characterFoodModifiers.modifyItem(item, modeMask);
+		let health = sign((itemMods.health ?? item.health) * mult);
+		let hunger = sign((itemMods.hunger ?? item.hunger) * mult);
+		let sanity = isNaN(item.sanity) ? '' : (itemMods.sanity ?? item.sanity) * mult;
 		let perish = isNaN(item.perish)
 			? 'Never'
 			: `${item.perish / total_day_time} ${pl('day', item.perish / total_day_time)}`;
 
 		if (item.cook) {
 			const cookmult = statMultipliers[item.cook.preparationType];
+			const cookMods = characterFoodModifiers.modifyItem(item.cook, modeMask);
 
 			if ((item.cook.health || 0) !== (item.health || 0)) {
-				health += ` (${sign((item.cook.health || 0) * cookmult - (item.health || 0))})`;
+				const rawHealth = (itemMods.health ?? item.health) || 0;
+				const cookedHealth = ((cookMods.health ?? item.cook.health) || 0) * cookmult;
+				health += ` (${sign(cookedHealth - rawHealth)})`;
 			}
 			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
-				hunger += ` (${sign((item.cook.hunger || 0) * cookmult - (item.hunger || 0))})`;
+				const rawHunger = (itemMods.hunger ?? item.hunger) || 0;
+				const cookedHunger = ((cookMods.hunger ?? item.cook.hunger) || 0) * cookmult;
+				hunger += ` (${sign(cookedHunger - rawHunger)})`;
 			}
 			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
-				sanity += ` (${sign((item.cook.sanity || 0) * cookmult - (item.sanity || 0))})`;
+				const rawSanity = (itemMods.sanity ?? item.sanity) || 0;
+				const cookedSanity = ((cookMods.sanity ?? item.cook.sanity) || 0) * cookmult;
+				sanity += ` (${sign(cookedSanity - rawSanity)})`;
 			}
 			if ((item.cook.perish || 0) !== (item.perish || 0)) {
-				const dayDifference = ((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
+				const dayDifference =
+					((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
 				if (isNaN(dayDifference)) {
 					perish += ' (to Never)';
 				} else {
 					perish += ` (${
-						item.perish ? sign(dayDifference) : `to ${item.cook.perish / total_day_time}`
+						item.perish
+							? sign(dayDifference)
+							: `to ${item.cook.perish / total_day_time}`
 					})`;
 				}
 			}
@@ -1360,9 +1395,10 @@ import {
 
 	const makeRecipeRow = (item, health, hunger, sanity) => {
 		const mult = statMultipliers[item.preparationType] || 1;
-		const ihealth = item.health * mult;
-		const ihunger = item.hunger * mult;
-		const isanity = item.sanity * mult;
+		const itemMods = characterFoodModifiers.modifyItem(item, modeMask);
+		const ihealth = (itemMods.health ?? item.health) * mult;
+		const ihunger = (itemMods.hunger ?? item.hunger) * mult;
+		const isanity = (itemMods.sanity ?? item.sanity) * mult;
 
 		return cells(
 			'td',
@@ -1502,7 +1538,8 @@ import {
 			[headings.sanity]: 'sanity',
 			[headings.perish]: 'perish',
 			'Cook Time': 'cooktime',
-			'Priority:One of the highest priority recipes for a combination will be made': 'priority',
+			'Priority:One of the highest priority recipes for a combination will be made':
+				'priority',
 			'Requires:Dim+struck items cannot be used': '',
 			Notes: '',
 			'Mode:DLC or Game Mode required': 'modeMask',
@@ -1518,7 +1555,16 @@ import {
 		undefined,
 		{
 			toggleable: true,
-			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
+			columns: [
+				'Health',
+				'Hunger',
+				'Sanity',
+				'Perish',
+				'Cook Time',
+				'Priority',
+				'Notes',
+				'Mode',
+			],
 			autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 		},
 	);
@@ -1707,7 +1753,9 @@ import {
 				if (i === null) {
 					ingredients = food;
 				}
-				ingredients = ingredients.filter(f => matchesMode(f.modeMask, modeMask, f.charMask, charMask));
+				ingredients = ingredients.filter(f =>
+					matchesMode(f.modeMask, modeMask, f.charMask, charMask),
+				);
 				i = ingredients.length;
 
 				if (excludeDefault) {
@@ -1800,7 +1848,10 @@ import {
 							`${sign(data.healthpls)} (${sign((data.healthpct * 100) | 0)}%)`,
 							sign(item.hunger),
 							`${sign(data.hungerpls)} (${sign((data.hungerpct * 100) | 0)}%)`,
-							makeLinkable(data.ingredients.reduce(ingredientToIcon, '') + (data.multiple ? '*' : '')),
+							makeLinkable(
+								data.ingredients.reduce(ingredientToIcon, '') +
+									(data.multiple ? '*' : ''),
+							),
 						);
 					},
 					'hungerpls',
@@ -1879,7 +1930,9 @@ import {
 				makableButton.after(makableDiv);
 				makableDiv.appendChild(makableFootnote);
 
-				updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
+				updateFoodRecipes(
+					recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)),
+				);
 
 				// Create pause button upfront
 				const pauseButton = document.createElement('button');
@@ -1987,7 +2040,8 @@ import {
 						}
 
 						makableSummary.appendChild(deleteButton);
-						makableButton.textContent = 'Calculate efficient recipes (may take some time)';
+						makableButton.textContent =
+							'Calculate efficient recipes (may take some time)';
 						makableButton.disabled = false;
 					},
 				);
@@ -2018,7 +2072,11 @@ import {
 		if (window.localStorage.foodGuideState) {
 			const storage = JSON.parse(window.localStorage.foodGuideState);
 			const statisticsEl = document.getElementById('statistics');
-			if (storage.activeTab === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
+			if (
+				storage.activeTab === 'statistics' &&
+				statisticsEl &&
+				!statisticsEl.hasChildNodes()
+			) {
 				statisticsEl.appendChild(makeRecipeGrinder(null, true));
 			}
 		}
@@ -2040,7 +2098,10 @@ import {
 		if (item !== null) {
 			slotElement.dataset.id = item.key;
 		} else {
-			if (slotElement.nextElementSibling && getSlot(slotElement.nextElementSibling) !== null) {
+			if (
+				slotElement.nextElementSibling &&
+				getSlot(slotElement.nextElementSibling) !== null
+			) {
 				setSlot(slotElement, getSlot(slotElement.nextElementSibling));
 				setSlot(slotElement.nextElementSibling, null);
 
@@ -2263,7 +2324,11 @@ import {
 
 			const refreshPicker = () => {
 				searchSelectorControls.splitTag();
-				let names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+				let names = matchingNames(
+					from,
+					searchSelectorControls.getSearch(),
+					allowUncookable,
+				);
 
 				// Apply additional sorting based on user preference
 				const sortType = sortControls.getSortType();
@@ -2287,20 +2352,26 @@ import {
 				switch (sortType) {
 					case 'health':
 						return sorted.sort((a, b) => {
-							const aVal = (a.health || 0) * (statMultipliers[a.preparationType] || 1);
-							const bVal = (b.health || 0) * (statMultipliers[b.preparationType] || 1);
+							const aVal =
+								(a.health || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal =
+								(b.health || 0) * (statMultipliers[b.preparationType] || 1);
 							return bVal - aVal || a.name.localeCompare(b.name);
 						});
 					case 'hunger':
 						return sorted.sort((a, b) => {
-							const aVal = (a.hunger || 0) * (statMultipliers[a.preparationType] || 1);
-							const bVal = (b.hunger || 0) * (statMultipliers[b.preparationType] || 1);
+							const aVal =
+								(a.hunger || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal =
+								(b.hunger || 0) * (statMultipliers[b.preparationType] || 1);
 							return bVal - aVal || a.name.localeCompare(b.name);
 						});
 					case 'sanity':
 						return sorted.sort((a, b) => {
-							const aVal = (a.sanity || 0) * (statMultipliers[a.preparationType] || 1);
-							const bVal = (b.sanity || 0) * (statMultipliers[b.preparationType] || 1);
+							const aVal =
+								(a.sanity || 0) * (statMultipliers[a.preparationType] || 1);
+							const bVal =
+								(b.sanity || 0) * (statMultipliers[b.preparationType] || 1);
 							return bVal - aVal || a.name.localeCompare(b.name);
 						});
 					case 'perish':
@@ -2350,7 +2421,8 @@ import {
 							[headings.sanity]: 'sanity',
 							[headings.perish]: 'perish',
 							'Cook Time': 'cooktime',
-							'Priority:One of the highest priority recipes for a combination will be made': 'priority',
+							'Priority:One of the highest priority recipes for a combination will be made':
+								'priority',
 							'Requires:Dim, struck items cannot be used': '',
 							Notes: '',
 							'Mode:DLC or Game Mode required': 'modeMask',
@@ -2369,7 +2441,16 @@ import {
 						undefined,
 						{
 							toggleable: true,
-							columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Cook Time', 'Priority', 'Notes', 'Mode'],
+							columns: [
+								'Health',
+								'Hunger',
+								'Sanity',
+								'Perish',
+								'Cook Time',
+								'Priority',
+								'Notes',
+								'Mode',
+							],
 							autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 						},
 					);
@@ -2381,7 +2462,10 @@ import {
 					results.appendChild(table);
 
 					results.appendChild(
-						makeElement('p', 'The highlighted row(s) will be selected from when cooking.'),
+						makeElement(
+							'p',
+							'The highlighted row(s) will be selected from when cooking.',
+						),
 					);
 
 					if (ingredients[0] !== null) {
@@ -2398,7 +2482,8 @@ import {
 									[headings.sanity]: 'sanity',
 									[headings.perish]: 'perish',
 									'Cook Time': 'cooktime',
-									'Priority:One of the highest priority recipes for a combination will be made': 'priority',
+									'Priority:One of the highest priority recipes for a combination will be made':
+										'priority',
 									'Requires:Dim, struck items cannot be used': '',
 									Notes: '',
 									'Mode:DLC or Game Mode required': 'modeMask',
@@ -2497,7 +2582,8 @@ import {
 									[headings.sanity]: 'sanity',
 									[headings.perish]: 'perish',
 									'Cook Time': 'cooktime',
-									'Priority:One of the highest priority recipes for a combination will be made': 'priority',
+									'Priority:One of the highest priority recipes for a combination will be made':
+										'priority',
 									'Requires:Dim, struck items cannot be used': '',
 									Notes: '',
 									'Mode:DLC or Game Mode required': 'modeMask',
@@ -2883,7 +2969,11 @@ import {
 			);
 
 			(() => {
-				const names = matchingNames(from, searchSelectorControls.getSearch(), allowUncookable);
+				const names = matchingNames(
+					from,
+					searchSelectorControls.getSearch(),
+					allowUncookable,
+				);
 
 				dropdown.removeChild(ul);
 				ul = document.createElement('div');
@@ -2913,7 +3003,9 @@ import {
 						if (
 							hasIngredients &&
 							!limited &&
-							!confirm('Are you sure you want to clear all ingredients from your inventory?')
+							!confirm(
+								'Are you sure you want to clear all ingredients from your inventory?',
+							)
 						) {
 							return;
 						}
@@ -2975,7 +3067,9 @@ import {
 				}
 
 				displayButton.className = 'displaymodeingredients';
-				displayButton.textContent = displayModes.find(opt => opt.value === currentMode).label;
+				displayButton.textContent = displayModes.find(
+					opt => opt.value === currentMode,
+				).label;
 				displayButton.style.cursor = 'pointer';
 
 				displayDropdown.className = 'displaymodedropdown';
@@ -3058,7 +3152,11 @@ import {
 
 				// Close dropdown when clicking outside
 				document.addEventListener('click', e => {
-					if (isOpen && !displayDropdown.contains(e.target) && e.target !== displayButton) {
+					if (
+						isOpen &&
+						!displayDropdown.contains(e.target) &&
+						e.target !== displayButton
+					) {
 						displayDropdown.style.display = 'none';
 						isOpen = false;
 					}
@@ -3265,10 +3363,11 @@ import {
 		btn.className = 'mode-btn char-btn';
 		btn.dataset.character = name;
 		btn.addEventListener('click', selectCharacter, false);
-		btn.title = `${characters[name].name}\nclick to toggle`;
+		const charAbilities = getCharacterAbilities(name, characters);
+		const abilityText = charAbilities.length > 0 ? `\n${charAbilities.join('\n')}` : '';
+		btn.title = `${characters[name].name}\nclick to toggle${abilityText}`;
 
 		const img = makeImage(`img/${characters[name].img}`);
-		img.title = characters[name].name;
 		img.dataset.character = name;
 		btn.appendChild(img);
 

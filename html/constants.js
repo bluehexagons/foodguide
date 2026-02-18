@@ -99,6 +99,7 @@ export const HAMLET = 1 << 4;
 // Character bits (used for charMask on character-specific recipes)
 export const WARLY = 1 << 5;
 export const WEBBER = 1 << 6;
+export const WIGFRID = 1 << 7;
 
 // Base game modes (no character variants)
 export const baseModes = {
@@ -210,8 +211,28 @@ export const characters = {
 		bit: WEBBER,
 		// Webber can be played in RoG, Shipwrecked, Hamlet, and DST
 		applicableModes: ['giants', 'shipwrecked', 'hamlet', 'together'],
-		// Webber has no special food multipliers
-		multipliers: {},
+		// Webber has special abilities:
+		// - Can safely eat Monster Foods without adverse health effects
+		// - Can safely eat Raw Meat without penalties (raw = cooked stats)
+		abilities: {
+			noMonsterPenalty: true,
+			rawMeatIsCooked: true,
+		},
+	},
+
+	wigfrid: {
+		name: 'Wigfrid',
+		img: 'wigfrid.png',
+		bit: WIGFRID,
+		// Wigfrid can be played in RoG and DST
+		applicableModes: ['giants', 'together'],
+		// Wigfrid has dietary restrictions:
+		// - Can only eat meat items
+		// - In DST, can also eat "goodies" (Taffy, Jellybeans, Ice Cream, Mushy Cake)
+		abilities: {
+			meatOnly: true,
+			canEatGoodies: true, // Only applies in DST
+		},
 	},
 };
 
@@ -239,7 +260,7 @@ export const modes = {
 
 	warlydst: {
 		name: 'Warly (DST)',
-		img: 'warlyDST.png',
+		img: 'warly.png',
 		bit: TOGETHER,
 		charBit: WARLY,
 		color: '#c0c0c0',

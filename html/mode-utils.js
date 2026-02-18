@@ -1,6 +1,8 @@
 // @ts-nocheck
 'use strict';
 
+import { TOGETHER, healing_tiny, healing_small } from './constants.js';
+
 /**
  * Mode System Utilities
  *
@@ -240,4 +242,131 @@ export function getActiveMultipliers(
 	}
 
 	return result;
+}
+
+/**
+ * Gets character-specific food modifiers.
+ * Returns an object with a modifyItem function that applies character-specific changes.
+ *
+ * @param {string|null} character - Character key or null
+ * @param {Object} characters - Character definitions
+ * @returns {Object} Character food modifiers { modifyItem: function }
+ */
+export function getCharacterFoodModifiers(character, characters) {
+	if (!character || !characters[character]) {
+		return {
+			modifyItem: () => ({}),
+		};
+	}
+
+	const charDef = characters[character];
+	const abilities = charDef.abilities;
+
+	if (!abilities) {
+		return {
+			modifyItem: () => ({}),
+		};
+	}
+
+	// Return modifier function that handles both Webber and Wigfrid
+	return {
+		modifyItem: (item, currentModeMask) => {
+			const mods = {};
+
+			// Webber: negate monster food penalties, make raw meat like cooked
+			if (abilities.noMonsterPenalty && item.monster) {
+				if (item.health < 0) {
+					mods.health = 0;
+				}
+				if (item.sanity < 0) {
+					mods.sanity = 0;
+				}
+			}
+
+			// Webber can eat raw meat like cooked meat
+			// Raw meat: health=healing_tiny (1), sanity=-sanity_small (-10)
+			// Cooked meat: health=healing_small (3), sanity=0
+			// Apply multipliers to make raw stats equal cooked stats
+			if (
+				abilities.rawMeatIsCooked &&
+				item.preparationType === 'raw' &&
+				item.ismeat &&
+				!item.monster
+			) {
+				// Neutralize the sanity penalty - set to 0
+				if (item.sanity !== undefined && item.sanity < 0) {
+					mods.sanity = 0;
+				}
+				// Apply cooked meat health bonus
+				// Raw meat has healing_tiny (1), cooked has healing_small (3)
+				if (item.health === healing_tiny) {
+					mods.health = healing_small;
+				}
+			}
+
+			// Wigfrid: can only eat meat and goodies (goodies only in DST)
+			if (abilities.meatOnly) {
+				// Check if item is meat: food items have 'ismeat', recipes have 'foodtype'
+				const isMeat = item.ismeat || item.foodtype === 'meat';
+				const isGoodie = item.foodtype === 'goodies';
+				const canEatGoodies = abilities.canEatGoodies && currentModeMask & TOGETHER;
+
+				// If it's not meat and (not a goodie OR can't eat goodies), multiply stats by 0
+				if (!isMeat && !(isGoodie && canEatGoodies)) {
+					if (item.health !== undefined) {
+						mods.health = 0;
+					}
+					if (item.hunger !== undefined) {
+						mods.hunger = 0;
+					}
+					if (item.sanity !== undefined) {
+						mods.sanity = 0;
+					}
+				}
+			}
+
+			return mods;
+		},
+	};
+}
+
+/**
+ * Gets the ability descriptions for a character.
+ * Returns an array of description strings for UI display.
+ *
+ * @param {string|null} character - Character key or null
+ * @param {Object} characters - Character definitions
+ * @returns {Array<string>} Array of ability description strings
+ */
+export function getCharacterAbilities(character, characters) {
+	if (!character || !characters[character]) {
+		return [];
+	}
+
+	const charDef = characters[character];
+	const abilities = charDef.abilities;
+
+	if (!abilities) {
+		return [];
+	}
+
+	const descriptions = [];
+
+	if (abilities.noMonsterPenalty) {
+		descriptions.push('Can safely eat Monster Foods');
+	}
+
+	if (abilities.rawMeatIsCooked) {
+		descriptions.push('Can safely eat Raw Meat');
+	}
+
+	if (abilities.meatOnly) {
+		if (abilities.canEatGoodies) {
+			descriptions.push('Only eats meat and goodies');
+		} else {
+			descriptions.push('Only eats meat');
+		}
+	}
+
+	return descriptions;
 }

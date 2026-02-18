@@ -90,6 +90,10 @@
 	pointer-events: none;
 }
 
+.mode-btn.hidden {
+	display: none;
+}
+
 /* DLC and character sections: hidden when not applicable */
 .dlc-section.hidden,
 .char-section.hidden {

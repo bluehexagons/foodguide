@@ -122,7 +122,7 @@ export const recipes = {
 		},
 		requirements: [TAG('sweetener', COMPARE('>=', 3)), NOT(TAG('meat'))],
 		priority: 10,
-		foodtype: 'veggie',
+		foodtype: 'goodies',
 		health: -healing_small,
 		hunger: calories_small * 2,
 		perish: perish_slow,
@@ -273,7 +273,11 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
 		},
-		requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
+		requirements: [
+			TAG('egg', COMPARE('>', 1)),
+			TAG('meat', COMPARE('>', 1)),
+			NOT(TAG('veggie')),
+		],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_med,
@@ -542,7 +546,7 @@ export const recipes = {
 			NOT(TAG('egg')),
 		],
 		priority: 10,
-		foodtype: 'veggie',
+		foodtype: 'goodies',
 		health: 0,
 		hunger: calories_med,
 		perish: perish_superfast,
@@ -555,7 +559,14 @@ export const recipes = {
 	watermelonicle: {
 		name: 'Melonsicle',
 		test: (cooker, names, tags) => {
-			return names.watermelon && tags.frozen && names.twigs && !tags.meat && !tags.veggie && !tags.egg;
+			return (
+				names.watermelon &&
+				tags.frozen &&
+				names.twigs &&
+				!tags.meat &&
+				!tags.veggie &&
+				!tags.egg
+			);
 		},
 		requirements: [
 			SPECIFIC('watermelon'),
@@ -770,7 +781,12 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return names.lobster && names.butter && !tags.meat && !tags.frozen;
 		},
-		requirements: [SPECIFIC('lobster'), SPECIFIC('butter'), NOT(TAG('meat')), NOT(TAG('frozen'))],
+		requirements: [
+			SPECIFIC('lobster'),
+			SPECIFIC('butter'),
+			NOT(TAG('meat')),
+			NOT(TAG('frozen')),
+		],
 		priority: 25,
 		foodtype: 'meat',
 		health: healing_huge,
@@ -827,7 +843,10 @@ export const recipes = {
 		requirements: [
 			OR(
 				SPECIFIC('coffeebeans_cooked', COMPARE('=', 4)),
-				AND(SPECIFIC('coffeebeans_cooked', COMPARE('=', 3)), OR(TAG('dairy'), TAG('sweetener'))),
+				AND(
+					SPECIFIC('coffeebeans_cooked', COMPARE('=', 3)),
+					OR(TAG('dairy'), TAG('sweetener')),
+				),
 			),
 		],
 		priority: 30,
@@ -1060,7 +1079,10 @@ export const recipes = {
 		name: 'Spicy Vegetable Stinger',
 		test: (cooker, names, tags) => {
 			return (
-				(names.asparagus || names.asparagus_cooked || names.radish || names.radish_cooked) &&
+				(names.asparagus ||
+					names.asparagus_cooked ||
+					names.radish ||
+					names.radish_cooked) &&
 				tags.veggie &&
 				tags.veggie > 2 &&
 				tags.frozen &&
@@ -1095,14 +1117,18 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_med,
 		cooktime: 3.5,
-		note:
-			'In the pre2023update version of the game, using 3 Cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs, makes it so that meat is not needed.',
+		note: 'In the pre2023update version of the game, using 3 Cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs, makes it so that meat is not needed.',
 		mode: 'hamlet',
 	},
 	steamedhamsandwich: {
 		name: 'Steamed Ham Sandwich',
 		test: (cooker, names, tags) => {
-			return (names.meat || names.meat_cooked) && tags.veggie && tags.veggie >= 2 && names.foliage;
+			return (
+				(names.meat || names.meat_cooked) &&
+				tags.veggie &&
+				tags.veggie >= 2 &&
+				names.foliage
+			);
 		},
 		requirements: [NAME('meat'), TAG('veggie', COMPARE('>=', 2)), SPECIFIC('foliage')],
 		priority: 5,
@@ -1201,7 +1227,7 @@ export const recipes = {
 		},
 		requirements: [TAG('sweetener', COMPARE('>=', 3)), NOT(TAG('meat'))],
 		priority: 10,
-		foodtype: 'veggie',
+		foodtype: 'goodies',
 		health: -healing_small,
 		hunger: calories_small * 2,
 		perish: perish_slow,
@@ -1361,7 +1387,11 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.egg > 1 && tags.meat && tags.meat > 1 && !tags.veggie;
 		},
-		requirements: [TAG('egg', COMPARE('>', 1)), TAG('meat', COMPARE('>', 1)), NOT(TAG('veggie'))],
+		requirements: [
+			TAG('egg', COMPARE('>', 1)),
+			TAG('meat', COMPARE('>', 1)),
+			NOT(TAG('veggie')),
+		],
 		priority: 10,
 		foodtype: 'meat',
 		health: healing_med,
@@ -1408,7 +1438,12 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return tags.egg && tags.meat && tags.veggie && tags.veggie >= 0.5 && !tags.inedible;
 		},
-		requirements: [TAG('egg'), TAG('meat'), TAG('veggie', COMPARE('>=', 0.5)), NOT(TAG('inedible'))],
+		requirements: [
+			TAG('egg'),
+			TAG('meat'),
+			TAG('veggie', COMPARE('>=', 0.5)),
+			NOT(TAG('inedible')),
+		],
 		priority: 5,
 		foodtype: 'meat',
 		health: healing_large,
@@ -1497,7 +1532,10 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (
 				tags.fish &&
-				(names.corn || names.corn_cooked || names.oceanfish_small_5_inv || names.oceanfish_medium_5_inv)
+				(names.corn ||
+					names.corn_cooked ||
+					names.oceanfish_small_5_inv ||
+					names.oceanfish_medium_5_inv)
 			);
 		},
 		requirements: [
@@ -1519,7 +1557,10 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return (
 				names.butter &&
-				(names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) &&
+				(names.berries ||
+					names.berries_cooked ||
+					names.berries_juicy ||
+					names.berries_juicy_cooked) &&
 				tags.egg
 			);
 		},
@@ -1554,7 +1595,10 @@ export const recipes = {
 			return (
 				names.twigs &&
 				names.honey &&
-				(names.corn || names.corn_cooked || names.oceanfish_small_5_inv || names.oceanfish_medium_5_inv)
+				(names.corn ||
+					names.corn_cooked ||
+					names.oceanfish_small_5_inv ||
+					names.oceanfish_medium_5_inv)
 			);
 		},
 		requirements: [
@@ -1673,7 +1717,14 @@ export const recipes = {
 	watermelonicle_dst: {
 		name: 'Melonsicle',
 		test: (cooker, names, tags) => {
-			return names.watermelon && tags.frozen && names.twigs && !tags.meat && !tags.veggie && !tags.egg;
+			return (
+				names.watermelon &&
+				tags.frozen &&
+				names.twigs &&
+				!tags.meat &&
+				!tags.veggie &&
+				!tags.egg
+			);
 		},
 		requirements: [
 			SPECIFIC('watermelon'),
@@ -1701,7 +1752,10 @@ export const recipes = {
 				(names.acorn || names.acorn_cooked) &&
 				tags.seed &&
 				tags.seed >= 1 &&
-				(names.berries || names.berries_cooked || names.berries_juicy || names.berries_juicy_cooked) &&
+				(names.berries ||
+					names.berries_cooked ||
+					names.berries_juicy ||
+					names.berries_juicy_cooked) &&
 				tags.fruit &&
 				tags.fruit >= 1 &&
 				!tags.meat &&
@@ -1935,7 +1989,10 @@ export const recipes = {
 		name: 'Vegetable Stinger',
 		test: (cooker, names, tags) => {
 			return (
-				(names.asparagus || names.asparagus_cooked || names.tomato || names.tomato_cooked) &&
+				(names.asparagus ||
+					names.asparagus_cooked ||
+					names.tomato ||
+					names.tomato_cooked) &&
 				tags.veggie &&
 				tags.veggie > 2 &&
 				tags.frozen &&
@@ -1990,7 +2047,12 @@ export const recipes = {
 	pepperpopper: {
 		name: 'Stuffed Pepper Poppers',
 		test: (cooker, names, tags) => {
-			return (names.pepper || names.pepper_cooked) && tags.meat && tags.meat <= 1.5 && !tags.inedible;
+			return (
+				(names.pepper || names.pepper_cooked) &&
+				tags.meat &&
+				tags.meat <= 1.5 &&
+				!tags.inedible
+			);
 		},
 		requirements: [NAME('pepper'), TAG('meat', COMPARE('<=', 1.5)), NOT(TAG('inedible'))],
 		priority: 20,
@@ -2126,7 +2188,9 @@ export const recipes = {
 		name: 'Barnacle Linguine',
 		test: (cooker, names, tags) => {
 			return (
-				(names.barnacle || 0) + (names.barnacle_cooked || 0) >= 2 && tags.veggie && tags.veggie >= 2
+				(names.barnacle || 0) + (names.barnacle_cooked || 0) >= 2 &&
+				tags.veggie &&
+				tags.veggie >= 2
 			);
 		},
 		requirements: [NAME('barnacle', COMPARE('>=', 2)), TAG('veggie', COMPARE('>=', 2))],
@@ -2157,7 +2221,12 @@ export const recipes = {
 	shroomcake: {
 		name: 'Mushy Cake',
 		test: (cooker, names, _tags) => {
-			return names.moon_mushroom && names.red_mushroom && names.blue_mushroom && names.green_mushroom;
+			return (
+				names.moon_mushroom &&
+				names.red_mushroom &&
+				names.blue_mushroom &&
+				names.green_mushroom
+			);
 		},
 		requirements: [
 			SPECIFIC('moon_mushroom'),
@@ -2387,7 +2456,14 @@ export const recipes = {
 	veggieomlet: {
 		name: 'Breakfast Skillet',
 		test: (cooker, names, tags) => {
-			return tags.egg && tags.egg >= 1 && tags.veggie && tags.veggie >= 1 && !tags.meat && !tags.dairy;
+			return (
+				tags.egg &&
+				tags.egg >= 1 &&
+				tags.veggie &&
+				tags.veggie >= 1 &&
+				!tags.meat &&
+				!tags.dairy
+			);
 		},
 		requirements: [
 			TAG('egg', COMPARE('>=', 1)),
@@ -2577,8 +2653,7 @@ export const recipes = {
 		sanity: -5.32,
 		perish: perish_slow,
 		cooktime: 2,
-		note:
-			'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)',
+		note: 'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)',
 		mode: 'together',
 	},
 	dustmeringue: {
@@ -2625,7 +2700,11 @@ export const recipes = {
 		test: (cooker, names, tags) => {
 			return names.lightninggoathorn && tags.sweetener && tags.sweetener >= 2 && !tags.meat;
 		},
-		requirements: [NAME('lightninggoathorn'), TAG('sweetener', COMPARE('>=', 2)), NOT(TAG('meat'))],
+		requirements: [
+			NAME('lightninggoathorn'),
+			TAG('sweetener', COMPARE('>=', 2)),
+			NOT(TAG('meat')),
+		],
 		priority: 30,
 		foodtype: 'goodies',
 		health: healing_small,
@@ -2633,8 +2712,7 @@ export const recipes = {
 		perish: perish_med,
 		sanity: sanity_small,
 		cooktime: 2,
-		note:
-			"Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.",
+		note: "Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.",
 		mode: 'warlydst',
 	},
 	glowberrymousse: {
@@ -2661,8 +2739,7 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_small,
 		cooktime: 1,
-		note:
-			'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry',
+		note: 'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry',
 		mode: 'warlydst',
 	},
 	frogfishbowl: {
@@ -2723,7 +2800,9 @@ export const recipes = {
 		name: 'Asparagazpacho',
 		test: (cooker, names, tags) => {
 			return (
-				(names.asparagus || 0) + (names.asparagus_cooked || 0) >= 2 && tags.frozen && tags.frozen >= 2
+				(names.asparagus || 0) + (names.asparagus_cooked || 0) >= 2 &&
+				tags.frozen &&
+				tags.frozen >= 2
 			);
 		},
 		requirements: [NAME('asparagus', COMPARE('>=', 2)), TAG('frozen', COMPARE('>=', 2))],
@@ -2954,7 +3033,8 @@ for (const key in food) {
 	f.originalInfo = f.info;
 
 	f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : `\xd7${f.fruit}`));
-	f.veggie && info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : `\xd7${f.veggie}`));
+	f.veggie &&
+		info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : `\xd7${f.veggie}`));
 	f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : `\xd7${f.meat}`));
 	f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : `\xd7${f.egg}`));
 	f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : `\xd7${f.fish}`));
@@ -3030,7 +3110,10 @@ export const updateFoodRecipes = includedRecipes => {
 
 			if (f.recipes.length > 0) {
 				f.ingredient = true;
-				f.info += f.recipes.reduce(reduceRecipeButton, `[|][ingredient:${f.name}|Recipes] `);
+				f.info += f.recipes.reduce(
+					reduceRecipeButton,
+					`[|][ingredient:${f.name}|Recipes] `,
+				);
 			}
 		} else {
 			f.info += `${f.info ? '[|]' : ''}cannot be added to crock pot`;

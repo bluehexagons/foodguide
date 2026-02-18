@@ -8,7 +8,7 @@ in a game named after the task.
 
 Live version - [foodguide.bluehexagons.com](https://foodguide.bluehexagons.com)
 
-github.io - [bluehexagons.github.io/foodguide/...](https://bluehexagons.github.io/foodguide/)
+github.io - [bluehexagons.github.io/foodguide/](https://bluehexagons.github.io/foodguide/)
 
 
 ### Running Offline

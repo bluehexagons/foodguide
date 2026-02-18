@@ -155,7 +155,8 @@ html[data-theme='light'] {
 	max-width: 100%;
 	margin-left: auto;
 	margin-right: auto;
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	font-family:
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 	padding: 0 16px;
 }
 
@@ -212,33 +213,55 @@ strong {
 	color: var(--fg-primary);
 }
 
-#help {
+#about,
+#gameinfo {
 	max-width: 900px;
 	line-height: 1.6;
 }
 
-#help h2 {
+#about h2,
+#gameinfo h2 {
 	margin-top: 24px;
 	padding-left: 0;
 	border-bottom: 1px solid var(--border-color);
 	padding-bottom: 8px;
 }
 
-#help h3 {
+#about h3,
+#gameinfo h3 {
 	margin-top: 18px;
 	padding-left: 0;
 }
 
-#help p {
+#about p,
+#gameinfo p {
 	margin-bottom: 16px;
 }
 
-#help ul {
+#about ul,
+#gameinfo ul {
 	margin-bottom: 16px;
 }
 
-#help li {
+#about li,
+#gameinfo li {
 	margin-bottom: 8px;
+}
+
+#help-favorite-foods {
+	border-collapse: collapse;
+	margin-bottom: 16px;
+}
+
+#help-favorite-foods th,
+#help-favorite-foods td {
+	padding: 4px 16px 4px 0;
+	text-align: left;
+	border-bottom: 1px solid var(--border-color);
+}
+
+#help-favorite-foods th {
+	font-weight: bold;
 }
 
 #footer {

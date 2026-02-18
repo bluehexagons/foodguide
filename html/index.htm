@@ -40,7 +40,10 @@
 						<li data-tab="statistics" title="Find all recipes (unstable)">
 							Statistics Analyzer
 						</li>
-						<li data-tab="help" title="Help and information">Help</li>
+						<li data-tab="about" title="About this tool and how to use it">About</li>
+						<li data-tab="gameinfo" title="Don't Starve game mechanics reference">
+							Game Info
+						</li>
 						<li>
 							<a
 								title="Give Klei your money"
@@ -108,7 +111,7 @@
 
 				<div id="statistics"></div>
 
-				<div id="help">
+				<div id="about">
 					<h2>About This Food Guide</h2>
 
 					<p>
@@ -132,9 +135,96 @@
 
 					<p>Last content addition: <strong>August 6, 2023</strong></p>
 
-					<h2>About Don't Starve</h2>
+					<h2>Sections</h2>
 
-					<h3>Food Mechanics</h3>
+					<h3>Simulator</h3>
+
+					<p>
+						The Simulator works like a Crock Pot: add items, and it will tell you what
+						food will be prepared. Note that only the highest-priority recipes will be
+						candidates when actually cooking in-game. The combined totals at the top
+						reflect the ingredients added, where perish time is the shortest. The
+						suggestions below the real results show what recipes could be made by adding
+						different items to those already in the Crock Pot.
+					</p>
+
+					<h3>Discovery</h3>
+
+					<p>
+						The Discovery tab finds what recipes can be prepared using a collection of
+						ingredients. It doesn't take item quantity into account, instead assuming
+						you have four of each. You are also able to calculate efficient recipes
+						using your ingredients to get the most health or hunger benefit from cooking
+						them in the crock pot. This works identically to the Statistics Analyzer
+						tab, but limited to your inventory.
+					</p>
+
+					<h3>Food List &amp; Recipe List</h3>
+
+					<p>
+						Browse all foods and Crock Pot recipes available in the selected game
+						version. Use the version selector in the upper-left to switch between Don't
+						Starve Together, Don't Starve, and Hamlet.
+					</p>
+
+					<h3>Statistics Analyzer</h3>
+
+					<p>
+						The Statistics Analyzer tab is for those who just want to explore ingredient
+						combinations. It will calculate every valid ingredient combination possible
+						(using an "ideal" ingredient selection, generally excluding uncooked food)
+						and allows filtration by recipe and ingredient contents. Computation may
+						take some time on slower computers.
+					</p>
+
+					<h2>Advanced Use (JavaScript Globals)</h2>
+
+					<p>
+						The Food Guide populates <code>window</code> with a few properties:
+						<code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The
+						Statistics Analyzer writes its results to <code>analysis</code> and
+						<code>recipeCrunchData</code>. The local state is stored under
+						<code>localStorage.foodGuideState</code>.
+					</p>
+
+					<p>
+						For advanced use, open your browser's JavaScript console.
+						<code>analysis.made</code> contains the list of the working combinations
+						from the last analysis, including beyond those visible in the interface.
+					</p>
+
+					<h2>Links</h2>
+
+					<ul>
+						<li>
+							<a
+								href="https://github.com/bluehexagons/foodguide/commits/main"
+								target="_blank"
+								>Food Guide Changelog</a
+							>
+						</li>
+						<li>
+							<a
+								href="https://github.com/bluehexagons/foodguide/issues"
+								target="_blank"
+								>Report Food Guide Bugs / Issues</a
+							>
+						</li>
+						<li>
+							<a href="https://www.klei.com/games/dont-starve" target="_blank"
+								>Don't Starve Official Website</a
+							>
+						</li>
+						<li>
+							<a href="https://dontstarve.wiki.gg/" target="_blank"
+								>Don't Starve Wiki</a
+							>
+						</li>
+					</ul>
+				</div>
+
+				<div id="gameinfo">
+					<h2>Food Mechanics</h2>
 
 					<p>
 						<strong>Perish time</strong> is the time before a food item becomes
@@ -171,7 +261,7 @@
 						If it does, then only the valid form will be listed.
 					</p>
 
-					<h3>About DLC and Don't Starve Together</h3>
+					<h2>Game Versions and DLC</h2>
 
 					<p>
 						The game version selector in the upper-left lets you switch between Don't
@@ -182,7 +272,7 @@
 						mechanics.
 					</p>
 
-					<h3>Character Food Mechanics</h3>
+					<h2>Character Food Mechanics</h2>
 
 					<p>
 						<strong>Warly</strong> is a chef character who can only be played in
@@ -207,7 +297,101 @@
 						Volt Goat Chaud-Froid.
 					</p>
 
-					<h3>Useful wiki pages:</h3>
+					<h2>Favorite Foods (DST)</h2>
+
+					<p>
+						In Don't Starve Together, each character gains an extra 15 Hunger when
+						eating their favorite food. This bonus is affected by freshness.
+					</p>
+
+					<table id="help-favorite-foods">
+						<thead>
+							<tr>
+								<th>Character</th>
+								<th>Favorite Food</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Wilson</td>
+								<td>Bacon and Eggs</td>
+							</tr>
+							<tr>
+								<td>Willow</td>
+								<td>Spicy Chili</td>
+							</tr>
+							<tr>
+								<td>Wendy</td>
+								<td>Banana Pop</td>
+							</tr>
+							<tr>
+								<td>Wolfgang</td>
+								<td>Roasted Potato</td>
+							</tr>
+							<tr>
+								<td>Woodie</td>
+								<td>Honey Nuggets</td>
+							</tr>
+							<tr>
+								<td>Wickerbottom</td>
+								<td>Surf 'n' Turf</td>
+							</tr>
+							<tr>
+								<td>WX-78</td>
+								<td>Butter Muffin</td>
+							</tr>
+							<tr>
+								<td>Wes</td>
+								<td>Fresh Fruit Crepes</td>
+							</tr>
+							<tr>
+								<td>Maxwell</td>
+								<td>Wobster Dinner</td>
+							</tr>
+							<tr>
+								<td>Wigfrid</td>
+								<td>Turkey Dinner</td>
+							</tr>
+							<tr>
+								<td>Webber</td>
+								<td>Ice Cream</td>
+							</tr>
+							<tr>
+								<td>Winona</td>
+								<td>Vegetable Stinger</td>
+							</tr>
+							<tr>
+								<td>Wortox</td>
+								<td>Pomegranates</td>
+							</tr>
+							<tr>
+								<td>Wormwood</td>
+								<td>Cooked Cave Banana</td>
+							</tr>
+							<tr>
+								<td>Warly</td>
+								<td>None</td>
+							</tr>
+							<tr>
+								<td>Wurt</td>
+								<td>Extra Smelly Durian</td>
+							</tr>
+							<tr>
+								<td>Walter</td>
+								<td>Trail Mix</td>
+							</tr>
+							<tr>
+								<td>Wanda</td>
+								<td>Taffy</td>
+							</tr>
+							<tr>
+								<td>Wonkey</td>
+								<td>Cave Banana</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<h2>Useful Wiki Pages</h2>
 
 					<ul>
 						<li>
@@ -226,86 +410,6 @@
 						<li>
 							<a href="https://dontstarve.wiki.gg/wiki/Farming" target="_blank"
 								>Farming</a
-							>
-						</li>
-					</ul>
-
-					<h2>Sections</h2>
-
-					<h3>Simulator</h3>
-
-					<p>
-						The Simulator works like a Crock Pot: add items, and it will tell you what
-						food will be prepared. Note that only the highest-priority recipes will be
-						candidates when actually cooking in-game. The combined totals at the top
-						reflect the ingredients added, where perish time is the shortest. The
-						suggestions below the real results show what recipes could be made by adding
-						different items to those already in the Crock Pot.
-					</p>
-
-					<h3>Discovery</h3>
-
-					<p>
-						The Discovery tab is finds what recipes can be prepared using a collection
-						of ingredients. It doesn't take item quantity into account, instead assuming
-						you have four of each. You are also able to calculate efficient recipes
-						using your ingredients to get the most health or hunger benefit from cooking
-						them in the crock pot. This works identically to the Statistics Analyzer
-						tab, but limited to your inventory.
-					</p>
-
-					<h3>Statistics Analyzer</h3>
-
-					<p>
-						The Statistics Analyzer tab is for those who just want to explore ingredient
-						combinations. It will calculate every valid ingredient combination possible
-						(using an "ideal" ingredient selection, generally excluding uncooked food)
-						and allows filtration by recipe and ingredient contents. Computation may
-						take some time on slower computers.
-					</p>
-
-					<p>
-						For advanced use, open your browser's JavaScript console.
-						<code>analysis.made</code> contains the list of the working combinations
-						from the last analysis, including beyond those visible in the interface.
-					</p>
-
-					<h2>Advanced Use (JavaScript Globals)</h2>
-
-					<p>
-						The Food Guide populates <code>window</code> with a few properties:
-						<code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The
-						Statistics Analyzer writes its results to <code>analysis</code> and
-						<code>recipeCrunchData</code>.
-					</p>
-
-					<p>The local state is stored under <code>localStorage.foodGuideState</code>.</p>
-
-					<h2>Links</h2>
-
-					<ul>
-						<li>
-							<a
-								href="https://github.com/bluehexagons/foodguide/commits/main"
-								target="_blank"
-								>Food Guide Changelog</a
-							>
-						</li>
-						<li>
-							<a
-								href="https://github.com/bluehexagons/foodguide/issues"
-								target="_blank"
-								>Report Food Guide Bugs / Issues</a
-							>
-						</li>
-						<li>
-							<a href="https://www.klei.com/games/dont-starve" target="_blank"
-								>Don't Starve Official Website</a
-							>
-						</li>
-						<li>
-							<a href="https://dontstarve.wiki.gg/" target="_blank"
-								>Don't Starve Wiki</a
 							>
 						</li>
 					</ul>

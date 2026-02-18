@@ -784,6 +784,10 @@ import {
 				if (storage.activeTab && tabs[storage.activeTab]) {
 					activeTab = tabs[storage.activeTab];
 					activePage = elements[storage.activeTab];
+				} else if (storage.activeTab === 'help') {
+					// Migrate: 'help' tab was split into 'about' and 'gameinfo'
+					activeTab = tabs['about'];
+					activePage = elements['about'];
 				}
 
 				// New format: version + dlc + character

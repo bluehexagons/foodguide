@@ -2,27 +2,15 @@
 'use strict';
 
 /*
-Makes use of no third-party code (for better or worse)
-
-Copyright (c) 2014
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+ * Don't Starve Food Guide — main browser entry point.
+ *
+ * Wires up tabs, ingredient pickers, recipe tables, the statistics
+ * analyzer, and mode/character/theme selectors. Pure data and helper
+ * modules live in separate files (see html/foodguide-data.js for the
+ * library entry point); this file is the DOM glue.
+ *
+ * Licensed under the Apache License, Version 2.0. See LICENSE.
+ */
 
 import {
 	base_cook_time,
@@ -2697,7 +2685,6 @@ import { t } from './strings.js';
 
 				sortButton.className = 'sortingredients';
 				sortButton.textContent = sortOptions.find(opt => opt.value === currentSort).label;
-				sortButton.style.cursor = 'pointer';
 
 				sortDropdown.className = 'sortdropdown';
 				sortDropdown.style.display = 'none';
@@ -2706,27 +2693,18 @@ import { t } from './strings.js';
 					const optionEl = document.createElement('div');
 					optionEl.textContent = option.label;
 					optionEl.dataset.value = option.value;
-					optionEl.style.padding = '4px 8px';
-					optionEl.style.cursor = 'pointer';
-					optionEl.style.background = 'var(--bg-primary)';
-					optionEl.style.border = '1px solid var(--medium)';
-					optionEl.style.borderTop = 'none';
 
 					if (option.value === currentSort) {
-						optionEl.style.background = 'var(--selected-bg)';
+						optionEl.classList.add('is-selected');
 					}
 
 					optionEl.addEventListener('click', () => {
 						currentSort = option.value;
 						sortButton.textContent = option.label;
 
-						// Update all options' backgrounds
+						// Update all options' selected state
 						Array.from(sortDropdown.children).forEach(child => {
-							if (child.dataset.value === currentSort) {
-								child.style.background = 'var(--selected-bg)';
-							} else {
-								child.style.background = 'var(--bg-primary)';
-							}
+							child.classList.toggle('is-selected', child.dataset.value === currentSort);
 						});
 
 						// Save to localStorage
@@ -3072,7 +3050,6 @@ import { t } from './strings.js';
 				displayButton.textContent = displayModes.find(
 					opt => opt.value === currentMode,
 				).label;
-				displayButton.style.cursor = 'pointer';
 
 				displayDropdown.className = 'displaymodedropdown';
 				displayDropdown.style.display = 'none';
@@ -3093,27 +3070,18 @@ import { t } from './strings.js';
 					const optionEl = document.createElement('div');
 					optionEl.textContent = option.label;
 					optionEl.dataset.value = option.value;
-					optionEl.style.padding = '4px 8px';
-					optionEl.style.cursor = 'pointer';
-					optionEl.style.background = 'var(--bg-primary)';
-					optionEl.style.border = '1px solid var(--medium)';
-					optionEl.style.borderTop = 'none';
 
 					if (option.value === currentMode) {
-						optionEl.style.background = 'var(--selected-bg)';
+						optionEl.classList.add('is-selected');
 					}
 
 					optionEl.addEventListener('click', () => {
 						currentMode = option.value;
 						displayButton.textContent = option.label;
 
-						// Update all options' backgrounds
+						// Update all options' selected state
 						Array.from(displayDropdown.children).forEach(child => {
-							if (child.dataset.value === currentMode) {
-								child.style.background = 'var(--selected-bg)';
-							} else {
-								child.style.background = 'var(--bg-primary)';
-							}
+							child.classList.toggle('is-selected', child.dataset.value === currentMode);
 						});
 
 						// Apply display mode

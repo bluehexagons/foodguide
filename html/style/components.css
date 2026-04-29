@@ -347,7 +347,17 @@
 .sortdropdown div,
 .displaymodedropdown div {
 	color: var(--fg-primary);
+	padding: 4px 8px;
+	cursor: pointer;
+	background: var(--bg-primary);
+	border: 1px solid var(--medium);
+	border-top: none;
 	transition: background var(--transition-fast);
+}
+
+.sortdropdown div.is-selected,
+.displaymodedropdown div.is-selected {
+	background: var(--selected-bg);
 }
 
 .sortdropdown div:hover,

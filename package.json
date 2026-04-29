@@ -16,6 +16,7 @@
 		"html/functions.js",
 		"html/utils.js",
 		"html/mode-utils.js",
+		"html/strings.js",
 		"html/foodguide-data.js",
 		"LICENSE",
 		"readme.md"
@@ -28,6 +29,7 @@
 		"./functions": "./html/functions.js",
 		"./utils": "./html/utils.js",
 		"./mode-utils": "./html/mode-utils.js",
+		"./strings": "./html/strings.js",
 		"./package.json": "./package.json"
 	},
 	"scripts": {

@@ -58,6 +58,7 @@ import {
 	getCharacterFoodModifiers,
 	getCharacterAbilities,
 } from './mode-utils.js';
+import { t } from './strings.js';
 
 (() => {
 	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
@@ -111,7 +112,7 @@ import {
 			}
 
 			// Show icon for current theme
-			btn.textContent = isEffectivelyDark ? '☀️' : '🌙';
+			btn.textContent = isEffectivelyDark ? t('themeToggleToLight') : t('themeToggleToDark');
 		}
 	};
 
@@ -1187,14 +1188,14 @@ import {
 
 			const label = document.createElement('span');
 			label.className = 'col-toggle-label';
-			label.textContent = 'Columns';
+			label.textContent = t('columns');
 			toggleBar.appendChild(label);
 
 			// Auto button
 			const autoBtn = document.createElement('button');
-			autoBtn.textContent = 'Auto';
+			autoBtn.textContent = t('autoColumns');
 			autoBtn.className = autoMode ? 'active' : '';
-			autoBtn.title = 'Automatically hide less-important columns on narrow screens';
+			autoBtn.title = t('autoColumnsTitle');
 			autoBtn.addEventListener('click', () => {
 				autoMode = !autoMode;
 				autoBtn.className = autoMode ? 'active' : '';
@@ -1598,7 +1599,7 @@ import {
 		let hasTable = false;
 
 		makableButton.appendChild(
-			document.createTextNode('Calculate efficient recipes (may take some time)'),
+			document.createTextNode(t('calculateRecipes')),
 		);
 		makableButton.className = 'makablebutton';
 		const initializeGrinder = () =>
@@ -1616,12 +1617,12 @@ import {
 				let made = [];
 
 				const deleteButton = document.createElement('button');
-				deleteButton.appendChild(document.createTextNode('Clear results'));
+				deleteButton.appendChild(document.createTextNode(t('clearResults')));
 				deleteButton.className = 'deleteButton';
 				deleteButton.addEventListener('click', () => {
 					makableButton.parentNode.removeChild(makableDiv);
 					hasTable = false;
-					makableButton.textContent = 'Calculate efficient recipes (may take some time)';
+					makableButton.textContent = t('calculateRecipes');
 					makableButton.disabled = false;
 				});
 				if (hasTable) {
@@ -1881,20 +1882,18 @@ import {
 
 				const makableSummary = document.createElement('div');
 				makableSummary.className = 'makableSummary';
-				makableSummary.appendChild(document.createTextNode('Computing combinations..'));
+				makableSummary.appendChild(document.createTextNode(t('computingCombinations')));
 
 				const makableFootnote = document.createElement('div');
 				makableFootnote.className = 'makableFootnote';
 				makableFootnote.appendChild(
-					document.createTextNode('* combination has multiple possible results'),
+					document.createTextNode(t('multipleResultsNote')),
 				);
 
 				const filterHelp = document.createElement('div');
 				filterHelp.className = 'makableFilterHelp';
 				filterHelp.appendChild(
-					document.createTextNode(
-						'Click ingredients/recipes to cycle: normal → required (✓) → excluded (✕). Right-click for quick exclude.',
-					),
+					document.createTextNode(t('filterCycleHelp')),
 				);
 
 				makableDiv.appendChild(makableSummary);
@@ -1926,7 +1925,7 @@ import {
 
 				const customFilterInput = document.createElement('input');
 				customFilterInput.type = 'text';
-				customFilterInput.placeholder = 'use custom filter';
+				customFilterInput.placeholder = t('customFilterPlaceholder');
 				customFilterInput.className = 'customFilterInput';
 				customFilterHolder.appendChild(customFilterInput);
 
@@ -1940,12 +1939,12 @@ import {
 
 				// Create pause button upfront
 				const pauseButton = document.createElement('button');
-				pauseButton.appendChild(document.createTextNode('Pause'));
+				pauseButton.appendChild(document.createTextNode(t('pause')));
 				pauseButton.className = 'pauseButton';
 				let isCalculating = true;
 
 				// Set button state BEFORE starting calculation
-				makableButton.textContent = 'Calculating...';
+				makableButton.textContent = t('calculating');
 				makableButton.disabled = true;
 
 				const calculationControl = getRealRecipesFromCollection(
@@ -2054,13 +2053,13 @@ import {
 				pauseButton.addEventListener('click', () => {
 					if (calculationControl.isPaused()) {
 						calculationControl.resume();
-						pauseButton.textContent = 'Pause';
+						pauseButton.textContent = t('pause');
 						makableSummary.firstChild.textContent = `Found ${
 							made.length
 						} valid recipes.. (you can change Food Guide tabs during this process)`;
 					} else {
 						calculationControl.pause();
-						pauseButton.textContent = 'Resume';
+						pauseButton.textContent = t('resume');
 						makableSummary.firstChild.textContent = `Found ${made.length} valid recipes (paused)`;
 					}
 				});
@@ -2673,12 +2672,12 @@ import {
 				const sortButton = document.createElement('span');
 				const sortDropdown = document.createElement('div');
 				const sortOptions = [
-					{ value: 'default', label: 'Sort: Default' },
-					{ value: 'name', label: 'Sort: Name' },
-					{ value: 'health', label: 'Sort: Health' },
-					{ value: 'hunger', label: 'Sort: Hunger' },
-					{ value: 'sanity', label: 'Sort: Sanity' },
-					{ value: 'perish', label: 'Sort: Perish' },
+					{ value: 'default', label: t('sortDefault') },
+					{ value: 'name', label: t('sortName') },
+					{ value: 'health', label: t('sortHealth') },
+					{ value: 'hunger', label: t('sortHunger') },
+					{ value: 'sanity', label: t('sortSanity') },
+					{ value: 'perish', label: t('sortPerish') },
 				];
 
 				let currentSort = 'default';
@@ -2787,16 +2786,16 @@ import {
 				let extended = false;
 				let extendedHeight = null;
 				const searchTypes = [
-					{ title: 'name', prefix: '', placeholder: 'Filter ingredients' },
+					{ title: t('searchTypeName'), prefix: '', placeholder: t('searchPlaceholderName') },
 					{
-						title: 'tag',
+						title: t('searchTypeTag'),
 						prefix: 'tag:',
-						placeholder: 'Meat, veggie, fruit, egg, monster...',
+						placeholder: t('searchPlaceholderTag'),
 					},
 					{
-						title: 'recipe',
+						title: t('searchTypeRecipe'),
 						prefix: 'recipe:',
-						placeholder: 'Find ingredients used in a recipe',
+						placeholder: t('searchPlaceholderRecipe'),
 					},
 				];
 				let selectedType = searchTypes[0];
@@ -2989,7 +2988,7 @@ import {
 
 			clear.className = 'clearingredients';
 			clear.appendChild(document.createTextNode('×'));
-			clear.title = 'Clear search or remove all ingredients';
+			clear.title = t('clearSearchOrIngredients');
 
 			clear.addEventListener(
 				'click',
@@ -3008,9 +3007,7 @@ import {
 						if (
 							hasIngredients &&
 							!limited &&
-							!confirm(
-								'Are you sure you want to clear all ingredients from your inventory?',
-							)
+							!confirm(t('confirmClearInventory'))
 						) {
 							return;
 						}
@@ -3051,9 +3048,9 @@ import {
 				const displayButton = document.createElement('span');
 				const displayDropdown = document.createElement('div');
 				const displayModes = [
-					{ value: 'names', label: 'Display: Names' },
-					{ value: 'icons', label: 'Display: Icons' },
-					{ value: 'list', label: 'Display: List' },
+					{ value: 'names', label: t('displayModeNames') },
+					{ value: 'icons', label: t('displayModeIcons') },
+					{ value: 'list', label: t('displayModeList') },
 				];
 
 				let currentMode = 'names';
@@ -3298,7 +3295,7 @@ import {
 
 	const versionLabel = document.createElement('span');
 	versionLabel.className = 'mode-label';
-	versionLabel.textContent = 'Game';
+	versionLabel.textContent = t('modeLabelGame');
 	versionSection.appendChild(versionLabel);
 
 	for (const name in gameVersions) {
@@ -3329,7 +3326,7 @@ import {
 
 	const dlcLabel = document.createElement('span');
 	dlcLabel.className = 'mode-label';
-	dlcLabel.textContent = 'DLC';
+	dlcLabel.textContent = t('modeLabelDlc');
 	dlcSection.appendChild(dlcLabel);
 
 	for (const name in dlcOptions) {
@@ -3337,7 +3334,7 @@ import {
 		btn.className = 'mode-btn dlc-btn';
 		btn.dataset.dlc = name;
 		btn.addEventListener('click', toggleDlc, false);
-		btn.title = `${dlcOptions[name].name}\nclick to toggle`;
+		btn.title = `${dlcOptions[name].name}\n${t('dlcToggleHint')}`;
 
 		const img = makeImage(`img/${dlcOptions[name].img}`);
 		img.title = dlcOptions[name].name;
@@ -3360,7 +3357,7 @@ import {
 
 	const charLabel = document.createElement('span');
 	charLabel.className = 'mode-label';
-	charLabel.textContent = 'Char';
+	charLabel.textContent = t('modeLabelCharacter');
 	charSection.appendChild(charLabel);
 
 	for (const name in characters) {
@@ -3370,7 +3367,7 @@ import {
 		btn.addEventListener('click', selectCharacter, false);
 		const charAbilities = getCharacterAbilities(name, characters);
 		const abilityText = charAbilities.length > 0 ? `\n${charAbilities.join('\n')}` : '';
-		btn.title = `${characters[name].name}\nclick to toggle${abilityText}`;
+		btn.title = `${characters[name].name}\n${t('characterToggleHint')}${abilityText}`;
 
 		const img = makeImage(`img/${characters[name].img}`);
 		img.dataset.character = name;

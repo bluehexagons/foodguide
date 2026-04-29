@@ -2,6 +2,7 @@
 'use strict';
 
 import { TOGETHER, healing_tiny, healing_small } from './constants.js';
+import { t } from './strings.js';
 
 /**
  * Mode System Utilities
@@ -353,18 +354,18 @@ export function getCharacterAbilities(character, characters) {
 	const descriptions = [];
 
 	if (abilities.noMonsterPenalty) {
-		descriptions.push('Can safely eat Monster Foods');
+		descriptions.push(t('abilityNoMonsterPenalty'));
 	}
 
 	if (abilities.rawMeatIsCooked) {
-		descriptions.push('Can safely eat Raw Meat');
+		descriptions.push(t('abilityRawMeatIsCooked'));
 	}
 
 	if (abilities.meatOnly) {
 		if (abilities.canEatGoodies) {
-			descriptions.push('Only eats meat and goodies');
+			descriptions.push(t('abilityMeatAndGoodies'));
 		} else {
-			descriptions.push('Only eats meat');
+			descriptions.push(t('abilityMeatOnly'));
 		}
 	}
 

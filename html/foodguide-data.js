@@ -21,3 +21,4 @@ export * from './functions.js';
 export * from './mode-utils.js';
 export { food } from './food.js';
 export { recipes, updateFoodRecipes } from './recipes.js';
+export { t, setLocale, registerLocale, strings } from './strings.js';

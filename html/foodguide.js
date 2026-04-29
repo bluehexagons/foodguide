@@ -46,7 +46,16 @@ import {
 	getCharacterFoodModifiers,
 	getCharacterAbilities,
 } from './mode-utils.js';
-import { t } from './strings.js';
+import {
+	t,
+	applyTranslations,
+	initLocale,
+	setLocale,
+	getLocale,
+	listLocales,
+	localeName,
+} from './strings.js';
+import './locales/index.js';
 
 (() => {
 	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
@@ -135,6 +144,38 @@ import { t } from './strings.js';
 		if (currentTheme === 'auto') {
 			initTheme();
 		}
+	});
+
+	// Initialise the i18n layer: pick a locale (storage > navigator > en),
+	// populate the language picker, and apply translations to the static HTML.
+	initLocale();
+
+	const langPicker = /** @type {HTMLSelectElement | null} */ (
+		document.getElementById('language-picker')
+	);
+	if (langPicker) {
+		const codes = listLocales();
+		for (const code of codes) {
+			const opt = document.createElement('option');
+			opt.value = code;
+			opt.textContent = localeName(code);
+			langPicker.appendChild(opt);
+		}
+		langPicker.value = getLocale();
+		langPicker.addEventListener('change', () => {
+			setLocale(langPicker.value);
+		});
+	}
+
+	applyTranslations();
+	updateThemeToggle();
+
+	// Re-apply translations whenever the locale changes so static strings
+	// (and any newly-injected DOM that uses data-i18n) update in place.
+	document.addEventListener('foodguide:localechange', () => {
+		applyTranslations();
+		updateThemeToggle();
+		if (langPicker) langPicker.value = getLocale();
 	});
 
 	/**
@@ -532,28 +573,27 @@ import { t } from './strings.js';
 	const recipesElement = document.getElementById('recipes');
 	const navbar = document.getElementById('navbar');
 
-	document
-		.getElementById('stalehealth')
-		.appendChild(document.createTextNode(`${Math.round(stale_food_health * 1000) / 10}%`));
-	document
-		.getElementById('stalehunger')
-		.appendChild(document.createTextNode(`${Math.round(stale_food_hunger * 1000) / 10}%`));
-	document
-		.getElementById('spoiledhunger')
-		.appendChild(document.createTextNode(`${Math.round(spoiled_food_hunger * 1000) / 10}%`));
-	document.getElementById('spoiledsanity').appendChild(document.createTextNode(sanity_small));
-	document
-		.getElementById('perishground')
-		.appendChild(document.createTextNode(`${Math.round(perish_ground_mult * 1000) / 10}%`));
-	document
-		.getElementById('perishwinter')
-		.appendChild(document.createTextNode(`${Math.round(perish_winter_mult * 1000) / 10}%`));
-	document
-		.getElementById('perishsummer')
-		.appendChild(document.createTextNode(`${Math.round(perish_summer_mult * 1000) / 10}%`));
-	document
-		.getElementById('perishfridge')
-		.appendChild(document.createTextNode(`${Math.round(perish_fridge_mult * 1000) / 10}%`));
+	const populateGameInfoNumbers = () => {
+		const set = (id, text) => {
+			const el = document.getElementById(id);
+			if (!el) return;
+			el.textContent = '';
+			el.appendChild(document.createTextNode(text));
+		};
+		const pct = v => `${Math.round(v * 1000) / 10}%`;
+		set('stalehealth', pct(stale_food_health));
+		set('stalehunger', pct(stale_food_hunger));
+		set('spoiledhunger', pct(spoiled_food_hunger));
+		set('spoiledsanity', String(sanity_small));
+		set('perishground', pct(perish_ground_mult));
+		set('perishwinter', pct(perish_winter_mult));
+		set('perishsummer', pct(perish_summer_mult));
+		set('perishfridge', pct(perish_fridge_mult));
+	};
+	populateGameInfoNumbers();
+	// Re-populate after a locale change, since applyTranslations() rewrites
+	// the parent paragraph's innerHTML and recreates the placeholder spans.
+	document.addEventListener('foodguide:localechange', populateGameInfoNumbers);
 
 	const combinationGenerator = (length, callback, startPos) => {
 		const size = 4;
@@ -1988,9 +2028,9 @@ import { t } from './strings.js';
 						if (isCalculating && !pauseButton.parentNode) {
 							makableSummary.appendChild(pauseButton);
 						}
-						makableSummary.firstChild.textContent = `Found ${
-							made.length
-						} valid recipes.. (you can change Food Guide tabs during this process)`;
+						makableSummary.firstChild.textContent = t('foundValidRecipesInProgress', {
+							count: made.length,
+						});
 					},
 					() => {
 						//computation finished
@@ -2010,7 +2050,7 @@ import { t } from './strings.js';
 
 						// Add "Show more" functionality if there are many results
 						const showMoreButton = document.createElement('button');
-						showMoreButton.appendChild(document.createTextNode('Show more results'));
+						showMoreButton.appendChild(document.createTextNode(t('showMoreResults')));
 						showMoreButton.className = 'showMoreButton';
 						let currentLimit = 500;
 						showMoreButton.addEventListener('click', () => {
@@ -2019,20 +2059,25 @@ import { t } from './strings.js';
 							if (currentLimit >= made.length) {
 								showMoreButton.style.display = 'none';
 							}
-							showMoreButton.textContent = `Show more results (${Math.min(currentLimit, made.length)} of ${made.length})`;
+							showMoreButton.textContent = t('showMoreResultsCount', {
+								shown: Math.min(currentLimit, made.length),
+								total: made.length,
+							});
 						});
 
-						const summaryText = `Found ${made.length} valid recipes.`;
+						const summaryText = t('foundValidRecipes', { count: made.length });
 						makableSummary.firstChild.textContent = summaryText;
 
 						if (made.length > 500) {
-							showMoreButton.textContent = `Show more results (500 of ${made.length})`;
+							showMoreButton.textContent = t('showMoreResultsCount', {
+								shown: 500,
+								total: made.length,
+							});
 							makableSummary.appendChild(showMoreButton);
 						}
 
 						makableSummary.appendChild(deleteButton);
-						makableButton.textContent =
-							'Calculate efficient recipes (may take some time)';
+						makableButton.textContent = t('calculateRecipes');
 						makableButton.disabled = false;
 					},
 				);
@@ -2042,13 +2087,15 @@ import { t } from './strings.js';
 					if (calculationControl.isPaused()) {
 						calculationControl.resume();
 						pauseButton.textContent = t('pause');
-						makableSummary.firstChild.textContent = `Found ${
-							made.length
-						} valid recipes.. (you can change Food Guide tabs during this process)`;
+						makableSummary.firstChild.textContent = t('foundValidRecipesInProgress', {
+							count: made.length,
+						});
 					} else {
 						calculationControl.pause();
 						pauseButton.textContent = t('resume');
-						makableSummary.firstChild.textContent = `Found ${made.length} valid recipes (paused)`;
+						makableSummary.firstChild.textContent = t('foundValidRecipesPaused', {
+							count: made.length,
+						});
 					}
 				});
 			})();

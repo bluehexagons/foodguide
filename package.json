@@ -17,6 +17,7 @@
 		"html/utils.js",
 		"html/mode-utils.js",
 		"html/strings.js",
+		"html/locales/",
 		"html/foodguide-data.js",
 		"LICENSE",
 		"readme.md"
@@ -30,6 +31,8 @@
 		"./utils": "./html/utils.js",
 		"./mode-utils": "./html/mode-utils.js",
 		"./strings": "./html/strings.js",
+		"./locales": "./html/locales/index.js",
+		"./locales/*": "./html/locales/*.js",
 		"./package.json": "./package.json"
 	},
 	"scripts": {

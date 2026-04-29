@@ -2,8 +2,34 @@
 	"name": "foodguide",
 	"version": "1.0.0",
 	"description": "Unofficial Don't Starve food guide and recipe calculator",
-	"main": "html/index.htm",
+	"main": "html/foodguide-data.js",
+	"module": "html/foodguide-data.js",
 	"type": "module",
+	"sideEffects": [
+		"./html/foodguide.js",
+		"./html/utils.js"
+	],
+	"files": [
+		"html/constants.js",
+		"html/food.js",
+		"html/recipes.js",
+		"html/functions.js",
+		"html/utils.js",
+		"html/mode-utils.js",
+		"html/foodguide-data.js",
+		"LICENSE",
+		"readme.md"
+	],
+	"exports": {
+		".": "./html/foodguide-data.js",
+		"./constants": "./html/constants.js",
+		"./food": "./html/food.js",
+		"./recipes": "./html/recipes.js",
+		"./functions": "./html/functions.js",
+		"./utils": "./html/utils.js",
+		"./mode-utils": "./html/mode-utils.js",
+		"./package.json": "./package.json"
+	},
 	"scripts": {
 		"dev": "npx http-server html -p 8080 -o",
 		"lint": "eslint html/**/*.js",

@@ -49,8 +49,8 @@ export const makeImage = (() => {
 		}
 	};
 
-	// Load sprite manifest
-	if (typeof fetch !== 'undefined') {
+	// Load sprite manifest (browser-only; skipped when imported in Node).
+	if (typeof document !== 'undefined' && typeof fetch !== 'undefined') {
 		fetch('img/sprites/sprites.json')
 			.then(r => {
 				if (!r.ok) {

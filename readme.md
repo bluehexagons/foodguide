@@ -38,6 +38,32 @@ To format code automatically using eslint rules, run `npx eslint --fix` or your 
 This is not required before submitting a PR, as it will be run regardless.
 
 
+## Reusing the data and helpers in other projects
+
+The food, recipe, and mode-handling modules are pure ES modules with no
+runtime dependencies and can be imported from Node, Deno, Bun, or any
+bundler-using web project. After installing this package (e.g. as a git
+dependency), the public entry points are:
+
+```js
+// Everything except DOM helpers
+import { food, recipes, modes, AND, NAME, matchesMode } from 'foodguide';
+
+// Or import individual modules
+import { food } from 'foodguide/food';
+import { recipes, updateFoodRecipes } from 'foodguide/recipes';
+import * as constants from 'foodguide/constants';
+import { matchesMode, calculateModeMask } from 'foodguide/mode-utils';
+import { AND, OR, NAME, TAG } from 'foodguide/functions';
+
+// Browser-only DOM helpers
+import { makeImage, makeLinkable } from 'foodguide/utils';
+```
+
+The data tables in `food` and `recipes` are the same objects the live tool
+uses — see `html/food.js` and `html/recipes.js` for shape documentation.
+
+
 ## Contributors
   [bluehexagons](https://github.com/bluehexagons)
   [rezecib](https://github.com/rezecib)

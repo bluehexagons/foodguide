@@ -86,6 +86,8 @@ const defaultStrings = {
 
 	// Ingredient picker controls
 	clearSearchOrIngredients: 'Clear search or remove all ingredients',
+	clearSearch: 'Clear search',
+	clearIngredients: 'Clear all ingredients',
 	confirmClearInventory: 'Are you sure you want to clear all ingredients from your inventory?',
 	displayModeNames: 'Display: Names',
 	displayModeIcons: 'Display: Icons',

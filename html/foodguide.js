@@ -2358,6 +2358,17 @@ import './locales/index.js';
 				panel.appendChild(parent);
 			}
 			let slots = parent.getElementsByClassName('ingredient');
+			
+			const searchRow = document.createElement('div');
+			searchRow.className = 'ingredient-search-row';
+			
+			const searchInputGroup = document.createElement('div');
+			searchInputGroup.className = 'ingredient-search-input-group';
+			searchRow.appendChild(searchInputGroup);
+			
+			picker.parentNode.insertBefore(searchRow, picker);
+			searchInputGroup.appendChild(picker);
+
 			let limited;
 			let ingredients = [];
 			let updateRecipes;
@@ -2368,7 +2379,8 @@ import './locales/index.js';
 			const discoverfood = document.getElementById('discoverfood');
 			const discover = document.getElementById('discover');
 			const makable = document.getElementById('makable');
-			const clear = document.createElement('span');
+			const clearSearchBtn = document.createElement('button');
+			const clearIngredientsBtn = document.createElement('button');
 
 			const pickItem = e => {
 				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
@@ -3177,9 +3189,9 @@ import './locales/index.js';
 				// Update texts when locale changes
 				document.addEventListener('foodguide:localechange', updateSearchTypeTexts);
 
-				picker.parentNode.insertBefore(searchSelector, picker);
+				searchInputGroup.insertBefore(searchSelector, picker);
 				dropdown.className = 'searchdropdown';
-				picker.parentNode.insertBefore(dropdown, picker);
+				searchInputGroup.insertBefore(dropdown, picker);
 
 				return controls;
 			})();
@@ -3208,62 +3220,62 @@ import './locales/index.js';
 				dropdown.appendChild(ul);
 			})();
 
-			clear.className = 'clearingredients';
-			clear.appendChild(document.createTextNode('×'));
-			clear.title = t('clearSearchOrIngredients');
+			clearSearchBtn.className = 'clearingredients clearsearchbtn';
+			clearSearchBtn.title = t('clearSearch');
+			// Use an inline SVG for clear search or just an X
+			clearSearchBtn.innerHTML = '<span>×</span>';
 
-			clear.addEventListener(
-				'click',
-				() => {
-					if (picker.value === '' && searchSelectorControls.getTag() === 'name') {
-						// Check if there are any ingredients to clear
-						let hasIngredients = false;
-						for (let i = 0; i < parent.children.length; i++) {
-							if (getSlot(parent.children[i])) {
-								hasIngredients = true;
-								break;
-							}
-						}
+			clearSearchBtn.addEventListener('click', () => {
+				picker.value = '';
+				searchSelectorControls.setSearchType(0);
+				refreshPicker();
+			});
 
-						// Warn user on Discovery tab (unlimited mode) before clearing
-						if (
-							hasIngredients &&
-							!limited &&
-							!confirm(t('confirmClearInventory'))
-						) {
-							return;
-						}
+			clearIngredientsBtn.className = 'clearingredients clearingredientsbtn';
+			clearIngredientsBtn.title = t('clearIngredients');
+			// Use a trash can icon or similar
+			clearIngredientsBtn.innerHTML = '<span>🗑</span>'; // Using a trash emoji, or we can use SVG
 
-						// Clear all ingredients - handle limited vs unlimited mode differently
-						if (limited) {
-							// Limited mode: clear from last to first to avoid
-							// setSlot's shift-left logic moving items around
-							for (let i = slots.length - 1; i >= 0; i--) {
-								if (getSlot(slots[i])) {
-									setSlot(slots[i], null);
-								}
-							}
-							updateRecipes();
-						} else {
-							// Unlimited mode: remove elements directly, then rebuild
-							const children = Array.from(parent.children);
-							children.forEach(child => {
-								if (getSlot(child)) {
-									parent.removeChild(child);
-								}
-							});
-							slots.length = 0;
-							ensureEmptySlot();
-							updateRecipes();
-						}
-					} else {
-						picker.value = '';
-						searchSelectorControls.setSearchType(0);
-						refreshPicker();
+			clearIngredientsBtn.addEventListener('click', () => {
+				// Check if there are any ingredients to clear
+				let hasIngredients = false;
+				for (let i = 0; i < parent.children.length; i++) {
+					if (getSlot(parent.children[i])) {
+						hasIngredients = true;
+						break;
 					}
-				},
-				false,
-			);
+				}
+
+				if (!hasIngredients) return;
+
+				// Warn user on Discovery tab (unlimited mode) before clearing
+				if (!limited && !confirm(t('confirmClearInventory'))) {
+					return;
+				}
+
+				// Clear all ingredients - handle limited vs unlimited mode differently
+				if (limited) {
+					// Limited mode: clear from last to first to avoid
+					// setSlot's shift-left logic moving items around
+					for (let i = slots.length - 1; i >= 0; i--) {
+						if (getSlot(slots[i])) {
+							setSlot(slots[i], null);
+						}
+					}
+					updateRecipes();
+				} else {
+					// Unlimited mode: remove elements directly, then rebuild
+					const children = Array.from(parent.children);
+					children.forEach(child => {
+						if (getSlot(child)) {
+							parent.removeChild(child);
+						}
+					});
+					slots.length = 0;
+					ensureEmptySlot();
+					updateRecipes();
+				}
+			});
 
 			// Display mode controls (Icons / Names / List)
 				const displayModeControls = (() => {
@@ -3318,60 +3330,43 @@ import './locales/index.js';
 				// Apply initial mode
 				applyDisplayMode(currentMode);
 
-					displayModes.forEach(option => {
-						const optionEl = document.createElement('div');
-						optionEl.textContent = t(option.key);
-						optionEl.dataset.value = option.value;
-
-					if (option.value === currentMode) {
-						optionEl.classList.add('is-selected');
-					}
-
-						optionEl.addEventListener('click', () => {
-							currentMode = option.value;
-							updateLabels();
-
-						// Update all options' selected state
-						Array.from(displayDropdown.children).forEach(child => {
-							child.classList.toggle('is-selected', child.dataset.value === currentMode);
-						});
-
-						// Apply display mode
+				displayModes.forEach(mode => {
+					const opt = document.createElement('div');
+					opt.dataset.value = mode.value;
+					opt.textContent = t(mode.key);
+					opt.addEventListener('click', e => {
+						currentMode = mode.value;
+						updateLabels();
 						applyDisplayMode(currentMode);
-
+						displayDropdown.style.display = 'none';
+						isOpen = false;
+						
 						// Save to localStorage
 						try {
-							let saved = {};
-							if (window.localStorage.foodGuideDisplayMode) {
-								saved = JSON.parse(window.localStorage.foodGuideDisplayMode);
-							}
+							const saved = window.localStorage.foodGuideDisplayMode 
+								? JSON.parse(window.localStorage.foodGuideDisplayMode) 
+								: [];
 							saved[index] = currentMode;
 							window.localStorage.foodGuideDisplayMode = JSON.stringify(saved);
 						} catch (err) {
 							console.warn('Unable to save display mode preference', err);
 						}
-
-							displayDropdown.style.display = 'none';
-							isOpen = false;
-						});
-
-						displayDropdown.appendChild(optionEl);
 					});
-
-						document.addEventListener('foodguide:localechange', updateLabels);
+					displayDropdown.appendChild(opt);
+				});
 
 				displayButton.addEventListener('click', e => {
 					e.stopPropagation();
-					isOpen = !isOpen;
-					if (isOpen) {
+					if (!isOpen) {
 						// Position dropdown below button
 						const rect = displayButton.getBoundingClientRect();
-						displayDropdown.style.left = `${rect.left}px`;
-						displayDropdown.style.top = `${rect.bottom + 2}px`;
 						displayDropdown.style.display = 'block';
+						displayDropdown.style.left = `${rect.left}px`;
+						displayDropdown.style.top = `${rect.bottom + 4}px`;
 					} else {
 						displayDropdown.style.display = 'none';
 					}
+					isOpen = !isOpen;
 				});
 
 				// Close dropdown when clicking outside
@@ -3391,18 +3386,122 @@ import './locales/index.js';
 					getDropdown: () => displayDropdown,
 				};
 			})();
+			
+			const densityControls = (() => {
+				const densityButton = document.createElement('span');
+				const densityDropdown = document.createElement('div');
+				const densityModes = [
+					{ value: 'cozy', label: 'Cozy' },
+					{ value: 'normal', label: 'Normal' },
+					{ value: 'compact', label: 'Compact' },
+				];
 
-			picker.parentNode.insertBefore(displayModeControls.getButton(), parent.parentNode);
-			picker.parentNode.insertBefore(displayModeControls.getDropdown(), parent.parentNode);
+				let currentMode = 'compact';
+				let isOpen = false;
 
-			// Insert sort controls
-			picker.parentNode.insertBefore(sortControls.getButton(), parent.parentNode);
-			picker.parentNode.insertBefore(sortControls.getDropdown(), parent.parentNode);
+				try {
+					if (window.localStorage.foodGuideDensityMode) {
+						const saved = JSON.parse(window.localStorage.foodGuideDensityMode);
+						if (saved && saved[index] !== undefined) {
+							currentMode = saved[index];
+						}
+					}
+				} catch (err) {
+					console.warn('Unable to load density preference', err);
+				}
 
-			// Insert clear button (will be styled to the right)
-			picker.parentNode.insertBefore(clear, parent.parentNode);
+				const updateLabels = () => {
+					const currentLabel = densityModes.find(opt => opt.value === currentMode).label;
+					densityButton.textContent = currentLabel;
+				};
 
-			picker.parentNode.insertBefore(dropdown, parent.parentNode);
+				densityButton.className = 'displaymodeingredients densityingredients';
+				updateLabels();
+
+				densityDropdown.className = 'displaymodedropdown densitydropdown';
+				densityDropdown.style.display = 'none';
+
+				const applyDensityMode = mode => {
+					dropdown.classList.remove('density-cozy', 'density-normal', 'density-compact');
+					dropdown.classList.add(`density-${mode}`);
+				};
+
+				applyDensityMode(currentMode);
+
+				densityModes.forEach(mode => {
+					const opt = document.createElement('div');
+					opt.dataset.value = mode.value;
+					opt.textContent = mode.label;
+					opt.addEventListener('click', e => {
+						currentMode = mode.value;
+						updateLabels();
+						applyDensityMode(currentMode);
+						densityDropdown.style.display = 'none';
+						isOpen = false;
+						
+						try {
+							const saved = window.localStorage.foodGuideDensityMode 
+								? JSON.parse(window.localStorage.foodGuideDensityMode) 
+								: [];
+							saved[index] = currentMode;
+							window.localStorage.foodGuideDensityMode = JSON.stringify(saved);
+						} catch (err) {
+							console.warn('Unable to save density preference', err);
+						}
+					});
+					densityDropdown.appendChild(opt);
+				});
+
+				densityButton.addEventListener('click', e => {
+					e.stopPropagation();
+					if (!isOpen) {
+						const rect = densityButton.getBoundingClientRect();
+						densityDropdown.style.display = 'block';
+						densityDropdown.style.left = `${rect.left}px`;
+						densityDropdown.style.top = `${rect.bottom + 4}px`;
+					} else {
+						densityDropdown.style.display = 'none';
+					}
+					isOpen = !isOpen;
+				});
+
+				document.addEventListener('click', e => {
+					if (isOpen && !densityDropdown.contains(e.target) && e.target !== densityButton) {
+						densityDropdown.style.display = 'none';
+						isOpen = false;
+					}
+				});
+
+				return {
+					getButton: () => densityButton,
+					getDropdown: () => densityDropdown,
+				};
+			})();
+
+			const controlsGroup = document.createElement('div');
+			controlsGroup.className = 'ingredient-search-controls';
+			
+			const controlsLeft = document.createElement('div');
+			controlsLeft.className = 'ingredient-search-controls-left';
+			
+			const controlsRight = document.createElement('div');
+			controlsRight.className = 'ingredient-search-controls-right';
+			
+			controlsLeft.appendChild(displayModeControls.getButton());
+			controlsLeft.appendChild(displayModeControls.getDropdown());
+			controlsLeft.appendChild(densityControls.getButton());
+			controlsLeft.appendChild(densityControls.getDropdown());
+			controlsLeft.appendChild(sortControls.getButton());
+			controlsLeft.appendChild(sortControls.getDropdown());
+			
+			controlsRight.appendChild(clearSearchBtn);
+			controlsRight.appendChild(clearIngredientsBtn);
+			
+			controlsGroup.appendChild(controlsLeft);
+			controlsGroup.appendChild(controlsRight);
+			searchRow.appendChild(controlsGroup);
+
+			searchRow.parentNode.insertBefore(dropdown, parent.parentNode);
 
 			picker.addEventListener('keydown', _ => {
 				refreshPicker();

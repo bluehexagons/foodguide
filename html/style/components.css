@@ -145,26 +145,7 @@
 }
 
 /* Search dropdown */
-.searchdropdown {
-	z-index: 2;
-	position: absolute;
-	height: 0;
-	overflow: hidden;
-	border-radius: 0 0 3px 3px;
-	transition:
-		height 200ms ease,
-		border-top-left-radius 100ms ease;
-	border-top-left-radius: 3px;
-}
 
-.searchdropdown div {
-	background: var(--lighter);
-	border: 1px solid var(--medium);
-	border-top: none;
-	cursor: pointer;
-	padding: 0 2px;
-	color: var(--fg-primary);
-}
 
 /* Ingredient picker input */
 .ingredientpicker {
@@ -243,47 +224,6 @@
 }
 
 /* Dropdown styles for sort and display mode */
-.sortdropdown,
-.displaymodedropdown {
-	position: fixed;
-	background: var(--bg-primary);
-	border: 1px solid var(--medium);
-	border-radius: 3px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	min-width: 140px;
-	z-index: 10;
-}
-
-.sortdropdown div,
-.displaymodedropdown div {
-	color: var(--fg-primary);
-	padding: 4px 8px;
-	cursor: pointer;
-	background: var(--bg-primary);
-	border: 1px solid var(--medium);
-	border-top: none;
-	transition: background var(--transition-fast);
-}
-
-.sortdropdown div.is-selected,
-.displaymodedropdown div.is-selected {
-	background: var(--selected-bg);
-}
-
-.sortdropdown div:hover,
-.displaymodedropdown div:hover {
-	background: var(--table-hover) !important;
-}
-
-.sortdropdown div:first-child,
-.displaymodedropdown div:first-child {
-	border-top: 1px solid var(--medium);
-	border-radius: 3px 3px 0 0;
-}
-
-.sortdropdown div:last-child,
-.displaymodedropdown div:last-child {
-	border-radius: 0 0 3px 3px;
 }
 
 /* Makable / statistics buttons */
@@ -858,22 +798,49 @@ button.makablebutton:disabled:hover {
 }
 
 /* Dropdown fix for density dropdown */
-.densitydropdown {
-	position: fixed;
-	z-index: 200;
+
+/* Unified Dropdown Pattern */
+.ui-dropdown-container {
+	position: relative;
+	display: inline-block;
+}
+
+.ui-dropdown-list {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	margin-top: 4px;
 	background: var(--bg-primary);
 	border: 1px solid var(--border-color);
 	border-radius: 4px;
 	padding: 4px 0;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	min-width: 120px;
+	min-width: 140px;
+	z-index: 200; /* High enough to overlay lists */
 }
-.densitydropdown div {
-	padding: 8px 16px;
-	cursor: pointer;
+
+.ui-dropdown-list div {
 	color: var(--fg-primary);
+	padding: 6px 12px;
+	cursor: pointer;
+	background: var(--bg-primary);
 	transition: background var(--transition-fast);
 }
-.densitydropdown div:hover {
-	background: var(--table-hover);
+
+.ui-dropdown-list div.is-selected {
+	background: var(--selected-bg);
+}
+
+.ui-dropdown-list div:hover {
+	background: var(--table-hover) !important;
+}
+
+/* For search dropdown container to work in flex */
+.ingredient-search-input-group .ui-dropdown-container {
+    display: flex;
+    align-items: stretch;
+}
+.ingredient-search-input-group .ui-dropdown-container .searchselector {
+    height: 100%;
+    width: 100%;
 }

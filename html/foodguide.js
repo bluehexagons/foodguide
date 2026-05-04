@@ -60,6 +60,143 @@ import {
 import './locales/index.js';
 
 (() => {
+		const createDropdown = (options) => {
+			const {
+				items,
+				initialValue,
+				buttonClass = 'ui-dropdown-btn',
+				dropdownClass = 'ui-dropdown-list',
+				containerClass = 'ui-dropdown-container',
+				onSelect,
+				storageKey,
+				storageIndex
+			} = options;
+
+			const container = document.createElement('div');
+			container.className = containerClass;
+
+			const button = document.createElement('span');
+			button.className = buttonClass;
+
+			const dropdown = document.createElement('div');
+			dropdown.className = dropdownClass;
+			dropdown.style.display = 'none';
+
+			let currentValue = initialValue;
+			let isOpen = false;
+
+			if (storageKey) {
+				try {
+					if (window.localStorage[storageKey]) {
+						const saved = JSON.parse(window.localStorage[storageKey]);
+						if (saved && (storageIndex === undefined || saved[storageIndex] !== undefined)) {
+							currentValue = storageIndex === undefined ? saved : saved[storageIndex];
+						}
+					}
+				} catch (err) {
+					console.warn('Unable to load preference', err);
+				}
+			}
+
+			if (!items.find(item => item.value === currentValue)) {
+				currentValue = items[0].value;
+			}
+
+			const updateLabels = () => {
+				const currentItem = items.find(opt => opt.value === currentValue);
+				button.textContent = t(currentItem.labelKey || currentItem.key);
+                if (currentItem.iconHTML) {
+                    button.innerHTML = currentItem.iconHTML + button.innerHTML;
+                }
+
+				Array.from(dropdown.children).forEach(child => {
+					const item = items.find(opt => opt.value === child.dataset.value);
+					if (item) {
+                        child.textContent = t(item.labelKey || item.key);
+                        if (item.iconHTML) {
+                            child.innerHTML = item.iconHTML + child.innerHTML;
+                        }
+                    }
+				});
+			};
+
+			const updateSelectionState = () => {
+				Array.from(dropdown.children).forEach(child => {
+					child.classList.toggle('is-selected', child.dataset.value === currentValue);
+				});
+			};
+
+			items.forEach((item, index) => {
+				const opt = document.createElement('div');
+				opt.dataset.value = item.value;
+				opt.dataset.index = index;
+				opt.textContent = t(item.labelKey || item.key);
+				opt.addEventListener('click', e => {
+					e.stopPropagation();
+					currentValue = item.value;
+					updateLabels();
+					updateSelectionState();
+					dropdown.style.display = 'none';
+					isOpen = false;
+
+					if (storageKey) {
+						try {
+							let saved;
+							if (storageIndex !== undefined) {
+								saved = window.localStorage[storageKey] ? JSON.parse(window.localStorage[storageKey]) : (typeof storageIndex === 'number' ? [] : {});
+								saved[storageIndex] = currentValue;
+							} else {
+								saved = currentValue;
+							}
+							window.localStorage[storageKey] = JSON.stringify(saved);
+						} catch (err) {
+							console.warn('Unable to save preference', err);
+						}
+					}
+
+					if (onSelect) onSelect(item, currentValue);
+				});
+				dropdown.appendChild(opt);
+			});
+
+			updateLabels();
+			updateSelectionState();
+			document.addEventListener('foodguide:localechange', updateLabels);
+
+			button.addEventListener('click', e => {
+				e.stopPropagation();
+				isOpen = !isOpen;
+				dropdown.style.display = isOpen ? 'block' : 'none';
+			});
+
+			document.addEventListener('click', e => {
+				if (isOpen && !dropdown.contains(e.target) && e.target !== button) {
+					dropdown.style.display = 'none';
+					isOpen = false;
+				}
+			});
+
+			container.appendChild(button);
+			container.appendChild(dropdown);
+
+			return {
+				container,
+				button,
+				dropdown,
+				getValue: () => currentValue,
+				setValue: (val) => {
+					const item = items.find(opt => opt.value === val);
+					if (item) {
+						currentValue = val;
+						updateLabels();
+						updateSelectionState();
+					}
+				},
+				getItem: () => items.find(opt => opt.value === currentValue),
+				getIndex: () => items.findIndex(opt => opt.value === currentValue)
+			};
+		};
+
 	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
 	const resolveIconTarget = el =>
 		el.tagName === 'IMG' || el.classList.contains('icon') ? el.parentNode : el;
@@ -2880,320 +3017,59 @@ import './locales/index.js';
 
 			// Ensure Discovery page starts with an empty "+" slot
 			ensureEmptySlot();
-
 			// Sort controls for ingredient picker
-				const sortControls = (() => {
-					const sortButton = document.createElement('span');
-					const sortDropdown = document.createElement('div');
-					const sortKeys = [
-						{ value: 'default', key: 'sortDefault' },
-						{ value: 'name', key: 'sortName' },
-						{ value: 'health', key: 'sortHealth' },
-						{ value: 'hunger', key: 'sortHunger' },
-						{ value: 'sanity', key: 'sortSanity' },
-						{ value: 'perish', key: 'sortPerish' },
-					];
-
-				let currentSort = 'default';
-				let isOpen = false;
-
-				// Try to load saved sort preference from localStorage
-				try {
-					if (window.localStorage.foodGuideSortPreference) {
-						const saved = JSON.parse(window.localStorage.foodGuideSortPreference);
-						if (saved && saved[index] !== undefined) {
-							currentSort = saved[index];
-						}
-					}
-				} catch (err) {
-					console.warn('Unable to load sort preference', err);
-				}
-
-					const updateLabels = () => {
-						const currentLabel = sortKeys.find(k => k.value === currentSort).key;
-						sortButton.textContent = t(currentLabel);
-
-						Array.from(sortDropdown.children).forEach(child => {
-							const key = sortKeys.find(k => k.value === child.dataset.value);
-							if (key) child.textContent = t(key.key);
-						});
-					};
-
-				sortButton.className = 'sortingredients';
-					updateLabels();
-
-				sortDropdown.className = 'sortdropdown';
-				sortDropdown.style.display = 'none';
-
-					sortKeys.forEach(sk => {
-						const optionEl = document.createElement('div');
-						optionEl.textContent = t(sk.key);
-					optionEl.dataset.value = sk.value;
-
-					if (sk.value === currentSort) {
-						optionEl.classList.add('is-selected');
-					}
-
-					optionEl.addEventListener('click', () => {
-						currentSort = sk.value;
-						sortButton.textContent = t(sk.key);
-
-						// Update all options' selected state
-						Array.from(sortDropdown.children).forEach(child => {
-							child.classList.toggle('is-selected', child.dataset.value === currentSort);
-						});
-
-						// Save to localStorage
-						try {
-							let saved = {};
-							if (window.localStorage.foodGuideSortPreference) {
-								saved = JSON.parse(window.localStorage.foodGuideSortPreference);
-							}
-							saved[index] = currentSort;
-							window.localStorage.foodGuideSortPreference = JSON.stringify(saved);
-						} catch (err) {
-							console.warn('Unable to save sort preference', err);
-						}
-
-						sortDropdown.style.display = 'none';
-						isOpen = false;
-						refreshPicker();
-					});
-
-					sortDropdown.appendChild(optionEl);
-				});
-
-				sortButton.addEventListener('click', e => {
-					e.stopPropagation();
-					isOpen = !isOpen;
-					if (isOpen) {
-						// Position dropdown below button
-						const rect = sortButton.getBoundingClientRect();
-						sortDropdown.style.left = `${rect.left}px`;
-						sortDropdown.style.top = `${rect.bottom + 2}px`;
-						sortDropdown.style.display = 'block';
-					} else {
-						sortDropdown.style.display = 'none';
-					}
-				});
-
-				// Close dropdown when clicking outside
-				document.addEventListener('click', e => {
-					if (isOpen && !sortDropdown.contains(e.target) && e.target !== sortButton) {
-						sortDropdown.style.display = 'none';
-						isOpen = false;
-					}
-				});
-
-				// Update labels when locale changes
-						document.addEventListener('foodguide:localechange', updateLabels);
-
-				return {
-					getSortType: () => currentSort,
-					getButton: () => sortButton,
-					getDropdown: () => sortDropdown,
-				};
-			})();
-
-			searchSelector.className = 'searchselector retracted';
-			searchSelector.appendChild(document.createTextNode(t('searchTypeName')));
-
-			const searchSelectorControls = (() => {
-				const dropdown = document.createElement('div');
-				let extended = false;
-				let extendedHeight = null;
-				const searchTypeKeys = [
-					{ key: 'searchTypeName', prefix: '', placeholderKey: 'searchPlaceholderName' },
-					{
-						key: 'searchTypeTag',
-						prefix: 'tag:',
-						placeholderKey: 'searchPlaceholderTag',
-					},
-					{
-						key: 'searchTypeRecipe',
-						prefix: 'recipe:',
-						placeholderKey: 'searchPlaceholderRecipe',
-					},
-				];
-				let selectedIndex = 0;
-				let retractTimer = null;
-
-				const updateSearchTypeTexts = () => {
-					// Update search selector button text
-					searchSelector.firstChild.textContent = t(searchTypeKeys[selectedIndex].key);
-					// Update picker placeholder
-					picker.placeholder = t(searchTypeKeys[selectedIndex].placeholderKey);
-					// Update dropdown options
-					searchTypeKeys.forEach((sk, index) => {
-						if (sk.element) {
-							sk.element.firstChild.textContent = t(sk.key);
-						}
-					});
-				};
-
-				const retract = () => {
-					extended = false;
-					dropdown.style.height = '0px';
-					searchSelector.style.borderBottomLeftRadius = '3px';
-					dropdown.style.borderTopLeftRadius = '3px';
-
-					if (retractTimer !== null) {
-						clearTimeout(retractTimer);
-						retractTimer = null;
-					}
-					searchSelector.className = 'searchselector retracted';
-				};
-
-				const extend = () => {
-					if (extendedHeight === null) {
-						dropdown.style.height = 'auto';
-						dropdown.style.left = searchSelector.offsetLeft;
-						dropdown.style.top = searchSelector.offsetTop + searchSelector.offsetHeight;
-						extendedHeight = `${dropdown.offsetHeight}px`;
-						dropdown.style.height = '0px';
-					}
-
-					extended = true;
-					dropdown.style.height = extendedHeight;
-					searchSelector.style.borderBottomLeftRadius = '0px';
-					dropdown.style.borderTopLeftRadius = '0px';
-					dropdown.style.width = 'auto';
-					dropdown.style.width = `${Math.max(dropdown.offsetWidth, searchSelector.offsetWidth + 1)}px`;
-
-					if (retractTimer !== null) {
-						clearTimeout(retractTimer);
-						retractTimer = null;
-					}
-
-					searchSelector.className = 'searchselector extended';
-				};
-
-				const setSearchType = index => {
-					selectedIndex = index;
-					picker.placeholder = t(searchTypeKeys[index].placeholderKey);
-					searchSelector.firstChild.textContent = t(searchTypeKeys[index].key);
-				};
-
-				const setSearchTypeFromClick = e => {
-					setSearchType(Number(e.target.dataset.typeIndex));
+			const sortControls = createDropdown({
+				items: [
+					{ value: 'default', key: 'sortDefault' },
+					{ value: 'name', key: 'sortName' },
+					{ value: 'health', key: 'sortHealth' },
+					{ value: 'hunger', key: 'sortHunger' },
+					{ value: 'sanity', key: 'sortSanity' },
+					{ value: 'perish', key: 'sortPerish' }
+				],
+				initialValue: 'default',
+				buttonClass: 'sortingredients',
+				storageKey: 'foodGuideSortPreference',
+				storageIndex: index,
+				onSelect: () => refreshPicker()
+			});
+			// Search controls
+			const searchTypeKeys = [
+				{ value: 'name', key: 'searchTypeName', prefix: '', placeholderKey: 'searchPlaceholderName' },
+				{ value: 'tag', key: 'searchTypeTag', prefix: 'tag:', placeholderKey: 'searchPlaceholderTag' },
+				{ value: 'recipe', key: 'searchTypeRecipe', prefix: 'recipe:', placeholderKey: 'searchPlaceholderRecipe' }
+			];
+			const searchSelectorControls = createDropdown({
+				items: searchTypeKeys,
+				initialValue: 'name',
+				buttonClass: 'searchselector',
+				onSelect: (item) => {
+					picker.placeholder = t(item.placeholderKey);
 					refreshPicker();
-					retract();
-				};
+				}
+			});
+			picker.placeholder = t(searchTypeKeys.find(k => k.value === searchSelectorControls.getValue()).placeholderKey);
 
-				const tagsplit = /: */;
-				const controls = {
-					getTag: () => {
-						return t(searchTypeKeys[selectedIndex].key);
-					},
+			searchInputGroup.insertBefore(searchSelectorControls.container, picker);
 
-					setSearchType: index => {
-						setSearchType(index);
-					},
+			searchSelectorControls.getSearch = () => searchSelectorControls.getItem().prefix + picker.value;
+			searchSelectorControls.splitTag = () => {
+				const parts = picker.value.split(/: */);
+				if (parts.length === 2) {
+					const tag = `${parts[0].toLowerCase()}:`;
+					const name = parts[1];
+					const found = searchTypeKeys.find(k => k.prefix === tag);
+					if (found) {
+						searchSelectorControls.setValue(found.value);
+						picker.value = name;
+					}
+				}
+			};
+			searchSelectorControls.setSearchType = (idx) => {
+				searchSelectorControls.setValue(searchTypeKeys[idx].value);
+				picker.placeholder = t(searchTypeKeys[idx].placeholderKey);
+			};
 
-					getSearch: () => {
-						return searchTypeKeys[selectedIndex].prefix + picker.value;
-					},
-
-					splitTag: () => {
-						const parts = picker.value.split(tagsplit);
-
-						if (parts.length === 2) {
-							const tag = `${parts[0].toLowerCase()}:`;
-							const name = parts[1];
-							for (let i = 0; i < searchTypeKeys.length; i++) {
-								if (tag === searchTypeKeys[i].prefix) {
-									setSearchType(i);
-									picker.value = name;
-									break;
-								}
-							}
-						}
-					},
-				};
-
-				searchSelector.addEventListener(
-					'click',
-					() => {
-						if (extended) {
-							retract();
-						} else {
-							extend();
-						}
-					},
-					false,
-				);
-
-				searchSelector.addEventListener(
-					'selectstart',
-					e => {
-						e.preventDefault();
-					},
-					false,
-				);
-
-				searchSelector.addEventListener(
-					'mouseout',
-					() => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-						}
-						retractTimer = setTimeout(retract, 500);
-					},
-					false,
-				);
-
-				searchSelector.addEventListener(
-					'mouseover',
-					() => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-							retractTimer = null;
-						}
-					},
-					false,
-				);
-
-				dropdown.addEventListener(
-					'mouseout',
-					() => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-						}
-						retractTimer = setTimeout(retract, 500);
-					},
-					false,
-				);
-
-				dropdown.addEventListener(
-					'mouseover',
-					() => {
-						if (retractTimer !== null) {
-							clearTimeout(retractTimer);
-							retractTimer = null;
-						}
-					},
-					false,
-				);
-
-				searchTypeKeys.forEach((sk, index) => {
-					const element = document.createElement('div');
-
-					element.appendChild(document.createTextNode(t(sk.key)));
-					element.dataset.typeIndex = index;
-					element.addEventListener('click', setSearchTypeFromClick, false);
-					sk.element = element;
-					dropdown.appendChild(element);
-				});
-
-				// Update texts when locale changes
-				document.addEventListener('foodguide:localechange', updateSearchTypeTexts);
-
-				searchInputGroup.insertBefore(searchSelector, picker);
-				dropdown.className = 'searchdropdown';
-				searchInputGroup.insertBefore(dropdown, picker);
-
-				return controls;
-			})();
 
 			dropdown.className = 'ingredientdropdown';
 			dropdown.appendChild(ul);
@@ -3275,213 +3151,49 @@ import './locales/index.js';
 					updateRecipes();
 				}
 			});
-
 			// Display mode controls (Icons / Names / List)
-				const displayModeControls = (() => {
-					const displayButton = document.createElement('span');
-					const displayDropdown = document.createElement('div');
-					const displayModes = [
-						{ value: 'names', key: 'displayModeNames' },
-						{ value: 'icons', key: 'displayModeIcons' },
-						{ value: 'list', key: 'displayModeList' },
-					];
-
-				let currentMode = 'names';
-				let isOpen = false;
-
-				// Try to load saved display mode from localStorage
-				try {
-					if (window.localStorage.foodGuideDisplayMode) {
-						const saved = JSON.parse(window.localStorage.foodGuideDisplayMode);
-						if (saved && saved[index] !== undefined) {
-							currentMode = saved[index];
-						}
-					}
-				} catch (err) {
-					console.warn('Unable to load display mode preference', err);
-				}
-
-					const updateLabels = () => {
-						const currentLabel = displayModes.find(opt => opt.value === currentMode).key;
-						displayButton.textContent = t(currentLabel);
-
-						Array.from(displayDropdown.children).forEach(child => {
-							const mode = displayModes.find(opt => opt.value === child.dataset.value);
-							if (mode) child.textContent = t(mode.key);
-						});
-					};
-
-					displayButton.className = 'displaymodeingredients';
-					updateLabels();
-
-				displayDropdown.className = 'displaymodedropdown';
-				displayDropdown.style.display = 'none';
-
-				const applyDisplayMode = mode => {
+			const displayModeControls = createDropdown({
+				items: [
+					{ value: 'names', key: 'displayModeNames' },
+					{ value: 'icons', key: 'displayModeIcons' },
+					{ value: 'list', key: 'displayModeList' }
+				],
+				initialValue: 'names',
+				buttonClass: 'displaymodeingredients',
+				storageKey: 'foodGuideDisplayMode',
+				storageIndex: index,
+				onSelect: (_, mode) => {
 					dropdown.classList.remove('hidetext', 'listmode');
-					if (mode === 'icons') {
-						dropdown.classList.add('hidetext');
-					} else if (mode === 'list') {
-						dropdown.classList.add('listmode');
-					}
-				};
-
-				// Apply initial mode
-				applyDisplayMode(currentMode);
-
-				displayModes.forEach(mode => {
-					const opt = document.createElement('div');
-					opt.dataset.value = mode.value;
-					opt.textContent = t(mode.key);
-					opt.addEventListener('click', e => {
-						currentMode = mode.value;
-						updateLabels();
-						applyDisplayMode(currentMode);
-						displayDropdown.style.display = 'none';
-						isOpen = false;
-						
-						// Save to localStorage
-						try {
-							const saved = window.localStorage.foodGuideDisplayMode 
-								? JSON.parse(window.localStorage.foodGuideDisplayMode) 
-								: [];
-							saved[index] = currentMode;
-							window.localStorage.foodGuideDisplayMode = JSON.stringify(saved);
-						} catch (err) {
-							console.warn('Unable to save display mode preference', err);
-						}
-					});
-					displayDropdown.appendChild(opt);
-				});
-
-				displayButton.addEventListener('click', e => {
-					e.stopPropagation();
-					if (!isOpen) {
-						// Position dropdown below button
-						const rect = displayButton.getBoundingClientRect();
-						displayDropdown.style.display = 'block';
-						displayDropdown.style.left = `${rect.left}px`;
-						displayDropdown.style.top = `${rect.bottom + 4}px`;
-					} else {
-						displayDropdown.style.display = 'none';
-					}
-					isOpen = !isOpen;
-				});
-
-				// Close dropdown when clicking outside
-				document.addEventListener('click', e => {
-					if (
-						isOpen &&
-						!displayDropdown.contains(e.target) &&
-						e.target !== displayButton
-					) {
-						displayDropdown.style.display = 'none';
-						isOpen = false;
-					}
-				});
-
-				return {
-					getButton: () => displayButton,
-					getDropdown: () => displayDropdown,
-				};
-			})();
-			
-			const densityControls = (() => {
-				const densityButton = document.createElement('span');
-				const densityDropdown = document.createElement('div');
-				const densityModes = [
-					{ value: 'cozy', labelKey: 'densityCozy' },
-					{ value: 'normal', labelKey: 'densityNormal' },
-					{ value: 'compact', labelKey: 'densityCompact' },
-				];
-				const densityOptions = [];
-
-				let currentMode = 'compact';
-				let isOpen = false;
-
-				try {
-					if (window.localStorage.foodGuideDensityMode) {
-						const saved = JSON.parse(window.localStorage.foodGuideDensityMode);
-						if (saved && saved[index] !== undefined) {
-							currentMode = saved[index];
-						}
-					}
-				} catch (err) {
-					console.warn('Unable to load density preference', err);
+					if (mode === 'icons') dropdown.classList.add('hidetext');
+					else if (mode === 'list') dropdown.classList.add('listmode');
 				}
+			});
+			{
+				const mode = displayModeControls.getValue();
+				if (mode === 'icons') dropdown.classList.add('hidetext');
+				else if (mode === 'list') dropdown.classList.add('listmode');
+			}
 
-				const updateLabels = () => {
-					const currentLabel = t(densityModes.find(opt => opt.value === currentMode).labelKey);
-					densityButton.textContent = currentLabel;
-					for (const { opt, mode } of densityOptions) {
-						opt.textContent = t(mode.labelKey);
-					}
-				};
-
-				densityButton.className = 'displaymodeingredients densityingredients';
-				updateLabels();
-
-				densityDropdown.className = 'displaymodedropdown densitydropdown';
-				densityDropdown.style.display = 'none';
-
-				const applyDensityMode = mode => {
+			
+			
+			// Density controls
+			const densityControls = createDropdown({
+				items: [
+					{ value: 'cozy', key: 'densityCozy' },
+					{ value: 'normal', key: 'densityNormal' },
+					{ value: 'compact', key: 'densityCompact' }
+				],
+				initialValue: 'compact',
+				buttonClass: 'displaymodeingredients densityingredients',
+				storageKey: 'foodGuideDensityMode',
+				storageIndex: index,
+				onSelect: (_, mode) => {
 					dropdown.classList.remove('density-cozy', 'density-normal', 'density-compact');
 					dropdown.classList.add(`density-${mode}`);
-				};
+				}
+			});
+			dropdown.classList.add(`density-${densityControls.getValue()}`);
 
-				applyDensityMode(currentMode);
-
-				densityModes.forEach(mode => {
-					const opt = document.createElement('div');
-					opt.dataset.value = mode.value;
-					opt.textContent = t(mode.labelKey);
-					opt.addEventListener('click', e => {
-						currentMode = mode.value;
-						updateLabels();
-						applyDensityMode(currentMode);
-						densityDropdown.style.display = 'none';
-						isOpen = false;
-						
-						try {
-							const saved = window.localStorage.foodGuideDensityMode 
-								? JSON.parse(window.localStorage.foodGuideDensityMode) 
-								: [];
-							saved[index] = currentMode;
-							window.localStorage.foodGuideDensityMode = JSON.stringify(saved);
-						} catch (err) {
-							console.warn('Unable to save density preference', err);
-						}
-					});
-					densityDropdown.appendChild(opt);
-					densityOptions.push({ opt, mode });
-				});
-				document.addEventListener('foodguide:localechange', updateLabels);
-
-				densityButton.addEventListener('click', e => {
-					e.stopPropagation();
-					if (!isOpen) {
-						const rect = densityButton.getBoundingClientRect();
-						densityDropdown.style.display = 'block';
-						densityDropdown.style.left = `${rect.left}px`;
-						densityDropdown.style.top = `${rect.bottom + 4}px`;
-					} else {
-						densityDropdown.style.display = 'none';
-					}
-					isOpen = !isOpen;
-				});
-
-				document.addEventListener('click', e => {
-					if (isOpen && !densityDropdown.contains(e.target) && e.target !== densityButton) {
-						densityDropdown.style.display = 'none';
-						isOpen = false;
-					}
-				});
-
-				return {
-					getButton: () => densityButton,
-					getDropdown: () => densityDropdown,
-				};
-			})();
 
 			const controlsGroup = document.createElement('div');
 			controlsGroup.className = 'ingredient-search-controls';
@@ -3492,12 +3204,9 @@ import './locales/index.js';
 			const controlsRight = document.createElement('div');
 			controlsRight.className = 'ingredient-search-controls-right';
 			
-			controlsLeft.appendChild(displayModeControls.getButton());
-			controlsLeft.appendChild(displayModeControls.getDropdown());
-			controlsLeft.appendChild(densityControls.getButton());
-			controlsLeft.appendChild(densityControls.getDropdown());
-			controlsLeft.appendChild(sortControls.getButton());
-			controlsLeft.appendChild(sortControls.getDropdown());
+			controlsLeft.appendChild(displayModeControls.container);
+			controlsLeft.appendChild(densityControls.container);
+			controlsLeft.appendChild(sortControls.container);
 			
 			controlsRight.appendChild(clearSearchBtn);
 			controlsRight.appendChild(clearIngredientsBtn);

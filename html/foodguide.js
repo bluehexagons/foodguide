@@ -1653,13 +1653,13 @@ import './locales/index.js';
 	const foodTable = makeSortableTable(
 		{
 			'': '',
-			[tableHeader('name')]: 'name',
-			[tableHeader('health')]: 'health',
-			[tableHeader('hunger')]: 'hunger',
-			[tableHeader('sanity')]: 'sanity',
-			[tableHeader('perish')]: 'perish',
-			[tableHeader('info')]: '',
-			[tableHeader('mode')]: 'modeMask',
+			Name: 'name',
+			Health: 'health',
+			Hunger: 'hunger',
+			Sanity: 'sanity',
+			Perish: 'perish',
+			Info: '',
+			Mode: 'modeMask',
 		},
 		Array.prototype.slice.call(food),
 		makeFoodRow,
@@ -1672,25 +1672,24 @@ import './locales/index.js';
 		undefined,
 		{
 			toggleable: true,
-			columns: [tableHeader('health'), tableHeader('hunger'), tableHeader('sanity'), tableHeader('perish'), tableHeader('info'), tableHeader('mode')],
-			autoHide: getAutoHideColumns([tableHeader('sanity')]),
+			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
+			autoHide: getAutoHideColumns(['Sanity']),
 		},
 	);
 
 	const recipeTable = makeSortableTable(
 		{
 			'': '',
-			[tableHeader('name')]: 'name',
-			[tableHeader('health')]: 'health',
-			[tableHeader('hunger')]: 'hunger',
-			[tableHeader('sanity')]: 'sanity',
-			[tableHeader('perish')]: 'perish',
-			[tableHeader('cookTime')]: 'cooktime',
-			[tableHeader('priority') + ':One of the highest priority recipes for a combination will be made']:
-				'priority',
-			[tableHeader('requires') + ':Dim+struck items cannot be used']: '',
-			[tableHeader('notes')]: '',
-			[tableHeader('mode')]: 'modeMask',
+			Name: 'name',
+			Health: 'health',
+			Hunger: 'hunger',
+			Sanity: 'sanity',
+			Perish: 'perish',
+			'Cook Time': 'cooktime',
+			'Priority:One of the highest priority recipes for a combination will be made': 'priority',
+			'Requires:Dim+struck items cannot be used': '',
+			Notes: '',
+			Mode: 'modeMask',
 		},
 		Array.prototype.slice.call(recipes),
 		makeRecipeRow,
@@ -1704,16 +1703,16 @@ import './locales/index.js';
 		{
 			toggleable: true,
 			columns: [
-				tableHeader('health'),
-				tableHeader('hunger'),
-				tableHeader('sanity'),
-				tableHeader('perish'),
-				tableHeader('cookTime'),
-				tableHeader('priority'),
-				tableHeader('notes'),
-				tableHeader('mode'),
+				'Health',
+				'Hunger',
+				'Sanity',
+				'Perish',
+				'Cook Time',
+				'Priority',
+				'Notes',
+				'Mode',
 			],
-			autoHide: getAutoHideColumns([tableHeader('sanity'), tableHeader('cookTime'), tableHeader('notes')]),
+			autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 		},
 	);
 
@@ -3391,10 +3390,11 @@ import './locales/index.js';
 				const densityButton = document.createElement('span');
 				const densityDropdown = document.createElement('div');
 				const densityModes = [
-					{ value: 'cozy', label: 'Cozy' },
-					{ value: 'normal', label: 'Normal' },
-					{ value: 'compact', label: 'Compact' },
+					{ value: 'cozy', labelKey: 'densityCozy' },
+					{ value: 'normal', labelKey: 'densityNormal' },
+					{ value: 'compact', labelKey: 'densityCompact' },
 				];
+				const densityOptions = [];
 
 				let currentMode = 'compact';
 				let isOpen = false;
@@ -3411,8 +3411,11 @@ import './locales/index.js';
 				}
 
 				const updateLabels = () => {
-					const currentLabel = densityModes.find(opt => opt.value === currentMode).label;
+					const currentLabel = t(densityModes.find(opt => opt.value === currentMode).labelKey);
 					densityButton.textContent = currentLabel;
+					for (const { opt, mode } of densityOptions) {
+						opt.textContent = t(mode.labelKey);
+					}
 				};
 
 				densityButton.className = 'displaymodeingredients densityingredients';
@@ -3431,7 +3434,7 @@ import './locales/index.js';
 				densityModes.forEach(mode => {
 					const opt = document.createElement('div');
 					opt.dataset.value = mode.value;
-					opt.textContent = mode.label;
+					opt.textContent = t(mode.labelKey);
 					opt.addEventListener('click', e => {
 						currentMode = mode.value;
 						updateLabels();
@@ -3450,7 +3453,9 @@ import './locales/index.js';
 						}
 					});
 					densityDropdown.appendChild(opt);
+					densityOptions.push({ opt, mode });
 				});
+				document.addEventListener('foodguide:localechange', updateLabels);
 
 				densityButton.addEventListener('click', e => {
 					e.stopPropagation();

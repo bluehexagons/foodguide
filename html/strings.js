@@ -92,6 +92,9 @@ const defaultStrings = {
 	displayModeNames: 'Display: Names',
 	displayModeIcons: 'Display: Icons',
 	displayModeList: 'Display: List',
+	densityCozy: 'Cozy',
+	densityNormal: 'Normal',
+	densityCompact: 'Compact',
 	sortDefault: 'Sort: Default',
 	sortName: 'Sort: Name',
 	sortHealth: 'Sort: Health',
@@ -383,7 +386,7 @@ export function getLocale() {
  * @param {string} code
  */
 export function setLocale(code) {
-	if (!locales[code]) return;
+	if (!locales[code]) code = 'en';
 	activeLocale = code;
 	if (typeof document !== 'undefined') {
 		const html = document.documentElement;
@@ -454,7 +457,7 @@ export function t(key, params) {
 export function durationUnit(kind, count) {
 	if (kind === 'day') {
 		if (activeLocale === 'zh') return '天';
-		if (activeLocale === 'es') return count === 1 ? 'dia' : 'dias';
+		if (activeLocale === 'es') return count === 1 ? 'día' : 'días';
 		return count === 1 ? 'day' : 'days';
 	}
 	if (kind === 'sec') {

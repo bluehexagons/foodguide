@@ -58,6 +58,13 @@ describe('recipe structural validation', () => {
 
 		assert.strictEqual(dupes.length, 0, `Found duplicate requirements:\n${dupes.join('\n')}`);
 	});
+
+	it('temperature bump notes use the instant temperature value', () => {
+		assert.match(recipes.tea.note, /15 heat when consumed/);
+		assert.match(recipes.icedtea.note, /-10 heat when consumed/);
+		assert.doesNotMatch(recipes.tea.note, /undefined/);
+		assert.doesNotMatch(recipes.icedtea.note, /undefined/);
+	});
 });
 
 describe('cancel/exclusion consistency', () => {

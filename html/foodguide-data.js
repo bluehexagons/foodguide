@@ -16,6 +16,8 @@
  * Import it directly via `foodguide/utils` when running in a browser.
  */
 
+import './locales/index.js';
+
 export * from './constants.js';
 export * from './functions.js';
 export * from './mode-utils.js';

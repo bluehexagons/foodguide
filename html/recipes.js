@@ -2992,7 +2992,7 @@ export const updateRecipeText = () => {
 			);
 		}
 		if (recipe.temperaturebump) {
-			notes.push(t('noteHeatWhenConsumed', { heat: recipe.temperature }));
+			notes.push(t('noteHeatWhenConsumed', { heat: recipe.temperaturebump }));
 		}
 		recipe.note = notes.join('; ');
 	}

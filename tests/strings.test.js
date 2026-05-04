@@ -175,6 +175,32 @@ const setupDom = () => {
 		assert.equal(changedTo, 'es');
 	});
 
+	it('falls back to English for unknown locale codes', async () => {
+		const { html } = setupDom();
+		const strings = await import(`../html/strings.js?fallback=${Date.now()}`);
+
+		strings.registerLocale('x-test-fallback', 'Test Fallback', {
+			tableName: 'TEST NAME',
+		});
+		strings.setLocale('x-test-fallback');
+		assert.equal(strings.t('tableName'), 'TEST NAME');
+
+		strings.setLocale('missing-code');
+
+		assert.equal(strings.getLocale(), 'en');
+		assert.equal(strings.t('tableName'), 'Name');
+		assert.equal(html.getAttribute('lang'), 'en');
+	});
+
+	it('package entrypoint registers bundled locales', async () => {
+		const data = await import(`../html/foodguide-data.js?locales=${Date.now()}`);
+
+		assert.ok(data.listLocales().includes('es'));
+		data.setLocale('es');
+		assert.equal(data.t('tableName'), 'Nombre');
+		data.setLocale('en');
+	});
+
 	it('resolveNote prefers stable keyed notes over raw-note wording', async () => {
 		setupDom();
 		const strings = await import(`../html/strings.js?notes-keyed=${Date.now()}`);

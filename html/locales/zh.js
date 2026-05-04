@@ -48,11 +48,9 @@ const dict = {
 
 	noscriptMessage: '抱歉,本食物指南需要 JavaScript 和现代浏览器。',
 	simulatorHeading: '锅炉模拟器',
-	simulatorBody:
-		'在下方搜索食材,然后点击它们加入锅中。点击锅中的格子可移除该食材。',
+	simulatorBody: '在下方搜索食材,然后点击它们加入锅中。点击锅中的格子可移除该食材。',
 	discoveryHeading: '背包发现',
-	discoveryBody:
-		'在下方添加你背包中的所有物品,查看可制作的配方。点击 + 添加更多物品。',
+	discoveryBody: '在下方添加你背包中的所有物品,查看可制作的配方。点击 + 添加更多物品。',
 	discoveryFoodStatsHeading: '你的食物统计:',
 	discoveryRecipesHeading: '使用这些可以制作:',
 	discoveryEfficientHeading: '查找最高效的配方:',
@@ -67,6 +65,9 @@ const dict = {
 	displayModeNames: '显示:名称',
 	displayModeIcons: '显示:图标',
 	displayModeList: '显示:列表',
+	densityCozy: '宽松',
+	densityNormal: '标准',
+	densityCompact: '紧凑',
 	sortDefault: '排序:默认',
 	sortName: '排序:名称',
 	sortHealth: '排序:生命',
@@ -87,8 +88,7 @@ const dict = {
 	resume: '继续',
 	computingCombinations: '正在计算组合……',
 	multipleResultsNote: '* 该组合有多个可能结果',
-	filterCycleHelp:
-		'点击食材/配方循环切换:普通 → 必需(✓) → 排除(✕)。右键可快速排除。',
+	filterCycleHelp: '点击食材/配方循环切换:普通 → 必需(✓) → 排除(✕)。右键可快速排除。',
 	customFilterPlaceholder: '使用自定义过滤器',
 	foundValidRecipes: '找到 {count} 个有效配方。',
 	foundValidRecipesInProgress: '找到 {count} 个有效配方……(此过程中可切换标签页)',
@@ -204,8 +204,7 @@ const dict = {
 		'提供<strong>取暖</strong>或<strong>降温</strong>的食物的作用类似于热能石:食用后,会在一段时间内以特定温度作为热源。在该时段内再食用其他取暖/降温食物会替换之前的效果。',
 	gameInfoPriority:
 		'<strong>配方优先级</strong>决定食材组合会做出哪种配方;一组食材只能产出可能的最高优先级配方。',
-	gameInfoCooked:
-		'配方需求中,通常不区分熟食与生食。如有区别,只会列出可用的形态。',
+	gameInfoCooked: '配方需求中,通常不区分熟食与生食。如有区别,只会列出可用的形态。',
 	gameInfoVersionsHeading: '游戏版本与 DLC',
 	gameInfoVersionsBody:
 		"左上角的游戏版本选择器可在 Don't Starve Together (DST)、Don't Starve (DS) 和 Hamlet 之间切换。选中 Don't Starve 时,可启用或禁用 Reign of Giants 和 Shipwrecked DLC,以控制显示的食物和配方。也可以选择 Warly 或 Webber 等角色,查看其专属配方和食物机制。",

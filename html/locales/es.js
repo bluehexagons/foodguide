@@ -47,8 +47,7 @@ const dict = {
 	tabGameInfo: 'Info del juego',
 	tabGameInfoTitle: "Referencia de las mecánicas de Don't Starve",
 
-	noscriptMessage:
-		'Lo sentimos, esta Guía de Comida requiere JavaScript y un navegador moderno.',
+	noscriptMessage: 'Lo sentimos, esta Guía de Comida requiere JavaScript y un navegador moderno.',
 	simulatorHeading: 'Simulador de Olla',
 	simulatorBody:
 		'Busca ingredientes abajo, luego haz clic para añadirlos a la olla. Haz clic en una ranura para quitar un ingrediente.',
@@ -65,11 +64,13 @@ const dict = {
 	searchIngredientsPlaceholder: 'Buscar ingredientes...',
 
 	clearSearchOrIngredients: 'Borrar búsqueda o quitar todos los ingredientes',
-	confirmClearInventory:
-		'¿Seguro que quieres quitar todos los ingredientes de tu inventario?',
+	confirmClearInventory: '¿Seguro que quieres quitar todos los ingredientes de tu inventario?',
 	displayModeNames: 'Mostrar: Nombres',
 	displayModeIcons: 'Mostrar: Iconos',
 	displayModeList: 'Mostrar: Lista',
+	densityCozy: 'Cómodo',
+	densityNormal: 'Normal',
+	densityCompact: 'Compacto',
 	sortDefault: 'Orden: Predeterminado',
 	sortName: 'Orden: Nombre',
 	sortHealth: 'Orden: Salud',
@@ -112,7 +113,8 @@ const dict = {
 	noteProvidesHeatFor: 'Proporciona {heat} de calor durante {duration}',
 	noteHeatWhenConsumed: 'Aporta {heat} de calor al consumirse',
 	noteLightSeconds: 'Da {seconds} segundos de luz',
-	noteSpeedBonusForSeconds: 'Da {speed} de velocidad adicional ({percent}) durante {seconds} segundos',
+	noteSpeedBonusForSeconds:
+		'Da {speed} de velocidad adicional ({percent}) durante {seconds} segundos',
 	noteDriesRateForSeconds: 'Seca {rate} durante {seconds} segundos',
 	noteHeatDelta: '{heat} de calor',
 	noteGlowDarkMinutes: 'Hace que el jugador brille en la oscuridad durante {minutes} minutos',
@@ -122,13 +124,18 @@ const dict = {
 	notePutsPlayerToSleep: 'Duerme al jugador',
 	noteRemovesGrogginessEffect: 'Elimina el efecto de aturdimiento',
 	noteGivesNaughtiness: 'Da {amount} de travesura',
-	noteSpeedBonusForSecondsDays: 'Da {speed} de velocidad adicional ({percent}) durante {seconds} segundos ({days} dias)',
-	noteHayfeverSecondsDays: 'Evita la fiebre del heno durante {seconds} segundos ({days} dias)',
-	noteProducesAndHealsOverMinutes: 'La receta produce {count}; cura {health} de salud en {minutes} minutos',
-	noteIncreasesTemperatureByDegreesInSeconds: 'Aumenta la temperatura en {degrees} grados en {seconds} segundos.',
+	noteSpeedBonusForSecondsDays:
+		'Da {speed} de velocidad adicional ({percent}) durante {seconds} segundos ({days} días)',
+	noteHayfeverSecondsDays: 'Evita la fiebre del heno durante {seconds} segundos ({days} días)',
+	noteProducesAndHealsOverMinutes:
+		'La receta produce {count}; cura {health} de salud en {minutes} minutos',
+	noteIncreasesTemperatureByDegreesInSeconds:
+		'Aumenta la temperatura en {degrees} grados en {seconds} segundos.',
 	noteRestoresSanityOverMinutes: 'Restaura {sanity} de cordura en {minutes} minuto',
-	noteLowersTemperatureByDegreesOverSeconds: 'Baja la temperatura {degrees} grados en {seconds} segundos',
-	noteRaisesTemperatureByDegreesOverSeconds: 'Sube la temperatura {degrees} grados en {seconds} segundos',
+	noteLowersTemperatureByDegreesOverSeconds:
+		'Baja la temperatura {degrees} grados en {seconds} segundos',
+	noteRaisesTemperatureByDegreesOverSeconds:
+		'Sube la temperatura {degrees} grados en {seconds} segundos',
 	noteRequiresUncookedTallbirdEgg: 'Requiere Huevo de Tallbird sin cocinar',
 	notePlayerCannotEatBeefaloOnly: 'No puede comerlo el jugador; solo puede darse a los Beefalo',
 	noteDustMothsOnly: 'Se usa para alimentar a las Dust Moths; el jugador no puede comerlo',

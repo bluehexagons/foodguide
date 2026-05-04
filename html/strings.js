@@ -531,7 +531,7 @@ export function noteText(note) {
  * Resolve a note from a stable translation key, falling back to noteText for
  * one-off exact-string notes when no key is provided.
  *
- * @param {string | undefined} noteKey
+ * @param {(keyof typeof defaultStrings) | undefined} noteKey
  * @param {Record<string, string | number>} [params]
  * @param {string} [fallbackNote]
  * @returns {string}

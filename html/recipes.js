@@ -64,6 +64,8 @@ import { makeLinkable, stats } from './utils.js';
  * @property {number} [temperatureduration] - Duration of temperature effect
  * @property {number} [temperaturebump] - Instant temperature change
  * @property {string} [note] - Extra info
+ * @property {Parameters<typeof resolveNote>[0]} [noteKey] - Translation key for extra info
+ * @property {Parameters<typeof resolveNote>[1]} [noteParams] - Values interpolated into the translated note
  * @property {string} [baseNote] - Static note before generated locale-aware text is appended
  * @property {string[]} [tags] - Tags on the cooked dish
  * @property {number} [weight] - Tiebreaker weight

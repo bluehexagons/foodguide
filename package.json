@@ -2,8 +2,40 @@
 	"name": "foodguide",
 	"version": "1.0.0",
 	"description": "Unofficial Don't Starve food guide and recipe calculator",
-	"main": "html/index.htm",
+	"main": "html/foodguide-data.js",
+	"module": "html/foodguide-data.js",
 	"type": "module",
+	"sideEffects": [
+		"./html/foodguide.js",
+		"./html/locales/*.js",
+		"./html/utils.js"
+	],
+	"files": [
+		"html/constants.js",
+		"html/food.js",
+		"html/recipes.js",
+		"html/functions.js",
+		"html/utils.js",
+		"html/mode-utils.js",
+		"html/strings.js",
+		"html/locales/",
+		"html/foodguide-data.js",
+		"LICENSE",
+		"readme.md"
+	],
+	"exports": {
+		".": "./html/foodguide-data.js",
+		"./constants": "./html/constants.js",
+		"./food": "./html/food.js",
+		"./recipes": "./html/recipes.js",
+		"./functions": "./html/functions.js",
+		"./utils": "./html/utils.js",
+		"./mode-utils": "./html/mode-utils.js",
+		"./strings": "./html/strings.js",
+		"./locales": "./html/locales/index.js",
+		"./locales/*": "./html/locales/*.js",
+		"./package.json": "./package.json"
+	},
 	"scripts": {
 		"dev": "npx http-server html -p 8080 -o",
 		"lint": "eslint html/**/*.js",
@@ -27,17 +59,17 @@
 	"author": "bluehexagons",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"@eslint/js": "^9.39.2",
-		"eslint": "^9.39.2",
+		"@eslint/js": "^10.0.1",
+		"eslint": "^10.3.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-jsdoc": "^62.5.4",
+		"eslint-plugin-jsdoc": "^62.9.0",
 		"http-server": "^14.1.1",
 		"jsdoc": "^4.0.2",
 		"prettier": "^3.8.1",
-		"typescript": "^5.9.3"
+		"typescript": "^6.0.3"
 	},
 	"engines": {
-		"node": ">=18.0.0"
+		"node": ">=20.19.0"
 	},
 	"dependencies": {
 		"sharp": "^0.34.5"

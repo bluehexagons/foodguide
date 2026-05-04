@@ -990,7 +990,8 @@ export const food = {
 		hunger: calories_medsmall,
 		sanity: -sanity_small,
 		perish: perish_med,
-		note: 'Gives 90 seconds of light',
+		noteKey: 'noteLightSeconds',
+		noteParams: { seconds: 90 },
 		modes: ['vanilla', 'together'],
 		modeOverrides: {
 			together: { uncookable: false, isfruit: true, fruit: 1, basename: 'GlowberryNormal' },
@@ -1100,7 +1101,8 @@ export const food = {
 		sanity: -sanity_tiny,
 		perish: perish_slow,
 		stack: stack_size_smallitem,
-		note: 'Gives 5 bonus speed (+83%) for 30 seconds',
+		noteKey: 'noteSpeedBonusForSeconds',
+		noteParams: { speed: 5, percent: '+83%', seconds: 30 },
 		mode: 'shipwrecked',
 	},
 	coconut_halved: {
@@ -1411,7 +1413,8 @@ export const food = {
 		sanity: -sanity_small,
 		perish: perish_med,
 		stack: stack_size_largeitem,
-		note: 'Gives 90 seconds of light',
+		noteKey: 'noteLightSeconds',
+		noteParams: { seconds: 90 },
 		mode: 'shipwrecked',
 	},
 	roe: {
@@ -1445,7 +1448,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		note: 'Gives 2 bonus speed (+33%) for 30 seconds',
+		noteKey: 'noteSpeedBonusForSeconds',
+		noteParams: { speed: 2, percent: '+33%', seconds: 30 },
 		mode: 'shipwrecked',
 	},
 	fish3_cooked: {
@@ -1457,7 +1461,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		note: 'Gives 2 bonus speed (+33%) for 30 seconds',
+		noteKey: 'noteSpeedBonusForSeconds',
+		noteParams: { speed: 2, percent: '+33%', seconds: 30 },
 		mode: 'shipwrecked',
 	},
 	fish4: {
@@ -1469,7 +1474,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		note: 'Dries 1/s for 30 seconds',
+		noteKey: 'noteDriesRateForSeconds',
+		noteParams: { rate: '1/s', seconds: 30 },
 		mode: 'shipwrecked',
 	},
 	fish4_cooked: {
@@ -1481,7 +1487,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		note: 'Dries 1/s for 30 seconds',
+		noteKey: 'noteDriesRateForSeconds',
+		noteParams: { rate: '1/s', seconds: 30 },
 		mode: 'shipwrecked',
 	},
 	fish5: {
@@ -1493,7 +1500,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		note: '-3 heat',
+		noteKey: 'noteHeatDelta',
+		noteParams: { heat: -3 },
 		mode: 'shipwrecked',
 	},
 	fish5_cooked: {
@@ -1505,7 +1513,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		note: '-3 heat',
+		noteKey: 'noteHeatDelta',
+		noteParams: { heat: -3 },
 		mode: 'shipwrecked',
 	},
 	rainbowjellyfish: {
@@ -1514,7 +1523,8 @@ export const food = {
 		jellyfish: 1,
 		monster: 1,
 		perish: perish_one_day * 1.5,
-		note: 'Makes the player glow in the dark for 2 minutes',
+		noteKey: 'noteGlowDarkMinutes',
+		noteParams: { minutes: 2 },
 		mode: 'shipwrecked',
 	},
 	rainbowjellyfish_dead: {
@@ -1531,7 +1541,8 @@ export const food = {
 		cook: 'rainbowjellyfish_cooked',
 		dry: 'jellyfish_dried',
 		drytime: dry_fast,
-		note: 'Makes the player glow in the dark for 2 minutes',
+		noteKey: 'noteGlowDarkMinutes',
+		noteParams: { minutes: 2 },
 		mode: 'shipwrecked',
 	},
 	rainbowjellyfish_cooked: {
@@ -1655,7 +1666,8 @@ export const food = {
 		health: 0,
 		hunger: 0,
 		sanity: 0,
-		note: 'Prevents hayfever for 200 seconds',
+		noteKey: 'notePreventsHayfeverSeconds',
+		noteParams: { seconds: 200 },
 		stack: stack_size_smallitem,
 		mode: 'hamlet',
 	},
@@ -1766,7 +1778,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_preserved,
 		stack: stack_size_smallitem,
-		note: 'Prevents hayfever for 60 seconds',
+		noteKey: 'notePreventsHayfeverSeconds',
+		noteParams: { seconds: 60 },
 		mode: 'hamlet',
 	},
 	teatree_nut_cooked: {
@@ -1777,7 +1790,8 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_smallitem,
-		note: 'Prevents hayfever for 120 seconds',
+		noteKey: 'notePreventsHayfeverSeconds',
+		noteParams: { seconds: 120 },
 		mode: 'hamlet',
 	},
 	tuber_crop: {
@@ -1789,7 +1803,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_preserved,
 		stack: stack_size_largeitem,
-		note: 'Poisonous',
+		noteKey: 'notePoisonous',
 		mode: 'hamlet',
 	},
 	tuber_crop_cooked: {
@@ -1800,7 +1814,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_fast,
 		stack: stack_size_largeitem,
-		note: 'Poisonous',
+		noteKey: 'notePoisonous',
 		mode: 'hamlet',
 	},
 	tuber_bloom_crop: {
@@ -1831,7 +1845,7 @@ export const food = {
 		health: healing_superhuge * 3,
 		hunger: calories_superhuge * 3,
 		sanity: sanity_huge * 3,
-		note: 'Cures poison',
+		noteKey: 'noteCuresPoison',
 		mode: 'hamlet',
 	},
 	// This is only found in game data and is not available while playing
@@ -1866,7 +1880,7 @@ export const food = {
 		perish: perish_fast,
 		stack: stack_size_smallitem,
 		cook: 'froglegs_poison_cooked',
-		note: 'Poisonous',
+		noteKey: 'notePoisonous',
 		mode: 'hamlet',
 	},
 	froglegs_poison_cooked: {
@@ -1878,7 +1892,7 @@ export const food = {
 		sanity: 0,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		note: 'Poisonous',
+		noteKey: 'notePoisonous',
 		mode: 'hamlet',
 	},
 
@@ -1938,7 +1952,8 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_small,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		note: 'Gives 22.5 seconds of light',
+		noteKey: 'noteLightSeconds',
+		noteParams: { seconds: 22.5 },
 		mode: 'together',
 	},
 	berries_juicy: {
@@ -2551,7 +2566,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		cook: 'moon_mushroom_cooked',
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		note: 'Puts the player to sleep',
+		noteKey: 'notePutsPlayerToSleep',
 		mode: 'together',
 	},
 	moon_mushroom_cooked: {
@@ -2563,7 +2578,7 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 		sanity: -sanity_small,
 		perish: perish_med,
 		stack: stack_size_smallitem,
-		note: 'Removes grogginess effect',
+		noteKey: 'noteRemovesGrogginessEffect',
 		mode: 'together',
 	},
 

@@ -1,11 +1,28 @@
 /* Components: ingredient picker, dropdowns, buttons, filters, search */
 
 /* Ingredient list and slots */
+.selectionpanel {
+	margin-top: 16px;
+	padding: 12px 14px 14px;
+	border: 1px solid var(--border-light);
+	border-radius: 10px;
+	background: var(--table-bg);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.selectionpanel-title {
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	color: var(--fg-secondary);
+	margin-bottom: 10px;
+}
+
 .ingredientlist {
 	display: flex;
 	gap: 8px;
 	flex-wrap: wrap;
-	margin-top: 16px;
+	margin-top: 0;
 }
 
 .ingredient {
@@ -36,15 +53,15 @@
 .ingredient:empty::before {
 	content: '+';
 	font-size: 32px;
-	color: var(--fg-primary);
+	color: #555;
 	opacity: 0.7;
 	position: absolute;
 	line-height: 1;
 	transition: all var(--transition-fast);
 	text-shadow:
-		0 0 3px var(--bg-primary),
-		0 0 6px var(--bg-primary),
-		0 0 9px var(--bg-primary);
+		0 0 3px rgba(255, 255, 255, 0.8),
+		0 0 6px rgba(255, 255, 255, 0.6),
+		0 0 9px rgba(255, 255, 255, 0.4);
 }
 
 /* Hover effects */
@@ -60,7 +77,7 @@
 
 .ingredient:empty:hover::before {
 	opacity: 0.8;
-	color: var(--header-accent);
+	color: #333;
 }
 
 .ingredient :is(img, .icon) {
@@ -167,113 +184,6 @@
 	border-color: var(--medium);
 }
 
-/* Ingredient dropdown */
-.ingredientdropdown {
-	display: block;
-	z-index: 1;
-	max-height: 400px;
-	overflow-y: auto;
-	overflow-x: hidden;
-	border: 1px solid var(--medium);
-	border-radius: 3px;
-	background: var(--bg-primary);
-	padding: 4px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.ingredientdropdown div {
-	margin: 4px 0;
-	padding: 0;
-	margin-bottom: 4px;
-	text-align: justify;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-
-.ingredientdropdown .item {
-	border: 1px solid var(--border-light);
-	font-size: 12pt;
-	padding: 2px 6px;
-	white-space: nowrap;
-	text-align: center;
-	line-height: 20px;
-	display: inline-flex;
-	align-content: center;
-	vertical-align: middle;
-	overflow: hidden;
-	list-style-type: none;
-	cursor: pointer;
-	border-radius: 5px;
-	background: var(--bg-primary);
-	color: var(--fg-primary);
-	transition: all var(--transition-fast);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.ingredientdropdown .item :is(img, .icon) {
-	width: 20px;
-	height: 20px;
-	margin-right: 4px;
-}
-
-.ingredientdropdown.hidetext .item :is(img, .icon) {
-	margin-right: 0;
-}
-
-.ingredientdropdown .item .text {
-	vertical-align: middle;
-}
-
-.ingredientdropdown .item:hover {
-	background: var(--table-hover);
-	border-color: var(--medium);
-}
-
-.ingredientdropdown .item:active {
-	background: var(--table-bg);
-}
-
-.ingredientdropdown .item.selected {
-	background: var(--selected-bg);
-	border-color: var(--selected-border);
-}
-
-.ingredientdropdown .item.faded {
-	background: var(--medium);
-	color: var(--fg-tertiary);
-}
-
-.ingredientdropdown.hidetext div .text {
-	display: none;
-}
-
-.ingredientdropdown.hidetext div .item :is(img, .icon) {
-	width: 40px;
-	height: 40px;
-}
-
-/* List mode - one item per line with icon + name */
-.ingredientdropdown.listmode .item {
-	display: block;
-	width: 100%;
-	margin: 0 0 2px 0;
-	padding: 6px 8px;
-}
-
-.ingredientdropdown.listmode .item :is(img, .icon) {
-	width: 24px;
-	height: 24px;
-	margin-right: 8px;
-	vertical-align: middle;
-}
-
-.ingredientdropdown.listmode .item .text {
-	vertical-align: middle;
-	font-size: 14px;
-}
-
-/* Toggle, clear, sort, and display mode controls */
 .toggleingredients,
 .sortingredients,
 .displaymodeingredients {
@@ -327,9 +237,9 @@
 
 .clearingredients:hover {
 	opacity: 1;
-	background: #fee;
-	border-color: #c55;
-	color: #c55;
+	background: var(--excluded-bg);
+	border-color: var(--excluded-border);
+	color: var(--strike-text);
 }
 
 /* Dropdown styles for sort and display mode */
@@ -347,7 +257,17 @@
 .sortdropdown div,
 .displaymodedropdown div {
 	color: var(--fg-primary);
+	padding: 4px 8px;
+	cursor: pointer;
+	background: var(--bg-primary);
+	border: 1px solid var(--medium);
+	border-top: none;
 	transition: background var(--transition-fast);
+}
+
+.sortdropdown div.is-selected,
+.displaymodedropdown div.is-selected {
+	background: var(--selected-bg);
 }
 
 .sortdropdown div:hover,
@@ -622,25 +542,6 @@ button.makablebutton:disabled:hover {
 
 /* Responsive: small screens */
 @media (max-width: 767px) {
-	.ingredientdropdown {
-		overflow: auto;
-	}
-
-	.ingredientdropdown div {
-		min-width: 690px;
-	}
-
-	.ingredientdropdown div .item :is(img, .icon) {
-		width: 40px;
-		height: 40px;
-	}
-
-	.toggleingredients {
-		display: none;
-	}
-
-	.ingredientdropdown div .text {
-		display: none;
 	}
 
 	/* Increase touch targets on mobile */
@@ -668,4 +569,311 @@ button.makablebutton:disabled:hover {
 		font-size: 11pt;
 		padding: 8px 12px;
 	}
+}
+/* Ingredient search layout redesign */
+.ingredient-search-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.ingredient-search-input-group {
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    width: 100%;
+}
+
+.ingredient-search-input-group .searchselector {
+    border-radius: 4px 0 0 4px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-right: none;
+    font-size: 14px;
+    height: auto;
+}
+
+.ingredient-search-input-group .searchselector::after {
+    margin-left: 6px;
+}
+
+.ingredient-search-input-group .ingredientpicker {
+    flex: 1;
+    border-radius: 0 4px 4px 0;
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    font-size: 14px;
+    width: 100% !important; /* Override inline style */
+}
+
+.ingredient-search-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ingredient-search-controls-left,
+.ingredient-search-controls-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ingredient-search-controls .toggleingredients,
+.ingredient-search-controls .sortingredients,
+.ingredient-search-controls .displaymodeingredients,
+.ingredient-search-controls .densityingredients {
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--fg-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+}
+
+.ingredient-search-controls .toggleingredients:hover,
+.ingredient-search-controls .sortingredients:hover,
+.ingredient-search-controls .displaymodeingredients:hover,
+.ingredient-search-controls .densityingredients:hover {
+    background: var(--table-hover);
+    border-color: var(--dark);
+}
+
+.ingredient-search-controls .clearingredients {
+    margin: 0;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--fg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all var(--transition-fast);
+}
+
+.ingredient-search-controls .clearingredients:hover {
+    background: var(--excluded-bg);
+    border-color: var(--excluded-border);
+    color: var(--strike-text);
+}
+
+/* Redesign the ingredient dropdown to look much better */
+.ingredientdropdown {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    margin-top: 4px;
+    background: var(--bg-primary);
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.ingredientdropdown div {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+    gap: 4px;
+    margin: 0;
+}
+
+.ingredientdropdown.listmode div {
+    display: flex;
+    flex-direction: column;
+}
+
+.ingredientdropdown .item {
+    border: 1px solid var(--border-light);
+    border-radius: 3px;
+    padding: 3px 5px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transition: all var(--transition-fast);
+    background: var(--bg-secondary);
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+    color: var(--fg-primary);
+    user-select: none;
+}
+
+.ingredientdropdown .item:hover {
+    background: var(--table-hover);
+    border-color: var(--dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.ingredientdropdown .item.selected {
+    background: var(--selected-bg);
+    border-color: var(--selected-border);
+    font-weight: 500;
+}
+
+.ingredientdropdown .item :is(img, .icon) {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.ingredientdropdown.hidetext .item {
+    justify-content: center;
+}
+
+.ingredientdropdown.hidetext div {
+    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+    gap: 3px;
+}
+
+.ingredientdropdown.hidetext .item :is(img, .icon) {
+    margin-right: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.ingredientdropdown .item .text {
+    font-size: 12px;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ingredient-search-controls-left,
+.ingredient-search-controls-right {
+    position: relative;
+}
+.ingredientdropdown .item.faded {
+    background: var(--medium);
+    color: var(--fg-tertiary);
+    opacity: 0.6;
+}
+
+/* Density variations for ingredient dropdown */
+/* Compact */
+.ingredientdropdown.density-compact div {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 2px;
+}
+.ingredientdropdown.density-compact .item {
+    padding: 2px 4px;
+    background: transparent;
+    border-color: transparent;
+    border-radius: 2px;
+}
+.ingredientdropdown.density-compact .item:hover {
+    background: var(--table-hover);
+    border-color: var(--border-light);
+    box-shadow: none;
+    transform: none;
+}
+.ingredientdropdown.density-compact .item.selected {
+    background: var(--selected-bg);
+    border-color: var(--selected-border);
+}
+.ingredientdropdown.density-compact .item :is(img, .icon) {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+}
+.ingredientdropdown.density-compact .item .text {
+    font-size: 11px;
+}
+.ingredientdropdown.hidetext.density-compact div {
+    grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+    gap: 2px;
+}
+.ingredientdropdown.hidetext.density-compact .item :is(img, .icon) {
+    width: 20px;
+    height: 20px;
+}
+
+/* Normal */
+.ingredientdropdown.density-normal div {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+}
+.ingredientdropdown.density-normal .item {
+    padding: 6px 8px;
+}
+.ingredientdropdown.density-normal .item :is(img, .icon) {
+    width: 24px;
+    height: 24px;
+}
+.ingredientdropdown.density-normal .item .text {
+    font-size: 13px;
+}
+.ingredientdropdown.hidetext.density-normal div {
+    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    gap: 6px;
+}
+.ingredientdropdown.hidetext.density-normal .item :is(img, .icon) {
+    width: 28px;
+    height: 28px;
+}
+
+/* Cozy */
+.ingredientdropdown.density-cozy div {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+.ingredientdropdown.density-cozy .item {
+    padding: 10px 12px;
+}
+.ingredientdropdown.density-cozy .item :is(img, .icon) {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+}
+.ingredientdropdown.density-cozy .item .text {
+    font-size: 14px;
+}
+.ingredientdropdown.hidetext.density-cozy div {
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 8px;
+}
+.ingredientdropdown.hidetext.density-cozy .item :is(img, .icon) {
+    width: 36px;
+    height: 36px;
+}
+
+/* Dropdown fix for density dropdown */
+.densitydropdown {
+	position: fixed;
+	z-index: 200;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	padding: 4px 0;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	min-width: 120px;
+}
+.densitydropdown div {
+	padding: 8px 16px;
+	cursor: pointer;
+	color: var(--fg-primary);
+	transition: background var(--transition-fast);
+}
+.densitydropdown div:hover {
+	background: var(--table-hover);
 }

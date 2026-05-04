@@ -78,6 +78,10 @@ const defaultStrings = {
 	discoveryFoodStatsHeading: 'Stats about your food:',
 	discoveryRecipesHeading: 'With these, you can make:',
 	discoveryEfficientHeading: 'Find what recipes are most efficient:',
+	discoveryHighlightsNote: 'The highlighted row(s) will be selected from when cooking.',
+	discoveryMoreSuggestions: 'Add more ingredients to make:',
+	simulatorSelectedIngredients: 'Selected crock pot ingredients',
+	discoverySelectedIngredients: 'Food on hand',
 	searchIngredientsPlaceholder: 'Search ingredients...',
 
 	// Ingredient picker controls
@@ -116,11 +120,87 @@ const defaultStrings = {
 	foundValidRecipesPaused: 'Found {count} valid recipes (paused)',
 	showMoreResults: 'Show more results',
 	showMoreResultsCount: 'Show more results ({shown} of {total})',
+	durationNever: 'Never',
+	durationDays: '{count} {unit}',
+	durationSeconds: '{count} {unit}',
+	durationToNever: 'to Never',
+	durationToDays: 'to {count} {unit}',
+	foodInfoRecipes: 'Recipes',
+	foodInfoFrom: 'from',
+	foodInfoCook: 'cook',
+	foodInfoDryIn: 'dry in {duration}',
+	foodInfoCannotAdd: 'cannot be added to crock pot',
+	noteProvidesHeatFor: 'Provides {heat} heat for {duration}',
+	noteHeatWhenConsumed: '{heat} heat when consumed',
+	noteLightSeconds: 'Gives {seconds} seconds of light',
+	noteSpeedBonusForSeconds: 'Gives {speed} bonus speed ({percent}) for {seconds} seconds',
+	noteDriesRateForSeconds: 'Dries {rate} for {seconds} seconds',
+	noteHeatDelta: '{heat} heat',
+	noteGlowDarkMinutes: 'Makes the player glow in the dark for {minutes} minutes',
+	notePreventsHayfeverSeconds: 'Prevents hayfever for {seconds} seconds',
+	notePoisonous: 'Poisonous',
+	noteCuresPoison: 'Cures poison',
+	notePutsPlayerToSleep: 'Puts the player to sleep',
+	noteRemovesGrogginessEffect: 'Removes grogginess effect',
+	noteGivesNaughtiness: 'Gives {amount} naughtiness',
+	noteSpeedBonusForSecondsDays:
+		'Gives {speed} bonus speed ({percent}) for {seconds} seconds ({days} days)',
+	noteHayfeverSecondsDays: 'Prevents hayfever for {seconds} seconds ({days} days)',
+	noteProducesAndHealsOverMinutes:
+		'Recipe produces {count}; heals {health} health over {minutes} minutes',
+	noteIncreasesTemperatureByDegreesInSeconds:
+		'Increases temperature by {degrees} degrees in {seconds} seconds.',
+	noteRestoresSanityOverMinutes: 'Restores {sanity} sanity over {minutes} minutes',
+	noteLowersTemperatureByDegreesOverSeconds:
+		'Lowers temperature by {degrees} degrees over {seconds} seconds',
+	noteRaisesTemperatureByDegreesOverSeconds:
+		'Raises temperature by {degrees} degrees over {seconds} seconds',
+	noteRequiresUncookedTallbirdEgg: 'Requires uncooked Tallbird Egg',
+	notePlayerCannotEatBeefaloOnly: 'Cannot be eaten by the player, only given to Beefalo',
+	noteDustMothsOnly: 'Used to feed Dust Moths, cannot be eaten by the player',
+
+	/*
+	 * One-off note text still attached directly to food/recipe entries.
+	 * Keys are the canonical English note strings from food.js / recipes.js.
+	 * Locale files may override any subset under `notes: { ... }`.
+	 * Repeated note patterns should prefer stable `noteKey` templates above.
+	 */
+	notes: {
+		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
+			'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)',
+		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
+			'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)',
+		'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry':
+			'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry',
+	},
 
 	// Table column-toggle controls
 	columns: 'Columns',
 	autoColumns: 'Auto',
 	autoColumnsTitle: 'Automatically hide less-important columns on narrow screens',
+	tableName: 'Name',
+	tableInfo: 'Info',
+	tableMode: 'Mode',
+	tableHealth: 'Health',
+	tableHealthGain: 'Health+',
+	tableHunger: 'Hunger',
+	tableHungerGain: 'Hunger+',
+	tableSanity: 'Sanity',
+	tablePerish: 'Perish',
+	tableCookTime: 'Cook Time',
+	tablePriority: 'Priority',
+	tableNotes: 'Notes',
+	tableRequires: 'Requires',
+	tableIngredients: 'Ingredients',
+	tableHealthHint: 'Health restored (change if cooked)',
+	tableHungerHint: 'Hunger restored (change if cooked)',
+	tableSanityHint: 'Sanity restored (change if cooked)',
+	tablePerishHint: 'Time to turn to rot (change if cooked)',
+	tablePriorityHint: 'One of the highest priority recipes for a combination will be made',
+	tableRequiresHint: 'Dim, struck items cannot be used',
+	tableModeHint: 'DLC or Game Mode required',
+	tableHealthGainHint: 'Health gained compared to ingredients',
+	tableHungerGainHint: 'Hunger gained compared to ingredients',
 
 	// About page
 	aboutHeading: 'About This Food Guide',
@@ -192,6 +272,54 @@ const defaultStrings = {
 		'<a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">Don\'t Starve</a> &copy; <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a>. Unofficial food guide <a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">source code</a> made available under the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a>.',
 	footerLinks:
 		'<a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">Source Code on GitHub</a> | <a href="https://github.com/bluehexagons/foodguide/issues" target="_blank" rel="noopener">Bugs and Feature Reports</a>',
+
+	/*
+	 * Ingredient/recipe tag labels.
+	 *
+	 * Keys here are the *internal* tag identifiers used throughout the
+	 * data files (e.g. food.js properties, recipe `tags: [...]` entries,
+	 * `foodtype` strings). They are **input syntax** for the tag-search
+	 * (e.g. `tag:meat`) and must stay in English in URLs / dataset.link
+	 * payloads. Only the *visible* label is translated.
+	 *
+	 * Locale files may override any subset under `tags: { ... }`; missing
+	 * keys fall back to the English label here, then to the raw key. To
+	 * add a new tag, register it here first so contributors can mirror
+	 * the entry in each `html/locales/*.js`.
+	 *
+	 * Includes:
+	 *   - ingredient tags shown as chips on each food (fruit, meat, ...)
+	 *   - foodtype categories (meat, veggie, goodies)
+	 *   - recipe metadata tags (honeyed, monstermeat)
+	 */
+	tags: {
+		// Ingredient tags (shown on each food row as clickable chips)
+		fruit: 'fruit',
+		veggie: 'vegetable',
+		meat: 'meat',
+		egg: 'egg',
+		fish: 'fish',
+		magic: 'magic',
+		decoration: 'decoration',
+		inedible: 'inedible',
+		monster: 'monster food',
+		sweetener: 'sweetener',
+		fat: 'fat',
+		dairy: 'dairy',
+		jellyfish: 'jellyfish',
+		antihistamine: 'antihistamine',
+		filter: 'filter',
+		bug: 'bug',
+		bone: 'bone',
+		roughage: 'roughage',
+
+		// Foodtype categories (recipe.foodtype)
+		goodies: 'goodies',
+
+		// Recipe metadata tags (recipe.tags entries)
+		honeyed: 'honeyed',
+		monstermeat: 'monster meat',
+	},
 };
 
 /** @typedef {Partial<typeof defaultStrings>} LocaleDict */
@@ -321,6 +449,100 @@ export function t(key, params) {
 	return value;
 }
 
+export function durationUnit(kind, count) {
+	if (kind === 'day') {
+		if (activeLocale === 'zh') return '天';
+		if (activeLocale === 'es') return count === 1 ? 'dia' : 'dias';
+		return count === 1 ? 'day' : 'days';
+	}
+	if (kind === 'sec') {
+		if (activeLocale === 'zh') return '秒';
+		if (activeLocale === 'es') return count === 1 ? 'seg' : 'segs';
+		return count === 1 ? 'sec' : 'secs';
+	}
+	return kind;
+}
+
+export function formatDuration(kind, count) {
+	if (kind === 'day') {
+		return t('durationDays', { count, unit: durationUnit('day', count) });
+	}
+	if (kind === 'sec') {
+		return t('durationSeconds', { count, unit: durationUnit('sec', count) });
+	}
+	return String(count);
+}
+
+/**
+ * Resolve a localized label for an internal tag identifier.
+ *
+ * Lookup order:
+ *   1. `tags[key]` in the active locale's dictionary
+ *   2. `tags[key]` in the default (English) dictionary
+ *   3. the supplied `fallback`
+ *   4. the raw `key` itself
+ *
+ * The returned string is intended for display only; the original `key`
+ * should still be used wherever the tag identifier is part of input
+ * syntax (e.g. `tag:KEY` search queries or `dataset.link` payloads).
+ *
+ * @param {string} key - Internal tag identifier (e.g. 'meat', 'honeyed').
+ * @param {string} [fallback] - Optional fallback label if no entry exists.
+ * @returns {string}
+ */
+export function tagLabel(key, fallback) {
+	const entry = locales[activeLocale];
+	const localeTags = entry && entry.dict && /** @type {any} */ (entry.dict).tags;
+	if (localeTags && Object.prototype.hasOwnProperty.call(localeTags, key)) {
+		return localeTags[key];
+	}
+	const defaultTags = /** @type {any} */ (defaultStrings).tags;
+	if (defaultTags && Object.prototype.hasOwnProperty.call(defaultTags, key)) {
+		return defaultTags[key];
+	}
+	return fallback !== undefined ? fallback : key;
+}
+
+/**
+ * Resolve a localized one-off note string from its canonical English source text.
+ *
+ * Lookup order:
+ *   1. `notes[note]` in the active locale dictionary
+ *   2. `notes[note]` in the default English dictionary
+ *   3. the original `note`
+ *
+ * @param {string} note
+ * @returns {string}
+ */
+export function noteText(note) {
+	const entry = locales[activeLocale];
+	const localeNotes = entry && entry.dict && /** @type {any} */ (entry.dict).notes;
+	if (localeNotes && Object.prototype.hasOwnProperty.call(localeNotes, note)) {
+		return localeNotes[note];
+	}
+	const defaultNotes = /** @type {any} */ (defaultStrings).notes;
+	if (defaultNotes && Object.prototype.hasOwnProperty.call(defaultNotes, note)) {
+		return defaultNotes[note];
+	}
+	return note;
+}
+
+/**
+ * Resolve a note from a stable translation key, falling back to noteText for
+ * one-off exact-string notes when no key is provided.
+ *
+ * @param {string | undefined} noteKey
+ * @param {Record<string, string | number>} [params]
+ * @param {string} [fallbackNote]
+ * @returns {string}
+ */
+export function resolveNote(noteKey, params, fallbackNote) {
+	if (noteKey) {
+		return t(noteKey, params);
+	}
+	return fallbackNote ? noteText(fallbackNote) : '';
+}
+
 /**
  * Walk a DOM subtree and apply translations to elements carrying
  * `data-i18n*` attributes. Safe to call repeatedly.
@@ -329,14 +551,23 @@ export function t(key, params) {
 export function applyTranslations(root) {
 	if (typeof document === 'undefined') return;
 	const scope = root || document;
+	const nodes = [];
+	if (scope instanceof Element) {
+		nodes.push(scope);
+	}
+	nodes.push(...Array.from(scope.querySelectorAll('*')));
 
-	for (const el of Array.from(scope.querySelectorAll('[data-i18n]'))) {
-		el.textContent = t(/** @type {any} */ (el.getAttribute('data-i18n')));
+	for (const el of nodes) {
+		if (el.hasAttribute('data-i18n')) {
+			el.textContent = t(/** @type {any} */ (el.getAttribute('data-i18n')));
+		}
 	}
-	for (const el of Array.from(scope.querySelectorAll('[data-i18n-html]'))) {
-		el.innerHTML = t(/** @type {any} */ (el.getAttribute('data-i18n-html')));
+	for (const el of nodes) {
+		if (el.hasAttribute('data-i18n-html')) {
+			el.innerHTML = t(/** @type {any} */ (el.getAttribute('data-i18n-html')));
+		}
 	}
-	for (const el of Array.from(scope.querySelectorAll('*'))) {
+	for (const el of nodes) {
 		for (const attr of Array.from(el.attributes)) {
 			if (attr.name.startsWith('data-i18n-attr-')) {
 				const target = attr.name.slice('data-i18n-attr-'.length);

@@ -40,7 +40,8 @@ import {
 import { food } from './food.js';
 import { AND, COMPARE, NAME, NOT, OR, SPECIFIC, TAG } from './functions.js';
 import { applyModeMetadata } from './mode-utils.js';
-import { makeLinkable, pl, stats } from './utils.js';
+import { formatDuration, resolveNote, t, tagLabel } from './strings.js';
+import { makeLinkable, stats } from './utils.js';
 
 /**
  * @typedef {import('./functions.js').Requirement} Requirement
@@ -63,6 +64,7 @@ import { makeLinkable, pl, stats } from './utils.js';
  * @property {number} [temperatureduration] - Duration of temperature effect
  * @property {number} [temperaturebump] - Instant temperature change
  * @property {string} [note] - Extra info
+ * @property {string} [baseNote] - Static note before generated locale-aware text is appended
  * @property {string[]} [tags] - Tags on the cooked dish
  * @property {number} [weight] - Tiebreaker weight
  * @property {boolean} [trash] - Marks as trash/failure result
@@ -809,7 +811,8 @@ export const recipes = {
 		perish: perish_med,
 		sanity: -sanity_small,
 		cooktime: 1,
-		note: 'Gives 10 naughtiness',
+		noteKey: 'noteGivesNaughtiness',
+		noteParams: { amount: 10 },
 		mode: 'shipwrecked',
 	},
 	surfnturf: {
@@ -856,7 +859,8 @@ export const recipes = {
 		perish: perish_med,
 		sanity: -sanity_tiny,
 		cooktime: 0.5,
-		note: 'Gives 5 bonus speed (+83%) for 240 seconds (0.5 days)',
+		noteKey: 'noteSpeedBonusForSecondsDays',
+		noteParams: { speed: 5, percent: '+83%', seconds: 240, days: 0.5 },
 		mode: 'shipwrecked',
 	},
 	tropicalbouillabaisse: {
@@ -978,7 +982,8 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_tiny,
 		cooktime: 1,
-		note: 'Prevents hayfever for 600 seconds (1.25 days)',
+		noteKey: 'noteHayfeverSecondsDays',
+		noteParams: { seconds: 600, days: 1.25 },
 		mode: 'hamlet',
 	},
 	nettlelosange: {
@@ -994,7 +999,8 @@ export const recipes = {
 		perish: perish_fast,
 		sanity: sanity_tiny,
 		cooktime: 0.5,
-		note: 'Prevents hayfever for 720 seconds (1.5 days)',
+		noteKey: 'noteHayfeverSecondsDays',
+		noteParams: { seconds: 720, days: 1.5 },
 		mode: 'hamlet',
 	},
 	snakebonesoup: {
@@ -1040,7 +1046,8 @@ export const recipes = {
 		temperaturebump: 15,
 		cooktime: 0.5,
 		rot: 'icedtea',
-		note: 'Gives 2.5 bonus speed (+42%) for 120 seconds',
+		noteKey: 'noteSpeedBonusForSeconds',
+		noteParams: { speed: 2.5, percent: '+42%', seconds: 120 },
 		mode: 'hamlet',
 	},
 	icedtea: {
@@ -1057,7 +1064,8 @@ export const recipes = {
 		sanity: sanity_large,
 		temperaturebump: -10,
 		cooktime: 0.5,
-		note: 'Gives 1.7 bonus speed (+28%) for 80 seconds',
+		noteKey: 'noteSpeedBonusForSeconds',
+		noteParams: { speed: 1.7, percent: '+28%', seconds: 80 },
 		mode: 'hamlet',
 	},
 	asparagussoup: {
@@ -1117,7 +1125,6 @@ export const recipes = {
 		perish: perish_fastish,
 		sanity: sanity_med,
 		cooktime: 3.5,
-		note: 'In the pre2023update version of the game, using 3 Cooked Bean Bugs, or a combination of Raw and Cooked Bean Bugs, makes it so that meat is not needed.',
 		mode: 'hamlet',
 	},
 	steamedhamsandwich: {
@@ -1982,7 +1989,8 @@ export const recipes = {
 		hunger: 0,
 		sanity: sanity_tiny,
 		cooktime: 2.5,
-		note: 'Recipe produces 3; heals 120 health over 2 minutes',
+		noteKey: 'noteProducesAndHealsOverMinutes',
+		noteParams: { count: 3, health: 120, minutes: 2 },
 		mode: 'together',
 	},
 	vegstinger: {
@@ -2064,7 +2072,8 @@ export const recipes = {
 		cooktime: 2,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_long,
-		note: 'Increases temperature by 40 degrees in 15 seconds.',
+		noteKey: 'noteIncreasesTemperatureByDegreesInSeconds',
+		noteParams: { degrees: 40, seconds: 15 },
 		mode: 'together',
 	},
 	mashedpotatoes: {
@@ -2282,7 +2291,8 @@ export const recipes = {
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_brief,
 		cooktime: 1,
-		note: 'Restores 30 sanity over 1 minute',
+		noteKey: 'noteRestoresSanityOverMinutes',
+		noteParams: { sanity: 30, minutes: 1 },
 		mode: 'together',
 	},
 	koalefig_trunk: {
@@ -2386,7 +2396,8 @@ export const recipes = {
 		perish: perish_slow,
 		temperature: cold_food_bonus_temp,
 		temperatureduration: food_temp_long,
-		note: 'Lowers temperature by 15 degrees over 15 seconds',
+		noteKey: 'noteLowersTemperatureByDegreesOverSeconds',
+		noteParams: { degrees: 15, seconds: 15 },
 		cooktime: 1,
 		mode: 'together',
 	},
@@ -2408,7 +2419,8 @@ export const recipes = {
 		perish: perish_med,
 		temperature: hot_food_bonus_temp,
 		temperatureduration: food_temp_brief,
-		note: 'Raises temperature by 5 degrees over 5 seconds',
+		noteKey: 'noteRaisesTemperatureByDegreesOverSeconds',
+		noteParams: { degrees: 5, seconds: 5 },
 		cooktime: 0.5,
 		mode: 'together',
 	},
@@ -2493,7 +2505,7 @@ export const recipes = {
 		perish: perish_slow,
 		sanity: sanity_tiny,
 		cooktime: 2,
-		note: 'Requires uncooked Tallbird Egg',
+		noteKey: 'noteRequiresUncookedTallbirdEgg',
 		mode: 'together',
 	},
 	// food for Beefalo
@@ -2529,7 +2541,7 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: 0,
 		cooktime: 0.5,
-		note: 'Cannot be eaten by the player, only given to Beefalo',
+		noteKey: 'notePlayerCannotEatBeefaloOnly',
 		mode: 'together',
 	},
 	beefalotreat: {
@@ -2567,7 +2579,7 @@ export const recipes = {
 		perish: perish_preserved,
 		sanity: 0,
 		cooktime: 2,
-		note: 'Cannot be eaten by the player, only given to Beefalo',
+		noteKey: 'notePlayerCannotEatBeefaloOnly',
 		mode: 'together',
 	},
 	leafloaf: {
@@ -2666,7 +2678,7 @@ export const recipes = {
 		health: 0,
 		hunger: 0,
 		cooktime: 2,
-		note: 'Used to feed Dust Moths, cannot be eaten by the player',
+		noteKey: 'noteDustMothsOnly',
 		mode: 'together',
 	},
 
@@ -2926,6 +2938,9 @@ for (const key in recipes) {
 	if (!Object.prototype.hasOwnProperty.call(recipes, key)) {
 		continue;
 	}
+	if (!isNaN(Number(key)) || !(recipes[key] instanceof Object)) {
+		continue;
+	}
 
 	recipes[key].match = 0;
 	recipes[key].name = recipes[key].name || key;
@@ -2942,46 +2957,51 @@ for (const key in recipes) {
 	}
 
 	applyModeMetadata(recipes[key], modes);
-
-	if (recipes[key].requirements) {
-		const requirements = recipes[key].requirements.slice();
-
-		if (recipes[key].mode) {
-			recipes[key].modeNode = makeLinkable(
-				`[tag:${recipes[key].mode}|img/${modes[recipes[key].mode].img}]`,
-			);
-		}
-
-		recipes[key].requires = makeLinkable(requirements.join('; '));
-	}
-
-	if (recipes[key].temperature) {
-		if (recipes[key].note) {
-			recipes[key].note += '; ';
-		} else {
-			recipes[key].note = '';
-		}
-		recipes[key].note +=
-			`Provides ${recipes[key].temperature} heat for ${recipes[key].temperatureduration} seconds`;
-	}
-
-	if (recipes[key].temperaturebump) {
-		if (recipes[key].note) {
-			recipes[key].note += '; ';
-		} else {
-			recipes[key].note = '';
-		}
-		recipes[key].note += `${recipes[key].temperature} heat when consumed`;
-	}
+	recipes[key].baseNote = recipes[key].note || '';
 
 	recipes[key].preparationType = 'recipe';
 	recipes[recipeCount++] = recipes[key];
 }
 
+export const updateRecipeText = () => {
+	for (let i = 0; i < recipes.length; i++) {
+		const recipe = recipes[i];
+
+		if (recipe.requirements) {
+			const requirements = recipe.requirements.slice();
+
+			if (recipe.mode) {
+				recipe.modeNode = makeLinkable(`[tag:${recipe.mode}|img/${modes[recipe.mode].img}]`);
+			}
+
+			recipe.requires = makeLinkable(requirements.join('; '));
+		}
+
+		const notes = [];
+		if (recipe.noteKey || recipe.baseNote) {
+			notes.push(resolveNote(recipe.noteKey, recipe.noteParams, recipe.baseNote));
+		}
+		if (recipe.temperature) {
+			notes.push(
+				t('noteProvidesHeatFor', {
+					heat: recipe.temperature,
+					duration: formatDuration('sec', recipe.temperatureduration),
+				}),
+			);
+		}
+		if (recipe.temperaturebump) {
+			notes.push(t('noteHeatWhenConsumed', { heat: recipe.temperature }));
+		}
+		recipe.note = notes.join('; ');
+	}
+};
+
 recipes.length = recipeCount;
 recipes.forEach = Array.prototype.forEach;
 recipes.filter = Array.prototype.filter;
 recipes.sort = Array.prototype.sort;
+
+updateRecipeText();
 
 recipes.byName = function (name) {
 	let i = this.length;
@@ -2998,14 +3018,54 @@ const reduceRecipeButton = (a, b) => {
 	return `${a}[recipe:${b.name}|${b.img}]`;
 };
 
+/**
+ * Build a clickable tag chip for the food info column.
+ *
+ * The link payload (`tag:KEY`) is the English search prefix and must not
+ * be translated — it is parsed by the search input. The visible text is
+ * resolved through {@link tagLabel} so locale changes can rename it
+ * without touching the data files.
+ *
+ * @param {string} tag - Internal tag identifier (e.g. 'meat').
+ * @param {string} [name] - Optional fallback display name if the tag has
+ *   no localized label registered.
+ */
 const taggify = (tag, name) => {
-	return `[tag:${tag}|${name || tag}]`;
+	return `[tag:${tag}|${tagLabel(tag, name)}]`;
+};
+
+const buildFoodTagsInfo = f => {
+	const info = [];
+	f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : `\xd7${f.fruit}`));
+	f.veggie &&
+		info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : `\xd7${f.veggie}`));
+	f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : `\xd7${f.meat}`));
+	f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : `\xd7${f.egg}`));
+	f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : `\xd7${f.fish}`));
+	f.magic && info.push(taggify('magic'));
+	f.decoration && info.push(taggify('decoration'));
+	f.inedible && info.push(taggify('inedible'));
+	f.monster && info.push(taggify('monster', 'monster food'));
+	f.sweetener && info.push(taggify('sweetener'));
+	f.fat && info.push(taggify('fat'));
+	f.dairy && info.push(taggify('dairy'));
+	f.jellyfish && info.push(taggify('jellyfish'));
+	f.antihistamine && info.push(taggify('antihistamine'));
+	f.filter && info.push(taggify('filter'));
+	f.bug && info.push(taggify('bug'));
+	f.bone && info.push(taggify('bone'));
+	f.comment && info.push(f.comment);
+	f.roughage && info.push(taggify('roughage'));
+	return info;
 };
 let info;
 let foodCount = 0;
 
 for (const key in food) {
 	if (!Object.prototype.hasOwnProperty.call(food, key)) {
+		continue;
+	}
+	if (!isNaN(Number(key)) || !(food[key] instanceof Object)) {
 		continue;
 	}
 
@@ -3028,31 +3088,6 @@ for (const key in food) {
 		f[`best${stat}Type`] = bestStatType;
 	}
 
-	f.info = [];
-	info = f.info;
-	f.originalInfo = f.info;
-
-	f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : `\xd7${f.fruit}`));
-	f.veggie &&
-		info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : `\xd7${f.veggie}`));
-	f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : `\xd7${f.meat}`));
-	f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : `\xd7${f.egg}`));
-	f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : `\xd7${f.fish}`));
-	f.magic && info.push(taggify('magic'));
-	f.decoration && info.push(taggify('decoration'));
-	f.inedible && info.push(taggify('inedible'));
-	f.monster && info.push(taggify('monster', 'monster food'));
-	f.sweetener && info.push(taggify('sweetener'));
-	f.fat && info.push(taggify('fat'));
-	f.dairy && info.push(taggify('dairy'));
-	f.jellyfish && info.push(taggify('jellyfish'));
-	f.antihistamine && info.push(taggify('antihistamine'));
-	f.filter && info.push(taggify('filter'));
-	f.bug && info.push(taggify('bug'));
-	f.bone && info.push(taggify('bone'));
-	f.comment && info.push(f.comment);
-	f.roughage && info.push(taggify('roughage'));
-
 	food[foodCount++] = f;
 }
 
@@ -3062,14 +3097,14 @@ export const updateFoodRecipes = includedRecipes => {
 	for (let i = 0; i < food.length; i++) {
 		const f = food[i];
 
-		info = f.originalInfo.slice();
-		f.cooked && info.push(`from [*${f.raw.name}|${f.raw.img}]`);
+		info = buildFoodTagsInfo(f);
+		f.cooked && info.push(`${t('foodInfoFrom')} [*${f.raw.name}|${f.raw.img}]`);
 
 		if (f.cook) {
 			if (!(f.cook instanceof Object)) {
 				f.cook = food[f.cook];
 			}
-			info.push(`cook: [*${f.cook.name}|${f.cook.img}]`);
+			info.push(`${t('foodInfoCook')}: [*${f.cook.name}|${f.cook.img}]`);
 		}
 
 		if (f.dry) {
@@ -3077,7 +3112,7 @@ export const updateFoodRecipes = includedRecipes => {
 				f.dry = food[f.dry];
 			}
 			info.push(
-				`dry in ${f.drytime / total_day_time} ${pl('day', f.drytime / total_day_time)}: [*${f.dry.name}|${f.dry.img}]`,
+				`${t('foodInfoDryIn', { duration: formatDuration('day', f.drytime / total_day_time) })}: [*${f.dry.name}|${f.dry.img}]`,
 			);
 		}
 
@@ -3112,15 +3147,17 @@ export const updateFoodRecipes = includedRecipes => {
 				f.ingredient = true;
 				f.info += f.recipes.reduce(
 					reduceRecipeButton,
-					`[|][ingredient:${f.name}|Recipes] `,
+					`[|][ingredient:${f.name}|${t('foodInfoRecipes')}] `,
 				);
 			}
 		} else {
-			f.info += `${f.info ? '[|]' : ''}cannot be added to crock pot`;
+			f.info += `${f.info ? '[|]' : ''}${t('foodInfoCannotAdd')}`;
 		}
 
 		if (f.note) {
-			f.info += `[|]${f.note}`;
+			f.info += `[|]${resolveNote(f.noteKey, f.noteParams, f.note)}`;
+		} else if (f.noteKey) {
+			f.info += `[|]${resolveNote(f.noteKey, f.noteParams)}`;
 		}
 
 		f.info = makeLinkable(f.info);

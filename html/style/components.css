@@ -1,11 +1,28 @@
 /* Components: ingredient picker, dropdowns, buttons, filters, search */
 
 /* Ingredient list and slots */
+.selectionpanel {
+	margin-top: 16px;
+	padding: 12px 14px 14px;
+	border: 1px solid var(--border-light);
+	border-radius: 10px;
+	background: var(--table-bg);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.selectionpanel-title {
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	color: var(--fg-secondary);
+	margin-bottom: 10px;
+}
+
 .ingredientlist {
 	display: flex;
 	gap: 8px;
 	flex-wrap: wrap;
-	margin-top: 16px;
+	margin-top: 0;
 }
 
 .ingredient {
@@ -36,15 +53,15 @@
 .ingredient:empty::before {
 	content: '+';
 	font-size: 32px;
-	color: var(--fg-primary);
+	color: #555;
 	opacity: 0.7;
 	position: absolute;
 	line-height: 1;
 	transition: all var(--transition-fast);
 	text-shadow:
-		0 0 3px var(--bg-primary),
-		0 0 6px var(--bg-primary),
-		0 0 9px var(--bg-primary);
+		0 0 3px rgba(255, 255, 255, 0.8),
+		0 0 6px rgba(255, 255, 255, 0.6),
+		0 0 9px rgba(255, 255, 255, 0.4);
 }
 
 /* Hover effects */
@@ -60,7 +77,7 @@
 
 .ingredient:empty:hover::before {
 	opacity: 0.8;
-	color: var(--header-accent);
+	color: #333;
 }
 
 .ingredient :is(img, .icon) {

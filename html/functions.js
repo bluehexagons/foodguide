@@ -1,4 +1,5 @@
 import { food } from './food.js';
+import { tagLabel } from './strings.js';
 
 /**
  * @typedef {Object} IngredientNames
@@ -84,7 +85,7 @@ const SPECIFICString = function () {
 	return `[*${food[this.name].name}|${food[this.name].img} ${food[this.name].name}]${this.qty ? this.qty : ''}`;
 };
 const TAGString = function () {
-	return `[tag:${this.tag}|${this.tag}]${this.qty ? this.qty : ''}`;
+	return `[tag:${this.tag}|${tagLabel(this.tag)}]${this.qty ? this.qty : ''}`;
 };
 
 /**

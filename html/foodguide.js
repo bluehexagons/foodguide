@@ -34,7 +34,7 @@ import {
 	total_day_time,
 } from './constants.js';
 import { food } from './food.js';
-import { recipes, updateFoodRecipes } from './recipes.js';
+import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
 import { accumulateIngredients, makeImage, makeLinkable, makeElement, pl } from './utils.js';
 import {
 	matchesMode,
@@ -49,6 +49,8 @@ import {
 import {
 	t,
 	applyTranslations,
+	formatDuration,
+	durationUnit,
 	initLocale,
 	setLocale,
 	getLocale,
@@ -63,6 +65,9 @@ import './locales/index.js';
 		el.tagName === 'IMG' || el.classList.contains('icon') ? el.parentNode : el;
 
 	const modeRefreshers = [];
+	const localeTables = new Set();
+	let simulatorLocaleRefresh = null;
+	let discoveryLocaleRefresh = null;
 
 	let statMultipliers = defaultStatMultipliers;
 	let characterFoodModifiers = { modifyItem: () => ({}) };
@@ -149,6 +154,10 @@ import './locales/index.js';
 	// Initialise the i18n layer: pick a locale (storage > navigator > en),
 	// populate the language picker, and apply translations to the static HTML.
 	initLocale();
+	updateRecipeText();
+	updateFoodRecipes(
+		recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)),
+	);
 
 	const langPicker = /** @type {HTMLSelectElement | null} */ (
 		document.getElementById('language-picker')
@@ -176,6 +185,21 @@ import './locales/index.js';
 		applyTranslations();
 		updateThemeToggle();
 		if (langPicker) langPicker.value = getLocale();
+		updateRecipeText();
+		// Rebuild per-food info (tag chips, "dry in N days") so localized
+		// labels appear without changing the active mode/character.
+		updateFoodRecipes(
+			recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)),
+		);
+		if (simulatorLocaleRefresh) simulatorLocaleRefresh();
+		if (discoveryLocaleRefresh) discoveryLocaleRefresh();
+		for (const tableContainer of Array.from(localeTables)) {
+			if (!tableContainer.isConnected) {
+				localeTables.delete(tableContainer);
+			} else if (tableContainer.updateLocale) {
+				tableContainer.updateLocale();
+			}
+		}
 	});
 
 	/**
@@ -202,6 +226,75 @@ import './locales/index.js';
 			columns.push('Mode');
 		}
 		return columns;
+	};
+
+	const tableLabelKeys = {
+		Name: 'tableName',
+		Info: 'tableInfo',
+		Mode: 'tableMode',
+		Health: 'tableHealth',
+		'Health+': 'tableHealthGain',
+		Hunger: 'tableHunger',
+		'Hunger+': 'tableHungerGain',
+		Sanity: 'tableSanity',
+		Perish: 'tablePerish',
+		'Cook Time': 'tableCookTime',
+		Priority: 'tablePriority',
+		Notes: 'tableNotes',
+		Requires: 'tableRequires',
+		Ingredients: 'tableIngredients',
+	};
+
+	const tableHintKeys = {
+		'Health restored (change if cooked)': 'tableHealthHint',
+		'Health gained compared to ingredients': 'tableHealthGainHint',
+		'Hunger restored (change if cooked)': 'tableHungerHint',
+		'Hunger gained compared to ingredients': 'tableHungerGainHint',
+		'Sanity restored (change if cooked)': 'tableSanityHint',
+		'Time to turn to rot (change if cooked)': 'tablePerishHint',
+		'One of the highest priority recipes for a combination will be made': 'tablePriorityHint',
+		'Dim, struck items cannot be used': 'tableRequiresHint',
+		'Dim+struck items cannot be used': 'tableRequiresHint',
+		'DLC or Game Mode required': 'tableModeHint',
+	};
+
+	const translateTableLabel = label => {
+		const key = tableLabelKeys[label];
+		return key ? t(key) : label;
+	};
+
+	const translateTableHint = hint => {
+		const key = tableHintKeys[hint];
+		return key ? t(key) : hint;
+	};
+
+	const tableHeader = key => {
+		switch (key) {
+			case 'name':
+				return 'Name';
+			case 'health':
+				return 'Health';
+			case 'hunger':
+				return 'Hunger';
+			case 'sanity':
+				return 'Sanity';
+			case 'perish':
+				return 'Perish';
+			case 'info':
+				return 'Info';
+			case 'mode':
+				return 'Mode';
+			case 'cookTime':
+				return 'Cook Time';
+			case 'priority':
+				return 'Priority';
+			case 'notes':
+				return 'Notes';
+			case 'requires':
+				return 'Requires';
+			default:
+				return key;
+		}
 	};
 
 	/**
@@ -1118,10 +1211,10 @@ import './locales/index.js';
 				const th = document.createElement('th');
 
 				if (header.indexOf(':') === -1) {
-					th.appendChild(document.createTextNode(header));
+					th.appendChild(document.createTextNode(translateTableLabel(header)));
 				} else {
-					th.appendChild(document.createTextNode(header.split(':')[0]));
-					th.title = header.split(':')[1];
+					th.appendChild(document.createTextNode(translateTableLabel(header.split(':')[0])));
+					th.title = translateTableHint(header.split(':')[1]);
 				}
 
 				if (headers[header]) {
@@ -1241,6 +1334,15 @@ import './locales/index.js';
 				}
 			};
 
+			const updateColumnControlTexts = () => {
+				label.textContent = t('columns');
+				autoBtn.textContent = t('autoColumns');
+				autoBtn.title = t('autoColumnsTitle');
+				for (const { btn, colLabel } of toggleButtons) {
+					btn.textContent = translateTableLabel(colLabel);
+				}
+			};
+
 			for (let i = 0; i < headerKeys.length; i++) {
 				const header = headerKeys[i];
 				const colLabel = header.indexOf(':') === -1 ? header : header.split(':')[0];
@@ -1256,7 +1358,7 @@ import './locales/index.js';
 				}
 
 				const btn = document.createElement('button');
-				btn.textContent = colLabel;
+				btn.textContent = translateTableLabel(colLabel);
 				btn.className = getEffectiveHidden().has(i) ? '' : 'active';
 
 				const colIndex = i;
@@ -1271,7 +1373,7 @@ import './locales/index.js';
 				});
 
 				toggleBar.appendChild(btn);
-				toggleButtons.push({ btn, colIndex });
+				toggleButtons.push({ btn, colIndex, colLabel });
 			}
 
 			container.appendChild(toggleBar);
@@ -1295,11 +1397,16 @@ import './locales/index.js';
 			});
 
 			// Proxy update to also reapply column visibility
-			container.update = scrollHighlight => {
-				update(scrollHighlight);
-				applyColumnVisibility();
-			};
-			container.setMaxRows = setMaxRows;
+				container.update = scrollHighlight => {
+					update(scrollHighlight);
+					applyColumnVisibility();
+				};
+				container.updateLocale = () => {
+					update();
+					updateColumnControlTexts();
+				};
+				container.setMaxRows = setMaxRows;
+				localeTables.add(container);
 
 			// Method to update auto-hide columns dynamically (for mode changes)
 			container.updateAutoHide = newAutoHideLabels => {
@@ -1327,8 +1434,10 @@ import './locales/index.js';
 		scrollWrapper.appendChild(table);
 
 		// Proxy update/setMaxRows through wrapper
-		scrollWrapper.update = (...args) => update(...args);
-		scrollWrapper.setMaxRows = (...args) => setMaxRows(...args);
+			scrollWrapper.update = (...args) => update(...args);
+			scrollWrapper.updateLocale = () => update();
+			scrollWrapper.setMaxRows = (...args) => setMaxRows(...args);
+			localeTables.add(scrollWrapper);
 
 		return scrollWrapper;
 	};
@@ -1339,7 +1448,7 @@ import './locales/index.js';
 		}
 
 		const nEights = ((Math.abs(n) % 1) * 8) | 0;
-		const fractStr = nEights < 1 || nEights > 7 ? '' : fractionChars[nEights];
+		const fractStr = nEights < 1 || nEights > 7 ? '' : (fractionChars[nEights - 1] || '');
 
 		n = Math.floor(n);
 		return (n > 0 ? `+${n}` : n) + fractStr;
@@ -1369,15 +1478,23 @@ import './locales/index.js';
 		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;
 	};
 
+	const formatDays = value => formatDuration('day', value);
+
+	const formatSeconds = value => formatDuration('sec', value);
+
+	const formatPerish = value =>
+		isNaN(value) ? t('durationNever') : formatDays(value / total_day_time);
+
+	const formatToDays = value =>
+		t('durationToDays', { count: value, unit: durationUnit('day', value) });
+
 	const makeFoodRow = item => {
 		const mult = statMultipliers[item.preparationType];
 		const itemMods = characterFoodModifiers.modifyItem(item, modeMask);
 		let health = sign((itemMods.health ?? item.health) * mult);
 		let hunger = sign((itemMods.hunger ?? item.hunger) * mult);
 		let sanity = isNaN(item.sanity) ? '' : (itemMods.sanity ?? item.sanity) * mult;
-		let perish = isNaN(item.perish)
-			? 'Never'
-			: `${item.perish / total_day_time} ${pl('day', item.perish / total_day_time)}`;
+		let perish = formatPerish(item.perish);
 
 		if (item.cook) {
 			const cookmult = statMultipliers[item.cook.preparationType];
@@ -1402,12 +1519,12 @@ import './locales/index.js';
 				const dayDifference =
 					((item.cook.perish || 0) - (item.perish || 0)) / total_day_time;
 				if (isNaN(dayDifference)) {
-					perish += ' (to Never)';
+					perish += ` (${t('durationToNever')})`;
 				} else {
 					perish += ` (${
 						item.perish
 							? sign(dayDifference)
-							: `to ${item.cook.perish / total_day_time}`
+							: formatToDays(item.cook.perish / total_day_time)
 					})`;
 				}
 			}
@@ -1440,10 +1557,8 @@ import './locales/index.js';
 			sign(ihealth) + pct(health, ihealth),
 			sign(ihunger) + pct(hunger, ihunger),
 			isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity),
-			isNaN(item.perish)
-				? 'Never'
-				: `${item.perish / total_day_time} ${pl('day', item.perish / total_day_time)}`,
-			`${(item.cooktime * base_cook_time + 0.5) | 0} secs`,
+			formatPerish(item.perish),
+			formatSeconds((item.cooktime * base_cook_time + 0.5) | 0),
 			item.priority || '0',
 			item.requires || '',
 			item.note || '',
@@ -1538,13 +1653,13 @@ import './locales/index.js';
 	const foodTable = makeSortableTable(
 		{
 			'': '',
-			Name: 'name',
-			[headings.health]: 'health',
-			[headings.hunger]: 'hunger',
-			[headings.sanity]: 'sanity',
-			[headings.perish]: 'perish',
-			Info: '',
-			'Mode:DLC or Game Mode required': 'modeMask',
+			[tableHeader('name')]: 'name',
+			[tableHeader('health')]: 'health',
+			[tableHeader('hunger')]: 'hunger',
+			[tableHeader('sanity')]: 'sanity',
+			[tableHeader('perish')]: 'perish',
+			[tableHeader('info')]: '',
+			[tableHeader('mode')]: 'modeMask',
 		},
 		Array.prototype.slice.call(food),
 		makeFoodRow,
@@ -1557,25 +1672,25 @@ import './locales/index.js';
 		undefined,
 		{
 			toggleable: true,
-			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
-			autoHide: getAutoHideColumns(['Sanity']),
+			columns: [tableHeader('health'), tableHeader('hunger'), tableHeader('sanity'), tableHeader('perish'), tableHeader('info'), tableHeader('mode')],
+			autoHide: getAutoHideColumns([tableHeader('sanity')]),
 		},
 	);
 
 	const recipeTable = makeSortableTable(
 		{
 			'': '',
-			Name: 'name',
-			[headings.health]: 'health',
-			[headings.hunger]: 'hunger',
-			[headings.sanity]: 'sanity',
-			[headings.perish]: 'perish',
-			'Cook Time': 'cooktime',
-			'Priority:One of the highest priority recipes for a combination will be made':
+			[tableHeader('name')]: 'name',
+			[tableHeader('health')]: 'health',
+			[tableHeader('hunger')]: 'hunger',
+			[tableHeader('sanity')]: 'sanity',
+			[tableHeader('perish')]: 'perish',
+			[tableHeader('cookTime')]: 'cooktime',
+			[tableHeader('priority') + ':One of the highest priority recipes for a combination will be made']:
 				'priority',
-			'Requires:Dim+struck items cannot be used': '',
-			Notes: '',
-			'Mode:DLC or Game Mode required': 'modeMask',
+			[tableHeader('requires') + ':Dim+struck items cannot be used']: '',
+			[tableHeader('notes')]: '',
+			[tableHeader('mode')]: 'modeMask',
 		},
 		Array.prototype.slice.call(recipes),
 		makeRecipeRow,
@@ -1589,16 +1704,16 @@ import './locales/index.js';
 		{
 			toggleable: true,
 			columns: [
-				'Health',
-				'Hunger',
-				'Sanity',
-				'Perish',
-				'Cook Time',
-				'Priority',
-				'Notes',
-				'Mode',
+				tableHeader('health'),
+				tableHeader('hunger'),
+				tableHeader('sanity'),
+				tableHeader('perish'),
+				tableHeader('cookTime'),
+				tableHeader('priority'),
+				tableHeader('notes'),
+				tableHeader('mode'),
 			],
-			autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
+			autoHide: getAutoHideColumns([tableHeader('sanity'), tableHeader('cookTime'), tableHeader('notes')]),
 		},
 	);
 
@@ -1625,11 +1740,14 @@ import './locales/index.js';
 	const makeRecipeGrinder = (ingredients, excludeDefault) => {
 		const makableButton = document.createElement('button');
 		let hasTable = false;
+		let isCalculating = false;
 
-		makableButton.appendChild(
-			document.createTextNode(t('calculateRecipes')),
-		);
+		const updateMakableButtonLabel = () => {
+			makableButton.textContent = isCalculating ? t('calculating') : t('calculateRecipes');
+		};
+		updateMakableButtonLabel();
 		makableButton.className = 'makablebutton';
+		document.addEventListener('foodguide:localechange', updateMakableButtonLabel);
 		const initializeGrinder = () =>
 			(() => {
 				const idealIngredients = [];
@@ -1647,10 +1765,20 @@ import './locales/index.js';
 				const deleteButton = document.createElement('button');
 				deleteButton.appendChild(document.createTextNode(t('clearResults')));
 				deleteButton.className = 'deleteButton';
+				let updateMakableTexts;
+				let updateMakableControls;
+				let calculationControl;
 				deleteButton.addEventListener('click', () => {
 					makableButton.parentNode.removeChild(makableDiv);
 					hasTable = false;
-					makableButton.textContent = t('calculateRecipes');
+					isCalculating = false;
+					if (updateMakableTexts) {
+						document.removeEventListener('foodguide:localechange', updateMakableTexts);
+					}
+					if (updateMakableControls) {
+						document.removeEventListener('foodguide:localechange', updateMakableControls);
+					}
+					updateMakableButtonLabel();
 					makableButton.disabled = false;
 				});
 				if (hasTable) {
@@ -1904,6 +2032,14 @@ import './locales/index.js';
 						autoHide: ['Health+', 'Hunger+'],
 					},
 				);
+				updateMakableControls = () => {
+					deleteButton.textContent = t('clearResults');
+					customFilterInput.placeholder = t('customFilterPlaceholder');
+					pauseButton.textContent = calculationControl && calculationControl.isPaused()
+						? t('resume')
+						: t('pause');
+					makableTable.updateLocale();
+				};
 
 				const makableDiv = document.createElement('div');
 				makableDiv.className = 'makableContainer';
@@ -1923,6 +2059,12 @@ import './locales/index.js';
 				filterHelp.appendChild(
 					document.createTextNode(t('filterCycleHelp')),
 				);
+				updateMakableTexts = () => {
+					makableSummary.firstChild.textContent = t('computingCombinations');
+					makableFootnote.firstChild.textContent = t('multipleResultsNote');
+					filterHelp.firstChild.textContent = t('filterCycleHelp');
+				};
+				document.addEventListener('foodguide:localechange', updateMakableTexts);
 
 				makableDiv.appendChild(makableSummary);
 				makableDiv.appendChild(makableFootnote);
@@ -1969,13 +2111,13 @@ import './locales/index.js';
 				const pauseButton = document.createElement('button');
 				pauseButton.appendChild(document.createTextNode(t('pause')));
 				pauseButton.className = 'pauseButton';
-				let isCalculating = true;
+				isCalculating = true;
 
 				// Set button state BEFORE starting calculation
-				makableButton.textContent = t('calculating');
+				updateMakableButtonLabel();
 				makableButton.disabled = true;
 
-				const calculationControl = getRealRecipesFromCollection(
+				calculationControl = getRealRecipesFromCollection(
 					idealIngredients,
 					data => {
 						// row update
@@ -2077,10 +2219,12 @@ import './locales/index.js';
 						}
 
 						makableSummary.appendChild(deleteButton);
-						makableButton.textContent = t('calculateRecipes');
+						isCalculating = false;
+						updateMakableButtonLabel();
 						makableButton.disabled = false;
 					},
 				);
+				document.addEventListener('foodguide:localechange', updateMakableControls);
 
 				// Add pause/resume button functionality
 				pauseButton.addEventListener('click', () => {
@@ -2188,8 +2332,30 @@ import './locales/index.js';
 			const from = picker.dataset.type === 'recipes' ? recipes : food;
 			const allowUncookable = !picker.dataset.cookable;
 			let parent = picker.nextElementSibling;
-			while (!parent.classList.contains('ingredientlist')) {
-				parent = parent.nextElementSibling;
+			while (parent && !parent.classList.contains('ingredientlist')) {
+				parent =
+					parent.querySelector && parent.querySelector('.ingredientlist')
+						? parent.querySelector('.ingredientlist')
+						: parent.nextElementSibling;
+			}
+			if (!parent) {
+				throw new Error('Ingredient list not found for picker');
+			}
+			if (!parent.parentNode.classList.contains('selectionpanel')) {
+				const panel = document.createElement('div');
+				panel.className = 'selectionpanel';
+				const title = document.createElement('div');
+				title.className = 'selectionpanel-title';
+				title.setAttribute(
+					'data-i18n',
+					picker.dataset.cookable ? 'simulatorSelectedIngredients' : 'discoverySelectedIngredients',
+				);
+				title.textContent = t(
+					picker.dataset.cookable ? 'simulatorSelectedIngredients' : 'discoverySelectedIngredients',
+				);
+				parent.parentNode.insertBefore(panel, parent);
+				panel.appendChild(title);
+				panel.appendChild(parent);
 			}
 			let slots = parent.getElementsByClassName('ingredient');
 			let limited;
@@ -2499,11 +2665,12 @@ import './locales/index.js';
 					}
 
 					results.appendChild(table);
+					simulatorLocaleRefresh = updateRecipes;
 
 					results.appendChild(
 						makeElement(
 							'p',
-							'The highlighted row(s) will be selected from when cooking.',
+							t('discoveryHighlightsNote'),
 						),
 					);
 
@@ -2511,7 +2678,7 @@ import './locales/index.js';
 						getSuggestions(suggestions, ingredients, cooking);
 
 						if (suggestions.length > 0) {
-							results.appendChild(makeElement('p', 'Add more ingredients to make:'));
+							results.appendChild(makeElement('p', t('discoveryMoreSuggestions')));
 							table = makeSortableTable(
 								{
 									'': '',
@@ -2662,6 +2829,7 @@ import './locales/index.js';
 						Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
 					}
 				};
+				discoveryLocaleRefresh = updateRecipes;
 			}
 
 			if (slots.length !== 0) {
@@ -2703,17 +2871,17 @@ import './locales/index.js';
 			ensureEmptySlot();
 
 			// Sort controls for ingredient picker
-			const sortControls = (() => {
-				const sortButton = document.createElement('span');
-				const sortDropdown = document.createElement('div');
-				const sortOptions = [
-					{ value: 'default', label: t('sortDefault') },
-					{ value: 'name', label: t('sortName') },
-					{ value: 'health', label: t('sortHealth') },
-					{ value: 'hunger', label: t('sortHunger') },
-					{ value: 'sanity', label: t('sortSanity') },
-					{ value: 'perish', label: t('sortPerish') },
-				];
+				const sortControls = (() => {
+					const sortButton = document.createElement('span');
+					const sortDropdown = document.createElement('div');
+					const sortKeys = [
+						{ value: 'default', key: 'sortDefault' },
+						{ value: 'name', key: 'sortName' },
+						{ value: 'health', key: 'sortHealth' },
+						{ value: 'hunger', key: 'sortHunger' },
+						{ value: 'sanity', key: 'sortSanity' },
+						{ value: 'perish', key: 'sortPerish' },
+					];
 
 				let currentSort = 'default';
 				let isOpen = false;
@@ -2730,24 +2898,34 @@ import './locales/index.js';
 					console.warn('Unable to load sort preference', err);
 				}
 
+					const updateLabels = () => {
+						const currentLabel = sortKeys.find(k => k.value === currentSort).key;
+						sortButton.textContent = t(currentLabel);
+
+						Array.from(sortDropdown.children).forEach(child => {
+							const key = sortKeys.find(k => k.value === child.dataset.value);
+							if (key) child.textContent = t(key.key);
+						});
+					};
+
 				sortButton.className = 'sortingredients';
-				sortButton.textContent = sortOptions.find(opt => opt.value === currentSort).label;
+					updateLabels();
 
 				sortDropdown.className = 'sortdropdown';
 				sortDropdown.style.display = 'none';
 
-				sortOptions.forEach(option => {
-					const optionEl = document.createElement('div');
-					optionEl.textContent = option.label;
-					optionEl.dataset.value = option.value;
+					sortKeys.forEach(sk => {
+						const optionEl = document.createElement('div');
+						optionEl.textContent = t(sk.key);
+					optionEl.dataset.value = sk.value;
 
-					if (option.value === currentSort) {
+					if (sk.value === currentSort) {
 						optionEl.classList.add('is-selected');
 					}
 
 					optionEl.addEventListener('click', () => {
-						currentSort = option.value;
-						sortButton.textContent = option.label;
+						currentSort = sk.value;
+						sortButton.textContent = t(sk.key);
 
 						// Update all options' selected state
 						Array.from(sortDropdown.children).forEach(child => {
@@ -2796,6 +2974,9 @@ import './locales/index.js';
 					}
 				});
 
+				// Update labels when locale changes
+						document.addEventListener('foodguide:localechange', updateLabels);
+
 				return {
 					getSortType: () => currentSort,
 					getButton: () => sortButton,
@@ -2804,27 +2985,40 @@ import './locales/index.js';
 			})();
 
 			searchSelector.className = 'searchselector retracted';
-			searchSelector.appendChild(document.createTextNode('name'));
+			searchSelector.appendChild(document.createTextNode(t('searchTypeName')));
 
 			const searchSelectorControls = (() => {
 				const dropdown = document.createElement('div');
 				let extended = false;
 				let extendedHeight = null;
-				const searchTypes = [
-					{ title: t('searchTypeName'), prefix: '', placeholder: t('searchPlaceholderName') },
+				const searchTypeKeys = [
+					{ key: 'searchTypeName', prefix: '', placeholderKey: 'searchPlaceholderName' },
 					{
-						title: t('searchTypeTag'),
+						key: 'searchTypeTag',
 						prefix: 'tag:',
-						placeholder: t('searchPlaceholderTag'),
+						placeholderKey: 'searchPlaceholderTag',
 					},
 					{
-						title: t('searchTypeRecipe'),
+						key: 'searchTypeRecipe',
 						prefix: 'recipe:',
-						placeholder: t('searchPlaceholderRecipe'),
+						placeholderKey: 'searchPlaceholderRecipe',
 					},
 				];
-				let selectedType = searchTypes[0];
+				let selectedIndex = 0;
 				let retractTimer = null;
+
+				const updateSearchTypeTexts = () => {
+					// Update search selector button text
+					searchSelector.firstChild.textContent = t(searchTypeKeys[selectedIndex].key);
+					// Update picker placeholder
+					picker.placeholder = t(searchTypeKeys[selectedIndex].placeholderKey);
+					// Update dropdown options
+					searchTypeKeys.forEach((sk, index) => {
+						if (sk.element) {
+							sk.element.firstChild.textContent = t(sk.key);
+						}
+					});
+				};
 
 				const retract = () => {
 					extended = false;
@@ -2863,14 +3057,14 @@ import './locales/index.js';
 					searchSelector.className = 'searchselector extended';
 				};
 
-				const setSearchType = searchType => {
-					selectedType = searchType;
-					picker.placeholder = selectedType.placeholder;
-					searchSelector.firstChild.textContent = selectedType.title;
+				const setSearchType = index => {
+					selectedIndex = index;
+					picker.placeholder = t(searchTypeKeys[index].placeholderKey);
+					searchSelector.firstChild.textContent = t(searchTypeKeys[index].key);
 				};
 
 				const setSearchTypeFromClick = e => {
-					setSearchType(searchTypes[e.target.dataset.typeIndex]);
+					setSearchType(Number(e.target.dataset.typeIndex));
 					refreshPicker();
 					retract();
 				};
@@ -2878,15 +3072,15 @@ import './locales/index.js';
 				const tagsplit = /: */;
 				const controls = {
 					getTag: () => {
-						return selectedType.title;
+						return t(searchTypeKeys[selectedIndex].key);
 					},
 
 					setSearchType: index => {
-						setSearchType(searchTypes[index]);
+						setSearchType(index);
 					},
 
 					getSearch: () => {
-						return selectedType.prefix + picker.value;
+						return searchTypeKeys[selectedIndex].prefix + picker.value;
 					},
 
 					splitTag: () => {
@@ -2895,9 +3089,9 @@ import './locales/index.js';
 						if (parts.length === 2) {
 							const tag = `${parts[0].toLowerCase()}:`;
 							const name = parts[1];
-							for (let i = 0; i < searchTypes.length; i++) {
-								if (tag === searchTypes[i].prefix) {
-									setSearchType(searchTypes[i]);
+							for (let i = 0; i < searchTypeKeys.length; i++) {
+								if (tag === searchTypeKeys[i].prefix) {
+									setSearchType(i);
 									picker.value = name;
 									break;
 								}
@@ -2970,15 +3164,18 @@ import './locales/index.js';
 					false,
 				);
 
-				searchTypes.forEach((searchType, index) => {
+				searchTypeKeys.forEach((sk, index) => {
 					const element = document.createElement('div');
 
-					element.appendChild(document.createTextNode(searchType.title));
+					element.appendChild(document.createTextNode(t(sk.key)));
 					element.dataset.typeIndex = index;
 					element.addEventListener('click', setSearchTypeFromClick, false);
-					searchType.element = element;
+					sk.element = element;
 					dropdown.appendChild(element);
 				});
+
+				// Update texts when locale changes
+				document.addEventListener('foodguide:localechange', updateSearchTypeTexts);
 
 				picker.parentNode.insertBefore(searchSelector, picker);
 				dropdown.className = 'searchdropdown';
@@ -3069,14 +3266,14 @@ import './locales/index.js';
 			);
 
 			// Display mode controls (Icons / Names / List)
-			const displayModeControls = (() => {
-				const displayButton = document.createElement('span');
-				const displayDropdown = document.createElement('div');
-				const displayModes = [
-					{ value: 'names', label: t('displayModeNames') },
-					{ value: 'icons', label: t('displayModeIcons') },
-					{ value: 'list', label: t('displayModeList') },
-				];
+				const displayModeControls = (() => {
+					const displayButton = document.createElement('span');
+					const displayDropdown = document.createElement('div');
+					const displayModes = [
+						{ value: 'names', key: 'displayModeNames' },
+						{ value: 'icons', key: 'displayModeIcons' },
+						{ value: 'list', key: 'displayModeList' },
+					];
 
 				let currentMode = 'names';
 				let isOpen = false;
@@ -3093,10 +3290,18 @@ import './locales/index.js';
 					console.warn('Unable to load display mode preference', err);
 				}
 
-				displayButton.className = 'displaymodeingredients';
-				displayButton.textContent = displayModes.find(
-					opt => opt.value === currentMode,
-				).label;
+					const updateLabels = () => {
+						const currentLabel = displayModes.find(opt => opt.value === currentMode).key;
+						displayButton.textContent = t(currentLabel);
+
+						Array.from(displayDropdown.children).forEach(child => {
+							const mode = displayModes.find(opt => opt.value === child.dataset.value);
+							if (mode) child.textContent = t(mode.key);
+						});
+					};
+
+					displayButton.className = 'displaymodeingredients';
+					updateLabels();
 
 				displayDropdown.className = 'displaymodedropdown';
 				displayDropdown.style.display = 'none';
@@ -3113,18 +3318,18 @@ import './locales/index.js';
 				// Apply initial mode
 				applyDisplayMode(currentMode);
 
-				displayModes.forEach(option => {
-					const optionEl = document.createElement('div');
-					optionEl.textContent = option.label;
-					optionEl.dataset.value = option.value;
+					displayModes.forEach(option => {
+						const optionEl = document.createElement('div');
+						optionEl.textContent = t(option.key);
+						optionEl.dataset.value = option.value;
 
 					if (option.value === currentMode) {
 						optionEl.classList.add('is-selected');
 					}
 
-					optionEl.addEventListener('click', () => {
-						currentMode = option.value;
-						displayButton.textContent = option.label;
+						optionEl.addEventListener('click', () => {
+							currentMode = option.value;
+							updateLabels();
 
 						// Update all options' selected state
 						Array.from(displayDropdown.children).forEach(child => {
@@ -3146,12 +3351,14 @@ import './locales/index.js';
 							console.warn('Unable to save display mode preference', err);
 						}
 
-						displayDropdown.style.display = 'none';
-						isOpen = false;
+							displayDropdown.style.display = 'none';
+							isOpen = false;
+						});
+
+						displayDropdown.appendChild(optionEl);
 					});
 
-					displayDropdown.appendChild(optionEl);
-				});
+						document.addEventListener('foodguide:localechange', updateLabels);
 
 				displayButton.addEventListener('click', e => {
 					e.stopPropagation();
@@ -3185,17 +3392,17 @@ import './locales/index.js';
 				};
 			})();
 
-			parent.parentNode.insertBefore(displayModeControls.getButton(), parent);
-			parent.parentNode.insertBefore(displayModeControls.getDropdown(), parent);
+			picker.parentNode.insertBefore(displayModeControls.getButton(), parent.parentNode);
+			picker.parentNode.insertBefore(displayModeControls.getDropdown(), parent.parentNode);
 
 			// Insert sort controls
-			parent.parentNode.insertBefore(sortControls.getButton(), parent);
-			parent.parentNode.insertBefore(sortControls.getDropdown(), parent);
+			picker.parentNode.insertBefore(sortControls.getButton(), parent.parentNode);
+			picker.parentNode.insertBefore(sortControls.getDropdown(), parent.parentNode);
 
 			// Insert clear button (will be styled to the right)
-			parent.parentNode.insertBefore(clear, parent);
+			picker.parentNode.insertBefore(clear, parent.parentNode);
 
-			parent.parentNode.insertBefore(dropdown, parent);
+			picker.parentNode.insertBefore(dropdown, parent.parentNode);
 
 			picker.addEventListener('keydown', _ => {
 				refreshPicker();
@@ -3304,14 +3511,32 @@ import './locales/index.js';
 	const headerTop = document.querySelector('.header-top');
 	const modePanel = headerTop; // mode buttons are injected directly into header-top
 
-	// Section: Game version
-	const versionSection = document.createElement('div');
-	versionSection.className = 'mode-section';
+	const updateModeButtonTitles = () => {
+		for (const btn of modePanel.querySelectorAll('.dlc-btn')) {
+			const dlcKey = btn.dataset.dlc;
+			if (!dlcKey || !dlcOptions[dlcKey]) continue;
+			btn.title = `${dlcOptions[dlcKey].name}\n${t('dlcToggleHint')}`;
+		}
 
-	const versionLabel = document.createElement('span');
-	versionLabel.className = 'mode-label';
-	versionLabel.textContent = t('modeLabelGame');
-	versionSection.appendChild(versionLabel);
+		for (const btn of modePanel.querySelectorAll('.char-btn')) {
+			const charName = btn.dataset.character;
+			if (!charName || !characters[charName]) continue;
+			const charAbilities = getCharacterAbilities(charName, characters);
+			const abilityText = charAbilities.length > 0 ? `\n${charAbilities.join('\n')}` : '';
+			btn.title = `${characters[charName].name}\n${t('characterToggleHint')}${abilityText}`;
+		}
+	};
+	document.addEventListener('foodguide:localechange', updateModeButtonTitles);
+
+	// Section: Game version
+		const versionSection = document.createElement('div');
+		versionSection.className = 'mode-section';
+
+		const versionLabel = document.createElement('span');
+		versionLabel.className = 'mode-label';
+		versionLabel.setAttribute('data-i18n', 'modeLabelGame');
+		versionLabel.textContent = t('modeLabelGame');
+		versionSection.appendChild(versionLabel);
 
 	for (const name in gameVersions) {
 		const btn = document.createElement('div');
@@ -3339,10 +3564,11 @@ import './locales/index.js';
 	const dlcSection = document.createElement('div');
 	dlcSection.className = 'mode-section dlc-section';
 
-	const dlcLabel = document.createElement('span');
-	dlcLabel.className = 'mode-label';
-	dlcLabel.textContent = t('modeLabelDlc');
-	dlcSection.appendChild(dlcLabel);
+		const dlcLabel = document.createElement('span');
+		dlcLabel.className = 'mode-label';
+		dlcLabel.setAttribute('data-i18n', 'modeLabelDlc');
+		dlcLabel.textContent = t('modeLabelDlc');
+		dlcSection.appendChild(dlcLabel);
 
 	for (const name in dlcOptions) {
 		const btn = document.createElement('div');
@@ -3370,10 +3596,11 @@ import './locales/index.js';
 	const charSection = document.createElement('div');
 	charSection.className = 'mode-section char-section';
 
-	const charLabel = document.createElement('span');
-	charLabel.className = 'mode-label';
-	charLabel.textContent = t('modeLabelCharacter');
-	charSection.appendChild(charLabel);
+		const charLabel = document.createElement('span');
+		charLabel.className = 'mode-label';
+		charLabel.setAttribute('data-i18n', 'modeLabelCharacter');
+		charLabel.textContent = t('modeLabelCharacter');
+		charSection.appendChild(charLabel);
 
 	for (const name in characters) {
 		const btn = document.createElement('div');

@@ -197,6 +197,8 @@ const defaultStrings = {
 	tableNotes: 'Notes',
 	tableRequires: 'Requires',
 	tableIngredients: 'Ingredients',
+	simulatorSummaryTotal: 'Total',
+	simulatorSummaryPotential: 'Potential',
 	tableHealthHint: 'Health restored (change if cooked)',
 	tableHungerHint: 'Hunger restored (change if cooked)',
 	tableSanityHint: 'Sanity restored (change if cooked)',

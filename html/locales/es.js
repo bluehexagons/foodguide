@@ -105,6 +105,8 @@ const dict = {
 	durationSeconds: '{count} {unit}',
 	durationToNever: 'a Nunca',
 	durationToDays: 'a {count} {unit}',
+	simulatorSummaryTotal: 'Total',
+	simulatorSummaryPotential: 'Potencial',
 	foodInfoRecipes: 'Recetas',
 	foodInfoFrom: 'de',
 	foodInfoCook: 'cocinar',

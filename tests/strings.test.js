@@ -274,10 +274,15 @@ const setupDom = () => {
 
 	it('registered locale dictionaries expose translated food labels and notes', async () => {
 		const strings = await import('../html/strings.js');
+		await import('../html/locales/es.js');
 		await import('../html/locales/zh.js');
+
+		strings.setLocale('es');
+		assert.equal(strings.t('simulatorSummaryPotential'), 'Potencial');
 
 		strings.setLocale('zh');
 		assert.equal(strings.tagLabel('fruit'), '水果');
+		assert.equal(strings.t('simulatorSummaryTotal'), '总计');
 		assert.equal(strings.t('foodInfoRecipes'), '配方');
 		assert.equal(strings.resolveNote('noteLightSeconds', { seconds: 90 }, 'Gives 90 seconds of light'), '提供90秒照明');
 		assert.equal(strings.resolveNote('notePoisonous'), '有毒');

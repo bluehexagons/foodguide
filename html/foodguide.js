@@ -395,8 +395,18 @@ import './locales/index.js';
 		'DLC or Game Mode required': 'tableModeHint',
 	};
 
+	const summaryLabelKeys = {
+		Total: 'simulatorSummaryTotal',
+		Potential: 'simulatorSummaryPotential',
+	};
+
 	const translateTableLabel = label => {
 		const key = tableLabelKeys[label];
+		return key ? t(key) : label;
+	};
+
+	const translateSummaryLabel = label => {
+		const key = summaryLabelKeys[label];
 		return key ? t(key) : label;
 	};
 
@@ -1195,7 +1205,7 @@ import './locales/index.js';
 
 	const fandomHref = name => {
 		if (name && name.startsWith('Sum:')) {
-			return name.substring(name.indexOf(':') + 1);
+			return translateSummaryLabel(name.substring(name.indexOf(':') + 1));
 		}
 
 		const node = document.createElement('a');

@@ -100,6 +100,8 @@ const dict = {
 	durationSeconds: '{count}{unit}',
 	durationToNever: '变为永不',
 	durationToDays: '变为{count}{unit}',
+	simulatorSummaryTotal: '总计',
+	simulatorSummaryPotential: '潜在',
 	foodInfoRecipes: '配方',
 	foodInfoFrom: '来自',
 	foodInfoCook: '烹饪',

@@ -82,8 +82,8 @@
 
 .ingredient :is(img, .icon) {
 	display: block;
-	width: 64px;
-	height: 64px;
+	width: 48px;
+	height: 48px;
 	border: none;
 	margin: 0;
 	position: relative;
@@ -100,48 +100,15 @@
 
 /* Search selector toggle */
 .searchselector {
-	display: inline-block;
-	padding: 0 0 0 2px;
-	line-height: 22px;
-	vertical-align: bottom;
-	border: 1px solid var(--medium);
-	border-right: none;
-	height: 100%;
-	background: var(--table-hover);
-	color: var(--fg-primary);
-	border-radius: 3px 0 0 3px;
-	transition: border-bottom-left-radius 100ms ease;
-	cursor: pointer;
 }
 
 .searchselector.retracted::after {
-	content: '';
-	margin-left: 3px;
-	margin-right: 2px;
-	width: 0;
-	height: 0;
-	display: inline-block;
-	border-left: 5px solid transparent;
-	border-right: 5px solid transparent;
-	border-top: 5px solid var(--fg-tertiary);
-	margin-bottom: 2px;
 }
 
 .searchselector.extended::after {
-	content: '';
-	margin-left: 3px;
-	margin-right: 2px;
-	width: 0;
-	height: 0;
-	display: inline-block;
-	border-left: 5px solid transparent;
-	border-right: 5px solid transparent;
-	border-bottom: 5px solid var(--fg-tertiary);
-	margin-bottom: 2px;
 }
 
 .searchselector:active {
-	background-color: var(--medium);
 }
 
 /* Search dropdown */
@@ -224,18 +191,17 @@
 }
 
 /* Dropdown styles for sort and display mode */
-}
 
 /* Makable / statistics buttons */
 button.makablebutton {
-	font-size: 14pt;
+	font-size: 12pt;
 	margin: 4px;
-	padding: 6px 12px;
+	padding: 4px 12px;
 	display: inline-block;
 	border: 1px solid var(--medium);
 	background: var(--bg-primary);
 	color: var(--fg-primary);
-	border-radius: 5px;
+	border-radius: 3px;
 	cursor: pointer;
 	transition: all var(--transition-fast);
 }
@@ -525,23 +491,6 @@ button.makablebutton:disabled:hover {
     width: 100%;
 }
 
-.ingredient-search-input-group .searchselector {
-    border-radius: 4px 0 0 4px;
-    padding: 0 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-right: none;
-    font-size: 14px;
-    height: auto;
-}
-
-.ingredient-search-input-group .searchselector::after {
-    margin-left: 6px;
-}
-
 .ingredient-search-input-group .ingredientpicker {
     flex: 1;
     border-radius: 0 4px 4px 0;
@@ -746,6 +695,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.hidetext.density-compact .item :is(img, .icon) {
     width: 20px;
     height: 20px;
+    margin-right: 0;
 }
 
 /* Normal */
@@ -770,6 +720,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.hidetext.density-normal .item :is(img, .icon) {
     width: 28px;
     height: 28px;
+    margin-right: 0;
 }
 
 /* Cozy */
@@ -795,6 +746,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.hidetext.density-cozy .item :is(img, .icon) {
     width: 36px;
     height: 36px;
+    margin-right: 0;
 }
 
 /* Dropdown fix for density dropdown */
@@ -817,6 +769,8 @@ button.makablebutton:disabled:hover {
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	min-width: 140px;
 	z-index: 200; /* High enough to overlay lists */
+    max-height: 240px;
+    overflow-y: auto;
 }
 
 .ui-dropdown-list div {
@@ -825,6 +779,7 @@ button.makablebutton:disabled:hover {
 	cursor: pointer;
 	background: var(--bg-primary);
 	transition: background var(--transition-fast);
+    font-size: 13px;
 }
 
 .ui-dropdown-list div.is-selected {
@@ -833,6 +788,65 @@ button.makablebutton:disabled:hover {
 
 .ui-dropdown-list div:hover {
 	background: var(--table-hover) !important;
+}
+
+.ui-dropdown-btn {
+    height: 32px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--fg-primary);
+    font-size: 13px;
+    padding: 0 10px 0 8px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.ui-dropdown-btn::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--fg-secondary);
+    margin-left: 4px;
+    transition: transform var(--transition-fast);
+}
+
+.ui-dropdown-container.is-open .ui-dropdown-btn::after {
+    transform: rotate(180deg);
+}
+
+.ui-dropdown-btn:hover {
+    background: var(--table-hover);
+    border-color: var(--dark);
+}
+
+/* Base custom dropdowns styling (replaces specific class rules) */
+.ingredient-search-controls .ui-dropdown-btn {
+    margin: 0;
+}
+
+.searchselector.ui-dropdown-btn {
+    border-radius: 4px 0 0 4px;
+    border-right: none;
+    background: var(--table-hover);
+    color: var(--fg-primary);
+}
+
+.searchselector.ui-dropdown-btn:hover,
+.searchselector.ui-dropdown-btn:active {
+    background: var(--medium);
+}
+
+.sortingredients.ui-dropdown-btn,
+.displaymodeingredients.ui-dropdown-btn {
+    padding: 0 12px;
 }
 
 /* For search dropdown container to work in flex */

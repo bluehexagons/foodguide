@@ -20,7 +20,7 @@ table td {
 	border-bottom: 1px solid var(--border-color);
 	border-right: 1px solid var(--border-light);
 	background: var(--table-bg);
-	padding: 4px 8px;
+	padding: 6px 12px;
 	min-height: 26px;
 	min-width: 40px;
 	color: var(--fg-primary);
@@ -28,6 +28,17 @@ table td {
 
 table td:first-child {
 	border-left: 1px solid var(--border-light);
+}
+
+table .numeric-cell {
+	text-align: right;
+}
+
+table .icon-cell {
+	width: 1%;
+	white-space: nowrap;
+	text-align: center;
+	padding: 6px 4px;
 }
 
 td .cellRow:nth-child(n + 2) {
@@ -55,15 +66,16 @@ table tr.highlighted td {
 table th {
 	background: var(--header-bg, #5a6570);
 	color: var(--header-text, #fff);
-	padding: 6px 8px;
+	padding: 8px 12px;
 	text-align: left;
-	font-size: 13px;
+	font-size: 14px;
 	font-weight: 600;
 	border-bottom: 2px solid rgba(0, 0, 0, 0.3);
 	position: sticky;
 	top: 0;
 	z-index: 1;
 	transition: background-color var(--transition-normal);
+	white-space: nowrap;
 }
 
 table th[style*='cursor'] {
@@ -71,20 +83,27 @@ table th[style*='cursor'] {
 }
 
 table th:hover {
-	filter: brightness(1.15);
+	background: var(--header-accent, #6a7580);
 }
 
 /* Sort-active column indicator */
-table th.sort-asc {
-	background: var(--header-accent, #8a9aa8);
-	color: var(--header-bg, #5a6570);
-	border-radius: 4px;
+table th.sort-asc, table th.sort-desc {
+	background: var(--header-accent, #6a7580);
+	color: var(--header-text, #fff);
 }
 
-table th.sort-desc {
-	background: color-mix(in srgb, var(--header-bg, #5a6570) 80%, #000);
-	color: var(--header-accent, #8a9aa8);
-	border-radius: 4px;
+table th.sort-asc::after {
+	content: ' \25B2';
+	font-size: 0.8em;
+	opacity: 0.8;
+	margin-left: 6px;
+}
+
+table th.sort-desc::after {
+	content: ' \25BC';
+	font-size: 0.8em;
+	opacity: 0.8;
+	margin-left: 6px;
 }
 
 /* Column visibility: user can toggle columns on/off */
@@ -103,7 +122,7 @@ table .col-hidden {
 
 .column-toggle-bar .col-toggle-label {
 	font-size: 11px;
-	color: var(--medium);
+	color: var(--fg-tertiary);
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 	margin-right: 4px;
@@ -128,7 +147,7 @@ table .col-hidden {
 }
 
 .column-toggle-bar button.active {
-	background: var(--header-accent, #8a9aa8);
+	background: var(--header-bg, #5a6570);
 	border-color: var(--header-bg, #5a6570);
 	color: var(--header-text, #fff);
 }

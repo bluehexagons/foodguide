@@ -31,7 +31,7 @@ html {
 
 	--fontColor: var(--fg-primary);
 	--linkColor: var(--fg-secondary);
-	--linkHoverColor: var(--medium);
+	--linkHoverColor: #555;
 
 	/* Header/table header colors (light mode) */
 	--header-accent: #8a9aa8;
@@ -57,6 +57,7 @@ body {
 	overflow-x: hidden;
 
 	background: var(--bg-primary);
+	color: var(--fg-primary);
 }
 
 /* Dark mode - activated via data-theme="dark" attribute */
@@ -92,6 +93,7 @@ html[data-theme='dark'] {
 
 	--fontColor: var(--fg-primary);
 	--linkColor: var(--fg-secondary);
+	--linkHoverColor: #999;
 
 	/* Header/table header colors (dark mode) */
 	--header-accent: #666;
@@ -125,6 +127,7 @@ html[data-theme='light'] {
 
 	--fontColor: var(--fg-primary);
 	--linkColor: var(--fg-secondary);
+	--linkHoverColor: #555;
 
 	/* Selected/Excluded indicator colors (light mode) */
 	--selected-bg: #dde8dd;
@@ -251,13 +254,18 @@ strong {
 #help-favorite-foods {
 	border-collapse: collapse;
 	margin-bottom: 16px;
+    max-width: 600px;
 }
 
 #help-favorite-foods th,
 #help-favorite-foods td {
-	padding: 4px 16px 4px 0;
+	padding: 6px 16px 6px 0;
 	text-align: left;
 	border-bottom: 1px solid var(--border-color);
+}
+
+#help-favorite-foods tr:hover td {
+    background: var(--table-hover);
 }
 
 #help-favorite-foods th {
@@ -282,4 +290,45 @@ strong {
 
 #footer a:hover {
 	opacity: 1;
+}
+
+/* Wiki Links List */
+.wiki-links-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.wiki-links-list li {
+    margin: 0;
+}
+
+.wiki-links-list a {
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--fg-primary);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.wiki-links-list a:hover {
+    background: var(--table-hover);
+    border-color: var(--dark);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wiki-links-list a::after {
+    content: " ↗";
+    font-size: 11px;
+    opacity: 0.6;
+    margin-left: 2px;
 }

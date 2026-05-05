@@ -76,7 +76,7 @@ import './locales/index.js';
 			container.className = containerClass;
 
 			const button = document.createElement('span');
-			button.className = buttonClass;
+			button.className = buttonClass === 'ui-dropdown-btn' ? buttonClass : `ui-dropdown-btn ${buttonClass}`;
 
 			const dropdown = document.createElement('div');
 			dropdown.className = dropdownClass;
@@ -138,6 +138,7 @@ import './locales/index.js';
 					updateSelectionState();
 					dropdown.style.display = 'none';
 					isOpen = false;
+					container.classList.remove('is-open');
 
 					if (storageKey) {
 						try {
@@ -167,12 +168,14 @@ import './locales/index.js';
 				e.stopPropagation();
 				isOpen = !isOpen;
 				dropdown.style.display = isOpen ? 'block' : 'none';
+				container.classList.toggle('is-open', isOpen);
 			});
 
 			document.addEventListener('click', e => {
 				if (isOpen && !dropdown.contains(e.target) && e.target !== button) {
 					dropdown.style.display = 'none';
 					isOpen = false;
+					container.classList.remove('is-open');
 				}
 			});
 
@@ -300,11 +303,13 @@ import './locales/index.js';
 		document.getElementById('language-picker')
 	);
 	if (langPicker) {
+		const localeFlags = { en: '🇺🇸', es: '🇪🇸', zh: '🇨🇳' };
 		const codes = listLocales();
 		for (const code of codes) {
 			const opt = document.createElement('option');
 			opt.value = code;
-			opt.textContent = localeName(code);
+			const flag = localeFlags[code];
+			opt.textContent = flag ? `${flag} ${localeName(code)}` : localeName(code);
 			langPicker.appendChild(opt);
 		}
 		langPicker.value = getLocale();
@@ -1195,6 +1200,10 @@ import './locales/index.js';
 				td.appendChild(cell);
 			} else {
 				td.appendChild(document.createTextNode(celltext));
+				// Auto-align numeric content
+				if (/^[+-]?\d/.test(celltext.trim()) || celltext.trim() === '') {
+					td.classList.add('numeric-cell');
+				}
 			}
 
 			tr.appendChild(td);
@@ -1242,6 +1251,17 @@ import './locales/index.js';
 
 		// Column visibility state
 		const headerKeys = Object.keys(headers);
+		const iconColumns = [];
+		const numericColumns = [];
+		headerKeys.forEach((key, i) => {
+			const headerText = key.indexOf(':') === -1 ? key : key.split(':')[0];
+			if (headerText === '' || headerText === 'Mode') {
+				iconColumns.push(i);
+			}
+			if (['Health', 'Health+', 'Hunger', 'Hunger+', 'Sanity', 'Perish', 'Cook Time', 'Priority'].includes(headerText) || headerText.includes('Health') || headerText.includes('Hunger')) {
+				numericColumns.push(i);
+			}
+		});
 		const hiddenColumns = new Set();
 		let autoMode = true; // start in auto mode (responsive hiding)
 		let autoHiddenColumns;
@@ -1285,6 +1305,18 @@ import './locales/index.js';
 		const generateAndHighlight = (item, index, array) => {
 			if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
 				const row = rowGenerator(item);
+				
+				iconColumns.forEach(colIdx => {
+					if (row.children[colIdx]) {
+						row.children[colIdx].classList.add('icon-cell');
+					}
+				});
+
+				numericColumns.forEach(colIdx => {
+					if (row.children[colIdx]) {
+						row.children[colIdx].classList.add('numeric-cell');
+					}
+				});
 
 				if (highlightCallback && highlightCallback(item, array)) {
 					row.className = 'highlighted';
@@ -1356,6 +1388,17 @@ import './locales/index.js';
 
 			for (const header in headers) {
 				const th = document.createElement('th');
+				
+				const headerText = header.indexOf(':') === -1 ? header : header.split(':')[0];
+				
+				// Apply numeric class to stat columns
+				if (['Health', 'Health+', 'Hunger', 'Hunger+', 'Sanity', 'Perish', 'Cook Time', 'Priority'].includes(headerText) || headerText.includes('Health') || headerText.includes('Hunger')) {
+					th.classList.add('numeric-cell');
+				}
+				
+				if (headerText === '' || headerText === 'Mode') {
+					th.classList.add('icon-cell');
+				}
 
 				if (header.indexOf(':') === -1) {
 					th.appendChild(document.createTextNode(translateTableLabel(header)));
@@ -1650,17 +1693,17 @@ import './locales/index.js';
 			if ((item.cook.health || 0) !== (item.health || 0)) {
 				const rawHealth = (itemMods.health ?? item.health) || 0;
 				const cookedHealth = ((cookMods.health ?? item.cook.health) || 0) * cookmult;
-				health += ` (${sign(cookedHealth - rawHealth)})`;
+				health = (health === '' ? '0' : health) + ` (${sign(cookedHealth - rawHealth)})`;
 			}
 			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
 				const rawHunger = (itemMods.hunger ?? item.hunger) || 0;
 				const cookedHunger = ((cookMods.hunger ?? item.cook.hunger) || 0) * cookmult;
-				hunger += ` (${sign(cookedHunger - rawHunger)})`;
+				hunger = (hunger === '' ? '0' : hunger) + ` (${sign(cookedHunger - rawHunger)})`;
 			}
 			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
 				const rawSanity = (itemMods.sanity ?? item.sanity) || 0;
 				const cookedSanity = ((cookMods.sanity ?? item.cook.sanity) || 0) * cookmult;
-				sanity += ` (${sign(cookedSanity - rawSanity)})`;
+				sanity = (sanity === '' ? '0' : sanity) + ` (${sign(cookedSanity - rawSanity)})`;
 			}
 			if ((item.cook.perish || 0) !== (item.perish || 0)) {
 				const dayDifference =

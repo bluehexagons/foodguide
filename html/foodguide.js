@@ -2736,7 +2736,7 @@ import './locales/index.js';
 				);
 
 				// Apply additional sorting based on user preference
-				const sortType = sortControls.getSortType();
+				const sortType = sortControls.getValue();
 				if (sortType !== 'default') {
 					names = sortIngredients(names, sortType);
 				}

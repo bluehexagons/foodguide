@@ -62,7 +62,7 @@
 		"@eslint/js": "^10.0.1",
 		"eslint": "^10.3.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-jsdoc": "^62.9.0",
+		"eslint-plugin-jsdoc": "^63.0.1",
 		"http-server": "^14.1.1",
 		"jsdoc": "^4.0.2",
 		"prettier": "^3.8.1",

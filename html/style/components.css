@@ -98,6 +98,76 @@
 	border: 2px solid var(--border-light);
 }
 
+@keyframes ingredient-action-error {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	20%,
+	60% {
+		transform: translateX(-3px);
+	}
+	40%,
+	80% {
+		transform: translateX(3px);
+	}
+}
+
+.ingredient.ingredient-action-error,
+.ingredientdropdown .item.ingredient-action-error,
+table.links span.link.ingredient-action-error {
+	border-color: var(--excluded-border);
+	box-shadow:
+		0 0 0 1px var(--excluded-border),
+		0 0 10px rgba(127, 17, 17, 0.3);
+	animation: ingredient-action-error 0.28s ease;
+}
+
+.ingredientdropdown .item.ingredient-action-error,
+table.links span.link.ingredient-action-error {
+	position: relative;
+}
+
+.ingredient.ingredient-action-error::after,
+.ingredientdropdown .item.ingredient-action-error::after,
+table.links span.link.ingredient-action-error::after {
+	content: '!';
+	position: absolute;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--bg-primary);
+	border-radius: 50%;
+	background: var(--excluded-border);
+	color: var(--bg-primary);
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 1;
+	pointer-events: none;
+}
+
+.ingredient.ingredient-action-error::after {
+	top: 4px;
+	right: 4px;
+}
+
+.ingredientdropdown .item.ingredient-action-error::after,
+table.links span.link.ingredient-action-error::after {
+	top: -8px;
+	right: -8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ingredient.ingredient-action-error,
+	.ingredientdropdown .item.ingredient-action-error,
+	table.links span.link.ingredient-action-error {
+		animation: none;
+	}
+}
+
 /* Search selector toggle */
 .searchselector {
 }

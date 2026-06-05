@@ -2571,31 +2571,86 @@ import './locales/index.js';
 			const clearSearchBtn = document.createElement('button');
 			const clearIngredientsBtn = document.createElement('button');
 
-			const pickItem = e => {
-				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
-				const id = target.dataset.id;
-
-				// In Discovery mode (unlimited), toggle: remove if already added
-				if (!limited && slots.indexOf(id) !== -1) {
-					// Find and remove the existing slot
-					const children = Array.from(parent.children);
-					const existingSlot = children.find(child => child.dataset.id === id);
-					if (existingSlot) {
-						const i = slots.indexOf(id);
-						slots.splice(i, 1);
-						parent.removeChild(existingSlot);
-						ensureEmptySlot();
-						updateRecipes();
-					}
-					e && e.preventDefault && e.preventDefault();
+			const flashIngredientActionError = target => {
+				if (!target) {
 					return;
 				}
 
-				const result = appendSlot(id);
+				target.classList.remove('ingredient-action-error');
+				void target.offsetWidth;
+				target.classList.add('ingredient-action-error');
+				const clearError = () => target.classList.remove('ingredient-action-error');
+				target.addEventListener('animationend', clearError, { once: true });
+				window.clearTimeout(target.ingredientActionErrorTimeout);
+				target.ingredientActionErrorTimeout = window.setTimeout(clearError, 400);
+			};
+
+			const removeSlotById = id => {
+				if (!id) {
+					return -1;
+				}
+
+				if (limited) {
+					for (let i = slots.length - 1; i >= 0; i--) {
+						if (getSlot(slots[i])?.key === id) {
+							setSlot(slots[i], null);
+							if (loaded) {
+								updateRecipes();
+							}
+
+							return i;
+						}
+					}
+
+					return -1;
+				}
+
+				const i = slots.indexOf(id);
+				if (i === -1) {
+					return -1;
+				}
+
+				const existingSlot = Array.from(parent.children).find(child => child.dataset.id === id);
+				if (existingSlot) {
+					parent.removeChild(existingSlot);
+				}
+				slots.splice(i, 1);
+				ensureEmptySlot();
+				if (loaded) {
+					updateRecipes();
+				}
+
+				return i;
+			};
+
+			const pickItem = e => {
+				const target = !e.target.dataset.id ? e.target.parentNode : e.target;
+				const id = target.dataset.id;
+				const isRemoval = e.button === 2;
+				let result;
+
+				if (e.button !== 0 && !isRemoval) {
+					return;
+				}
+
+				if (isRemoval) {
+					result = removeSlotById(id);
+				} else if (!limited && slots.indexOf(id) !== -1) {
+					result = removeSlotById(id);
+				} else {
+					result = appendSlot(id);
+				}
 
 				if (result !== -1) {
-					e && e.preventDefault && e.preventDefault();
+					e.preventDefault();
+				} else {
+					flashIngredientActionError(target);
+					e.preventDefault();
 				}
+			};
+
+			const suppressIngredientContextMenu = e => {
+				e.preventDefault();
 			};
 
 			let displaying = false;
@@ -2621,6 +2676,7 @@ import './locales/index.js';
 				emptySlot.addEventListener('click', () => {
 					picker.focus();
 				});
+				emptySlot.addEventListener('contextmenu', removeSlot, false);
 				parent.appendChild(emptySlot);
 			};
 
@@ -2629,6 +2685,10 @@ import './locales/index.js';
 
 				if (!id) {
 					console.warn('ID not set');
+					return -1;
+				}
+				if (!item) {
+					console.warn('Item not found', id);
 					return -1;
 				}
 
@@ -2652,6 +2712,7 @@ import './locales/index.js';
 						i.className = 'ingredient';
 						setSlot(i, item);
 						i.addEventListener('click', removeSlot, false);
+						i.addEventListener('contextmenu', removeSlot, false);
 						parent.appendChild(i);
 
 						// Ensure there's always an empty "+" slot at the end
@@ -2660,9 +2721,11 @@ import './locales/index.js';
 						if (loaded) {
 							updateRecipes();
 						}
+
+						return 1;
 					}
 
-					return 1;
+					return -1;
 				}
 			};
 
@@ -2683,6 +2746,7 @@ import './locales/index.js';
 				li.dataset.id = item.key;
 
 				li.addEventListener('mousedown', pickItem, false);
+				li.addEventListener('contextmenu', suppressIngredientContextMenu, false);
 				this.appendChild(li);
 
 				this.dataset.length++;
@@ -2700,20 +2764,31 @@ import './locales/index.js';
 
 			const removeSlot = e => {
 				const target = resolveIconTarget(e.target);
+				e.preventDefault();
 
 				if (limited) {
 					if (getSlot(target) !== null) {
+						const removedId = target.dataset.id;
 						setSlot(target, null);
 						updateRecipes();
 
-						return target.dataset.id;
+						return removedId;
 					} else {
 						// Empty slot clicked - focus the search bar
-						picker.focus();
+						if (e.type === 'contextmenu') {
+							flashIngredientActionError(target);
+						} else {
+							picker.focus();
+						}
 						return null;
 					}
 				} else {
 					const i = slots.indexOf(target.dataset.id);
+					if (i === -1) {
+						flashIngredientActionError(target);
+						return null;
+					}
+					const removedId = target.dataset.id;
 
 					slots.splice(i, 1);
 					parent.removeChild(target);
@@ -2723,7 +2798,7 @@ import './locales/index.js';
 
 					updateRecipes();
 
-					return slots[i] || null;
+					return removedId;
 				}
 			};
 
@@ -2794,11 +2869,15 @@ import './locales/index.js';
 			};
 
 			const searchFor = e => {
-				const name = resolveIconTarget(e.target).dataset.link;
+				const target = resolveIconTarget(e.target);
+				const name = target.dataset.link;
 				const matches = matchingNames(from, name, allowUncookable);
 
 				if (matches.length === 1) {
-					appendSlot(matches[0].key);
+					const result = appendSlot(matches[0].key);
+					if (result === -1) {
+						flashIngredientActionError(target);
+					}
 				} else {
 					picker.value = name;
 					refreshPicker();
@@ -3039,6 +3118,7 @@ import './locales/index.js';
 				Array.prototype.forEach.call(slots, slot => {
 					setSlot(slot, null);
 					slot.addEventListener('click', removeSlot, false);
+					slot.addEventListener('contextmenu', removeSlot, false);
 				});
 			} else {
 				slots = [];

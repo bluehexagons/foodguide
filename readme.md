@@ -16,7 +16,7 @@ github.io - [bluehexagons.github.io/foodguide/](https://bluehexagons.github.io/f
 This Food Guide must be run on a web server for most browsers to properly open it. With NodeJS installed, an easy way to run this offline is by hosting it with the http-server package:
 
 ```bash
-npx http-server
+npx http-server html
 ```
 
 Using the defaults, it should become accessible locally in a browser on 127.0.0.1:8080.
@@ -32,7 +32,7 @@ builds for a thin Electron wrapper around this project.
 
 Pull requests and bug reports are greatly appreciated if anything is out of sync with Don't Starve's current versions.
 
-The Unofficial Don't Starve Food Guide requires no setup and uses no imported code, and is a simple collection of JavaScript/HTML/CSS files. It must be served on a web server so that the JavaScript modules can be loaded by a web browser.
+The Unofficial Don't Starve Food Guide is a collection of JavaScript/HTML/CSS files. Install the project dependencies with `npm install`, then serve `html/` on a web server so that the JavaScript modules can be loaded by a web browser.
 
 To format code automatically using eslint rules, run `npx eslint --fix` or your preferred formatting method.
 This is not required before submitting a PR, as it will be run regardless.

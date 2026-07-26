@@ -161,7 +161,9 @@ async function main() {
 	const manifestData = {
 		cellSize: CELL_SIZE,
 		columns: COLUMNS,
-		rows: sheetRows[0] || 0,
+		// Store each sheet's row count so background positioning remains correct
+		// when the icon set grows beyond one sheet.
+		rows: sheetRows,
 		sheets: Array.from({ length: totalSheets }, (_, i) => `img/sprites/sheet-${i}.png`),
 		images: manifest,
 	};

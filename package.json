@@ -59,12 +59,9 @@
 	"author": "bluehexagons",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"@eslint/js": "^10.0.1",
 		"eslint": "^10.3.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-jsdoc": "^63.0.1",
 		"http-server": "^14.1.1",
-		"jsdoc": "^4.0.2",
 		"prettier": "^3.8.1",
 		"typescript": "^6.0.3"
 	},

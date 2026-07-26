@@ -14,7 +14,7 @@ import { perish_preserved } from './constants.js';
  * @returns {HTMLSpanElement} Icon element
  */
 export const makeImage = (() => {
-	/** @type {null | {cellSize: number, columns: number, rows: number, sheets: string[], images: Record<string, {sheet: number, col: number, row: number}>}} */
+	/** @type {null | {cellSize: number, columns: number, rows: number[], sheets: string[], images: Record<string, {sheet: number, col: number, row: number}>}} */
 	let manifest = null;
 
 	/** @type {boolean} */
@@ -34,7 +34,7 @@ export const makeImage = (() => {
 		const entry = manifest && manifest.images[url];
 		if (entry) {
 			const cols = manifest.columns;
-			const rows = manifest.rows;
+			const rows = manifest.rows[entry.sheet];
 			el.style.backgroundImage = `url('${manifest.sheets[entry.sheet]}')`;
 			// Scale sprite so each cell fills the element exactly
 			el.style.backgroundSize = `${cols * 100}% ${rows * 100}%`;

@@ -78,6 +78,7 @@ import { makeLinkable, stats } from './utils.js';
  * @property {string} [img] - Image path (set by post-processing)
  * @property {number} [match] - Match counter (set by post-processing)
  * @property {number} [modeMask] - Bit mask for mode filtering (set by post-processing)
+ * @property {number} [charMask] - Character bit mask for character-specific recipes (set by post-processing)
  * @property {string} [preparationType] - Always 'recipe' (set by post-processing)
  * @property {boolean} [vanilla] - True if vanilla mode (set by post-processing)
  * @property {*} [modeNode] - Linkable mode node (set by post-processing)

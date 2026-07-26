@@ -34,6 +34,12 @@ import {
 	total_day_time,
 } from './constants.js';
 import { food } from './food.js';
+import { createDropdownFactory } from './dropdown.js';
+import { createRecipeCalculator } from './recipe-calculator.js';
+import { createRecipeAnalyzer } from './recipe-analyzer.js';
+import { sortIngredients } from './ingredient-sort.js';
+import { createThemeController } from './theme-controller.js';
+import { createSortableTableFactory } from './sortable-table.js';
 import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
 import { accumulateIngredients, makeImage, makeLinkable, makeElement, pl } from './utils.js';
 import {
@@ -60,145 +66,11 @@ import {
 import './locales/index.js';
 
 (() => {
-		const createDropdown = (options) => {
-			const {
-				items,
-				initialValue,
-				buttonClass = 'ui-dropdown-btn',
-				dropdownClass = 'ui-dropdown-list',
-				containerClass = 'ui-dropdown-container',
-				onSelect,
-				storageKey,
-				storageIndex
-			} = options;
-
-			const container = document.createElement('div');
-			container.className = containerClass;
-
-			const button = document.createElement('span');
-			button.className = buttonClass === 'ui-dropdown-btn' ? buttonClass : `ui-dropdown-btn ${buttonClass}`;
-
-			const dropdown = document.createElement('div');
-			dropdown.className = dropdownClass;
-			dropdown.style.display = 'none';
-
-			let currentValue = initialValue;
-			let isOpen = false;
-
-			if (storageKey) {
-				try {
-					if (window.localStorage[storageKey]) {
-						const saved = JSON.parse(window.localStorage[storageKey]);
-						if (saved && (storageIndex === undefined || saved[storageIndex] !== undefined)) {
-							currentValue = storageIndex === undefined ? saved : saved[storageIndex];
-						}
-					}
-				} catch (err) {
-					console.warn('Unable to load preference', err);
-				}
-			}
-
-			if (!items.find(item => item.value === currentValue)) {
-				currentValue = items[0].value;
-			}
-
-			const updateLabels = () => {
-				const currentItem = items.find(opt => opt.value === currentValue);
-				button.textContent = t(currentItem.labelKey || currentItem.key);
-                if (currentItem.iconHTML) {
-                    button.innerHTML = currentItem.iconHTML + button.innerHTML;
-                }
-
-				Array.from(dropdown.children).forEach(child => {
-					const item = items.find(opt => opt.value === child.dataset.value);
-					if (item) {
-                        child.textContent = t(item.labelKey || item.key);
-                        if (item.iconHTML) {
-                            child.innerHTML = item.iconHTML + child.innerHTML;
-                        }
-                    }
-				});
-			};
-
-			const updateSelectionState = () => {
-				Array.from(dropdown.children).forEach(child => {
-					child.classList.toggle('is-selected', child.dataset.value === currentValue);
-				});
-			};
-
-			items.forEach((item, index) => {
-				const opt = document.createElement('div');
-				opt.dataset.value = item.value;
-				opt.dataset.index = index;
-				opt.textContent = t(item.labelKey || item.key);
-				opt.addEventListener('click', e => {
-					e.stopPropagation();
-					currentValue = item.value;
-					updateLabels();
-					updateSelectionState();
-					dropdown.style.display = 'none';
-					isOpen = false;
-					container.classList.remove('is-open');
-
-					if (storageKey) {
-						try {
-							let saved;
-							if (storageIndex !== undefined) {
-								saved = window.localStorage[storageKey] ? JSON.parse(window.localStorage[storageKey]) : (typeof storageIndex === 'number' ? [] : {});
-								saved[storageIndex] = currentValue;
-							} else {
-								saved = currentValue;
-							}
-							window.localStorage[storageKey] = JSON.stringify(saved);
-						} catch (err) {
-							console.warn('Unable to save preference', err);
-						}
-					}
-
-					if (onSelect) onSelect(item, currentValue);
-				});
-				dropdown.appendChild(opt);
-			});
-
-			updateLabels();
-			updateSelectionState();
-			document.addEventListener('foodguide:localechange', updateLabels);
-
-			button.addEventListener('click', e => {
-				e.stopPropagation();
-				isOpen = !isOpen;
-				dropdown.style.display = isOpen ? 'block' : 'none';
-				container.classList.toggle('is-open', isOpen);
-			});
-
-			document.addEventListener('click', e => {
-				if (isOpen && !dropdown.contains(e.target) && e.target !== button) {
-					dropdown.style.display = 'none';
-					isOpen = false;
-					container.classList.remove('is-open');
-				}
-			});
-
-			container.appendChild(button);
-			container.appendChild(dropdown);
-
-			return {
-				container,
-				button,
-				dropdown,
-				getValue: () => currentValue,
-				setValue: (val) => {
-					const item = items.find(opt => opt.value === val);
-					if (item) {
-						currentValue = val;
-						updateLabels();
-						updateSelectionState();
-					}
-				},
-				getItem: () => items.find(opt => opt.value === currentValue),
-				getIndex: () => items.findIndex(opt => opt.value === currentValue)
-			};
-		};
+	const createDropdown = createDropdownFactory({
+		documentRef: document,
+		translate: t,
+		getStorage: () => window.localStorage,
+	});
 
 	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
 	const resolveIconTarget = el =>
@@ -206,6 +78,21 @@ import './locales/index.js';
 
 	const modeRefreshers = [];
 	const localeTables = new Set();
+	const responsiveTables = new Set();
+	let tableResizeTimeout;
+
+	window.addEventListener('resize', () => {
+		clearTimeout(tableResizeTimeout);
+		tableResizeTimeout = setTimeout(() => {
+			for (const tableContainer of Array.from(responsiveTables)) {
+				if (!tableContainer.isConnected) {
+					responsiveTables.delete(tableContainer);
+				} else {
+					tableContainer.updateResponsive();
+				}
+			}
+		}, 150);
+	});
 	let simulatorLocaleRefresh = null;
 	let discoveryLocaleRefresh = null;
 
@@ -219,76 +106,12 @@ import './locales/index.js';
 	let modeMask = gameVersions[currentVersion].baseMask;
 	let charMask = 0;
 
-	// Theme state: 'auto', 'light', or 'dark'
-	let currentTheme = localStorage.getItem('foodGuideTheme') || 'auto';
-
-	/**
-	 * Initializes theme based on saved preference and browser settings.
-	 */
-	const initTheme = () => {
-		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		const effectiveTheme =
-			currentTheme === 'auto' ? (prefersDark ? 'dark' : 'light') : currentTheme;
-
-		document.documentElement.setAttribute('data-theme', effectiveTheme);
-		updateThemeToggle();
-	};
-
-	/**
-	 * Updates the theme toggle button display.
-	 * Shows the icon for the current effective theme.
-	 * - 🌙 (moon) = light theme is currently active
-	 * - ☀️ (sun) = dark theme is currently active
-	 */
-	const updateThemeToggle = () => {
-		const btn = document.getElementById('theme-toggle');
-		if (btn) {
-			// Determine what theme is actually being displayed
-			let isEffectivelyDark;
-			if (currentTheme === 'auto') {
-				// Check OS preference
-				isEffectivelyDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			} else {
-				// Use explicit setting
-				isEffectivelyDark = currentTheme === 'dark';
-			}
-
-			// Show icon for current theme
-			btn.textContent = isEffectivelyDark ? t('themeToggleToLight') : t('themeToggleToDark');
-		}
-	};
-
-	/**
-	 * Toggles between light and dark themes.
-	 * Once the user manually sets a theme, it stays in the light/dark cycle.
-	 */
-	const toggleTheme = () => {
-		// If in auto mode, switch to the opposite of current effective theme
-		if (currentTheme === 'auto') {
-			const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			currentTheme = isDark ? 'light' : 'dark';
-		} else {
-			// Otherwise, toggle between light and dark
-			currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-		}
-		localStorage.setItem('foodGuideTheme', currentTheme);
-		initTheme();
-	};
-
-	// Initialize theme on page load
-	initTheme();
-
-	// Attach theme toggle button listener
-	const themeBtn = document.getElementById('theme-toggle');
-	if (themeBtn) {
-		themeBtn.addEventListener('click', toggleTheme);
-	}
-
-	// Listen for OS theme changes when in auto mode
-	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', _e => {
-		if (currentTheme === 'auto') {
-			initTheme();
-		}
+	const themeController = createThemeController({
+		getStorage: () => window.localStorage,
+		mediaQuery: window.matchMedia('(prefers-color-scheme: dark)'),
+		rootElement: document.documentElement,
+		toggleButton: document.getElementById('theme-toggle'),
+		translate: t,
 	});
 
 	// Initialise the i18n layer: pick a locale (storage > navigator > en),
@@ -319,13 +142,13 @@ import './locales/index.js';
 	}
 
 	applyTranslations();
-	updateThemeToggle();
+	themeController.updateLabel();
 
 	// Re-apply translations whenever the locale changes so static strings
 	// (and any newly-injected DOM that uses data-i18n) update in place.
 	document.addEventListener('foodguide:localechange', () => {
 		applyTranslations();
-		updateThemeToggle();
+		themeController.updateLabel();
 		if (langPicker) langPicker.value = getLocale();
 		updateRecipeText();
 		// Rebuild per-food info (tag chips, "dry in N days") so localized
@@ -538,280 +361,11 @@ import './locales/index.js';
 		}
 	};
 
-	const matchingNames = (() => {
-		const tagsearch = /^tag[: ]/;
-		const tagsplit = /^tag:? */;
-		const tagnotsearch = /^tagnot[: ]/;
-		const tagnotsplit = /^tagnot:? */;
-		const recipesearch = /^recipe[: ]/;
-		const recipesplit = /^recipe:? */;
-		const ingredientsearch = /^ingredient[: ]/;
-		const ingredientsplit = /^ingredient:? */;
-
-		let name;
-		let tag;
-		let recipe;
-		let ingredient;
-		let allowUncookable = false;
-		let anywhere;
-		let wordstarts;
-
-		const allowedFilter = element => {
-			if (
-				(!allowUncookable && element.uncookable) ||
-				excludesMode(element.modeMask, modeMask, element.charMask, charMask)
-			) {
-				element.match = 0;
-				return false;
-			}
-
-			return true;
-		};
-
-		const filter = element => {
-			if (
-				element.lowerName.indexOf(name) === 0 ||
-				(element.raw && element.raw.lowerName.indexOf(name) === 0)
-			) {
-				element.match = 3;
-			} else if (wordstarts.test(element.lowerName) === 0) {
-				element.match = 2;
-			} else if (anywhere.test(element.lowerName)) {
-				element.match = 1;
-			} else {
-				element.match = 0;
-			}
-
-			return element.match;
-		};
-
-		const tagFilter = element => {
-			return (element.match = element[tag] + 0 || 0);
-		};
-
-		const recipeFilter = element => {
-			let i = 0;
-			let failed = true;
-			while (i < recipe.length) {
-				const result = recipe[i].test(null, element.nameObject, element);
-				if (recipe[i].cancel) {
-					if (!result) {
-						failed = true;
-						break;
-					}
-				} else {
-					if (result) {
-						failed = false;
-					}
-				}
-				i++;
-			}
-			return (element.match = failed ? 0 : 1);
-		};
-
-		const ingredientFilter = recipe => {
-			let i = 0;
-			let failed = true;
-
-			while (i < recipe.requirements.length) {
-				const result = recipe.requirements[i].test(null, ingredient.nameObject, ingredient);
-				if (recipe.requirements[i].cancel) {
-					if (!result) {
-						failed = true;
-						break;
-					}
-				} else {
-					if (result) {
-						failed = false;
-					}
-				}
-				i++;
-			}
-			return (recipe.match = failed ? 0 : 1);
-		};
-
-		const exact = element => {
-			return (element.match = element.lowerName === name ? 1 : 0);
-		};
-
-		const like = element => {
-			return (element.match =
-				element.lowerName === name ||
-				(element.raw && element.raw.lowerName === name) ||
-				(element.cook && element.cook.lowerName === name)
-					? 1
-					: 0);
-		};
-
-		const byMatch = (a, b) => {
-			if (a.match === b.match) {
-				const aname = a.basename ? a.basename : a.name;
-				const bname = b.basename ? b.basename : b.name;
-				if (aname !== bname) {
-					return aname > bname ? 1 : aname < bname ? -1 : 0;
-				}
-				return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
-			}
-			return b.match - a.match;
-		};
-
-		return (arr, search, includeUncookable) => {
-			allowUncookable = !!includeUncookable;
-			name = search.toLowerCase();
-
-			arr = arr.filter(allowedFilter);
-
-			if (tagsearch.test(name)) {
-				// tag:
-				tag = name.split(tagsplit)[1];
-
-				return arr.filter(tagFilter).sort(byMatch);
-			} else if (tagnotsearch.test(name)) {
-				// tagnot:
-				tag = name.split(tagnotsplit)[1];
-
-				return arr
-					.filter(element => {
-						return !tagFilter(element);
-					})
-					.sort(byMatch);
-			} else if (recipesearch.test(name)) {
-				// recipe:
-				recipe = recipes.byName(name.split(recipesplit)[1].toLowerCase());
-
-				if (recipe) {
-					recipe = recipe.requirements;
-
-					return arr.filter(recipeFilter).sort(byMatch);
-				} else {
-					return [];
-				}
-			} else if (ingredientsearch.test(name)) {
-				// ingredient:
-				ingredient = food.byName(name.split(ingredientsplit)[1].toLowerCase());
-
-				if (ingredient) {
-					return arr.filter(ingredientFilter).sort(byMatch);
-				} else {
-					return [];
-				}
-			} else if (name.indexOf('*') === 0) {
-				// *
-				// Exact matches
-				name = name.substring(1);
-
-				return arr.filter(exact).sort(byMatch);
-			} else if (name.indexOf('~') === 0) {
-				// ~
-				// Similar matches
-				name = name.substring(1);
-
-				return arr.filter(like).sort(byMatch);
-			} else {
-				// Otherwise, do a string comparison
-				wordstarts = new RegExp(`\\b${name}.*`);
-				anywhere = new RegExp(`\\b${name.split('').join('.*')}.*`);
-
-				return arr.filter(filter).sort(byMatch);
-			}
-		};
-	})();
-
-	const getSuggestions = (() => {
-		return (recipeList, items, exclude, itemComplete) => {
-			const names = {};
-			const tags = {};
-
-			recipeList.length = 0;
-			accumulateIngredients(items, names, tags, statMultipliers);
-
-			outer: for (let i = 0; i < recipes.length; i++) {
-				let valid = false;
-
-				if (excludesMode(recipes[i].modeMask, modeMask, recipes[i].charMask, charMask)) {
-					continue;
-				}
-
-				for (let ii = 0; ii < recipes[i].requirements.length; ii++) {
-					const requirement = recipes[i].requirements[ii];
-
-					if (requirement.test(null, names, tags)) {
-						if (!recipes[i].requirements[ii].cancel) {
-							valid = true;
-						}
-					} else if (!itemComplete && !!recipes[i].requirements[ii].cancel) {
-						continue outer;
-					} else if (!!itemComplete && !recipes[i].requirements[ii].cancel) {
-						continue outer;
-					}
-				}
-
-				if (valid && (!exclude || exclude.indexOf(recipes[i]) === -1)) {
-					recipeList.push(recipes[i]);
-				}
-			}
-
-			return recipeList;
-		};
-	})();
-
-	const getRecipes = (() => {
-		const recipeList = [];
-
-		return items => {
-			const names = {};
-			const tags = {};
-
-			recipeList.length = 0;
-			accumulateIngredients(items, names, tags, statMultipliers);
-
-			for (let i = 0; i < recipes.length; i++) {
-				if (
-					matchesMode(recipes[i].modeMask, modeMask, recipes[i].charMask, charMask) &&
-					recipes[i].test(null, names, tags)
-				) {
-					recipeList.push(recipes[i]);
-				}
-			}
-
-			recipeList.sort((a, b) => {
-				return b.priority - a.priority;
-			});
-
-			// Add best row
-			const bestTags = { ...tags };
-			bestTags.hunger = bestTags.bestHunger;
-			bestTags.health = bestTags.bestHealth;
-			bestTags.sanity = bestTags.bestSanity;
-
-			bestTags.img = '';
-			bestTags.name = 'Sum:Potential';
-			bestTags.priority = ' ';
-			bestTags.perish = 0;
-			bestTags.cooktime = 0;
-			delete bestTags.cook;
-
-			recipeList.unshift(bestTags);
-
-			// Add total row
-			const totalTags = { ...tags };
-
-			totalTags.bestHunger = totalTags.hunger;
-			totalTags.bestHealth = totalTags.health;
-			totalTags.bestSanity = totalTags.sanity;
-
-			totalTags.img = '';
-			totalTags.name = 'Sum:Total';
-			totalTags.priority = ' ';
-			totalTags.perish = 0;
-			totalTags.cooktime = 0;
-			delete totalTags.cook;
-
-			recipeList.unshift(totalTags);
-
-			return recipeList;
-		};
-	})();
+	const { matchingNames, getSuggestions, getRecipes } = createRecipeCalculator({
+		getModeMask: () => modeMask,
+		getCharMask: () => charMask,
+		getStatMultipliers: () => statMultipliers,
+	});
 
 	const mainElement = document.getElementById('main');
 	const foodElement = document.getElementById('food');
@@ -840,168 +394,15 @@ import './locales/index.js';
 	// the parent paragraph's innerHTML and recreates the placeholder spans.
 	document.addEventListener('foodguide:localechange', populateGameInfoNumbers);
 
-	const combinationGenerator = (length, callback, startPos) => {
-		const size = 4;
-		const index = 1;
-		const current = startPos || [0, 0, 0, 0];
-
-		return batch => {
-			while (batch-- && index <= length) {
-				callback(current);
-				current[0]++;
-				let overflow = 0;
-
-				while (current[overflow] >= length) {
-					overflow++;
-					current[overflow]++;
-				}
-
-				let check = size;
-				let max = 0;
-
-				while (check--) {
-					if (current[check] >= length) {
-						current[check] = max;
-					} else if (current[check] > max) {
-						max = current[check];
-					}
-				}
-
-				if (overflow === size) {
-					return false;
-				}
-			}
-
-			return true;
-		};
-	};
-
-	const getRealRecipesFromCollection = (items, mainCallback, chunkCallback, endCallback) => {
-		const recipeCrunchData = {};
-		const updateRecipeCrunchData = () => {
-			recipeCrunchData.recipes = recipes
-				.filter(item => {
-					return (
-						!item.trash &&
-						matchesMode(item.modeMask, modeMask, item.charMask, charMask) &&
-						item.foodtype !== 'roughage'
-					);
-				})
-				.sort((a, b) => {
-					return b.priority - a.priority;
-				});
-
-			recipeCrunchData.test = recipeCrunchData.recipes.map(a => {
-				return a.test;
-			});
-			recipeCrunchData.tests = recipeCrunchData.recipes.map(a => {
-				return a.test.toString();
-			});
-			recipeCrunchData.priority = recipeCrunchData.recipes.map(a => {
-				return a.priority || 0;
-			});
-
-			window.recipeCrunchData = recipeCrunchData;
-		};
-		updateRecipeCrunchData();
-
-		const built = [];
-		// time in milliseconds to try to stay under in each block of calculations
-		const desiredTime = 100;
-		let renderedTo = 0;
-		let lastTime;
-		let block = 100;
-		let paused = false;
-		let timeoutId = null;
-
-		const foodFromIndex = index => {
-			return items[index];
-		};
-
-		const callback = combination => {
-			const ingredients = combination.map(foodFromIndex);
-			const names = {};
-			const tags = {};
-
-			let created = null;
-			let multiple = false;
-
-			accumulateIngredients(ingredients, names, tags, statMultipliers);
-
-			tags.hunger = tags.bestHunger; // * statMultipliers[tags.bestHungerType];
-			tags.health = tags.bestHealth; // * statMultipliers[tags.bestHealthType];
-			tags.sanity = tags.bestSanity; // * statMultipliers[tags.bestSanityType];
-
-			const matches = recipeCrunchData.recipes.filter(recipe =>
-				recipe.test(null, names, tags),
-			);
-			const maxPriority = matches.reduce(
-				(max, recipe) => Math.max(recipe.priority, max),
-				-Infinity,
-			);
-
-			for (const recipe of matches.filter(recipe => recipe.priority >= maxPriority)) {
-				if (created !== null) {
-					multiple = true;
-					created.multiple = true;
-				}
-
-				created = {
-					recipe,
-					ingredients,
-					tags: { health: tags.health, hunger: tags.hunger },
-					multiple,
-				};
-				built.push(created);
-			}
-		};
-
-		const getCombinations = combinationGenerator(items.length, callback);
-
-		const computeNextBlock = () => {
-			if (paused) {
-				return;
-			}
-
-			const start = Date.now();
-			let end = false;
-
-			if (getCombinations(block)) {
-				timeoutId = setTimeout(computeNextBlock, 0);
-			} else {
-				end = true;
-			}
-			for (; renderedTo < built.length && built[renderedTo]; renderedTo++) {
-				mainCallback(built[renderedTo]);
-			}
-			if (lastTime !== Date.now() - start) {
-				lastTime = Date.now() - start + 1;
-				block = ((desiredTime / lastTime) * block + 1) | 0;
-			}
-			chunkCallback && chunkCallback();
-			end && endCallback && endCallback();
-		};
-
-		computeNextBlock();
-
-		// Return control object
-		return {
-			pause: () => {
-				paused = true;
-				if (timeoutId !== null) {
-					clearTimeout(timeoutId);
-					timeoutId = null;
-				}
-			},
-			resume: () => {
-				if (paused) {
-					paused = false;
-					computeNextBlock();
-				}
-			},
-			isPaused: () => paused,
-		};
-	};
+	const recipeAnalyzer = createRecipeAnalyzer({
+		getModeMask: () => modeMask,
+		getCharMask: () => charMask,
+		getStatMultipliers: () => statMultipliers,
+		onRecipeData: data => {
+			window.recipeCrunchData = data;
+		},
+	});
+	const getRealRecipesFromCollection = (...args) => recipeAnalyzer.analyze(...args);
 
 	let setTab;
 
@@ -1168,469 +569,17 @@ import './locales/index.js';
 		});
 	})();
 
-	const queue = icon => {
-		if (icon.dataset.src) {
-			makeImage.queue(icon, icon.dataset.src);
-		}
-	};
-
-	const cells = (cellType, ...args) => {
-		const tr = document.createElement('tr');
-
-		for (let i = 0; i < args.length; i++) {
-			const td = document.createElement(cellType);
-			const cell = args[i];
-			const celltext = cell && cell.indexOf ? cell : cell.toString();
-
-			if (cell instanceof DocumentFragment) {
-				td.appendChild(cell.cloneNode(true));
-				Array.prototype.forEach.call(td.querySelectorAll('.icon'), queue);
-			} else if (celltext.indexOf('img/') === 0) {
-				let imgurl = celltext;
-				let title = celltext;
-				if (celltext.indexOf(':') !== -1) {
-					const split = celltext.split(':');
-					imgurl = split[0];
-					title = split[1];
-				}
-				const image = makeImage(imgurl);
-				image.title = title;
-				td.appendChild(image);
-			} else if (cell && cell.nodeType && cell.nodeType === 1) {
-				td.appendChild(cell);
-			} else {
-				td.appendChild(document.createTextNode(celltext));
-				// Auto-align numeric content
-				if (/^[+-]?\d/.test(celltext.trim()) || celltext.trim() === '') {
-					td.classList.add('numeric-cell');
-				}
-			}
-
-			tr.appendChild(td);
-		}
-
-		return tr;
-	};
-
-	const fandomHref = name => {
-		if (name && name.startsWith('Sum:')) {
-			return translateSummaryLabel(name.substring(name.indexOf(':') + 1));
-		}
-
-		const node = document.createElement('a');
-		node.setAttribute('target', '_blank');
-		node.setAttribute('href', `https://dontstarve.wiki.gg/wiki/${name.replace(/\s/g, '_')}`);
-
-		const text = document.createTextNode(name);
-		node.appendChild(text);
-
-		return node;
-	};
+	const { cells, fandomHref, makeSortableTable } = createSortableTableFactory({
+		mainElement,
+		translate: t,
+		translateTableLabel,
+		translateTableHint,
+		translateSummaryLabel,
+		localeTables,
+		responsiveTables,
+	});
 
 	const fractionChars = ['\u215b', '\u00bc', '\u215c', '\u00bd', '\u215d', '\u00be', '\u215e'];
-
-	const makeSortableTable = (
-		headers,
-		dataset,
-		rowGenerator,
-		defaultSort,
-		hasSummary,
-		linkCallback,
-		highlightCallback,
-		filterCallback,
-		startRow,
-		maxRows,
-		columnConfig,
-	) => {
-		let table;
-		let sorting;
-		let invertSort = false;
-		let firstHighlight;
-		let lastHighlight;
-		let rows;
-
-		// Column visibility state
-		const headerKeys = Object.keys(headers);
-		const iconColumns = [];
-		const numericColumns = [];
-		headerKeys.forEach((key, i) => {
-			const headerText = key.indexOf(':') === -1 ? key : key.split(':')[0];
-			if (headerText === '' || headerText === 'Mode') {
-				iconColumns.push(i);
-			}
-			if (['Health', 'Health+', 'Hunger', 'Hunger+', 'Sanity', 'Perish', 'Cook Time', 'Priority'].includes(headerText) || headerText.includes('Health') || headerText.includes('Hunger')) {
-				numericColumns.push(i);
-			}
-		});
-		const hiddenColumns = new Set();
-		let autoMode = true; // start in auto mode (responsive hiding)
-		let autoHiddenColumns;
-		if (columnConfig && columnConfig.autoHide) {
-			const indices = headerKeys
-				.map((h, i) => [h, i])
-				.filter(([h]) => {
-					const label = h.indexOf(':') === -1 ? h : h.split(':')[0];
-					return columnConfig.autoHide.includes(label);
-				})
-				.map(([, i]) => i);
-			autoHiddenColumns = new Set(indices);
-		} else {
-			autoHiddenColumns = new Set();
-		}
-
-		const isNarrow = () => window.innerWidth <= 900;
-
-		const getEffectiveHidden = () => {
-			if (autoMode && isNarrow()) {
-				// Merge manual hidden + auto-hidden
-				return new Set([...hiddenColumns, ...autoHiddenColumns]);
-			}
-			return hiddenColumns;
-		};
-
-		const applyColumnVisibility = () => {
-			if (!table) {
-				return;
-			}
-			const effective = getEffectiveHidden();
-			const allRows = table.querySelectorAll('tr');
-			for (const row of allRows) {
-				const cells = row.children;
-				for (let i = 0; i < cells.length; i++) {
-					cells[i].classList.toggle('col-hidden', effective.has(i));
-				}
-			}
-		};
-
-		const generateAndHighlight = (item, index, array) => {
-			if ((!maxRows || rows < maxRows) && (!filterCallback || filterCallback(item))) {
-				const row = rowGenerator(item);
-				
-				iconColumns.forEach(colIdx => {
-					if (row.children[colIdx]) {
-						row.children[colIdx].classList.add('icon-cell');
-					}
-				});
-
-				numericColumns.forEach(colIdx => {
-					if (row.children[colIdx]) {
-						row.children[colIdx].classList.add('numeric-cell');
-					}
-				});
-
-				if (highlightCallback && highlightCallback(item, array)) {
-					row.className = 'highlighted';
-					if (!firstHighlight) {
-						firstHighlight = row;
-					}
-					lastHighlight = row;
-				}
-
-				table.appendChild(row);
-				rows++;
-			}
-		};
-
-		const create = (e, sort, scrollHighlight) => {
-			let summary;
-
-			if (sort || (e && e.target.dataset.sort !== '') || sorting) {
-				const sortBy = sort || (e && e.target.dataset.sort) || sorting;
-
-				if (hasSummary) {
-					summary = [dataset.shift(), dataset.shift()];
-				}
-
-				if (sortBy === 'name') {
-					dataset.sort((a, b) => {
-						const aname = a.basename ? a.basename : a.name;
-						const bname = b.basename ? b.basename : b.name;
-
-						if (aname !== bname) {
-							return aname > bname ? 1 : aname < bname ? -1 : 0;
-						}
-						return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
-					});
-				} else {
-					dataset.sort((a, b) => {
-						const sa = a[sortBy];
-						const sb = b[sortBy];
-
-						return !isNaN(sa) && !isNaN(sb)
-							? sb - sa
-							: isNaN(sa) && isNaN(sb)
-								? 0
-								: isNaN(sa)
-									? 1
-									: -1;
-					});
-				}
-
-				if (sort || e) {
-					if (sorting === sortBy) {
-						invertSort = !invertSort;
-					} else {
-						sorting = sortBy;
-						invertSort = false;
-					}
-				}
-
-				if (invertSort) {
-					dataset.reverse();
-				}
-
-				if (hasSummary) {
-					dataset.unshift(...summary);
-				}
-			}
-
-			const tr = document.createElement('tr');
-
-			for (const header in headers) {
-				const th = document.createElement('th');
-				
-				const headerText = header.indexOf(':') === -1 ? header : header.split(':')[0];
-				
-				// Apply numeric class to stat columns
-				if (['Health', 'Health+', 'Hunger', 'Hunger+', 'Sanity', 'Perish', 'Cook Time', 'Priority'].includes(headerText) || headerText.includes('Health') || headerText.includes('Hunger')) {
-					th.classList.add('numeric-cell');
-				}
-				
-				if (headerText === '' || headerText === 'Mode') {
-					th.classList.add('icon-cell');
-				}
-
-				if (header.indexOf(':') === -1) {
-					th.appendChild(document.createTextNode(translateTableLabel(header)));
-				} else {
-					th.appendChild(document.createTextNode(translateTableLabel(header.split(':')[0])));
-					th.title = translateTableHint(header.split(':')[1]);
-				}
-
-				if (headers[header]) {
-					if (headers[header] === sorting) {
-						th.classList.add(invertSort ? 'sort-desc' : 'sort-asc');
-					}
-
-					th.style.cursor = 'pointer';
-					th.dataset.sort = headers[header];
-					th.addEventListener('click', create, false);
-				}
-
-				tr.appendChild(th);
-			}
-
-			const oldTable = table;
-
-			table = document.createElement('table');
-			table.appendChild(tr);
-			firstHighlight = null;
-			lastHighlight = null;
-			rows = 0;
-			dataset.forEach(generateAndHighlight);
-
-			if (linkCallback) {
-				table.className = 'links';
-
-				Array.prototype.forEach.call(table.getElementsByClassName('link'), element => {
-					element.addEventListener('click', linkCallback, false);
-				});
-			}
-
-			// Apply column visibility after building the table
-			applyColumnVisibility();
-
-			if (oldTable) {
-				oldTable.parentNode.replaceChild(table, oldTable);
-			}
-
-			if (scrollHighlight) {
-				if (
-					firstHighlight &&
-					firstHighlight.offsetTop +
-						table.offsetTop +
-						mainElement.offsetTop +
-						firstHighlight.offsetHeight >
-						window.scrollY + window.innerHeight
-				) {
-					firstHighlight.scrollIntoView(true);
-				} else if (
-					lastHighlight &&
-					lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop <
-						window.scrollY
-				) {
-					lastHighlight.scrollIntoView(false);
-				}
-			}
-		};
-
-		if (defaultSort) {
-			create(null, defaultSort);
-		} else {
-			create();
-		}
-
-		const update = scrollHighlight => {
-			// Save current scroll position before rebuilding table
-			const currentScrollY = window.scrollY;
-			const currentScrollX = window.scrollX;
-
-			create(null, null, scrollHighlight);
-
-			// Restore scroll position after table rebuild
-			// Use requestAnimationFrame to ensure DOM has updated
-			requestAnimationFrame(() => {
-				window.scrollTo(currentScrollX, currentScrollY);
-			});
-		};
-
-		const setMaxRows = max => {
-			maxRows = max;
-			update();
-		};
-
-		// Wrap in scroll container + optional column toggle bar
-		if (columnConfig && columnConfig.toggleable) {
-			const container = document.createElement('div');
-
-			// Column toggle bar
-			const toggleBar = document.createElement('div');
-			toggleBar.className = 'column-toggle-bar';
-
-			const label = document.createElement('span');
-			label.className = 'col-toggle-label';
-			label.textContent = t('columns');
-			toggleBar.appendChild(label);
-
-			// Auto button
-			const autoBtn = document.createElement('button');
-			autoBtn.textContent = t('autoColumns');
-			autoBtn.className = autoMode ? 'active' : '';
-			autoBtn.title = t('autoColumnsTitle');
-			autoBtn.addEventListener('click', () => {
-				autoMode = !autoMode;
-				autoBtn.className = autoMode ? 'active' : '';
-				applyColumnVisibility();
-				updateToggleButtons();
-			});
-			toggleBar.appendChild(autoBtn);
-
-			const toggleButtons = [];
-
-			const updateToggleButtons = () => {
-				const effective = getEffectiveHidden();
-				for (const { btn, colIndex } of toggleButtons) {
-					btn.className = effective.has(colIndex) ? '' : 'active';
-				}
-			};
-
-			const updateColumnControlTexts = () => {
-				label.textContent = t('columns');
-				autoBtn.textContent = t('autoColumns');
-				autoBtn.title = t('autoColumnsTitle');
-				for (const { btn, colLabel } of toggleButtons) {
-					btn.textContent = translateTableLabel(colLabel);
-				}
-			};
-
-			for (let i = 0; i < headerKeys.length; i++) {
-				const header = headerKeys[i];
-				const colLabel = header.indexOf(':') === -1 ? header : header.split(':')[0];
-
-				// Skip empty-label columns (icon column)
-				if (!colLabel) {
-					continue;
-				}
-
-				// Skip columns not marked as toggleable
-				if (columnConfig.columns && !columnConfig.columns.includes(colLabel)) {
-					continue;
-				}
-
-				const btn = document.createElement('button');
-				btn.textContent = translateTableLabel(colLabel);
-				btn.className = getEffectiveHidden().has(i) ? '' : 'active';
-
-				const colIndex = i;
-				btn.addEventListener('click', () => {
-					if (hiddenColumns.has(colIndex)) {
-						hiddenColumns.delete(colIndex);
-					} else {
-						hiddenColumns.add(colIndex);
-					}
-					applyColumnVisibility();
-					updateToggleButtons();
-				});
-
-				toggleBar.appendChild(btn);
-				toggleButtons.push({ btn, colIndex, colLabel });
-			}
-
-			container.appendChild(toggleBar);
-
-			// Scroll wrapper
-			const scrollWrapper = document.createElement('div');
-			scrollWrapper.className = 'table-scroll-wrapper';
-			scrollWrapper.appendChild(table);
-			container.appendChild(scrollWrapper);
-
-			// Listen for resize to update auto-hide
-			let resizeTimeout;
-			window.addEventListener('resize', () => {
-				clearTimeout(resizeTimeout);
-				resizeTimeout = setTimeout(() => {
-					if (autoMode) {
-						applyColumnVisibility();
-						updateToggleButtons();
-					}
-				}, 150);
-			});
-
-			// Proxy update to also reapply column visibility
-				container.update = scrollHighlight => {
-					update(scrollHighlight);
-					applyColumnVisibility();
-				};
-				container.updateLocale = () => {
-					update();
-					updateColumnControlTexts();
-				};
-				container.setMaxRows = setMaxRows;
-				localeTables.add(container);
-
-			// Method to update auto-hide columns dynamically (for mode changes)
-			container.updateAutoHide = newAutoHideLabels => {
-				if (!newAutoHideLabels) {
-					return;
-				}
-				const indices = headerKeys
-					.map((h, i) => [h, i])
-					.filter(([h]) => {
-						const label = h.indexOf(':') === -1 ? h : h.split(':')[0];
-						return newAutoHideLabels.includes(label);
-					})
-					.map(([, i]) => i);
-				autoHiddenColumns = new Set(indices);
-				applyColumnVisibility();
-				updateToggleButtons();
-			};
-
-			return container;
-		}
-
-		// No column config — just wrap in scroll wrapper
-		const scrollWrapper = document.createElement('div');
-		scrollWrapper.className = 'table-scroll-wrapper';
-		scrollWrapper.appendChild(table);
-
-		// Proxy update/setMaxRows through wrapper
-			scrollWrapper.update = (...args) => update(...args);
-			scrollWrapper.updateLocale = () => update();
-			scrollWrapper.setMaxRows = (...args) => setMaxRows(...args);
-			localeTables.add(scrollWrapper);
-
-		return scrollWrapper;
-	};
 
 	const sign = n => {
 		if (isNaN(n)) {
@@ -1691,17 +640,17 @@ import './locales/index.js';
 			const cookMods = characterFoodModifiers.modifyItem(item.cook, modeMask);
 
 			if ((item.cook.health || 0) !== (item.health || 0)) {
-				const rawHealth = (itemMods.health ?? item.health) || 0;
+				const rawHealth = ((itemMods.health ?? item.health) || 0) * mult;
 				const cookedHealth = ((cookMods.health ?? item.cook.health) || 0) * cookmult;
 				health = (health === '' ? '0' : health) + ` (${sign(cookedHealth - rawHealth)})`;
 			}
 			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
-				const rawHunger = (itemMods.hunger ?? item.hunger) || 0;
+				const rawHunger = ((itemMods.hunger ?? item.hunger) || 0) * mult;
 				const cookedHunger = ((cookMods.hunger ?? item.cook.hunger) || 0) * cookmult;
 				hunger = (hunger === '' ? '0' : hunger) + ` (${sign(cookedHunger - rawHunger)})`;
 			}
 			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
-				const rawSanity = (itemMods.sanity ?? item.sanity) || 0;
+				const rawSanity = ((itemMods.sanity ?? item.sanity) || 0) * mult;
 				const cookedSanity = ((cookMods.sanity ?? item.cook.sanity) || 0) * cookmult;
 				sanity = (sanity === '' ? '0' : sanity) + ` (${sign(cookedSanity - rawSanity)})`;
 			}
@@ -1958,6 +907,7 @@ import './locales/index.js';
 				let updateMakableControls;
 				let calculationControl;
 				deleteButton.addEventListener('click', () => {
+					calculationControl?.cancel();
 					makableButton.parentNode.removeChild(makableDiv);
 					hasTable = false;
 					isCalculating = false;
@@ -2305,6 +1255,7 @@ import './locales/index.js';
 				// Set button state BEFORE starting calculation
 				updateMakableButtonLabel();
 				makableButton.disabled = true;
+				makableSummary.appendChild(deleteButton);
 
 				calculationControl = getRealRecipesFromCollection(
 					idealIngredients,
@@ -2813,7 +1764,11 @@ import './locales/index.js';
 				// Apply additional sorting based on user preference
 				const sortType = sortControls.getValue();
 				if (sortType !== 'default') {
-					names = sortIngredients(names, sortType);
+					names = sortIngredients(names, sortType, {
+						statMultipliers,
+						modifyItem: characterFoodModifiers.modifyItem,
+						modeMask,
+					});
 				}
 
 				dropdown.removeChild(ul);
@@ -2823,49 +1778,6 @@ import './locales/index.js';
 				names.forEach(liIntoPicker, ul);
 
 				dropdown.appendChild(ul);
-			};
-
-			// Sorting function for ingredients
-			const sortIngredients = (items, sortType) => {
-				const sorted = [...items]; // Create a copy to avoid mutating original
-
-				switch (sortType) {
-					case 'health':
-						return sorted.sort((a, b) => {
-							const aVal =
-								(a.health || 0) * (statMultipliers[a.preparationType] || 1);
-							const bVal =
-								(b.health || 0) * (statMultipliers[b.preparationType] || 1);
-							return bVal - aVal || a.name.localeCompare(b.name);
-						});
-					case 'hunger':
-						return sorted.sort((a, b) => {
-							const aVal =
-								(a.hunger || 0) * (statMultipliers[a.preparationType] || 1);
-							const bVal =
-								(b.hunger || 0) * (statMultipliers[b.preparationType] || 1);
-							return bVal - aVal || a.name.localeCompare(b.name);
-						});
-					case 'sanity':
-						return sorted.sort((a, b) => {
-							const aVal =
-								(a.sanity || 0) * (statMultipliers[a.preparationType] || 1);
-							const bVal =
-								(b.sanity || 0) * (statMultipliers[b.preparationType] || 1);
-							return bVal - aVal || a.name.localeCompare(b.name);
-						});
-					case 'perish':
-						return sorted.sort((a, b) => {
-							// Treat 'never' perish as infinite (very high value)
-							const aVal = a.perish || 999999;
-							const bVal = b.perish || 999999;
-							return aVal - bVal || a.name.localeCompare(b.name);
-						});
-					case 'name':
-						return sorted.sort((a, b) => a.name.localeCompare(b.name));
-					default:
-						return sorted;
-				}
 			};
 
 			const searchFor = e => {
@@ -3350,12 +2262,7 @@ import './locales/index.js';
 
 			searchRow.parentNode.insertBefore(dropdown, parent.parentNode);
 
-			picker.addEventListener('keydown', _ => {
-				refreshPicker();
-			});
-			picker.addEventListener('keyup', _ => {
-				refreshPicker();
-			});
+			picker.addEventListener('input', refreshPicker);
 
 			picker.addEventListener(
 				'focus',
@@ -3380,23 +2287,27 @@ import './locales/index.js';
 			updateRecipes();
 
 			window.addEventListener('beforeunload', () => {
-				if (!window.localStorage.foodGuideState) {
-					window.localStorage.foodGuideState = '{}';
+				try {
+					if (!window.localStorage.foodGuideState) {
+						window.localStorage.foodGuideState = '{}';
+					}
+					const obj = JSON.parse(window.localStorage.foodGuideState);
+					if (!obj.pickers) {
+						obj.pickers = [];
+					}
+					if (limited) {
+						const serialized = Array.prototype.map.call(slots, slot => {
+							const item = getSlot(slot);
+							return item ? item.key : null;
+						});
+						obj.pickers[index] = serialized;
+					} else {
+						obj.pickers[index] = slots;
+					}
+					window.localStorage.foodGuideState = JSON.stringify(obj);
+				} catch (error) {
+					console.warn('Unable to save picker state', error);
 				}
-				const obj = JSON.parse(window.localStorage.foodGuideState);
-				if (!obj.pickers) {
-					obj.pickers = [];
-				}
-				if (limited) {
-					const serialized = Array.prototype.map.call(slots, slot => {
-						const item = getSlot(slot);
-						return item ? item.key : null;
-					});
-					obj.pickers[index] = serialized;
-				} else {
-					obj.pickers[index] = slots;
-				}
-				window.localStorage.foodGuideState = JSON.stringify(obj);
 			});
 
 			modeRefreshers.push(refreshPicker);

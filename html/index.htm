@@ -3,6 +3,10 @@
 	<head>
 		<title>Don't Starve Food Guide</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+		/>
 		<link rel="modulepreload" href="constants.js" />
 		<link rel="modulepreload" href="food.js" />
 		<link rel="modulepreload" href="foodguide.js" />
@@ -17,7 +21,9 @@
 	<body>
 		<div id="content">
 			<noscript>
-				<h1 data-i18n="noscriptMessage">Sorry, this Food Guide requires JavaScript and a modern web browser.</h1>
+				<h1 data-i18n="noscriptMessage">
+					Sorry, this Food Guide requires JavaScript and a modern web browser.
+				</h1>
 			</noscript>
 
 			<header class="site-header" id="site-header">
@@ -38,60 +44,76 @@
 						data-i18n-attr-aria-label="themeToggleTitle"
 						title="Toggle dark/light theme"
 						aria-label="Toggle dark/light theme"
-					>🌙</button>
+					>
+						🌙
+					</button>
 				</div>
 				<ul id="navbar">
-						<li
-							data-tab="simulator"
-							data-i18n="tabSimulator"
-							data-i18n-attr-title="tabSimulatorTitle"
-							title="Crock Pot recipe simulation"
-						>Simulator</li>
-						<li
-							data-tab="discovery"
-							data-i18n="tabDiscovery"
-							data-i18n-attr-title="tabDiscoveryTitle"
-							title="Add inventory items to find recipes"
-						>Discovery</li>
-						<li
-							data-tab="foodlist"
-							data-i18n="tabFoodList"
-							data-i18n-attr-title="tabFoodListTitle"
-							title="View all food in the selected DLC"
-						>Food List</li>
-						<li
-							data-tab="crockpot"
-							data-i18n="tabRecipeList"
-							data-i18n-attr-title="tabRecipeListTitle"
-							title="View all recipes for the selected DLC"
-						>Recipe List</li>
-						<li
-							data-tab="statistics"
-							data-i18n="tabStatistics"
-							data-i18n-attr-title="tabStatisticsTitle"
-							title="Find all recipes (unstable)"
-						>Statistics Analyzer</li>
-						<li
-							data-tab="about"
-							data-i18n="tabAbout"
-							data-i18n-attr-title="tabAboutTitle"
-							title="About this tool and how to use it"
-						>About</li>
-						<li
-							data-tab="gameinfo"
-							data-i18n="tabGameInfo"
-							data-i18n-attr-title="tabGameInfoTitle"
-							title="Don't Starve game mechanics reference"
-						>Game Info</li>
-						<li>
-							<a
-								title="Give Klei your money"
-								href="https://www.klei.com/games/dont-starve"
-								target="_blank"
-								rel="noopener"
-								>Don't Starve</a
-							>
-						</li>
+					<li
+						data-tab="simulator"
+						data-i18n="tabSimulator"
+						data-i18n-attr-title="tabSimulatorTitle"
+						title="Crock Pot recipe simulation"
+					>
+						Simulator
+					</li>
+					<li
+						data-tab="discovery"
+						data-i18n="tabDiscovery"
+						data-i18n-attr-title="tabDiscoveryTitle"
+						title="Add inventory items to find recipes"
+					>
+						Discovery
+					</li>
+					<li
+						data-tab="foodlist"
+						data-i18n="tabFoodList"
+						data-i18n-attr-title="tabFoodListTitle"
+						title="View all food in the selected DLC"
+					>
+						Food List
+					</li>
+					<li
+						data-tab="crockpot"
+						data-i18n="tabRecipeList"
+						data-i18n-attr-title="tabRecipeListTitle"
+						title="View all recipes for the selected DLC"
+					>
+						Recipe List
+					</li>
+					<li
+						data-tab="statistics"
+						data-i18n="tabStatistics"
+						data-i18n-attr-title="tabStatisticsTitle"
+						title="Find all recipes (unstable)"
+					>
+						Statistics Analyzer
+					</li>
+					<li
+						data-tab="about"
+						data-i18n="tabAbout"
+						data-i18n-attr-title="tabAboutTitle"
+						title="About this tool and how to use it"
+					>
+						About
+					</li>
+					<li
+						data-tab="gameinfo"
+						data-i18n="tabGameInfo"
+						data-i18n-attr-title="tabGameInfoTitle"
+						title="Don't Starve game mechanics reference"
+					>
+						Game Info
+					</li>
+					<li>
+						<a
+							title="Give Klei your money"
+							href="https://www.klei.com/games/dont-starve"
+							target="_blank"
+							rel="noopener"
+							>Don't Starve</a
+						>
+					</li>
 				</ul>
 			</header>
 
@@ -109,9 +131,11 @@
 						class="ingredientpicker"
 						data-type="food"
 						data-cookable="true"
-					data-i18n-attr-placeholder="searchIngredientsPlaceholder"
-					placeholder="Search ingredients..."
-				/>
+						data-i18n-attr-placeholder="searchIngredientsPlaceholder"
+						data-i18n-attr-aria-label="searchIngredientsPlaceholder"
+						placeholder="Search ingredients..."
+						aria-label="Search ingredients..."
+					/>
 					<div id="ingredients" class="ingredientlist">
 						<span class="ingredient"></span>
 						<span class="ingredient"></span>
@@ -125,16 +149,18 @@
 					<div class="instructions">
 						<strong data-i18n="discoveryHeading">Inventory Discovery</strong><br />
 						<span data-i18n="discoveryBody"
-							>Add all items in your inventory below to see what recipes you can
-							make. Click the + to add more items.</span
+							>Add all items in your inventory below to see what recipes you can make.
+							Click the + to add more items.</span
 						>
 					</div>
 					<input
 						type="text"
 						class="ingredientpicker"
-					data-i18n-attr-placeholder="searchIngredientsPlaceholder"
-					placeholder="Search ingredients..."
-				/>
+						data-i18n-attr-placeholder="searchIngredientsPlaceholder"
+						data-i18n-attr-aria-label="searchIngredientsPlaceholder"
+						placeholder="Search ingredients..."
+						aria-label="Search ingredients..."
+					/>
 					<div id="inventory" class="ingredientlist"></div>
 					<h2 data-i18n="discoveryFoodStatsHeading">Stats about your food:</h2>
 					<div id="discoverfood"></div>
@@ -380,8 +406,6 @@
 		</div>
 
 		<script type="module" src="foodguide.js"></script>
-		<script nomodule>
-			alert('Please use a modern browser! This tool requires ES module support.');
-		</script>
+		<script nomodule src="legacy-browser-warning.js"></script>
 	</body>
 </html>

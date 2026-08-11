@@ -87,7 +87,8 @@ table th:hover {
 }
 
 /* Sort-active column indicator */
-table th.sort-asc, table th.sort-desc {
+table th.sort-asc,
+table th.sort-desc {
 	background: var(--header-accent, #6a7580);
 	color: var(--header-text, #fff);
 }

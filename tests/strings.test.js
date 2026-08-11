@@ -9,7 +9,10 @@ const setupDom = () => {
 	class FakeDocumentFragment {}
 	const getNodeText = node => {
 		if (!node) return '';
-		if (typeof node.textContent === 'string' && (!node.childNodes || node.childNodes.length === 0)) {
+		if (
+			typeof node.textContent === 'string' &&
+			(!node.childNodes || node.childNodes.length === 0)
+		) {
 			return node.textContent;
 		}
 		return (node.childNodes || []).map(getNodeText).join('');
@@ -54,7 +57,7 @@ const setupDom = () => {
 			classList: {
 				add() {},
 				contains() {
-				return false;
+					return false;
 				},
 			},
 		});
@@ -121,7 +124,7 @@ const setupDom = () => {
 	return { document, html };
 };
 
-	describe('strings locale behavior', () => {
+describe('strings locale behavior', () => {
 	beforeEach(() => {
 		delete globalThis.document;
 		delete globalThis.Element;
@@ -212,8 +215,14 @@ const setupDom = () => {
 		});
 
 		strings.setLocale('x-test-notes');
-		assert.equal(strings.resolveNote('noteLightSeconds', { seconds: 90 }, 'Gives 90 seconds of light'), 'LIGHT 90');
-		assert.equal(strings.resolveNote(undefined, undefined, 'Gives 90 seconds of light'), 'RAW LIGHT 90');
+		assert.equal(
+			strings.resolveNote('noteLightSeconds', { seconds: 90 }, 'Gives 90 seconds of light'),
+			'LIGHT 90',
+		);
+		assert.equal(
+			strings.resolveNote(undefined, undefined, 'Gives 90 seconds of light'),
+			'RAW LIGHT 90',
+		);
 		assert.equal(strings.resolveNote(undefined, undefined, 'unknown note'), 'unknown note');
 	});
 
@@ -267,8 +276,17 @@ const setupDom = () => {
 		strings.setLocale('x-test-helpers');
 		assert.equal(strings.tagLabel('fruit'), 'FRUITX');
 		assert.equal(strings.formatDuration('sec', 5), 'SEC<5|secs>');
-		assert.equal(strings.t('noteProvidesHeatFor', { heat: -40, duration: strings.formatDuration('sec', 5) }), 'HEAT<-40|SEC<5|secs>>');
-		assert.equal(strings.resolveNote('noteLightSeconds', { seconds: 90 }, 'ignored'), 'LIGHT<90>');
+		assert.equal(
+			strings.t('noteProvidesHeatFor', {
+				heat: -40,
+				duration: strings.formatDuration('sec', 5),
+			}),
+			'HEAT<-40|SEC<5|secs>>',
+		);
+		assert.equal(
+			strings.resolveNote('noteLightSeconds', { seconds: 90 }, 'ignored'),
+			'LIGHT<90>',
+		);
 		assert.equal(strings.resolveNote(undefined, undefined, 'Legacy note'), 'LEGACYX');
 	});
 
@@ -284,7 +302,10 @@ const setupDom = () => {
 		assert.equal(strings.tagLabel('fruit'), '水果');
 		assert.equal(strings.t('simulatorSummaryTotal'), '总计');
 		assert.equal(strings.t('foodInfoRecipes'), '配方');
-		assert.equal(strings.resolveNote('noteLightSeconds', { seconds: 90 }, 'Gives 90 seconds of light'), '提供90秒照明');
+		assert.equal(
+			strings.resolveNote('noteLightSeconds', { seconds: 90 }, 'Gives 90 seconds of light'),
+			'提供90秒照明',
+		);
 		assert.equal(strings.resolveNote('notePoisonous'), '有毒');
 
 		strings.setLocale('en');

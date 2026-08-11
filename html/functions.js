@@ -140,7 +140,13 @@ export const COMPARE = (op, qty) => {
  * @returns {Requirement}
  */
 export const AND = (item1, item2) => {
-	return { item1, item2, test: ANDTest, toString: ANDString, cancel: item1.cancel && item2.cancel };
+	return {
+		item1,
+		item2,
+		test: ANDTest,
+		toString: ANDString,
+		cancel: item1.cancel && item2.cancel,
+	};
 };
 
 /**

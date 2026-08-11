@@ -254,7 +254,7 @@ strong {
 #help-favorite-foods {
 	border-collapse: collapse;
 	margin-bottom: 16px;
-    max-width: 600px;
+	max-width: 600px;
 }
 
 #help-favorite-foods th,
@@ -265,7 +265,7 @@ strong {
 }
 
 #help-favorite-foods tr:hover td {
-    background: var(--table-hover);
+	background: var(--table-hover);
 }
 
 #help-favorite-foods th {
@@ -294,41 +294,41 @@ strong {
 
 /* Wiki Links List */
 .wiki-links-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 24px 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+	list-style: none;
+	padding: 0;
+	margin: 0 0 24px 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 
 .wiki-links-list li {
-    margin: 0;
+	margin: 0;
 }
 
 .wiki-links-list a {
-    display: inline-block;
-    padding: 6px 12px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    color: var(--fg-primary);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all var(--transition-fast);
+	display: inline-block;
+	padding: 6px 12px;
+	background: var(--bg-secondary);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	color: var(--fg-primary);
+	text-decoration: none;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all var(--transition-fast);
 }
 
 .wiki-links-list a:hover {
-    background: var(--table-hover);
-    border-color: var(--dark);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	background: var(--table-hover);
+	border-color: var(--dark);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .wiki-links-list a::after {
-    content: " ↗";
-    font-size: 11px;
-    opacity: 0.6;
-    margin-left: 2px;
+	content: ' ↗';
+	font-size: 11px;
+	opacity: 0.6;
+	margin-left: 2px;
 }

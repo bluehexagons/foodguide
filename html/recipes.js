@@ -2974,7 +2974,9 @@ export const updateRecipeText = () => {
 			const requirements = recipe.requirements.slice();
 
 			if (recipe.mode) {
-				recipe.modeNode = makeLinkable(`[tag:${recipe.mode}|img/${modes[recipe.mode].img}]`);
+				recipe.modeNode = makeLinkable(
+					`[tag:${recipe.mode}|img/${modes[recipe.mode].img}]`,
+				);
 			}
 
 			recipe.requires = makeLinkable(requirements.join('; '));

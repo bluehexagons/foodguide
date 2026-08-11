@@ -183,7 +183,6 @@ table.links span.link.ingredient-action-error::after {
 
 /* Search dropdown */
 
-
 /* Ingredient picker input */
 .ingredientpicker {
 	border: 1px solid var(--medium);
@@ -518,8 +517,6 @@ button.makablebutton:disabled:hover {
 
 /* Responsive: small screens */
 @media (max-width: 767px) {
-	}
-
 	/* Increase touch targets on mobile */
 	div.foodFilter :is(img, .icon) {
 		width: 48px;
@@ -548,275 +545,275 @@ button.makablebutton:disabled:hover {
 }
 /* Ingredient search layout redesign */
 .ingredient-search-row {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 12px;
 }
 
 .ingredient-search-input-group {
-    display: flex;
-    align-items: stretch;
-    position: relative;
-    width: 100%;
+	display: flex;
+	align-items: stretch;
+	position: relative;
+	width: 100%;
 }
 
 .ingredient-search-input-group .ingredientpicker {
-    flex: 1;
-    border-radius: 0 4px 4px 0;
-    border: 1px solid var(--border-color);
-    padding: 8px 12px;
-    font-size: 14px;
-    width: 100% !important; /* Override inline style */
+	flex: 1;
+	border-radius: 0 4px 4px 0;
+	border: 1px solid var(--border-color);
+	padding: 8px 12px;
+	font-size: 14px;
+	width: 100% !important; /* Override inline style */
 }
 
 .ingredient-search-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
 }
 
 .ingredient-search-controls-left,
 .ingredient-search-controls-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .ingredient-search-controls .toggleingredients,
 .ingredient-search-controls .sortingredients,
 .ingredient-search-controls .displaymodeingredients,
 .ingredient-search-controls .densityingredients {
-    margin: 0;
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-    color: var(--fg-primary);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 32px;
+	margin: 0;
+	padding: 6px 12px;
+	font-size: 13px;
+	border-radius: 4px;
+	border: 1px solid var(--border-color);
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	cursor: pointer;
+	transition: all var(--transition-fast);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 32px;
 }
 
 .ingredient-search-controls .toggleingredients:hover,
 .ingredient-search-controls .sortingredients:hover,
 .ingredient-search-controls .displaymodeingredients:hover,
 .ingredient-search-controls .densityingredients:hover {
-    background: var(--table-hover);
-    border-color: var(--dark);
+	background: var(--table-hover);
+	border-color: var(--dark);
 }
 
 .ingredient-search-controls .clearingredients {
-    margin: 0;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-    color: var(--fg-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 18px;
-    transition: all var(--transition-fast);
+	margin: 0;
+	padding: 0;
+	width: 32px;
+	height: 32px;
+	border-radius: 4px;
+	border: 1px solid var(--border-color);
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	font-size: 18px;
+	transition: all var(--transition-fast);
 }
 
 .ingredient-search-controls .clearingredients:hover {
-    background: var(--excluded-bg);
-    border-color: var(--excluded-border);
-    color: var(--strike-text);
+	background: var(--excluded-bg);
+	border-color: var(--excluded-border);
+	color: var(--strike-text);
 }
 
 /* Redesign the ingredient dropdown to look much better */
 .ingredientdropdown {
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 8px;
-    margin-top: 4px;
-    background: var(--bg-primary);
-    max-height: 350px;
-    overflow-y: auto;
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	padding: 8px;
+	margin-top: 4px;
+	background: var(--bg-primary);
+	max-height: 350px;
+	overflow-y: auto;
 }
 
 .ingredientdropdown div {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
-    gap: 4px;
-    margin: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+	gap: 4px;
+	margin: 0;
 }
 
 .ingredientdropdown.listmode div {
-    display: flex;
-    flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 .ingredientdropdown .item {
-    border: 1px solid var(--border-light);
-    border-radius: 3px;
-    padding: 3px 5px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    transition: all var(--transition-fast);
-    background: var(--bg-secondary);
-    margin: 0;
-    width: 100%;
-    box-sizing: border-box;
-    cursor: pointer;
-    color: var(--fg-primary);
-    user-select: none;
+	border: 1px solid var(--border-light);
+	border-radius: 3px;
+	padding: 3px 5px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	transition: all var(--transition-fast);
+	background: var(--bg-secondary);
+	margin: 0;
+	width: 100%;
+	box-sizing: border-box;
+	cursor: pointer;
+	color: var(--fg-primary);
+	user-select: none;
 }
 
 .ingredientdropdown .item:hover {
-    background: var(--table-hover);
-    border-color: var(--dark);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+	background: var(--table-hover);
+	border-color: var(--dark);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .ingredientdropdown .item.selected {
-    background: var(--selected-bg);
-    border-color: var(--selected-border);
-    font-weight: 500;
+	background: var(--selected-bg);
+	border-color: var(--selected-border);
+	font-weight: 500;
 }
 
 .ingredientdropdown .item :is(img, .icon) {
-    width: 20px;
-    height: 20px;
-    margin-right: 6px;
-    flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	margin-right: 6px;
+	flex-shrink: 0;
 }
 
 .ingredientdropdown.hidetext .item {
-    justify-content: center;
+	justify-content: center;
 }
 
 .ingredientdropdown.hidetext div {
-    grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
-    gap: 3px;
+	grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+	gap: 3px;
 }
 
 .ingredientdropdown.hidetext .item :is(img, .icon) {
-    margin-right: 0;
-    width: 24px;
-    height: 24px;
+	margin-right: 0;
+	width: 24px;
+	height: 24px;
 }
 
 .ingredientdropdown .item .text {
-    font-size: 12px;
-    line-height: 1.1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+	font-size: 12px;
+	line-height: 1.1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 .ingredient-search-controls-left,
 .ingredient-search-controls-right {
-    position: relative;
+	position: relative;
 }
 .ingredientdropdown .item.faded {
-    background: var(--medium);
-    color: var(--fg-tertiary);
-    opacity: 0.6;
+	background: var(--medium);
+	color: var(--fg-tertiary);
+	opacity: 0.6;
 }
 
 /* Density variations for ingredient dropdown */
 /* Compact */
 .ingredientdropdown.density-compact div {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 2px;
+	grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+	gap: 2px;
 }
 .ingredientdropdown.density-compact .item {
-    padding: 2px 4px;
-    background: transparent;
-    border-color: transparent;
-    border-radius: 2px;
+	padding: 2px 4px;
+	background: transparent;
+	border-color: transparent;
+	border-radius: 2px;
 }
 .ingredientdropdown.density-compact .item:hover {
-    background: var(--table-hover);
-    border-color: var(--border-light);
-    box-shadow: none;
-    transform: none;
+	background: var(--table-hover);
+	border-color: var(--border-light);
+	box-shadow: none;
+	transform: none;
 }
 .ingredientdropdown.density-compact .item.selected {
-    background: var(--selected-bg);
-    border-color: var(--selected-border);
+	background: var(--selected-bg);
+	border-color: var(--selected-border);
 }
 .ingredientdropdown.density-compact .item :is(img, .icon) {
-    width: 16px;
-    height: 16px;
-    margin-right: 4px;
+	width: 16px;
+	height: 16px;
+	margin-right: 4px;
 }
 .ingredientdropdown.density-compact .item .text {
-    font-size: 11px;
+	font-size: 11px;
 }
 .ingredientdropdown.hidetext.density-compact div {
-    grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
-    gap: 2px;
+	grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+	gap: 2px;
 }
 .ingredientdropdown.hidetext.density-compact .item :is(img, .icon) {
-    width: 20px;
-    height: 20px;
-    margin-right: 0;
+	width: 20px;
+	height: 20px;
+	margin-right: 0;
 }
 
 /* Normal */
 .ingredientdropdown.density-normal div {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 8px;
 }
 .ingredientdropdown.density-normal .item {
-    padding: 6px 8px;
+	padding: 6px 8px;
 }
 .ingredientdropdown.density-normal .item :is(img, .icon) {
-    width: 24px;
-    height: 24px;
+	width: 24px;
+	height: 24px;
 }
 .ingredientdropdown.density-normal .item .text {
-    font-size: 13px;
+	font-size: 13px;
 }
 .ingredientdropdown.hidetext.density-normal div {
-    grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
-    gap: 6px;
+	grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+	gap: 6px;
 }
 .ingredientdropdown.hidetext.density-normal .item :is(img, .icon) {
-    width: 28px;
-    height: 28px;
-    margin-right: 0;
+	width: 28px;
+	height: 28px;
+	margin-right: 0;
 }
 
 /* Cozy */
 .ingredientdropdown.density-cozy div {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+	gap: 12px;
 }
 .ingredientdropdown.density-cozy .item {
-    padding: 10px 12px;
+	padding: 10px 12px;
 }
 .ingredientdropdown.density-cozy .item :is(img, .icon) {
-    width: 32px;
-    height: 32px;
-    margin-right: 12px;
+	width: 32px;
+	height: 32px;
+	margin-right: 12px;
 }
 .ingredientdropdown.density-cozy .item .text {
-    font-size: 14px;
+	font-size: 14px;
 }
 .ingredientdropdown.hidetext.density-cozy div {
-    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
-    gap: 8px;
+	grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+	gap: 8px;
 }
 .ingredientdropdown.hidetext.density-cozy .item :is(img, .icon) {
-    width: 36px;
-    height: 36px;
-    margin-right: 0;
+	width: 36px;
+	height: 36px;
+	margin-right: 0;
 }
 
 /* Dropdown fix for density dropdown */
@@ -839,8 +836,8 @@ button.makablebutton:disabled:hover {
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	min-width: 140px;
 	z-index: 200; /* High enough to overlay lists */
-    max-height: 240px;
-    overflow-y: auto;
+	max-height: 240px;
+	overflow-y: auto;
 }
 
 .ui-dropdown-list div {
@@ -849,7 +846,7 @@ button.makablebutton:disabled:hover {
 	cursor: pointer;
 	background: var(--bg-primary);
 	transition: background var(--transition-fast);
-    font-size: 13px;
+	font-size: 13px;
 }
 
 .ui-dropdown-list div.is-selected {
@@ -861,70 +858,70 @@ button.makablebutton:disabled:hover {
 }
 
 .ui-dropdown-btn {
-    height: 32px;
-    border-radius: 5px;
-    border: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-    color: var(--fg-primary);
-    font-size: 13px;
-    padding: 0 10px 0 8px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
+	height: 32px;
+	border-radius: 5px;
+	border: 1px solid var(--border-color);
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font-size: 13px;
+	padding: 0 10px 0 8px;
+	cursor: pointer;
+	transition: all var(--transition-fast);
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
 }
 
 .ui-dropdown-btn::after {
-    content: '';
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid var(--fg-secondary);
-    margin-left: 4px;
-    transition: transform var(--transition-fast);
+	content: '';
+	display: inline-block;
+	width: 0;
+	height: 0;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 4px solid var(--fg-secondary);
+	margin-left: 4px;
+	transition: transform var(--transition-fast);
 }
 
 .ui-dropdown-container.is-open .ui-dropdown-btn::after {
-    transform: rotate(180deg);
+	transform: rotate(180deg);
 }
 
 .ui-dropdown-btn:hover {
-    background: var(--table-hover);
-    border-color: var(--dark);
+	background: var(--table-hover);
+	border-color: var(--dark);
 }
 
 /* Base custom dropdowns styling (replaces specific class rules) */
 .ingredient-search-controls .ui-dropdown-btn {
-    margin: 0;
+	margin: 0;
 }
 
 .searchselector.ui-dropdown-btn {
-    border-radius: 4px 0 0 4px;
-    border-right: none;
-    background: var(--table-hover);
-    color: var(--fg-primary);
+	border-radius: 4px 0 0 4px;
+	border-right: none;
+	background: var(--table-hover);
+	color: var(--fg-primary);
 }
 
 .searchselector.ui-dropdown-btn:hover,
 .searchselector.ui-dropdown-btn:active {
-    background: var(--medium);
+	background: var(--medium);
 }
 
 .sortingredients.ui-dropdown-btn,
 .displaymodeingredients.ui-dropdown-btn {
-    padding: 0 12px;
+	padding: 0 12px;
 }
 
 /* For search dropdown container to work in flex */
 .ingredient-search-input-group .ui-dropdown-container {
-    display: flex;
-    align-items: stretch;
+	display: flex;
+	align-items: stretch;
 }
 .ingredient-search-input-group .ui-dropdown-container .searchselector {
-    height: 100%;
-    width: 100%;
+	height: 100%;
+	width: 100%;
 }

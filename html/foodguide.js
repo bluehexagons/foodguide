@@ -41,10 +41,9 @@ import { sortIngredients } from './ingredient-sort.js';
 import { createThemeController } from './theme-controller.js';
 import { createSortableTableFactory } from './sortable-table.js';
 import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
-import { accumulateIngredients, makeImage, makeLinkable, makeElement, pl } from './utils.js';
+import { makeImage, makeLinkable, makeElement } from './utils.js';
 import {
 	matchesMode,
-	excludesMode,
 	getActiveMultipliers,
 	calculateModeMask,
 	calculateCharMask,
@@ -118,9 +117,7 @@ import './locales/index.js';
 	// populate the language picker, and apply translations to the static HTML.
 	initLocale();
 	updateRecipeText();
-	updateFoodRecipes(
-		recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)),
-	);
+	updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
 
 	const langPicker = /** @type {HTMLSelectElement | null} */ (
 		document.getElementById('language-picker')
@@ -241,35 +238,6 @@ import './locales/index.js';
 	const translateTableHint = hint => {
 		const key = tableHintKeys[hint];
 		return key ? t(key) : hint;
-	};
-
-	const tableHeader = key => {
-		switch (key) {
-			case 'name':
-				return 'Name';
-			case 'health':
-				return 'Health';
-			case 'hunger':
-				return 'Hunger';
-			case 'sanity':
-				return 'Sanity';
-			case 'perish':
-				return 'Perish';
-			case 'info':
-				return 'Info';
-			case 'mode':
-				return 'Mode';
-			case 'cookTime':
-				return 'Cook Time';
-			case 'priority':
-				return 'Priority';
-			case 'notes':
-				return 'Notes';
-			case 'requires':
-				return 'Requires';
-			default:
-				return key;
-		}
 	};
 
 	/**
@@ -587,7 +555,7 @@ import './locales/index.js';
 		}
 
 		const nEights = ((Math.abs(n) % 1) * 8) | 0;
-		const fractStr = nEights < 1 || nEights > 7 ? '' : (fractionChars[nEights - 1] || '');
+		const fractStr = nEights < 1 || nEights > 7 ? '' : fractionChars[nEights - 1] || '';
 
 		n = Math.floor(n);
 		return (n > 0 ? `+${n}` : n) + fractStr;
@@ -642,17 +610,17 @@ import './locales/index.js';
 			if ((item.cook.health || 0) !== (item.health || 0)) {
 				const rawHealth = ((itemMods.health ?? item.health) || 0) * mult;
 				const cookedHealth = ((cookMods.health ?? item.cook.health) || 0) * cookmult;
-				health = (health === '' ? '0' : health) + ` (${sign(cookedHealth - rawHealth)})`;
+				health = `${health === '' ? '0' : health} (${sign(cookedHealth - rawHealth)})`;
 			}
 			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
 				const rawHunger = ((itemMods.hunger ?? item.hunger) || 0) * mult;
 				const cookedHunger = ((cookMods.hunger ?? item.cook.hunger) || 0) * cookmult;
-				hunger = (hunger === '' ? '0' : hunger) + ` (${sign(cookedHunger - rawHunger)})`;
+				hunger = `${hunger === '' ? '0' : hunger} (${sign(cookedHunger - rawHunger)})`;
 			}
 			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
 				const rawSanity = ((itemMods.sanity ?? item.sanity) || 0) * mult;
 				const cookedSanity = ((cookMods.sanity ?? item.cook.sanity) || 0) * cookmult;
-				sanity = (sanity === '' ? '0' : sanity) + ` (${sign(cookedSanity - rawSanity)})`;
+				sanity = `${sanity === '' ? '0' : sanity} (${sign(cookedSanity - rawSanity)})`;
 			}
 			if ((item.cook.perish || 0) !== (item.perish || 0)) {
 				const dayDifference =
@@ -825,7 +793,8 @@ import './locales/index.js';
 			Sanity: 'sanity',
 			Perish: 'perish',
 			'Cook Time': 'cooktime',
-			'Priority:One of the highest priority recipes for a combination will be made': 'priority',
+			'Priority:One of the highest priority recipes for a combination will be made':
+				'priority',
 			'Requires:Dim+struck items cannot be used': '',
 			Notes: '',
 			Mode: 'modeMask',
@@ -903,9 +872,6 @@ import './locales/index.js';
 				const deleteButton = document.createElement('button');
 				deleteButton.appendChild(document.createTextNode(t('clearResults')));
 				deleteButton.className = 'deleteButton';
-				let updateMakableTexts;
-				let updateMakableControls;
-				let calculationControl;
 				deleteButton.addEventListener('click', () => {
 					calculationControl?.cancel();
 					makableButton.parentNode.removeChild(makableDiv);
@@ -915,7 +881,10 @@ import './locales/index.js';
 						document.removeEventListener('foodguide:localechange', updateMakableTexts);
 					}
 					if (updateMakableControls) {
-						document.removeEventListener('foodguide:localechange', updateMakableControls);
+						document.removeEventListener(
+							'foodguide:localechange',
+							updateMakableControls,
+						);
 					}
 					updateMakableButtonLabel();
 					makableButton.disabled = false;
@@ -1171,12 +1140,13 @@ import './locales/index.js';
 						autoHide: ['Health+', 'Hunger+'],
 					},
 				);
-				updateMakableControls = () => {
+				const updateMakableControls = () => {
 					deleteButton.textContent = t('clearResults');
 					customFilterInput.placeholder = t('customFilterPlaceholder');
-					pauseButton.textContent = calculationControl && calculationControl.isPaused()
-						? t('resume')
-						: t('pause');
+					pauseButton.textContent =
+						calculationControl && calculationControl.isPaused()
+							? t('resume')
+							: t('pause');
 					makableTable.updateLocale();
 				};
 
@@ -1189,16 +1159,12 @@ import './locales/index.js';
 
 				const makableFootnote = document.createElement('div');
 				makableFootnote.className = 'makableFootnote';
-				makableFootnote.appendChild(
-					document.createTextNode(t('multipleResultsNote')),
-				);
+				makableFootnote.appendChild(document.createTextNode(t('multipleResultsNote')));
 
 				const filterHelp = document.createElement('div');
 				filterHelp.className = 'makableFilterHelp';
-				filterHelp.appendChild(
-					document.createTextNode(t('filterCycleHelp')),
-				);
-				updateMakableTexts = () => {
+				filterHelp.appendChild(document.createTextNode(t('filterCycleHelp')));
+				const updateMakableTexts = () => {
 					makableSummary.firstChild.textContent = t('computingCombinations');
 					makableFootnote.firstChild.textContent = t('multipleResultsNote');
 					filterHelp.firstChild.textContent = t('filterCycleHelp');
@@ -1257,7 +1223,7 @@ import './locales/index.js';
 				makableButton.disabled = true;
 				makableSummary.appendChild(deleteButton);
 
-				calculationControl = getRealRecipesFromCollection(
+				const calculationControl = getRealRecipesFromCollection(
 					idealIngredients,
 					data => {
 						// row update
@@ -1463,7 +1429,6 @@ import './locales/index.js';
 		let i = pickers.length;
 
 		while (i--) {
-			const searchSelector = document.createElement('span');
 			const dropdown = document.createElement('div');
 			let ul = document.createElement('ul');
 			const picker = pickers[i];
@@ -1488,24 +1453,28 @@ import './locales/index.js';
 				title.className = 'selectionpanel-title';
 				title.setAttribute(
 					'data-i18n',
-					picker.dataset.cookable ? 'simulatorSelectedIngredients' : 'discoverySelectedIngredients',
+					picker.dataset.cookable
+						? 'simulatorSelectedIngredients'
+						: 'discoverySelectedIngredients',
 				);
 				title.textContent = t(
-					picker.dataset.cookable ? 'simulatorSelectedIngredients' : 'discoverySelectedIngredients',
+					picker.dataset.cookable
+						? 'simulatorSelectedIngredients'
+						: 'discoverySelectedIngredients',
 				);
 				parent.parentNode.insertBefore(panel, parent);
 				panel.appendChild(title);
 				panel.appendChild(parent);
 			}
 			let slots = parent.getElementsByClassName('ingredient');
-			
+
 			const searchRow = document.createElement('div');
 			searchRow.className = 'ingredient-search-row';
-			
+
 			const searchInputGroup = document.createElement('div');
 			searchInputGroup.className = 'ingredient-search-input-group';
 			searchRow.appendChild(searchInputGroup);
-			
+
 			picker.parentNode.insertBefore(searchRow, picker);
 			searchInputGroup.appendChild(picker);
 
@@ -1561,7 +1530,9 @@ import './locales/index.js';
 					return -1;
 				}
 
-				const existingSlot = Array.from(parent.children).find(child => child.dataset.id === id);
+				const existingSlot = Array.from(parent.children).find(
+					child => child.dataset.id === id,
+				);
 				if (existingSlot) {
 					parent.removeChild(existingSlot);
 				}
@@ -1859,12 +1830,7 @@ import './locales/index.js';
 					results.appendChild(table);
 					simulatorLocaleRefresh = updateRecipes;
 
-					results.appendChild(
-						makeElement(
-							'p',
-							t('discoveryHighlightsNote'),
-						),
-					);
+					results.appendChild(makeElement('p', t('discoveryHighlightsNote')));
 
 					if (ingredients[0] !== null) {
 						getSuggestions(suggestions, ingredients, cooking);
@@ -2070,34 +2036,53 @@ import './locales/index.js';
 					{ value: 'health', key: 'sortHealth' },
 					{ value: 'hunger', key: 'sortHunger' },
 					{ value: 'sanity', key: 'sortSanity' },
-					{ value: 'perish', key: 'sortPerish' }
+					{ value: 'perish', key: 'sortPerish' },
 				],
 				initialValue: 'default',
 				buttonClass: 'sortingredients',
 				storageKey: 'foodGuideSortPreference',
 				storageIndex: index,
-				onSelect: () => refreshPicker()
+				onSelect: () => refreshPicker(),
 			});
 			// Search controls
 			const searchTypeKeys = [
-				{ value: 'name', key: 'searchTypeName', prefix: '', placeholderKey: 'searchPlaceholderName' },
-				{ value: 'tag', key: 'searchTypeTag', prefix: 'tag:', placeholderKey: 'searchPlaceholderTag' },
-				{ value: 'recipe', key: 'searchTypeRecipe', prefix: 'recipe:', placeholderKey: 'searchPlaceholderRecipe' }
+				{
+					value: 'name',
+					key: 'searchTypeName',
+					prefix: '',
+					placeholderKey: 'searchPlaceholderName',
+				},
+				{
+					value: 'tag',
+					key: 'searchTypeTag',
+					prefix: 'tag:',
+					placeholderKey: 'searchPlaceholderTag',
+				},
+				{
+					value: 'recipe',
+					key: 'searchTypeRecipe',
+					prefix: 'recipe:',
+					placeholderKey: 'searchPlaceholderRecipe',
+				},
 			];
 			const searchSelectorControls = createDropdown({
 				items: searchTypeKeys,
 				initialValue: 'name',
 				buttonClass: 'searchselector',
-				onSelect: (item) => {
+				onSelect: item => {
 					picker.placeholder = t(item.placeholderKey);
 					refreshPicker();
-				}
+				},
 			});
-			picker.placeholder = t(searchTypeKeys.find(k => k.value === searchSelectorControls.getValue()).placeholderKey);
+			picker.placeholder = t(
+				searchTypeKeys.find(k => k.value === searchSelectorControls.getValue())
+					.placeholderKey,
+			);
 
 			searchInputGroup.insertBefore(searchSelectorControls.container, picker);
 
-			searchSelectorControls.getSearch = () => searchSelectorControls.getItem().prefix + picker.value;
+			searchSelectorControls.getSearch = () =>
+				searchSelectorControls.getItem().prefix + picker.value;
 			searchSelectorControls.splitTag = () => {
 				const parts = picker.value.split(/: */);
 				if (parts.length === 2) {
@@ -2110,11 +2095,10 @@ import './locales/index.js';
 					}
 				}
 			};
-			searchSelectorControls.setSearchType = (idx) => {
+			searchSelectorControls.setSearchType = idx => {
 				searchSelectorControls.setValue(searchTypeKeys[idx].value);
 				picker.placeholder = t(searchTypeKeys[idx].placeholderKey);
 			};
-
 
 			dropdown.className = 'ingredientdropdown';
 			dropdown.appendChild(ul);
@@ -2201,7 +2185,7 @@ import './locales/index.js';
 				items: [
 					{ value: 'names', key: 'displayModeNames' },
 					{ value: 'icons', key: 'displayModeIcons' },
-					{ value: 'list', key: 'displayModeList' }
+					{ value: 'list', key: 'displayModeList' },
 				],
 				initialValue: 'names',
 				buttonClass: 'displaymodeingredients',
@@ -2211,7 +2195,7 @@ import './locales/index.js';
 					dropdown.classList.remove('hidetext', 'listmode');
 					if (mode === 'icons') dropdown.classList.add('hidetext');
 					else if (mode === 'list') dropdown.classList.add('listmode');
-				}
+				},
 			});
 			{
 				const mode = displayModeControls.getValue();
@@ -2219,14 +2203,12 @@ import './locales/index.js';
 				else if (mode === 'list') dropdown.classList.add('listmode');
 			}
 
-			
-			
 			// Density controls
 			const densityControls = createDropdown({
 				items: [
 					{ value: 'cozy', key: 'densityCozy' },
 					{ value: 'normal', key: 'densityNormal' },
-					{ value: 'compact', key: 'densityCompact' }
+					{ value: 'compact', key: 'densityCompact' },
 				],
 				initialValue: 'compact',
 				buttonClass: 'displaymodeingredients densityingredients',
@@ -2235,27 +2217,26 @@ import './locales/index.js';
 				onSelect: (_, mode) => {
 					dropdown.classList.remove('density-cozy', 'density-normal', 'density-compact');
 					dropdown.classList.add(`density-${mode}`);
-				}
+				},
 			});
 			dropdown.classList.add(`density-${densityControls.getValue()}`);
 
-
 			const controlsGroup = document.createElement('div');
 			controlsGroup.className = 'ingredient-search-controls';
-			
+
 			const controlsLeft = document.createElement('div');
 			controlsLeft.className = 'ingredient-search-controls-left';
-			
+
 			const controlsRight = document.createElement('div');
 			controlsRight.className = 'ingredient-search-controls-right';
-			
+
 			controlsLeft.appendChild(displayModeControls.container);
 			controlsLeft.appendChild(densityControls.container);
 			controlsLeft.appendChild(sortControls.container);
-			
+
 			controlsRight.appendChild(clearSearchBtn);
 			controlsRight.appendChild(clearIngredientsBtn);
-			
+
 			controlsGroup.appendChild(controlsLeft);
 			controlsGroup.appendChild(controlsRight);
 			searchRow.appendChild(controlsGroup);
@@ -2386,14 +2367,14 @@ import './locales/index.js';
 	document.addEventListener('foodguide:localechange', updateModeButtonTitles);
 
 	// Section: Game version
-		const versionSection = document.createElement('div');
-		versionSection.className = 'mode-section';
+	const versionSection = document.createElement('div');
+	versionSection.className = 'mode-section';
 
-		const versionLabel = document.createElement('span');
-		versionLabel.className = 'mode-label';
-		versionLabel.setAttribute('data-i18n', 'modeLabelGame');
-		versionLabel.textContent = t('modeLabelGame');
-		versionSection.appendChild(versionLabel);
+	const versionLabel = document.createElement('span');
+	versionLabel.className = 'mode-label';
+	versionLabel.setAttribute('data-i18n', 'modeLabelGame');
+	versionLabel.textContent = t('modeLabelGame');
+	versionSection.appendChild(versionLabel);
 
 	for (const name in gameVersions) {
 		const btn = document.createElement('div');
@@ -2421,11 +2402,11 @@ import './locales/index.js';
 	const dlcSection = document.createElement('div');
 	dlcSection.className = 'mode-section dlc-section';
 
-		const dlcLabel = document.createElement('span');
-		dlcLabel.className = 'mode-label';
-		dlcLabel.setAttribute('data-i18n', 'modeLabelDlc');
-		dlcLabel.textContent = t('modeLabelDlc');
-		dlcSection.appendChild(dlcLabel);
+	const dlcLabel = document.createElement('span');
+	dlcLabel.className = 'mode-label';
+	dlcLabel.setAttribute('data-i18n', 'modeLabelDlc');
+	dlcLabel.textContent = t('modeLabelDlc');
+	dlcSection.appendChild(dlcLabel);
 
 	for (const name in dlcOptions) {
 		const btn = document.createElement('div');
@@ -2453,11 +2434,11 @@ import './locales/index.js';
 	const charSection = document.createElement('div');
 	charSection.className = 'mode-section char-section';
 
-		const charLabel = document.createElement('span');
-		charLabel.className = 'mode-label';
-		charLabel.setAttribute('data-i18n', 'modeLabelCharacter');
-		charLabel.textContent = t('modeLabelCharacter');
-		charSection.appendChild(charLabel);
+	const charLabel = document.createElement('span');
+	charLabel.className = 'mode-label';
+	charLabel.setAttribute('data-i18n', 'modeLabelCharacter');
+	charLabel.textContent = t('modeLabelCharacter');
+	charSection.appendChild(charLabel);
 
 	for (const name in characters) {
 		const btn = document.createElement('div');

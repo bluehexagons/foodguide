@@ -14,7 +14,7 @@ import assert from 'node:assert';
 import { accumulateIngredients } from '../html/utils.js';
 import { recipes } from '../html/recipes.js';
 import { food } from '../html/food.js';
-import { NAME, TAG, NOT, OR } from '../html/functions.js';
+import { NAME } from '../html/functions.js';
 import { defaultStatMultipliers } from '../html/constants.js';
 
 const accumulate = items => {
@@ -209,7 +209,12 @@ describe('recipe matching with priority', () => {
 	});
 
 	it('no recipes match when ingredients have no relevant tags', () => {
-		const { names, tags } = accumulate([{ id: 'ice' }, { id: 'ice' }, { id: 'ice' }, { id: 'ice' }]);
+		const { names, tags } = accumulate([
+			{ id: 'ice' },
+			{ id: 'ice' },
+			{ id: 'ice' },
+			{ id: 'ice' },
+		]);
 
 		const candidates = [recipes.meatballs, recipes.fishsticks, recipes.honeyham];
 		const matches = candidates.filter(r => !!r.test(null, names, tags));
@@ -243,7 +248,11 @@ describe('NAME() unified identity matching', () => {
 
 	it('NAME returns 0 when no variant matches', () => {
 		const req = NAME('plantmeat');
-		assert.strictEqual(req.test(null, { meat: 1 }, {}), 0, 'unrelated ingredient should not match');
+		assert.strictEqual(
+			req.test(null, { meat: 1 }, {}),
+			0,
+			'unrelated ingredient should not match',
+		);
 	});
 
 	it('Leafy Meatloaf requirements match DST plantmeat (issue #75)', () => {
@@ -277,7 +286,10 @@ describe('NAME() unified identity matching', () => {
 			}
 		}
 
-		assert.ok(qualifies, 'DST butterflywings should qualify for Butter Muffin via requirements');
+		assert.ok(
+			qualifies,
+			'DST butterflywings should qualify for Butter Muffin via requirements',
+		);
 	});
 
 	it('Veggie Burger requirements match DST plantmeat (issue #75)', () => {

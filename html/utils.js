@@ -186,16 +186,21 @@ export const makeLinkable = (() => {
 					span.dataset.link = results[i];
 
 					if (results[i + 1] && results[i + 1].indexOf('img/') === 0) {
-						span.appendChild(document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')));
+						span.appendChild(
+							document.createTextNode(results[i + 1].split(' ').slice(1).join(' ')),
+						);
 						const url = results[i + 1].split(' ')[0];
 						const image = makeImage(url);
 
 						image.title = (
-							url.substr(4, 1).toUpperCase() + url.substr(5).replace(titleCase, toTitleCase)
+							url.substr(4, 1).toUpperCase() +
+							url.substr(5).replace(titleCase, toTitleCase)
 						).split('.')[0];
 						span.appendChild(image);
 					} else {
-						span.appendChild(document.createTextNode(results[i + 1] ? results[i + 1] : results[i]));
+						span.appendChild(
+							document.createTextNode(results[i + 1] ? results[i + 1] : results[i]),
+						);
 					}
 
 					row.appendChild(span);

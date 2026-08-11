@@ -2743,7 +2743,9 @@ for (const key in food) {
 	// For resolving cross-references: prefer the mode-specific instance if it exists
 	const modeRef =
 		modeSuffix ||
-		(f.mode !== 'vanilla' && f.mode !== 'hamlet' && f.mode !== 'shipwrecked' ? `@${f.mode}` : '');
+		(f.mode !== 'vanilla' && f.mode !== 'hamlet' && f.mode !== 'shipwrecked'
+			? `@${f.mode}`
+			: '');
 
 	f.match = 0;
 	f.lowerName = f.name.toLowerCase();

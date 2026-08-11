@@ -19,7 +19,6 @@ import {
 	WARLY,
 	WEBBER,
 	modes,
-	baseModes,
 	characters,
 	defaultStatMultipliers,
 	gameVersions,
@@ -81,7 +80,10 @@ describe('mode utility functions', () => {
 		const currentModeMask = VANILLA | GIANTS | SHIPWRECKED;
 		const currentCharMask = WARLY;
 
-		assert.equal(matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask), true);
+		assert.equal(
+			matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask),
+			true,
+		);
 	});
 
 	it('matchesMode with charMask: excludes when version matches but character not selected', () => {
@@ -91,7 +93,10 @@ describe('mode utility functions', () => {
 		const currentModeMask = VANILLA | GIANTS | SHIPWRECKED;
 		const currentCharMask = 0;
 
-		assert.equal(matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask), false);
+		assert.equal(
+			matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask),
+			false,
+		);
 	});
 
 	it('matchesMode with charMask: excludes when character selected but version wrong', () => {
@@ -101,7 +106,10 @@ describe('mode utility functions', () => {
 		const currentModeMask = VANILLA | GIANTS | SHIPWRECKED;
 		const currentCharMask = WARLY;
 
-		assert.equal(matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask), false);
+		assert.equal(
+			matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask),
+			false,
+		);
 	});
 
 	it('matchesMode with charMask: non-character items match regardless of charMask', () => {
@@ -111,7 +119,10 @@ describe('mode utility functions', () => {
 		const currentModeMask = VANILLA | GIANTS | SHIPWRECKED;
 		const currentCharMask = WARLY;
 
-		assert.equal(matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask), true);
+		assert.equal(
+			matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask),
+			true,
+		);
 	});
 
 	it('matchesMode with charMask: wrong character selected does not match', () => {
@@ -121,7 +132,10 @@ describe('mode utility functions', () => {
 		const currentModeMask = VANILLA | GIANTS | SHIPWRECKED;
 		const currentCharMask = WEBBER;
 
-		assert.equal(matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask), false);
+		assert.equal(
+			matchesMode(itemModeMask, currentModeMask, itemCharMask, currentCharMask),
+			false,
+		);
 	});
 
 	it('excludesMode is inverse of matchesMode (2 args)', () => {
@@ -152,7 +166,14 @@ describe('mode utility functions', () => {
 
 	it('calculateModeMask returns version mask without character bits', () => {
 		const dlc = { giants: true, shipwrecked: true };
-		const mask = calculateModeMask('dontstarve', dlc, 'warly', gameVersions, dlcOptions, characters);
+		const mask = calculateModeMask(
+			'dontstarve',
+			dlc,
+			'warly',
+			gameVersions,
+			dlcOptions,
+			characters,
+		);
 
 		// Should include vanilla + giants + shipwrecked but NOT warly bit
 		assert.equal(mask, VANILLA | GIANTS | SHIPWRECKED);
@@ -160,7 +181,14 @@ describe('mode utility functions', () => {
 
 	it('calculateModeMask for dontstarve with partial DLC', () => {
 		const dlc = { giants: true, shipwrecked: false };
-		const mask = calculateModeMask('dontstarve', dlc, null, gameVersions, dlcOptions, characters);
+		const mask = calculateModeMask(
+			'dontstarve',
+			dlc,
+			null,
+			gameVersions,
+			dlcOptions,
+			characters,
+		);
 
 		assert.equal(mask, VANILLA | GIANTS);
 	});
@@ -174,7 +202,14 @@ describe('mode utility functions', () => {
 
 	it('calculateModeMask for hamlet includes all single-player content', () => {
 		const dlc = {};
-		const mask = calculateModeMask('hamlet', dlc, 'webber', gameVersions, dlcOptions, characters);
+		const mask = calculateModeMask(
+			'hamlet',
+			dlc,
+			'webber',
+			gameVersions,
+			dlcOptions,
+			characters,
+		);
 
 		// Character bits are NOT in modeMask; only version bits
 		assert.equal(mask, VANILLA | GIANTS | SHIPWRECKED | HAMLET);
@@ -182,7 +217,14 @@ describe('mode utility functions', () => {
 
 	it('calculateModeMask for vanilla only', () => {
 		const dlc = { giants: false, shipwrecked: false };
-		const mask = calculateModeMask('dontstarve', dlc, null, gameVersions, dlcOptions, characters);
+		const mask = calculateModeMask(
+			'dontstarve',
+			dlc,
+			null,
+			gameVersions,
+			dlcOptions,
+			characters,
+		);
 
 		assert.equal(mask, VANILLA);
 	});
@@ -231,20 +273,40 @@ describe('mode utility functions', () => {
 	it('isCharacterApplicable checks DLC requirements', () => {
 		// Warly requires shipwrecked under dontstarve
 		assert.equal(
-			isCharacterApplicable('warly', 'dontstarve', { giants: false, shipwrecked: true }, characters),
+			isCharacterApplicable(
+				'warly',
+				'dontstarve',
+				{ giants: false, shipwrecked: true },
+				characters,
+			),
 			true,
 		);
 		assert.equal(
-			isCharacterApplicable('warly', 'dontstarve', { giants: true, shipwrecked: false }, characters),
+			isCharacterApplicable(
+				'warly',
+				'dontstarve',
+				{ giants: true, shipwrecked: false },
+				characters,
+			),
 			false,
 		);
 		// Webber requires giants or shipwrecked
 		assert.equal(
-			isCharacterApplicable('webber', 'dontstarve', { giants: true, shipwrecked: false }, characters),
+			isCharacterApplicable(
+				'webber',
+				'dontstarve',
+				{ giants: true, shipwrecked: false },
+				characters,
+			),
 			true,
 		);
 		assert.equal(
-			isCharacterApplicable('webber', 'dontstarve', { giants: false, shipwrecked: false }, characters),
+			isCharacterApplicable(
+				'webber',
+				'dontstarve',
+				{ giants: false, shipwrecked: false },
+				characters,
+			),
 			false,
 		);
 	});

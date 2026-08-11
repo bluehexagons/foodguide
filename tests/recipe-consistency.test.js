@@ -148,7 +148,9 @@ describe('individual food item qualification', () => {
 						if (!req.test(null, f.nameObject, f)) return false;
 					}
 				}
-				return recipe.requirements.some(req => !req.cancel && req.test(null, f.nameObject, f));
+				return recipe.requirements.some(
+					req => !req.cancel && req.test(null, f.nameObject, f),
+				);
 			});
 
 			assert.ok(qualifying.length > 0, `meat food ${f.id} qualifies for no recipes`);
@@ -164,7 +166,11 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 		// test: names.roe || names.roe_cooked === 3  (JS precedence makes this correct)
 		// requirements: OR(SPECIFIC('roe'), SPECIFIC('roe_cooked', COMPARE('=', 3)))
 
-		assert.strictEqual(!!caviar.test(null, { roe: 1 }, { veggie: 1 }), true, '1 roe + veggie passes');
+		assert.strictEqual(
+			!!caviar.test(null, { roe: 1 }, { veggie: 1 }),
+			true,
+			'1 roe + veggie passes',
+		);
 		assert.strictEqual(
 			!!caviar.test(null, { roe_cooked: 1 }, { veggie: 1 }),
 			false,

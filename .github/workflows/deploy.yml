@@ -1,92 +1,114 @@
 name: Deploy
 
 on:
- push:
-  branches: [main]
+    push:
+        branches: [main]
 
- # Allow manual trigger from the Actions tab
- workflow_dispatch:
+    # Allow manual trigger from the Actions tab
+    workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
- contents: read
- pages: write
- id-token: write
+# Default to no repository token permissions; jobs opt into only what they need.
+permissions: {}
 
 # Allow only one concurrent deployment, skipping runs queued between the run
 # in-progress and latest queued. Do not cancel in-progress runs as we want to
 # allow these deployments to complete.
 concurrency:
- group: pages
- cancel-in-progress: false
+    group: pages
+    cancel-in-progress: false
 
 jobs:
- # Run the same checks as CI before deploying
- check:
-  name: Lint, Typecheck & Test
-  runs-on: ubuntu-latest
+    # Run the same checks as CI before deploying
+    check:
+        name: Check
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
 
-  steps:
-   - name: Checkout code
-     uses: actions/checkout@v4
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+              with:
+                  persist-credentials: false
 
-   - name: Set up Node.js
-     uses: actions/setup-node@v4
-     with:
-      node-version: 22
-      cache: npm
+            - name: Set up Node.js
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+              with:
+                  node-version: 22
+                  cache: npm
 
-   - name: Install dependencies
-     run: npm ci
+            - name: Install dependencies
+              run: npm ci --ignore-scripts
 
-   - name: Lint
-     run: npm run lint
+            - name: Check formatting, lint, types, and tests
+              run: npm run check
 
-   - name: Typecheck
-     run: npm run typecheck
+    deploy-pages:
+        name: Deploy to GitHub Pages
+        needs: check
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        permissions:
+            contents: read
+            pages: write
+            id-token: write
 
-   - name: Test
-     run: npm test
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+              with:
+                  persist-credentials: false
 
- deploy-pages:
-  name: Deploy to GitHub Pages
-  needs: check
-  runs-on: ubuntu-latest
-  environment:
-   name: github-pages
-   url: ${{ steps.deployment.outputs.page_url }}
+            - name: Set up Node.js
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+              with:
+                  node-version: 22
+                  cache: npm
 
-  steps:
-   - name: Checkout code
-     uses: actions/checkout@v4
+            - name: Install dependencies
+              run: npm ci --ignore-scripts
 
-   - name: Configure GitHub Pages
-     uses: actions/configure-pages@v5
+            - name: Generate sprite assets
+              run: npm run generate-sprites
 
-   - name: Upload Pages artifact
-     uses: actions/upload-pages-artifact@v3
-     with:
-      path: html
+            - name: Configure GitHub Pages
+              uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
-   - name: Deploy to GitHub Pages
-     id: deployment
-     uses: actions/deploy-pages@v4
+            - name: Upload Pages artifact
+              uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+              with:
+                  path: html
 
- notify-server:
-  name: Trigger server deployment
-  needs: check
-  runs-on: ubuntu-latest
-  # Only run if the webhook secret is configured
-  if: vars.DEPLOY_WEBHOOK_URL != ''
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
-  steps:
-   - name: Send deploy webhook
-     env:
-      WEBHOOK_URL: ${{ vars.DEPLOY_WEBHOOK_URL }}
-      WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
-     run: |
-      curl -fsS -X POST "$WEBHOOK_URL" \
-        -H "Content-Type: application/json" \
-        -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
-        -d "{\"ref\": \"$GITHUB_REF\", \"sha\": \"$GITHUB_SHA\"}" \
-        --max-time 30
+    notify-server:
+        name: Trigger server deployment
+        needs: check
+        runs-on: ubuntu-latest
+        permissions: {}
+        # Only run if the webhook secret is configured
+        if: vars.DEPLOY_WEBHOOK_URL != ''
+
+        steps:
+            - name: Send deploy webhook
+              env:
+                  WEBHOOK_URL: ${{ vars.DEPLOY_WEBHOOK_URL }}
+                  WEBHOOK_SECRET: ${{ secrets.DEPLOY_WEBHOOK_SECRET }}
+              run: |
+                  if [[ "$WEBHOOK_URL" != https://* ]]; then
+                    echo "DEPLOY_WEBHOOK_URL must use HTTPS" >&2
+                    exit 1
+                  fi
+                  if [[ -z "$WEBHOOK_SECRET" ]]; then
+                    echo "DEPLOY_WEBHOOK_SECRET is not configured" >&2
+                    exit 1
+                  fi
+                  curl -fsS -X POST "$WEBHOOK_URL" \
+                    -H "Content-Type: application/json" \
+                    -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
+                    -d "{\"ref\": \"$GITHUB_REF\", \"sha\": \"$GITHUB_SHA\"}" \
+                    --max-time 30

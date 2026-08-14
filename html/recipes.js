@@ -2811,7 +2811,7 @@ export const recipes = {
 		temperatureduration: food_temp_warly,
 		perish: perish_slow,
 		cooktime: 0.75,
-		note: "Raises perceived temperature by 40 degrees for 5 minutes",
+		note: 'Raises perceived temperature by 40 degrees for 5 minutes',
 		mode: 'warlydst',
 	},
 	gazpacho: {
@@ -2833,7 +2833,7 @@ export const recipes = {
 		temperatureduration: food_temp_warly,
 		perish: perish_slow,
 		cooktime: 0.5,
-		note: "Lowers perceived temperature by 40 degrees for 5 minutes",
+		note: 'Lowers perceived temperature by 40 degrees for 5 minutes',
 		mode: 'warlydst',
 	},
 	potatosouffle: {

@@ -110,6 +110,7 @@ const dict = {
 	noteProvidesHeatFor: '提供 {heat} 热量，持续 {duration}',
 	noteHeatWhenConsumed: '食用时提供 {heat} 热量',
 	noteLightSeconds: '提供{seconds}秒照明',
+	noteNightVision: '提供{minutes}分钟夜视；效果期间持续损失{sanity}理智',
 	noteSpeedBonusForSeconds: '提供{speed}点移速加成（{percent}），持续{seconds}秒',
 	noteDriesRateForSeconds: '提供每秒{rate}点干燥效果，持续{seconds}秒',
 	noteHeatDelta: '{heat}热量',

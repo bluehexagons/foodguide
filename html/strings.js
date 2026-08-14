@@ -139,6 +139,8 @@ const defaultStrings = {
 	noteProvidesHeatFor: 'Provides {heat} heat for {duration}',
 	noteHeatWhenConsumed: '{heat} heat when consumed',
 	noteLightSeconds: 'Gives {seconds} seconds of light',
+	noteNightVision:
+		'Grants night vision for {minutes} minutes; drains {sanity} Sanity over the effect',
 	noteSpeedBonusForSeconds: 'Gives {speed} bonus speed ({percent}) for {seconds} seconds',
 	noteDriesRateForSeconds: 'Dries {rate} for {seconds} seconds',
 	noteHeatDelta: '{heat} heat',

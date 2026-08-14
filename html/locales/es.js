@@ -115,6 +115,8 @@ const dict = {
 	noteProvidesHeatFor: 'Proporciona {heat} de calor durante {duration}',
 	noteHeatWhenConsumed: 'Aporta {heat} de calor al consumirse',
 	noteLightSeconds: 'Da {seconds} segundos de luz',
+	noteNightVision:
+		'Da visión nocturna durante {minutes} minutos; drena {sanity} de cordura durante el efecto',
 	noteSpeedBonusForSeconds:
 		'Da {speed} de velocidad adicional ({percent}) durante {seconds} segundos',
 	noteDriesRateForSeconds: 'Seca {rate} durante {seconds} segundos',

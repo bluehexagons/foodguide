@@ -159,6 +159,19 @@ describe('individual food item qualification', () => {
 });
 
 describe('recipe requirements match test functions (wiki-verified)', () => {
+	it('includes current DST Nightberry values and image links', () => {
+		const raw = food.nightberry;
+		const cooked = food.nightberry_cooked;
+		assert.equal(raw.health, -8);
+		assert.equal(raw.hunger, 12.5);
+		assert.equal(raw.sanity, -20);
+		assert.equal(cooked.health, -3);
+		assert.equal(cooked.hunger, 18.75);
+		assert.equal(cooked.sanity, -5);
+		assert.equal(raw.img, 'img/nightberry.png');
+		assert.equal(cooked.img, 'img/cooked_nightberry.png');
+	});
+
 	it('uses current Staying Afloat Fig-Stuffed Trunk values', () => {
 		const recipe = recipes.koalefig_trunk;
 		assert.equal(recipe.health, 60);

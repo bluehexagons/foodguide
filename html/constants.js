@@ -20,6 +20,8 @@ export const hot_food_bonus_temp = 40;
 export const food_temp_average = 10;
 export const food_temp_brief = 5;
 export const food_temp_long = 15;
+// Warly's portable-crock-pot temperature dishes last five minutes.
+export const food_temp_warly = 5 * 60;
 
 export const defaultStatMultipliers = {
 	raw: 1,

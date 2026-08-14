@@ -159,6 +159,22 @@ describe('individual food item qualification', () => {
 });
 
 describe('recipe requirements match test functions (wiki-verified)', () => {
+	it('uses current Staying Afloat Fig-Stuffed Trunk values', () => {
+		const recipe = recipes.koalefig_trunk;
+		assert.equal(recipe.health, 60);
+		assert.equal(recipe.hunger, 150);
+		assert.equal(recipe.sanity, 15);
+	});
+
+	it('does not render undefined temperature durations', () => {
+		for (const recipe of recipeList) {
+			if (recipe.temperature) {
+				assert.ok(recipe.temperatureduration, `${recipe.id} has no temperature duration`);
+				assert.doesNotMatch(recipe.note || '', /undefined/);
+			}
+		}
+	});
+
 	it('caviar: 1 roe + veggie, or 3 cooked roe + veggie', () => {
 		const caviar = recipes.caviar;
 

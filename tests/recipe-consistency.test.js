@@ -172,11 +172,101 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 		assert.equal(cooked.img, 'img/cooked_nightberry.png');
 	});
 
+	it('includes current DST fish jerky values and drying links', () => {
+		const small = food.fishmeat_small_dried;
+		const large = food.fishmeat_dried;
+		assert.deepEqual(
+			{
+				small: [small.hunger, small.health, small.sanity, small.perish / (16 * 30)],
+				large: [large.hunger, large.health, large.sanity, large.perish / (16 * 30)],
+			},
+			{
+				small: [12.5, 15, 20, 15],
+				large: [25, 30, 15, 15],
+			},
+		);
+		assert.equal(food.fishmeat_small.dry, small);
+		assert.equal(food.fishmeat.dry, large);
+		assert.equal(small.img, 'img/small_fishy_jerky.png');
+		assert.equal(large.img, 'img/fishy_jerky.png');
+	});
+
+	it('includes current DST special food items and image links', () => {
+		assert.deepEqual(
+			{
+				wobySnacks: [
+					food.woby_treat.hunger,
+					food.woby_treat.health,
+					food.woby_treat.sanity,
+				],
+				nutribrick: [
+					food.nutribrick.hunger,
+					food.nutribrick.health,
+					food.nutribrick.sanity,
+				],
+				moistenedNutribrick: [
+					food.nutribrick_moistened.hunger,
+					food.nutribrick_moistened.health,
+					food.nutribrick_moistened.sanity,
+					food.nutribrick_moistened.perish / (16 * 30),
+				],
+			},
+			{
+				wobySnacks: [9.375, -1, -5],
+				nutribrick: [0, 1, 0],
+				moistenedNutribrick: [18.75, 1, 0, 1],
+			},
+		);
+		assert.equal(food.woby_treat.img, 'img/woby_snacks.png');
+		assert.equal(food.nutribrick.img, 'img/nutribrick.png');
+		assert.equal(food.nutribrick_moistened.img, 'img/moistened_nutribrick.png');
+	});
+
 	it('uses current Staying Afloat Fig-Stuffed Trunk values', () => {
 		const recipe = recipes.koalefig_trunk;
 		assert.equal(recipe.health, 60);
 		assert.equal(recipe.hunger, 150);
 		assert.equal(recipe.sanity, 15);
+		assert.equal(recipe.perish, 15 * 16 * 30);
+	});
+
+	it('uses current Staying Afloat fish and fig dish values', () => {
+		assert.deepEqual(
+			{
+				unagi: [
+					recipes.unagi_dst.health,
+					recipes.unagi_dst.hunger,
+					recipes.unagi_dst.sanity,
+				],
+				barnacleNigiri: [
+					recipes.barnaclesushi.health,
+					recipes.barnaclesushi.hunger,
+					recipes.barnaclesushi.sanity,
+				],
+				barnacleLinguine: [
+					recipes.barnaclinguine.health,
+					recipes.barnaclinguine.hunger,
+					recipes.barnaclinguine.sanity,
+				],
+				figkabab: [
+					recipes.figkabab.health,
+					recipes.figkabab.hunger,
+					recipes.figkabab.sanity,
+				],
+				figgyFrogwich: [
+					recipes.frognewton.health,
+					recipes.frognewton.hunger,
+					recipes.frognewton.sanity,
+				],
+			},
+			{
+				unagi: [20, 37.5, 5],
+				barnacleNigiri: [40, 37.5, 15],
+				barnacleLinguine: [30, 75, 20],
+				figkabab: [20, 37.5, 10],
+				figgyFrogwich: [20, 25, 5],
+			},
+		);
 	});
 
 	it('does not render undefined temperature durations', () => {

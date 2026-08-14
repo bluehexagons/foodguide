@@ -166,6 +166,7 @@ const defaultStrings = {
 	noteRequiresUncookedTallbirdEgg: 'Requires uncooked Tallbird Egg',
 	notePlayerCannotEatBeefaloOnly: 'Cannot be eaten by the player, only given to Beefalo',
 	noteDustMothsOnly: 'Used to feed Dust Moths, cannot be eaten by the player',
+	noteWobySnacks: 'Restores three times as much Hunger when eaten by Woby',
 
 	/*
 	 * One-off note text still attached directly to food/recipe entries.

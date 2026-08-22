@@ -20,8 +20,7 @@ npm install
 npm run dev
 ```
 
-Using the defaults, it should become accessible locally in a browser on 127.0.0.1:8080.
-
+Using the defaults, it should become accessible locally in a browser at 127.0.0.1:8080/index.htm.
 
 ### Desktop version (foodguide-app)
 
@@ -33,7 +32,7 @@ builds for a thin Electron wrapper around this project.
 
 Pull requests and bug reports are greatly appreciated if anything is out of sync with Don't Starve's current versions.
 
-The Unofficial Don't Starve Food Guide is a collection of JavaScript/HTML/CSS files. Install the project dependencies with `npm install`, then run `npm run dev` to serve `html/` on a local web server so that the JavaScript modules can be loaded by a web browser.
+The Unofficial Don't Starve Food Guide is a collection of JavaScript/HTML/CSS files. Install the project dependencies with `npm install`, install the Playwright Chromium used by the browser smoke test with `npx playwright install chromium`, then run `npm run dev` to serve `html/` on a local web server so that the JavaScript modules can be loaded by a web browser.
 
 Run `npm run check` to verify formatting, linting, types, and tests. Use `npm run format` and `npm run lint:fix` to apply the project’s automatic fixes.
 

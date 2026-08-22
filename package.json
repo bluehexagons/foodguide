@@ -37,14 +37,15 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"dev": "npm run generate-sprites && http-server html -p 8080 -o -a 127.0.0.1 -d false -i false -c -1 -g",
+		"dev": "npm run generate-sprites && http-server html -p 8080 -o /index.htm -a 127.0.0.1 -i false -c -1 -g",
 		"lint": "eslint html tests scripts eslint.config.js",
 		"lint:fix": "eslint html tests scripts eslint.config.js --fix",
-		"format": "prettier --write \"html/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\" html/index.htm \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig.json",
-		"format:check": "prettier --check \"html/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\" html/index.htm \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig.json",
-		"check": "npm run format:check && npm run lint && npm run typecheck && npm test",
+		"format": "prettier --write \"html/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig.json",
+		"format:check": "prettier --check \"html/**/*.js\" \"tests/**/*.js\" \"scripts/**/*.js\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig.json",
+		"check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:browser",
 		"fix": "npm run format && npm run lint:fix",
 		"test": "node --test",
+		"test:browser": "npm run generate-sprites && node tests/browser-smoke.js",
 		"typecheck": "tsc --noEmit",
 		"generate-sprites": "node scripts/generate-sprites.js"
 	},
@@ -66,9 +67,10 @@
 	},
 	"homepage": "https://foodguide.bluehexagons.com",
 	"devDependencies": {
-		"eslint": "^10.8.1",
+		"eslint": "^10.9.0",
 		"eslint-config-prettier": "^10.1.8",
 		"http-server": "^14.1.1",
+		"playwright": "^1.62.1",
 		"prettier": "^3.9.6",
 		"sharp": "^0.35.3",
 		"typescript": "^7.0.2"

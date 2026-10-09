@@ -580,6 +580,7 @@ button.makablebutton:disabled:hover {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	flex-wrap: wrap;
 }
 
 .ingredient-search-controls .toggleingredients,

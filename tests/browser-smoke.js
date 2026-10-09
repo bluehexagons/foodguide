@@ -88,6 +88,19 @@ const createBrowserFixture = async t => {
 	return { baseUrl, browser };
 };
 
+const createSavedPage = (browser, baseUrl, state) =>
+	browser.newPage({
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [{ name: 'foodGuideState', value: JSON.stringify(state) }],
+				},
+			],
+		},
+	});
+
 test('loads the guide, assets, translations, and a rendered food table', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
@@ -367,4 +380,109 @@ test('tables retain sorting, pinned summaries, column visibility, and linked hig
 	const analyzedNames = await page.locator('#makable td:nth-child(2)').allTextContents();
 	assert.deepEqual(analyzedNames, [...analyzedNames].sort());
 	assert.deepEqual(errors, []);
+});
+
+test('picker controls and tables fit narrow screens in every locale and game', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({ viewport: { width: 320, height: 720 } });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const width of [320, 375]) {
+		await page.setViewportSize({ width, height: 720 });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			for (const version of ['together', 'dontstarve', 'hamlet']) {
+				await page.locator(`.version-btn[data-version="${version}"]`).click();
+				for (const tab of ['simulator', 'discovery', 'foodlist', 'crockpot']) {
+					await page.locator(`#navbar [data-tab="${tab}"]`).click();
+					const layout = await page.evaluate(() => ({
+						width: innerWidth,
+						pageWidth: document.documentElement.scrollWidth,
+						controls: [
+							...document.querySelectorAll('.ingredient-search-controls button'),
+						]
+							.map(button => button.getBoundingClientRect())
+							.filter(rect => rect.width > 0)
+							.map(rect => ({ left: rect.left, right: rect.right })),
+					}));
+					const context = `${width}px, ${locale}, ${version}, ${tab}`;
+					assert.ok(layout.pageWidth <= layout.width, `Page overflow: ${context}`);
+					assert.ok(
+						layout.controls.every(rect => rect.left >= 0 && rect.right <= layout.width),
+						`Clipped picker controls: ${context}`,
+					);
+				}
+			}
+		}
+	}
+});
+
+test('keyboard mode controls update ingredient variants, analysis, and saved selections', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [
+			['meat', 'meat', 'honey', 'carrot'],
+			['meat', 'meat@together', 'batnose'],
+		],
+	});
+	const errors = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const selectedKeys = selector =>
+		page
+			.locator(`${selector} .ingredient[data-id]`)
+			.evaluateAll(slots => slots.map(slot => slot.dataset.id));
+	assert.deepEqual(await selectedKeys('#ingredients'), [
+		'meat@together',
+		'meat@together',
+		'honey@together',
+		'carrot@together',
+	]);
+	assert.deepEqual(await selectedKeys('#inventory'), ['meat@together', 'batnose']);
+
+	const dontStarve = page.getByRole('button', { name: "Don't Starve", exact: true });
+	await dontStarve.focus();
+	await dontStarve.press('Enter');
+	assert.equal(await dontStarve.getAttribute('aria-pressed'), 'true');
+	assert.deepEqual(await selectedKeys('#ingredients'), ['meat', 'meat', 'honey', 'carrot']);
+	assert.deepEqual(await selectedKeys('#inventory'), ['meat']);
+	const giants = page.getByRole('button', { name: 'Reign of Giants', exact: true });
+	await giants.focus();
+	await giants.press('Space');
+	assert.equal(await giants.getAttribute('aria-pressed'), 'true');
+	const webber = page.getByRole('button', { name: 'Webber', exact: true });
+	await webber.focus();
+	await webber.press('Enter');
+	assert.equal(await webber.getAttribute('aria-pressed'), 'true');
+	await webber.press('Space');
+	assert.equal(await webber.getAttribute('aria-pressed'), 'false');
+
+	await page.locator('#navbar [data-tab="discovery"]').click();
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	assert.ok((await page.locator('#makable td:nth-child(2)').count()) > 0);
+	await page.reload({ waitUntil: 'networkidle' });
+	assert.equal(await dontStarve.getAttribute('aria-pressed'), 'true');
+	assert.equal(await giants.getAttribute('aria-pressed'), 'true');
+	assert.deepEqual(await selectedKeys('#ingredients'), ['meat', 'meat', 'honey', 'carrot']);
+	assert.deepEqual(await selectedKeys('#inventory'), ['meat']);
+	assert.deepEqual(errors, []);
+});
+
+test('restored DLC ingredients remain available during initial picker creation', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'dontstarve',
+		dlc: { giants: true, shipwrecked: false },
+		pickers: [['mole'], ['mole']],
+	});
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(await page.locator('#ingredients [data-id="mole"]').count(), 1);
+	assert.equal(await page.locator('#inventory [data-id="mole"]').count(), 1);
+	assert.equal(
+		await page
+			.getByRole('button', { name: 'Reign of Giants', exact: true })
+			.getAttribute('aria-pressed'),
+		'true',
+	);
 });

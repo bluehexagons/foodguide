@@ -56,6 +56,7 @@
 	justify-content: center;
 	width: 32px;
 	height: 32px;
+	padding: 0;
 	border-radius: 5px;
 	border: 2px solid transparent;
 	opacity: 0.6;
@@ -75,6 +76,11 @@
 	opacity: 0.88;
 	background: rgba(255, 255, 255, 0.18);
 	border-color: rgba(255, 255, 255, 0.25);
+}
+
+.mode-btn:focus-visible {
+	outline: 2px solid var(--header-text);
+	outline-offset: 2px;
 }
 
 .mode-btn.selected {

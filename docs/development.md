@@ -53,6 +53,7 @@ Go is unavailable; the application itself does not require Go.
 | `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                           |
 | `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.   |
 | `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
+| `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.    |
 | `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                  |
 | `html/style/`, `html/img/`                                            | Styles and original icon assets.                              |
 | `tools/generate-sprites.ts`                                           | Sprite sheet generator using Sharp.                           |
@@ -70,6 +71,11 @@ The page controller reads saved preferences once at startup. `preferences.ts`
 validates that JSON, translates historical game settings, and handles unavailable
 or corrupt storage. Tab and picker saves merge into the latest stored state so
 one component cannot overwrite another's preferences.
+
+Ingredient selections follow the active game on restoration and mode changes.
+Shared ingredients resolve to an available variant by their base ID; ingredients
+absent from the selected game are removed. Discovery keeps one of each ingredient,
+while the simulator preserves quantities in its four slots.
 
 Sortable tables take a `TableOptions<T>` object. Column sort keys and the default
 sort are checked against the row type; summary rows have an explicit count.

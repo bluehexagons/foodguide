@@ -13,6 +13,7 @@ import type { SortableTable } from './sortable-table.js';
 import type { StringKey } from './strings.js';
 import type { DropdownItem } from './dropdown.js';
 import { createSavedStateStore, restoreGameSelection } from './preferences.js';
+import { createFoodSelectionResolver } from './food-selection.js';
 import { getCollectionItem } from './collection.js';
 
 declare global {
@@ -148,8 +149,16 @@ import './locales/index.js';
 	let currentVersion = selection.version;
 	const activeDlc = selection.dlc;
 	let currentCharacter = selection.character;
-	let modeMask = gameVersions[currentVersion].baseMask;
-	let charMask = 0;
+	let modeMask = calculateModeMask(
+		currentVersion,
+		activeDlc,
+		currentCharacter,
+		gameVersions,
+		dlcOptions,
+		characters,
+	);
+	let charMask = calculateCharMask(currentCharacter, currentVersion, activeDlc, characters);
+	const resolveIngredient = createFoodSelectionResolver(food);
 
 	const themeController = createThemeController({
 		getStorage: () => window.localStorage,
@@ -290,6 +299,11 @@ import './locales/index.js';
 		return key ? t(key) : hint;
 	};
 
+	const setModeButtonSelected = (button: HTMLElement, selected: boolean) => {
+		button.classList.toggle('selected', selected);
+		button.setAttribute('aria-pressed', String(selected));
+	};
+
 	/**
 	 * Sets game mode and updates UI accordingly.
 	 * Called when the user selects a version, toggles DLC, or toggles a character.
@@ -328,7 +342,7 @@ import './locales/index.js';
 			if (!ver) {
 				continue;
 			}
-			btn.classList.toggle('selected', btn.dataset.version === currentVersion);
+			setModeButtonSelected(btn, btn.dataset.version === currentVersion);
 		}
 
 		// Show/hide DLC section (only visible for 'dontstarve')
@@ -345,7 +359,7 @@ import './locales/index.js';
 		const dlcButtons = modePanel.querySelectorAll<HTMLElement>('.dlc-btn');
 		for (const btn of dlcButtons) {
 			const dlcKey = btn.dataset.dlc;
-			btn.classList.toggle('selected', !!activeDlc[dlcKey || '']);
+			setModeButtonSelected(btn, !!activeDlc[dlcKey || '']);
 		}
 
 		// Update character button states and visibility
@@ -365,7 +379,7 @@ import './locales/index.js';
 				anyCharApplicable = true;
 			}
 			btn.classList.toggle('hidden', !applicable);
-			btn.classList.toggle('selected', applicable && charName === currentCharacter);
+			setModeButtonSelected(btn, applicable && charName === currentCharacter);
 		}
 		if (charSection) {
 			charSection.classList.toggle('hidden', !anyCharApplicable);
@@ -1945,16 +1959,10 @@ import './locales/index.js';
 				limited = false;
 			}
 
-			for (let id of savedState.pickers?.[index] ?? []) {
-				// Migrate old _dst IDs to the unified format.
-				if (id && !getCollectionItem(food, id) && id.endsWith('_dst')) {
-					const baseId = id.slice(0, -4);
-					id = getCollectionItem(food, `${baseId}@together`)
-						? `${baseId}@together`
-						: baseId;
-				}
-				if (id && getCollectionItem(food, id)) {
-					appendSlot(id);
+			for (const id of savedState.pickers?.[index] ?? []) {
+				const item = id ? resolveIngredient(id, modeMask, charMask) : undefined;
+				if (item) {
+					appendSlot(item.key);
 				}
 			}
 
@@ -2269,8 +2277,31 @@ import './locales/index.js';
 				});
 			});
 
-			modeRefreshers.push(refreshPicker);
-			modeRefreshers.push(updateRecipes);
+			const refreshSelection = () => {
+				if (limited) {
+					for (const slot of fixedSlots) {
+						const item = getSlot(slot);
+						if (item && 'nameObject' in item) {
+							setSlot(slot, resolveIngredient(item.key, modeMask, charMask) ?? null);
+						}
+					}
+				} else {
+					slots.length = 0;
+					for (const slot of parent.querySelectorAll<HTMLElement>(
+						'.ingredient[data-id]',
+					)) {
+						const item = resolveIngredient(slot.dataset.id || '', modeMask, charMask);
+						if (item && !slots.includes(item.key)) {
+							slots.push(item.key);
+							setSlot(slot, item);
+						} else {
+							slot.remove();
+						}
+					}
+					ensureEmptySlot();
+				}
+			};
+			modeRefreshers.push(refreshSelection, refreshPicker, updateRecipes);
 		}
 	})();
 
@@ -2362,7 +2393,9 @@ import './locales/index.js';
 	versionSection.appendChild(versionLabel);
 
 	for (const name in gameVersions) {
-		const btn = document.createElement('div');
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.setAttribute('aria-label', gameVersions[name].name);
 		btn.className = 'mode-btn version-btn';
 		btn.dataset.version = name;
 		btn.addEventListener('click', selectVersion, false);
@@ -2394,7 +2427,9 @@ import './locales/index.js';
 	dlcSection.appendChild(dlcLabel);
 
 	for (const name in dlcOptions) {
-		const btn = document.createElement('div');
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.setAttribute('aria-label', dlcOptions[name].name);
 		btn.className = 'mode-btn dlc-btn';
 		btn.dataset.dlc = name;
 		btn.addEventListener('click', toggleDlc, false);
@@ -2426,7 +2461,9 @@ import './locales/index.js';
 	charSection.appendChild(charLabel);
 
 	for (const name in characters) {
-		const btn = document.createElement('div');
+		const btn = document.createElement('button');
+		btn.type = 'button';
+		btn.setAttribute('aria-label', characters[name].name);
 		btn.className = 'mode-btn char-btn';
 		btn.dataset.character = name;
 		btn.addEventListener('click', selectCharacter, false);

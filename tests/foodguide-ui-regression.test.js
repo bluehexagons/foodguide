@@ -21,7 +21,10 @@ describe('foodguide UI regressions', () => {
 
 	it('refreshes ingredient results once for every value change, including pasted text', () => {
 		assert.match(foodguideSource, /picker\.addEventListener\('input', refreshPicker\);/);
-		assert.doesNotMatch(foodguideSource, /picker\.addEventListener\('keydown'/);
+		assert.doesNotMatch(
+			foodguideSource,
+			/picker\.addEventListener\('keydown', refreshPicker\)/,
+		);
 		assert.doesNotMatch(foodguideSource, /picker\.addEventListener\('keyup'/);
 	});
 

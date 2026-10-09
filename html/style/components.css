@@ -840,7 +840,14 @@ button.makablebutton:disabled:hover {
 	overflow-y: auto;
 }
 
-.ui-dropdown-list div {
+.ui-dropdown-list button {
+	display: block;
+	width: 100%;
+	border: 0;
+	border-radius: 0;
+	margin: 0;
+	text-align: left;
+	font-family: inherit;
 	color: var(--fg-primary);
 	padding: 6px 12px;
 	cursor: pointer;
@@ -849,15 +856,17 @@ button.makablebutton:disabled:hover {
 	font-size: 13px;
 }
 
-.ui-dropdown-list div.is-selected {
+.ui-dropdown-list button.is-selected {
 	background: var(--selected-bg);
 }
 
-.ui-dropdown-list div:hover {
+.ui-dropdown-list button:hover,
+.ui-dropdown-list button:focus-visible {
 	background: var(--table-hover) !important;
 }
 
 .ui-dropdown-btn {
+	font-family: inherit;
 	height: 32px;
 	border-radius: 5px;
 	border: 1px solid var(--border-color);
@@ -892,6 +901,11 @@ button.makablebutton:disabled:hover {
 .ui-dropdown-btn:hover {
 	background: var(--table-hover);
 	border-color: var(--dark);
+}
+
+.ui-dropdown-btn:focus-visible {
+	outline: 2px solid var(--fg-primary);
+	outline-offset: 2px;
 }
 
 /* Base custom dropdowns styling (replaces specific class rules) */

@@ -95,7 +95,58 @@ test('loads the guide, assets, translations, and a rendered food table', async (
 		assert.equal(manifestResponse.status(), 200);
 		assert.equal((await manifestResponse.json()).cellSize, 64);
 
-		await page.locator('#navbar li[data-tab="foodlist"]').click();
+		const sortButton = page.locator('#simulator button.sortingredients');
+		await sortButton.focus();
+		await sortButton.press('ArrowDown');
+		assert.equal(await sortButton.getAttribute('aria-expanded'), 'true');
+		await page.keyboard.press('End');
+		assert.equal(await page.locator(':focus').getAttribute('data-value'), 'perish');
+		await page.keyboard.press('Enter');
+		assert.equal(await sortButton.getAttribute('aria-expanded'), 'false');
+		assert.equal(
+			await page
+				.locator(':focus')
+				.evaluate(
+					element =>
+						element === document.querySelector('#simulator button.sortingredients'),
+				),
+			true,
+		);
+		assert.equal(
+			await page
+				.locator('#simulator [role="menuitemradio"][data-value="perish"]')
+				.getAttribute('aria-checked'),
+			'true',
+		);
+		assert.equal(
+			JSON.parse(
+				await page.evaluate(() => localStorage.getItem('foodGuideSortPreference')),
+			)[0],
+			'perish',
+		);
+		await sortButton.press('ArrowUp');
+		await page.keyboard.press('Escape');
+		assert.equal(await sortButton.getAttribute('aria-expanded'), 'false');
+		await sortButton.press('ArrowDown');
+		await page.keyboard.press('Enter');
+
+		const search = page.locator('#simulator .ingredientpicker');
+		for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
+			await search.fill(name);
+			await search.press('ArrowDown');
+			assert.equal(
+				await page
+					.locator('#simulator [role="option"][aria-selected="true"]')
+					.getAttribute('aria-label'),
+				name,
+			);
+			await search.press('Enter');
+		}
+		assert.equal(await page.locator('#ingredients .icon').count(), 4);
+		await page.locator('#results a').getByText('Meatballs', { exact: true }).first().waitFor();
+
+		await page.locator('#navbar li[data-tab="foodlist"]').focus();
+		await page.locator('#navbar li[data-tab="foodlist"]').press('Enter');
 		await page.locator('#food table tr:nth-child(2)').waitFor();
 		assert.ok((await page.locator('#food table tr').count()) > 1);
 		assert.match(

@@ -134,6 +134,11 @@
 	background: rgba(255, 255, 255, 0.1);
 }
 
+#navbar li:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: -2px;
+}
+
 #navbar li.selected {
 	color: var(--dark);
 	font-weight: 600;

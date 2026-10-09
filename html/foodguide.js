@@ -382,15 +382,17 @@ import './locales/index.js';
 		let activeTab;
 
 		const showTab = e => {
-			setTab(e.target.dataset.tab);
+			setTab(e.currentTarget.dataset.tab);
 		};
 
 		setTab = tabID => {
 			activeTab.className = '';
+			activeTab.setAttribute('aria-pressed', 'false');
 			activeTab = tabs[tabID];
 			activePage.style.display = 'none';
 			activePage = elements[tabID];
 			activeTab.className = 'selected';
+			activeTab.setAttribute('aria-pressed', 'true');
 			activePage.style.display = 'block';
 
 			// Initialize statistics tab content on first visit
@@ -403,6 +405,10 @@ import './locales/index.js';
 			const navtab = navtabs[i];
 
 			if (navtab.dataset.tab) {
+				navtab.setAttribute('role', 'button');
+				navtab.setAttribute('aria-controls', navtab.dataset.tab);
+				navtab.setAttribute('aria-pressed', 'false');
+				navtab.tabIndex = 0;
 				tabs[navtab.dataset.tab] = navtab;
 				elements[navtab.dataset.tab] = document.getElementById(navtab.dataset.tab);
 				elements[navtab.dataset.tab].style.display = 'none';
@@ -414,6 +420,12 @@ import './locales/index.js';
 					false,
 				);
 				navtab.addEventListener('click', showTab, false);
+				navtab.addEventListener('keydown', event => {
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						showTab(event);
+					}
+				});
 			}
 		}
 
@@ -513,6 +525,7 @@ import './locales/index.js';
 		}
 
 		activeTab.className = 'selected';
+		activeTab.setAttribute('aria-pressed', 'true');
 		activePage.style.display = 'block';
 
 		window.addEventListener('beforeunload', () => {
@@ -1484,6 +1497,7 @@ import './locales/index.js';
 			const suggestions = [];
 			const inventoryrecipes = [];
 			let loaded = false;
+			let selectedResult = -1;
 			const results = document.getElementById('results');
 			const discoverfood = document.getElementById('discoverfood');
 			const discover = document.getElementById('discover');
@@ -1666,6 +1680,10 @@ import './locales/index.js';
 				li.appendChild(name);
 
 				li.dataset.id = item.key;
+				li.id = `ingredient-result-${index}-${this.dataset.length}`;
+				li.setAttribute('role', 'option');
+				li.setAttribute('aria-label', item.name);
+				li.setAttribute('aria-selected', 'false');
 
 				li.addEventListener('mousedown', pickItem, false);
 				li.addEventListener('contextmenu', suppressIngredientContextMenu, false);
@@ -1725,6 +1743,8 @@ import './locales/index.js';
 			};
 
 			const refreshPicker = () => {
+				selectedResult = -1;
+				picker.removeAttribute('aria-activedescendant');
 				searchSelectorControls.splitTag();
 				let names = matchingNames(
 					from,
@@ -2101,6 +2121,14 @@ import './locales/index.js';
 			};
 
 			dropdown.className = 'ingredientdropdown';
+			dropdown.id = `ingredient-results-${index}`;
+			dropdown.setAttribute('role', 'listbox');
+			picker.setAttribute('role', 'combobox');
+			picker.setAttribute('data-i18n-attr-aria-label', 'searchPlaceholderName');
+			picker.setAttribute('aria-label', t('searchPlaceholderName'));
+			picker.setAttribute('aria-autocomplete', 'list');
+			picker.setAttribute('aria-expanded', 'true');
+			picker.setAttribute('aria-controls', dropdown.id);
 			dropdown.appendChild(ul);
 			dropdown.addEventListener(
 				'mousedown',
@@ -2244,6 +2272,40 @@ import './locales/index.js';
 			searchRow.parentNode.insertBefore(dropdown, parent.parentNode);
 
 			picker.addEventListener('input', refreshPicker);
+			picker.addEventListener('keydown', event => {
+				if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
+					return;
+				}
+				const options = Array.from(ul.children);
+				if (event.key === 'Enter' && options.length) {
+					event.preventDefault();
+					const target = options[Math.max(0, selectedResult)];
+					pickItem({ target, button: 0, preventDefault() {} });
+					return;
+				}
+				if (event.key === 'Escape') {
+					selectedResult = -1;
+				} else if (event.key === 'ArrowDown' && options.length) {
+					selectedResult = (selectedResult + 1) % options.length;
+				} else if (event.key === 'ArrowUp' && options.length) {
+					selectedResult = selectedResult <= 0 ? options.length - 1 : selectedResult - 1;
+				} else {
+					return;
+				}
+				event.preventDefault();
+				options.forEach((option, optionIndex) => {
+					const selected = optionIndex === selectedResult;
+					option.classList.toggle('selected', selected);
+					option.setAttribute('aria-selected', String(selected));
+				});
+				const activeOption = options[selectedResult];
+				if (activeOption) {
+					picker.setAttribute('aria-activedescendant', activeOption.id);
+					activeOption.scrollIntoView({ block: 'nearest' });
+				} else {
+					picker.removeAttribute('aria-activedescendant');
+				}
+			});
 
 			picker.addEventListener(
 				'focus',

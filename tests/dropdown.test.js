@@ -26,6 +26,11 @@ const createElement = () => {
 		style: {},
 		textContent: '',
 		innerHTML: '',
+		attributes: new Map(),
+		setAttribute(name, value) {
+			this.attributes.set(name, value);
+		},
+		focus() {},
 		listeners,
 		appendChild(child) {
 			this.children.push(child);
@@ -126,4 +131,28 @@ describe('dropdown control', () => {
 			console.warn = warn;
 		}
 	});
+
+	for (const stored of ['{broken', 'null', '"name"', '42', '{}']) {
+		it(`repairs invalid indexed preferences (${stored}) when a new value is selected`, () => {
+			const { createDropdown, values } = createHarness(stored);
+			const warn = console.warn;
+			console.warn = () => {};
+			try {
+				const dropdown = createDropdown({
+					items: [
+						{ value: 'default', key: 'default' },
+						{ value: 'name', key: 'name' },
+					],
+					initialValue: 'default',
+					storageKey: 'preference',
+					storageIndex: 0,
+				});
+				dropdown.dropdown.children[1].listeners.get('click')({ stopPropagation() {} });
+				assert.equal(dropdown.getValue(), 'name');
+				assert.deepEqual(JSON.parse(values.get('preference')), ['name']);
+			} finally {
+				console.warn = warn;
+			}
+		});
+	}
 });

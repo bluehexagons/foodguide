@@ -101,6 +101,75 @@ const createSavedPage = (browser, baseUrl, state) =>
 		},
 	});
 
+for (const { tab, slots, limited } of [
+	{ tab: 'simulator', slots: '#ingredients', limited: true },
+	{ tab: 'discovery', slots: '#inventory', limited: false },
+]) {
+	test(`${tab} picker handles mouse clicks on ingredient names, icons, and padding`, async t => {
+		const { baseUrl, browser } = await createBrowserFixture(t);
+		const page = await createSavedPage(browser, baseUrl, {
+			activeTab: tab,
+			version: 'together',
+			pickers: [[], []],
+		});
+		const diagnostics = [];
+		page.on('pageerror', error => diagnostics.push(error.message));
+		page.on('console', message => {
+			if (['warning', 'error'].includes(message.type())) {
+				diagnostics.push(message.text());
+			}
+		});
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		const search = page.locator(`#${tab} .ingredientpicker`);
+		const meat = page.locator(`#${tab}`).getByRole('option', { name: 'Meat', exact: true });
+		const selectedKeys = () =>
+			page
+				.locator(`${slots} .ingredient[data-id]`)
+				.evaluateAll(items => items.map(item => item.dataset.id));
+		await search.fill('Meat');
+		await meat.locator('.text').click();
+		assert.deepEqual(await selectedKeys(), ['meat@together']);
+		await meat.locator('.icon').click();
+		assert.deepEqual(await selectedKeys(), limited ? ['meat@together', 'meat@together'] : []);
+		await meat.click({ position: { x: 2, y: 10 } });
+		assert.deepEqual(
+			await selectedKeys(),
+			limited ? ['meat@together', 'meat@together', 'meat@together'] : ['meat@together'],
+		);
+		await meat.locator('.text').click({ button: 'right' });
+		assert.deepEqual(await selectedKeys(), limited ? ['meat@together', 'meat@together'] : []);
+		await meat.locator('.text').click();
+		await search.fill('Berries');
+		const berries = page
+			.locator(`#${tab}`)
+			.getByRole('option', { name: 'Berries', exact: true });
+		await berries.locator('.text').click();
+		const fullSelection = await selectedKeys();
+		assert.deepEqual(
+			fullSelection,
+			limited
+				? ['meat@together', 'meat@together', 'meat@together', 'berries@together']
+				: ['meat@together', 'berries@together'],
+		);
+		if (limited) {
+			await berries.locator('.text').click();
+			assert.match(await berries.getAttribute('class'), /ingredient-action-error/);
+			assert.deepEqual(await selectedKeys(), fullSelection);
+		} else {
+			await berries.locator('.text').click();
+			assert.deepEqual(await selectedKeys(), ['meat@together']);
+		}
+		await berries.locator('.text').click({ button: 'right' });
+		if (limited) {
+			assert.deepEqual(await selectedKeys(), fullSelection.slice(0, -1));
+		} else {
+			assert.match(await berries.getAttribute('class'), /ingredient-action-error/);
+			assert.deepEqual(await selectedKeys(), ['meat@together']);
+		}
+		assert.deepEqual(diagnostics, []);
+	});
+}
+
 test('loads the guide, assets, translations, and a rendered food table', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();

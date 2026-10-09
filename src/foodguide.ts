@@ -1506,7 +1506,10 @@ import './locales/index.js';
 			};
 
 			const pickItem = (e: MouseEvent) => {
-				const target = resolveIconTarget(e.target);
+				const target = e.currentTarget;
+				if (!(target instanceof HTMLElement)) {
+					throw new Error('Expected an ingredient option');
+				}
 				const id = target.dataset.id || '';
 				const isRemoval = e.button === 2;
 				let result;

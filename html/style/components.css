@@ -115,7 +115,7 @@
 
 .ingredient.ingredient-action-error,
 .ingredientdropdown .item.ingredient-action-error,
-table.links span.link.ingredient-action-error {
+table.links .link.ingredient-action-error {
 	border-color: var(--excluded-border);
 	box-shadow:
 		0 0 0 1px var(--excluded-border),
@@ -124,13 +124,13 @@ table.links span.link.ingredient-action-error {
 }
 
 .ingredientdropdown .item.ingredient-action-error,
-table.links span.link.ingredient-action-error {
+table.links .link.ingredient-action-error {
 	position: relative;
 }
 
 .ingredient.ingredient-action-error::after,
 .ingredientdropdown .item.ingredient-action-error::after,
-table.links span.link.ingredient-action-error::after {
+table.links .link.ingredient-action-error::after {
 	content: '!';
 	position: absolute;
 	z-index: 2;
@@ -155,7 +155,7 @@ table.links span.link.ingredient-action-error::after {
 }
 
 .ingredientdropdown .item.ingredient-action-error::after,
-table.links span.link.ingredient-action-error::after {
+table.links .link.ingredient-action-error::after {
 	top: -8px;
 	right: -8px;
 }
@@ -163,7 +163,7 @@ table.links span.link.ingredient-action-error::after {
 @media (prefers-reduced-motion: reduce) {
 	.ingredient.ingredient-action-error,
 	.ingredientdropdown .item.ingredient-action-error,
-	table.links span.link.ingredient-action-error {
+	table.links .link.ingredient-action-error {
 		animation: none;
 	}
 }

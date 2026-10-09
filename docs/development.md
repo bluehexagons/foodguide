@@ -83,10 +83,19 @@ sort are checked against the row type; summary rows have an explicit count.
 The shared sorter preserves the dataset's identity and leaves summary rows above
 the sorted results. Search results use the same name comparator as tables.
 
+Tables retain their header buttons and rebuild only the result rows. Sorting and
+linked actions use native buttons; `aria-sort` describes the actual row order,
+and column buttons expose their visibility with `aria-pressed`. When a linked
+action rebuilds its own rows, focus returns to the matching link key. Temporary
+tables must call `dispose()` before their containers are removed or replaced;
+this releases both lifecycle registrations and pending scroll restoration.
+The picker owns its result tables, and analyzer controllers own their analysis
+tables. The page's locale and resize listeners also dispose disconnected tables.
+
 Bind control actions to their known keys or listener elements. The clicked child
 (`event.target`) can be an icon or a nested label; use `event.currentTarget` when
 the handler needs the element that owns the listener. Table link callbacks receive
-the link key and its control element, and sortable headers capture a typed sort
+the link key and its button element, and sortable headers capture a typed sort
 key. Picker mouse and keyboard input call the same action directly.
 
 Analyzer filter state lives in `analysis-filters.ts`; its state queries drive both

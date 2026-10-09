@@ -12,7 +12,7 @@ const foods: TableOptions<Food> = {
 	defaultSort: 'health',
 	linkCallback: (key, control) => {
 		key satisfies string;
-		control satisfies HTMLElement;
+		control satisfies HTMLButtonElement;
 	},
 };
 

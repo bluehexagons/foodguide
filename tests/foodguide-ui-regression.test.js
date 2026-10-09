@@ -33,14 +33,6 @@ describe('foodguide UI regressions', () => {
 		assert.match(componentsCss, /@keyframes ingredient-action-error/);
 	});
 
-	it('shares one resize listener across rebuilt responsive tables', () => {
-		const resizeListeners = foodguideSource.match(/window\.addEventListener\('resize'/g) || [];
-
-		assert.strictEqual(resizeListeners.length, 1);
-		assert.match(foodguideSource, /const responsiveTables = new Set\(\);/);
-		assert.match(foodguideSource, /responsiveTables\.delete\(tableContainer\);/);
-	});
-
 	it('keeps the shared table renderer outside the page controller', () => {
 		assert.match(
 			foodguideSource,

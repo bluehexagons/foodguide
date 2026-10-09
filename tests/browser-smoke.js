@@ -232,9 +232,9 @@ test('nested control contents preserve mode changes, slot removal, table sorting
 	);
 
 	await page.locator('#navbar [data-tab="foodlist"]').click();
-	for (const direction of ['sort-asc', 'sort-desc']) {
-		const health = page.locator('#food th[data-sort="health"]');
-		await nestControlContents(health);
+	const health = page.locator('#food th[data-sort="health"]');
+	await nestControlContents(health.locator('button'));
+	for (const direction of ['sort-desc', 'sort-asc']) {
 		await health.locator('.test-control-content').click();
 		assert.match(await health.getAttribute('class'), new RegExp(direction));
 	}
@@ -698,6 +698,225 @@ test('tables retain sorting, pinned summaries, column visibility, and linked hig
 	const analyzedNames = await page.locator('#makable td:nth-child(2)').allTextContents();
 	assert.deepEqual(analyzedNames, [...analyzedNames].sort());
 	assert.deepEqual(errors, []);
+});
+
+test('table controls support keyboard sorting, toggles, and linked highlights without losing focus', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['honey@together', 'meat@together', 'meat@together', 'ice@together'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const cooking = page.locator('#results table').first();
+	const healthHeader = cooking.locator('th[data-sort="health"]');
+	const health = healthHeader.getByRole('button', { name: 'Health', exact: true });
+	await health.focus();
+	await health.press('Enter');
+	assert.equal(await healthHeader.getAttribute('aria-sort'), 'descending');
+	assert.deepEqual(await cooking.locator('td:nth-child(2)').allTextContents(), [
+		'Total',
+		'Potential',
+		'Honey Ham',
+		'Meatballs',
+		'Wet Goop',
+	]);
+	assert.equal(await health.evaluate(button => button === document.activeElement), true);
+	await health.press('Space');
+	assert.equal(await healthHeader.getAttribute('aria-sort'), 'ascending');
+	assert.deepEqual(await cooking.locator('td:nth-child(2)').allTextContents(), [
+		'Total',
+		'Potential',
+		'Wet Goop',
+		'Meatballs',
+		'Honey Ham',
+	]);
+	assert.equal(await health.evaluate(button => button === document.activeElement), true);
+	const name = cooking.locator('th[data-sort="name"] button');
+	await name.focus();
+	await name.press('Enter');
+	assert.equal(await healthHeader.getAttribute('aria-sort'), null);
+	assert.equal(
+		await cooking.locator('th[data-sort="name"]').getAttribute('aria-sort'),
+		'ascending',
+	);
+	assert.equal(await cooking.locator('th[aria-sort]').count(), 1);
+
+	const toggles = page.locator('#results .column-toggle-bar').first();
+	const healthToggle = toggles.getByRole('button', { name: 'Health', exact: true });
+	assert.equal(await healthToggle.getAttribute('aria-pressed'), 'true');
+	await healthToggle.focus();
+	await healthToggle.press('Space');
+	assert.equal(await healthToggle.getAttribute('aria-pressed'), 'false');
+	assert.equal(await healthHeader.isVisible(), false);
+	await healthToggle.press('Enter');
+	assert.equal(await healthToggle.getAttribute('aria-pressed'), 'true');
+	assert.equal(await healthHeader.isVisible(), true);
+	const auto = toggles.getByRole('button', { name: 'Auto', exact: true });
+	assert.equal(await auto.getAttribute('aria-pressed'), 'true');
+	await auto.focus();
+	await auto.press('Enter');
+	assert.equal(await auto.getAttribute('aria-pressed'), 'false');
+
+	await page.locator('#navbar [data-tab="foodlist"]').click();
+	const carrot = page.locator('#food button[data-link="*Roasted Carrot"]').first();
+	assert.equal(await carrot.getAttribute('type'), 'button');
+	await carrot.focus();
+	await carrot.press('Enter');
+	assert.deepEqual(await page.locator('#food .highlighted td:nth-child(2)').allTextContents(), [
+		'Roasted Carrot',
+	]);
+	assert.equal(await carrot.evaluate(button => button === document.activeElement), true);
+	await carrot.press('Space');
+	assert.equal(await page.locator('#food .highlighted').count(), 0);
+	assert.equal(await carrot.evaluate(button => button === document.activeElement), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('repeated picker edits release replaced tables immediately', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [[], []],
+	});
+	await page.addInitScript(() => {
+		const registrations = new Map();
+		const add = Set.prototype.add;
+		const remove = Set.prototype.delete;
+		Set.prototype.add = function (value) {
+			if (value instanceof HTMLDivElement && typeof value.updateLocale === 'function') {
+				if (!registrations.has(this)) {
+					registrations.set(this, new Set());
+				}
+				add.call(registrations.get(this), value);
+			}
+			return add.call(this, value);
+		};
+		Set.prototype.delete = function (value) {
+			if (registrations.has(this)) {
+				remove.call(registrations.get(this), value);
+			}
+			return remove.call(this, value);
+		};
+		window.tableAudit = () => ({
+			live: [...document.querySelectorAll('div')].filter(
+				element => typeof element.updateLocale === 'function',
+			).length,
+			registries: [...registrations.values()].map(tables => ({
+				count: tables.size,
+				detached: [...tables].filter(table => !table.isConnected).length,
+			})),
+		});
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const assertReleased = async () => {
+		const audit = await page.evaluate(() => window.tableAudit());
+		assert.equal(audit.registries.length, 2);
+		for (const registry of audit.registries) {
+			assert.equal(registry.detached, 0, JSON.stringify(audit));
+			assert.equal(registry.count, audit.live, JSON.stringify(audit));
+		}
+	};
+	await assertReleased();
+	for (const { tab, slots } of [
+		{ tab: 'simulator', slots: '#ingredients' },
+		{ tab: 'discovery', slots: '#inventory' },
+	]) {
+		await page.locator(`#navbar [data-tab="${tab}"]`).click();
+		const search = page.locator(`#${tab} .ingredientpicker`);
+		for (let attempt = 0; attempt < 4; attempt++) {
+			for (const ingredient of ['Meat', 'Carrot']) {
+				await search.fill(ingredient);
+				await page
+					.locator(`#${tab}`)
+					.getByRole('option', { name: ingredient, exact: true })
+					.click();
+				await assertReleased();
+			}
+			while (await page.locator(`${slots} .ingredient[data-id]`).count()) {
+				await page.locator(`${slots} .ingredient[data-id]`).first().click();
+				await assertReleased();
+			}
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('table updates honor highlight scrolling and cancel restoration on disposal', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const result = await page.evaluate(async () => {
+		const { createSortableTableFactory } = await import('./sortable-table.js');
+		const localeTables = new Set();
+		const responsiveTables = new Set();
+		const { makeSortableTable, cells } = createSortableTableFactory({
+			translate: key => key,
+			translateTableLabel: label => label,
+			translateTableHint: hint => hint,
+			translateSummaryLabel: label => label,
+			localeTables,
+			responsiveTables,
+		});
+		const spacer = document.createElement('div');
+		spacer.style.height = '3000px';
+		document.body.appendChild(spacer);
+		let highlight = false;
+		const highlighted = makeSortableTable({
+			headers: { Name: 'name' },
+			dataset: [{ name: 'Carrot' }],
+			defaultSort: 'name',
+			rowGenerator: item => cells('td', item.name),
+			highlightCallback: () => highlight,
+		});
+		document.body.appendChild(highlighted);
+		window.scrollTo(0, 0);
+		highlight = true;
+		highlighted.update(true);
+		await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+		const rect = highlighted.querySelector('.highlighted').getBoundingClientRect();
+		const highlightVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+		highlighted.dispose();
+		highlighted.remove();
+		const results = [];
+		for (const toggleable of [false, true]) {
+			const dataset = [{ name: 'Carrot' }];
+			const table = makeSortableTable({
+				headers: { Name: 'name' },
+				dataset,
+				defaultSort: 'name',
+				rowGenerator: item => cells('td', item.name),
+				columnConfig: { toggleable },
+			});
+			document.body.appendChild(table);
+			window.scrollTo(0, 0);
+			table.update();
+			table.dispose();
+			table.dispose();
+			table.remove();
+			dataset.push({ name: 'Meat' });
+			table.update();
+			table.setMaxRows(10);
+			window.scrollTo(0, 120);
+			await new Promise(resolve =>
+				requestAnimationFrame(() => requestAnimationFrame(resolve)),
+			);
+			results.push({
+				locale: localeTables.size,
+				responsive: responsiveTables.size,
+				rows: table.querySelectorAll('td').length,
+				scrollY: window.scrollY,
+			});
+		}
+		spacer.remove();
+		return { highlightVisible, disposed: results };
+	});
+	assert.equal(result.highlightVisible, true);
+	assert.deepEqual(result.disposed, [
+		{ locale: 0, responsive: 0, rows: 1, scrollY: 120 },
+		{ locale: 0, responsive: 0, rows: 1, scrollY: 120 },
+	]);
 });
 
 test('picker controls and tables fit narrow screens in every locale and game', async t => {

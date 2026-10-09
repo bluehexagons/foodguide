@@ -120,7 +120,7 @@ import './locales/index.js';
 		tableResizeTimeout = setTimeout(() => {
 			for (const tableContainer of Array.from(responsiveTables)) {
 				if (!tableContainer.isConnected) {
-					responsiveTables.delete(tableContainer);
+					tableContainer.dispose();
 				} else {
 					tableContainer.updateResponsive?.();
 				}
@@ -210,7 +210,7 @@ import './locales/index.js';
 		}
 		for (const tableContainer of Array.from(localeTables)) {
 			if (!tableContainer.isConnected) {
-				localeTables.delete(tableContainer);
+				tableContainer.dispose();
 			} else if (tableContainer.updateLocale) {
 				tableContainer.updateLocale();
 			}
@@ -395,7 +395,6 @@ import './locales/index.js';
 		getStatMultipliers: () => statMultipliers,
 	});
 
-	const mainElement = requireElement('main');
 	const foodElement = requireElement('food');
 	const recipesElement = requireElement('recipes');
 	const navbar = requireElement('navbar');
@@ -522,7 +521,6 @@ import './locales/index.js';
 	})();
 
 	const { cells, fandomHref, makeSortableTable } = createSortableTableFactory({
-		mainElement,
 		translate: t,
 		translateTableLabel,
 		translateTableHint,
@@ -1154,8 +1152,7 @@ import './locales/index.js';
 				clearResults = () => {
 					calculationControl.cancel();
 					makableDiv.remove();
-					localeTables.delete(makableTable);
-					responsiveTables.delete(makableTable);
+					makableTable.dispose();
 					document.removeEventListener('foodguide:localechange', updateMakableTexts);
 					document.removeEventListener('foodguide:localechange', updateMakableControls);
 					if (window.analysis?.made === made) {
@@ -1605,9 +1602,18 @@ import './locales/index.js';
 				}
 			};
 
+			const pickerTables: SortableTable[] = [];
+			const disposePickerTables = () => {
+				for (const table of pickerTables) {
+					table.dispose();
+				}
+				pickerTables.length = 0;
+			};
+
 			if (parent.id === 'ingredients') {
 				//simulator
 				updateRecipes = () => {
+					disposePickerTables();
 					ingredients = fixedSlots.map(slot => {
 						const item = getSlot(slot);
 						return item && 'nameObject' in item ? item : null;
@@ -1664,6 +1670,7 @@ import './locales/index.js';
 					}
 
 					results.appendChild(table);
+					pickerTables.push(table);
 					simulatorLocaleRefresh = updateRecipes;
 
 					results.appendChild(makeElement('p', t('discoveryHighlightsNote')));
@@ -1710,6 +1717,7 @@ import './locales/index.js';
 								},
 							});
 							results.appendChild(table);
+							pickerTables.push(table);
 						}
 					}
 
@@ -1721,6 +1729,7 @@ import './locales/index.js';
 				//discovery
 				let discoveryGrinder: ReturnType<typeof makeRecipeGrinder> | undefined;
 				updateRecipes = () => {
+					disposePickerTables();
 					discoveryGrinder?.dispose();
 					discoveryGrinder = undefined;
 					ingredients = Array.from(parent.querySelectorAll<HTMLElement>('.ingredient'))
@@ -1764,6 +1773,7 @@ import './locales/index.js';
 						});
 
 						discoverfood.appendChild(foodTable);
+						pickerTables.push(foodTable);
 						getSuggestions(inventoryrecipes, ingredients, null, true);
 
 						if (inventoryrecipes.length > 0) {
@@ -1803,6 +1813,7 @@ import './locales/index.js';
 							});
 
 							discover.appendChild(table);
+							pickerTables.push(table);
 
 							discoveryGrinder = makeRecipeGrinder(
 								ingredients.filter((item): item is Food => item !== null),

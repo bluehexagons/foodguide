@@ -7,11 +7,12 @@ export interface SortableTable extends HTMLDivElement {
 	update: (scrollHighlight?: boolean) => void;
 	updateLocale: () => void;
 	setMaxRows: (max: number) => void;
+	/** Release registrations and scheduled scrolling before removing the container. */
+	dispose: () => void;
 	updateResponsive?: () => void;
 	updateAutoHide?: (labels?: string[]) => void;
 }
 interface TableFactoryOptions {
-	mainElement: HTMLElement;
 	translate: (key: StringKey) => string;
 	translateTableLabel: (label: string) => string;
 	translateTableHint: (hint: string) => string;
@@ -30,7 +31,7 @@ export interface TableOptions<T extends SortRow> {
 	rowGenerator: (item: T) => HTMLTableRowElement;
 	defaultSort: TableSortKey<T>;
 	summaryRows?: number;
-	linkCallback?: (key: string, control: HTMLElement) => void;
+	linkCallback?: (key: string, control: HTMLButtonElement) => void;
 	highlightCallback?: (item: T, items: T[]) => boolean;
 	filterCallback?: (item: T) => boolean;
 	maxRows?: number;
@@ -55,11 +56,10 @@ const isNumericHeader = (header: string) =>
 /**
  * Builds the shared sortable table renderer used across the guide.
  *
- * The page controller supplies labels, lifecycle registries, and the main
- * element so this module remains reusable and has no page-specific state.
+ * The page controller supplies labels and lifecycle registries so this module
+ * remains reusable and has no page-specific state.
  */
 export const createSortableTableFactory = ({
-	mainElement,
 	translate,
 	translateTableLabel,
 	translateTableHint,
@@ -128,7 +128,19 @@ export const createSortableTableFactory = ({
 		maxRows,
 		columnConfig,
 	}: TableOptions<T>) => {
-		let table = document.createElement('table');
+		const table = document.createElement('table');
+		const container = document.createElement('div') as SortableTable;
+		let disposed = false;
+		let scrollFrame: number | undefined;
+		container.dispose = () => {
+			disposed = true;
+			if (scrollFrame !== undefined) {
+				cancelAnimationFrame(scrollFrame);
+				scrollFrame = undefined;
+			}
+			localeTables.delete(container);
+			responsiveTables.delete(container);
+		};
 		let sorting = defaultSort;
 		let invertSort = false;
 		let firstHighlight: HTMLElement | null = null;
@@ -167,9 +179,6 @@ export const createSortableTableFactory = ({
 				: hiddenColumns;
 
 		const applyColumnVisibility = () => {
-			if (!table) {
-				return;
-			}
 			const hidden = effectiveHiddenColumns();
 			for (const row of table.querySelectorAll('tr')) {
 				for (let index = 0; index < row.children.length; index++) {
@@ -179,43 +188,75 @@ export const createSortableTableFactory = ({
 		};
 
 		const selectSort = (sortKey: TableSortKey<T>) => {
+			if (disposed) {
+				return;
+			}
 			invertSort = sorting === sortKey ? !invertSort : false;
 			sorting = sortKey;
 			renderTable();
 		};
 
-		const renderTable = (scrollHighlight = false) => {
-			sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
+		// Keep header controls mounted so sorting and locale changes preserve focus.
+		const head = table.createTHead();
+		const headerRow = head.insertRow();
+		const body = table.createTBody();
+		const headerCells = headerKeys.map(header => {
+			const th = document.createElement('th');
+			th.scope = 'col';
+			const label = labelFromHeader(header);
+			if (isNumericHeader(label)) {
+				th.classList.add('numeric-cell');
+			}
+			if (!label || label === 'Mode') {
+				th.classList.add('icon-cell');
+			}
+			const sortKey = headers[header];
+			let control: HTMLElement = th;
+			if (sortKey) {
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'table-sort';
+				th.appendChild(button);
+				control = button;
+				th.dataset.sort = sortKey;
+				button.addEventListener('click', () => selectSort(sortKey));
+			}
+			headerRow.appendChild(th);
+			return { header, label, sortKey, th, control };
+		});
 
-			const headerRow = document.createElement('tr');
-			for (const header of headerKeys) {
-				const th = document.createElement('th');
-				const label = labelFromHeader(header);
-				if (isNumericHeader(label)) {
-					th.classList.add('numeric-cell');
+		const renderTable = (scrollHighlight = false) => {
+			if (disposed) {
+				return;
+			}
+			sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
+			for (const { header, label, sortKey, th, control } of headerCells) {
+				const translatedLabel = translateTableLabel(label);
+				if (control.textContent !== translatedLabel) {
+					control.textContent = translatedLabel;
 				}
-				if (!label || label === 'Mode') {
-					th.classList.add('icon-cell');
+				if (sortKey) {
+					control.setAttribute('aria-label', translatedLabel);
 				}
-				th.appendChild(document.createTextNode(translateTableLabel(label)));
 				if (header.includes(':')) {
 					th.title = translateTableHint(header.split(':')[1]);
 				}
-				const sortKey = headers[header];
-				if (sortKey) {
-					if (sortKey === sorting) {
-						th.classList.add(invertSort ? 'sort-desc' : 'sort-asc');
-					}
-					th.style.cursor = 'pointer';
-					th.dataset.sort = sortKey;
-					th.addEventListener('click', () => selectSort(sortKey), false);
+				const selected = sortKey === sorting;
+				const ascending = sorting === 'name' ? !invertSort : invertSort;
+				th.classList.toggle('sort-asc', selected && ascending);
+				th.classList.toggle('sort-desc', selected && !ascending);
+				if (selected) {
+					th.setAttribute('aria-sort', ascending ? 'ascending' : 'descending');
+				} else {
+					th.removeAttribute('aria-sort');
 				}
-				headerRow.appendChild(th);
 			}
-
-			const oldTable = table;
-			table = document.createElement('table');
-			table.appendChild(headerRow);
+			const focusedLink =
+				document.activeElement instanceof HTMLElement &&
+				body.contains(document.activeElement)
+					? document.activeElement.dataset.link
+					: undefined;
+			const content = document.createDocumentFragment();
 			firstHighlight = null;
 			lastHighlight = null;
 			rows = 0;
@@ -235,37 +276,39 @@ export const createSortableTableFactory = ({
 					firstHighlight ||= row;
 					lastHighlight = row;
 				}
-				table.appendChild(row);
+				content.appendChild(row);
 				rows++;
 			}
 
 			if (linkCallback) {
 				table.className = 'links';
-				for (const link of table.querySelectorAll<HTMLElement>('.link[data-link]')) {
+				for (const link of content.querySelectorAll<HTMLElement>('.link[data-link]')) {
 					const key = link.dataset.link!;
-					link.addEventListener('click', () => linkCallback(key, link), false);
+					const button = document.createElement('button');
+					button.type = 'button';
+					for (const attribute of link.attributes) {
+						button.setAttribute(attribute.name, attribute.value);
+					}
+					button.append(...link.childNodes);
+					button.addEventListener('click', () => linkCallback(key, button));
+					link.replaceWith(button);
 				}
 			}
+			body.replaceChildren(content);
 			applyColumnVisibility();
-			if (oldTable) {
-				oldTable.parentNode?.replaceChild(table, oldTable);
+			if (focusedLink !== undefined) {
+				Array.from(body.querySelectorAll<HTMLButtonElement>('button.link'))
+					.find(button => button.dataset.link === focusedLink)
+					?.focus({ preventScroll: true });
 			}
 
 			if (scrollHighlight) {
 				if (
 					firstHighlight &&
-					firstHighlight.offsetTop +
-						table.offsetTop +
-						mainElement.offsetTop +
-						firstHighlight.offsetHeight >
-						window.scrollY + window.innerHeight
+					firstHighlight.getBoundingClientRect().bottom > window.innerHeight
 				) {
 					firstHighlight.scrollIntoView(true);
-				} else if (
-					lastHighlight &&
-					lastHighlight.offsetTop + table.offsetTop + mainElement.offsetTop <
-						window.scrollY
-				) {
+				} else if (lastHighlight && lastHighlight.getBoundingClientRect().top < 0) {
 					lastHighlight.scrollIntoView(false);
 				}
 			}
@@ -274,10 +317,22 @@ export const createSortableTableFactory = ({
 		renderTable();
 
 		const update = (scrollHighlight = false) => {
+			if (disposed) {
+				return;
+			}
+			if (scrollFrame !== undefined) {
+				cancelAnimationFrame(scrollFrame);
+				scrollFrame = undefined;
+			}
 			const scrollX = window.scrollX;
 			const scrollY = window.scrollY;
 			renderTable(scrollHighlight);
-			requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
+			if (!scrollHighlight) {
+				scrollFrame = requestAnimationFrame(() => {
+					scrollFrame = undefined;
+					window.scrollTo(scrollX, scrollY);
+				});
+			}
 		};
 		const setMaxRows = (max: number) => {
 			maxRows = max;
@@ -285,30 +340,32 @@ export const createSortableTableFactory = ({
 		};
 
 		if (!columnConfig?.toggleable) {
-			const wrapper = document.createElement('div') as SortableTable;
-			wrapper.className = 'table-scroll-wrapper';
-			wrapper.appendChild(table);
-			wrapper.update = update;
-			wrapper.updateLocale = () => update();
-			wrapper.setMaxRows = setMaxRows;
-			localeTables.add(wrapper);
-			return wrapper;
+			container.className = 'table-scroll-wrapper';
+			container.appendChild(table);
+			container.update = update;
+			container.updateLocale = () => update();
+			container.setMaxRows = setMaxRows;
+			localeTables.add(container);
+			return container;
 		}
 
-		const container = document.createElement('div') as SortableTable;
 		const toggleBar = document.createElement('div');
 		toggleBar.className = 'column-toggle-bar';
 		const label = document.createElement('span');
 		label.className = 'col-toggle-label';
 		toggleBar.appendChild(label);
 		const autoButton = document.createElement('button');
+		autoButton.type = 'button';
 		toggleBar.appendChild(autoButton);
 		const toggleButtons: { button: HTMLButtonElement; index: number; label: string }[] = [];
 
 		const updateToggleButtons = () => {
+			autoButton.className = autoMode ? 'active' : '';
+			autoButton.setAttribute('aria-pressed', String(autoMode));
 			const hidden = effectiveHiddenColumns();
 			for (const { button, index } of toggleButtons) {
 				button.className = hidden.has(index) ? '' : 'active';
+				button.setAttribute('aria-pressed', String(!hidden.has(index)));
 			}
 		};
 		const updateLabels = () => {
@@ -321,7 +378,6 @@ export const createSortableTableFactory = ({
 		};
 		autoButton.addEventListener('click', () => {
 			autoMode = !autoMode;
-			autoButton.className = autoMode ? 'active' : '';
 			applyColumnVisibility();
 			updateToggleButtons();
 		});
@@ -332,6 +388,7 @@ export const createSortableTableFactory = ({
 				return;
 			}
 			const button = document.createElement('button');
+			button.type = 'button';
 			button.addEventListener('click', () => {
 				hiddenColumns.has(index) ? hiddenColumns.delete(index) : hiddenColumns.add(index);
 				applyColumnVisibility();
@@ -341,7 +398,6 @@ export const createSortableTableFactory = ({
 			toggleButtons.push({ button, index, label });
 		});
 		updateLabels();
-		autoButton.className = autoMode ? 'active' : '';
 		updateToggleButtons();
 
 		const wrapper = document.createElement('div');

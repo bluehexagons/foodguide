@@ -262,7 +262,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -279,7 +281,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, wingsDst.nameObject, wingsDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -299,7 +303,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -316,7 +322,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -333,7 +341,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;

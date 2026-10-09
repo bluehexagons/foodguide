@@ -18,11 +18,14 @@ dependencies; this may require administrator access. After upgrading Playwright,
 | `npm run test:browser`                  | Generate sprites and run the Chromium smoke test.                       |
 | `npm run typecheck`                     | Check the source modules covered by `tsconfig.json`.                    |
 | `npm run format:check` / `npm run lint` | Check formatting or lint independently.                                 |
-| `npm run fix`                           | Apply Prettier formatting and ESLint's automatic fixes.                 |
+| `npm run fix`                           | Apply oxfmt formatting and oxlint's safe automatic fixes.               |
 
 All production modules, including the page controller and sprite generator, use
-strict TypeScript. JavaScript tests exercise the compiled browser modules. ESLint
-checks the JavaScript tests and configuration; the compiler checks TypeScript.
+strict TypeScript. JavaScript tests exercise the compiled browser modules. oxlint
+checks TypeScript sources and JavaScript tests with correctness rules and rejects
+explicit `any`; warnings fail CI. oxfmt formats source, styles, HTML, documentation,
+and configuration. Generated output and the npm-managed lockfile are excluded.
+The compiler separately checks strict types and public library declarations.
 `PLAYWRIGHT_EXECUTABLE_PATH` can select an existing Chromium executable for the
 smoke test; CI uses the browser downloaded for the locked Playwright version.
 

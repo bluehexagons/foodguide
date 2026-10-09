@@ -51,7 +51,9 @@ describe('recipe structural validation', () => {
 			const strs = r.requirements.map(req => req.toString());
 			const seen = new Set();
 			for (const s of strs) {
-				if (seen.has(s)) dupes.push(`${r.id}: duplicate "${s}"`);
+				if (seen.has(s)) {
+					dupes.push(`${r.id}: duplicate "${s}"`);
+				}
 				seen.add(s);
 			}
 		}
@@ -106,7 +108,9 @@ describe('individual food item qualification', () => {
 		const errors = [];
 
 		for (const f of foodList) {
-			if (f.uncookable) continue;
+			if (f.uncookable) {
+				continue;
+			}
 
 			for (const recipe of recipeList) {
 				try {
@@ -137,7 +141,9 @@ describe('individual food item qualification', () => {
 			const qualifying = recipeList.filter(recipe => {
 				for (const req of recipe.requirements) {
 					if (req.cancel) {
-						if (!req.test(null, f.nameObject, f)) return false;
+						if (!req.test(null, f.nameObject, f)) {
+							return false;
+						}
 					}
 				}
 				return recipe.requirements.some(

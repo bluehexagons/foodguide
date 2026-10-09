@@ -1,0 +1,26 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["typescript", "unicorn", "oxc"],
+	"categories": {
+		"correctness": "warn"
+	},
+	"ignorePatterns": [
+		"node_modules/**",
+		"html/**/*.js",
+		"html/**/*.d.ts",
+		"scripts/generate-sprites.js"
+	],
+	"rules": {
+		"curly": "error",
+		"eqeqeq": "error",
+		"prefer-const": "error",
+		"no-unused-expressions": [
+			"warn",
+			{
+				"allowShortCircuit": true,
+				"allowTernary": true
+			}
+		],
+		"typescript/no-explicit-any": "error"
+	}
+}

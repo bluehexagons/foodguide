@@ -38,7 +38,9 @@ export const createDropdownFactory =
 		storageKey,
 		storageIndex,
 	}: DropdownOptions<T>) => {
-		if (!items.length) throw new Error('Dropdown requires at least one item');
+		if (!items.length) {
+			throw new Error('Dropdown requires at least one item');
+		}
 		const container = documentRef.createElement('div');
 		container.className = containerClass;
 		const button = documentRef.createElement('button');
@@ -70,8 +72,9 @@ export const createDropdownFactory =
 							: saved && typeof saved === 'object'
 								? (saved as Record<string | number, unknown>)[storageIndex]
 								: undefined;
-					if (typeof value === 'string' && items.some(item => item.value === value))
+					if (typeof value === 'string' && items.some(item => item.value === value)) {
 						currentValue = value;
+					}
 				}
 			} catch (error) {
 				console.warn('Unable to load preference', error);
@@ -108,7 +111,9 @@ export const createDropdownFactory =
 			}
 		};
 		const setText = (element: HTMLElement, item?: T) => {
-			if (!item) return;
+			if (!item) {
+				return;
+			}
 			element.textContent =
 				item.labelKey || item.key ? translate((item.labelKey || item.key)!) : item.value;
 			if (item.iconHTML) {

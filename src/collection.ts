@@ -28,7 +28,9 @@ export function initializeCollection<T extends { lowerName: string }>(
 	collection.byName = function (name: string) {
 		let i = this.length;
 		while (i--) {
-			if (this[i].lowerName === name) return this[i];
+			if (this[i].lowerName === name) {
+				return this[i];
+			}
 		}
 	};
 	return collection;

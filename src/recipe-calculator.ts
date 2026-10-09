@@ -2,7 +2,6 @@ import type {
 	Food,
 	Recipe,
 	GuideItem,
-	Collection,
 	CalculatorOptions,
 	Requirement,
 	IngredientNames,

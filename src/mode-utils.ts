@@ -1,13 +1,11 @@
 import type {
 	ModeDefinition,
 	CharacterDefinition,
-	GuideItem,
 	ItemModifiers,
 	ModifyItem,
 	StatMultipliers,
 	PreparationType,
 } from './models.js';
-('use strict');
 
 import { TOGETHER, healing_tiny, healing_small } from './constants.js';
 import { t } from './strings.js';

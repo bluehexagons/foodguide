@@ -398,7 +398,9 @@ export function getLocale() {
  * @param {string} code
  */
 export function setLocale(code: string) {
-	if (!locales[code]) code = 'en';
+	if (!locales[code]) {
+		code = 'en';
+	}
 	activeLocale = code;
 	if (typeof document !== 'undefined') {
 		const html = document.documentElement;
@@ -419,7 +421,9 @@ export function setLocale(code: string) {
  * otherwise English. Safe to call before `applyTranslations`.
  */
 export function initLocale() {
-	if (typeof document === 'undefined') return;
+	if (typeof document === 'undefined') {
+		return;
+	}
 	let code;
 	try {
 		code = localStorage.getItem(STORAGE_KEY);
@@ -457,7 +461,9 @@ export function t(key: StringKey, params?: TextParams) {
 	} else {
 		value = defaultStrings[key];
 	}
-	if (value === undefined) return String(key);
+	if (value === undefined) {
+		return String(key);
+	}
 	if (params) {
 		return String(value).replace(/\{(\w+)\}/g, (_, name) =>
 			Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : `{${name}}`,
@@ -468,13 +474,21 @@ export function t(key: StringKey, params?: TextParams) {
 
 export function durationUnit(kind: string, count: number) {
 	if (kind === 'day') {
-		if (activeLocale === 'zh') return '天';
-		if (activeLocale === 'es') return count === 1 ? 'día' : 'días';
+		if (activeLocale === 'zh') {
+			return '天';
+		}
+		if (activeLocale === 'es') {
+			return count === 1 ? 'día' : 'días';
+		}
 		return count === 1 ? 'day' : 'days';
 	}
 	if (kind === 'sec') {
-		if (activeLocale === 'zh') return '秒';
-		if (activeLocale === 'es') return count === 1 ? 'seg' : 'segs';
+		if (activeLocale === 'zh') {
+			return '秒';
+		}
+		if (activeLocale === 'es') {
+			return count === 1 ? 'seg' : 'segs';
+		}
 		return count === 1 ? 'sec' : 'secs';
 	}
 	return kind;
@@ -566,7 +580,9 @@ export function resolveNote(noteKey?: StringKey, params?: TextParams, fallbackNo
  * @param {ParentNode} [root=document]
  */
 export function applyTranslations(root?: ParentNode) {
-	if (typeof document === 'undefined') return;
+	if (typeof document === 'undefined') {
+		return;
+	}
 	const scope = root || document;
 	const nodes = [];
 	if (scope instanceof Element) {

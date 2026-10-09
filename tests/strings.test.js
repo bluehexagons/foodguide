@@ -8,7 +8,9 @@ const setupDom = () => {
 	class FakeElement {}
 	class FakeDocumentFragment {}
 	const getNodeText = node => {
-		if (!node) return '';
+		if (!node) {
+			return '';
+		}
 		if (
 			typeof node.textContent === 'string' &&
 			(!node.childNodes || node.childNodes.length === 0)
@@ -74,7 +76,9 @@ const setupDom = () => {
 	const document = {
 		documentElement: html,
 		addEventListener(type, handler) {
-			if (!listeners.has(type)) listeners.set(type, []);
+			if (!listeners.has(type)) {
+				listeners.set(type, []);
+			}
 			listeners.get(type).push(handler);
 		},
 		dispatchEvent(event) {

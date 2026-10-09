@@ -8,8 +8,6 @@ import type {
 	RecipeData,
 	FoodCollection,
 	RecipeCollection,
-	Stat,
-	BestStat,
 } from './models.js';
 import type { SortableTable } from './sortable-table.js';
 import type { StringKey } from './strings.js';
@@ -28,14 +26,17 @@ declare global {
 }
 const requireElement = (id: string): HTMLElement => {
 	const element = document.getElementById(id);
-	if (!element) throw new Error(`Missing guide element: ${id}`);
+	if (!element) {
+		throw new Error(`Missing guide element: ${id}`);
+	}
 	return element;
 };
 const eventElement = (event: Event): HTMLElement => {
-	if (!(event.target instanceof HTMLElement)) throw new Error('Expected an element event target');
+	if (!(event.target instanceof HTMLElement)) {
+		throw new Error('Expected an element event target');
+	}
 	return event.target;
 };
-('use strict');
 
 /*
  * Don't Starve Food Guide — main browser entry point.
@@ -109,7 +110,9 @@ import './locales/index.js';
 
 	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
 	const resolveIconTarget = (el: EventTarget | null): HTMLElement => {
-		if (!(el instanceof HTMLElement)) throw new Error('Expected an icon or element');
+		if (!(el instanceof HTMLElement)) {
+			throw new Error('Expected an icon or element');
+		}
 		return el.tagName === 'IMG' || el.classList.contains('icon') ? el.parentElement || el : el;
 	};
 
@@ -182,15 +185,21 @@ import './locales/index.js';
 	document.addEventListener('foodguide:localechange', () => {
 		applyTranslations();
 		themeController.updateLabel();
-		if (langPicker) langPicker.value = getLocale();
+		if (langPicker) {
+			langPicker.value = getLocale();
+		}
 		updateRecipeText();
 		// Rebuild per-food info (tag chips, "dry in N days") so localized
 		// labels appear without changing the active mode/character.
 		updateFoodRecipes(
 			recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)),
 		);
-		if (simulatorLocaleRefresh) simulatorLocaleRefresh();
-		if (discoveryLocaleRefresh) discoveryLocaleRefresh();
+		if (simulatorLocaleRefresh) {
+			simulatorLocaleRefresh();
+		}
+		if (discoveryLocaleRefresh) {
+			discoveryLocaleRefresh();
+		}
 		for (const tableContainer of Array.from(localeTables)) {
 			if (!tableContainer.isConnected) {
 				localeTables.delete(tableContainer);
@@ -379,7 +388,9 @@ import './locales/index.js';
 	const populateGameInfoNumbers = () => {
 		const set = (id: string, text: string) => {
 			const el = document.getElementById(id);
-			if (!el) return;
+			if (!el) {
+				return;
+			}
 			el.textContent = '';
 			el.appendChild(document.createTextNode(text));
 		};
@@ -788,7 +799,7 @@ import './locales/index.js';
 		const name = typeof e === 'string' ? e : resolveIconTarget(e.target).dataset.link || '';
 		const modename = name.substring(name.indexOf(':') + 1);
 
-		if (!!modes[modename]) {
+		if (modes[modename]) {
 			recipeHighlighted = matchingNames(recipes, name);
 			recipeTable.update(true);
 		} else {
@@ -2247,7 +2258,9 @@ import './locales/index.js';
 					}
 				}
 
-				if (!hasIngredients) return;
+				if (!hasIngredients) {
+					return;
+				}
 
 				// Warn user on Discovery tab (unlimited mode) before clearing
 				if (!limited && !confirm(t('confirmClearInventory'))) {
@@ -2290,14 +2303,20 @@ import './locales/index.js';
 				storageIndex: index,
 				onSelect: (_, mode) => {
 					dropdown.classList.remove('hidetext', 'listmode');
-					if (mode === 'icons') dropdown.classList.add('hidetext');
-					else if (mode === 'list') dropdown.classList.add('listmode');
+					if (mode === 'icons') {
+						dropdown.classList.add('hidetext');
+					} else if (mode === 'list') {
+						dropdown.classList.add('listmode');
+					}
 				},
 			});
 			{
 				const mode = displayModeControls.getValue();
-				if (mode === 'icons') dropdown.classList.add('hidetext');
-				else if (mode === 'list') dropdown.classList.add('listmode');
+				if (mode === 'icons') {
+					dropdown.classList.add('hidetext');
+				} else if (mode === 'list') {
+					dropdown.classList.add('listmode');
+				}
 			}
 
 			// Density controls
@@ -2480,19 +2499,25 @@ import './locales/index.js';
 
 	// Build mode selectors into the header
 	const headerTop = document.querySelector<HTMLElement>('.header-top');
-	if (!headerTop) throw new Error('Missing guide header');
+	if (!headerTop) {
+		throw new Error('Missing guide header');
+	}
 	const modePanel = headerTop; // mode buttons are injected directly into header-top
 
 	const updateModeButtonTitles = () => {
 		for (const btn of modePanel.querySelectorAll<HTMLElement>('.dlc-btn')) {
 			const dlcKey = btn.dataset.dlc;
-			if (!dlcKey || !dlcOptions[dlcKey]) continue;
+			if (!dlcKey || !dlcOptions[dlcKey]) {
+				continue;
+			}
 			btn.title = `${dlcOptions[dlcKey].name}\n${t('dlcToggleHint')}`;
 		}
 
 		for (const btn of modePanel.querySelectorAll<HTMLElement>('.char-btn')) {
 			const charName = btn.dataset.character || '';
-			if (!charName || !characters[charName]) continue;
+			if (!charName || !characters[charName]) {
+				continue;
+			}
 			const charAbilities = getCharacterAbilities(charName, characters);
 			const abilityText = charAbilities.length > 0 ? `\n${charAbilities.join('\n')}` : '';
 			btn.title = `${characters[charName].name}\n${t('characterToggleHint')}${abilityText}`;

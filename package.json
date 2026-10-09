@@ -81,10 +81,10 @@
 	},
 	"scripts": {
 		"dev": "npm run build && npm run generate-sprites && http-server html -p 8080 -o /index.htm -a 127.0.0.1 -i false -c -1 -g",
-		"lint": "eslint tests eslint.config.js",
-		"lint:fix": "eslint tests eslint.config.js --fix",
-		"format": "prettier --write \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\" \"tools/**/*.ts\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig*.json readme.md \"docs/**/*.md\"",
-		"format:check": "prettier --check \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\" \"tools/**/*.ts\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig*.json readme.md \"docs/**/*.md\"",
+		"lint": "oxlint --deny-warnings",
+		"lint:fix": "oxlint --fix --deny-warnings",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check",
 		"check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:browser",
 		"fix": "npm run format && npm run lint:fix",
 		"test": "npm run build && node --test",
@@ -115,11 +115,10 @@
 	"homepage": "https://foodguide.bluehexagons.com",
 	"devDependencies": {
 		"@types/node": "^20.19.43",
-		"eslint": "^10.12.0",
-		"eslint-config-prettier": "^10.1.8",
 		"http-server": "^14.1.1",
+		"oxfmt": "^0.72.0",
+		"oxlint": "^1.87.0",
 		"playwright": "^1.64.0",
-		"prettier": "^3.9.9",
 		"sharp": "^0.35.5",
 		"typescript": "^7.0.2"
 	},

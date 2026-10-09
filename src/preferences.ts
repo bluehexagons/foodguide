@@ -10,15 +10,22 @@ export interface SavedState {
 }
 export function parseSavedState(text: string): SavedState {
 	const value: unknown = JSON.parse(text);
-	if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+	if (!value || typeof value !== 'object' || Array.isArray(value)) {
+		return {};
+	}
 	const raw = value as Record<string, unknown>;
 	const state: SavedState = {};
 	for (const key of ['activeTab', 'version', 'baseMode'] as const) {
-		if (typeof raw[key] === 'string') state[key] = raw[key];
+		if (typeof raw[key] === 'string') {
+			state[key] = raw[key];
+		}
 	}
-	if (typeof raw.character === 'string' || raw.character === null)
+	if (typeof raw.character === 'string' || raw.character === null) {
 		state.character = raw.character;
-	if (typeof raw.modeMask === 'number' || raw.modeMask === null) state.modeMask = raw.modeMask;
+	}
+	if (typeof raw.modeMask === 'number' || raw.modeMask === null) {
+		state.modeMask = raw.modeMask;
+	}
 	if (raw.dlc && typeof raw.dlc === 'object') {
 		const dlc = raw.dlc as Record<string, unknown>;
 		state.dlc = { giants: dlc.giants === true, shipwrecked: dlc.shipwrecked === true };

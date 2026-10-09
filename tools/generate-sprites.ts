@@ -50,8 +50,12 @@ async function main() {
 	// Collect image files (png, webp — some .png files are actually webp)
 	const imageFiles = entries
 		.filter(e => {
-			if (!e.isFile()) return false;
-			if (EXCLUDE.has(e.name)) return false;
+			if (!e.isFile()) {
+				return false;
+			}
+			if (EXCLUDE.has(e.name)) {
+				return false;
+			}
 			const ext = extname(e.name).toLowerCase();
 			return ext === '.png' || ext === '.webp' || ext === '.jpg' || ext === '.jpeg';
 		})
@@ -127,7 +131,9 @@ async function main() {
 		);
 
 		for (const result of results) {
-			if (result === null) continue;
+			if (result === null) {
+				continue;
+			}
 
 			composites.push({
 				input: result.buffer,

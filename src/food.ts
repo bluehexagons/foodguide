@@ -1,11 +1,4 @@
-import type {
-	Food,
-	FoodDefinition,
-	FoodProperties,
-	Stat,
-	BestStat,
-	PreparationType,
-} from './models.js';
+import type { Food, FoodDefinition, BestStat } from './models.js';
 import { initializeCollection } from './collection.js';
 import {
 	calories_huge,
@@ -2694,7 +2687,9 @@ const applyOverrides = (
 };
 for (const key of Object.keys(definitions)) {
 	const item = definitions[key];
-	if (!item.modes) continue;
+	if (!item.modes) {
+		continue;
+	}
 	const itemModes = item.modes;
 	const overrides = item.modeOverrides || {};
 	delete item.modes;

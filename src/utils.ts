@@ -1,5 +1,4 @@
 import type {
-	Food,
 	GuideItem,
 	IngredientNames,
 	IngredientTags,
@@ -253,7 +252,9 @@ export const isBestStat: Record<string, boolean> = {
 export const numericTags = (item: object): IngredientTags => {
 	const tags: IngredientTags = {};
 	for (const [key, value] of Object.entries(item)) {
-		if (typeof value === 'number' || typeof value === 'boolean') tags[key] = Number(value);
+		if (typeof value === 'number' || typeof value === 'boolean') {
+			tags[key] = Number(value);
+		}
 	}
 	return tags;
 };
@@ -264,16 +265,20 @@ export const accumulateIngredients = (
 	statMultipliers: StatMultipliers,
 ) => {
 	for (const item of items) {
-		if (item === null) continue;
+		if (item === null) {
+			continue;
+		}
 		names[item.id] = 1 + (names[item.id] || 0);
 		for (const [key, value] of Object.entries(numericTags(item))) {
 			if (key === 'perish') {
 				tags[key] = Math.min(tags[key] || perish_preserved, value);
 			} else {
 				let val = value;
-				if (isStat[key]) val *= statMultipliers[item.preparationType] ?? 1;
-				else if (isBestStat[key] && 'bestHealth' in item)
+				if (isStat[key]) {
+					val *= statMultipliers[item.preparationType] ?? 1;
+				} else if (isBestStat[key] && 'bestHealth' in item) {
 					val *= statMultipliers[item[`${key as BestStat}Type`]] ?? 1;
+				}
 				tags[key] = val + (tags[key] || 0);
 			}
 		}
@@ -327,7 +332,9 @@ export const makeElement = <K extends keyof HTMLElementTagNameMap>(
 
 /** Validate JSON at the fetch boundary; malformed manifests use individual icons. */
 export function parseSpriteManifest(value: unknown): SpriteManifest {
-	if (!value || typeof value !== 'object') throw new Error('Invalid sprite manifest');
+	if (!value || typeof value !== 'object') {
+		throw new Error('Invalid sprite manifest');
+	}
 	const m = value as Record<string, unknown>;
 	const positive = (n: unknown): n is number =>
 		typeof n === 'number' && Number.isInteger(n) && n > 0;
@@ -342,11 +349,14 @@ export function parseSpriteManifest(value: unknown): SpriteManifest {
 		!m.images ||
 		typeof m.images !== 'object' ||
 		Array.isArray(m.images)
-	)
+	) {
 		throw new Error('Invalid sprite manifest');
+	}
 	const images: SpriteManifest['images'] = {};
 	for (const [url, entry] of Object.entries(m.images)) {
-		if (!entry || typeof entry !== 'object') throw new Error('Invalid sprite entry');
+		if (!entry || typeof entry !== 'object') {
+			throw new Error('Invalid sprite entry');
+		}
 		const e = entry as Record<string, unknown>;
 		const index = (n: unknown): n is number =>
 			typeof n === 'number' && Number.isInteger(n) && n >= 0;
@@ -357,8 +367,9 @@ export function parseSpriteManifest(value: unknown): SpriteManifest {
 			e.col >= m.columns ||
 			!index(e.row) ||
 			e.row >= m.rows[e.sheet]
-		)
+		) {
 			throw new Error('Invalid sprite entry');
+		}
 		images[url] = { sheet: e.sheet, col: e.col, row: e.row };
 	}
 	return { cellSize: m.cellSize, columns: m.columns, rows: m.rows, sheets: m.sheets, images };

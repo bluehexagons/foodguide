@@ -86,7 +86,7 @@
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
 		"check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:browser",
-		"fix": "npm run format && npm run lint:fix",
+		"fix": "npm run lint:fix && npm run format",
 		"test": "npm run build && node --test",
 		"test:browser": "npm run build && npm run generate-sprites && node tests/browser-smoke.js",
 		"typecheck": "npm run build && tsc -p tsconfig.consumer.json && tsc -p tsconfig.consumer.json --module ES2022 --moduleResolution bundler",

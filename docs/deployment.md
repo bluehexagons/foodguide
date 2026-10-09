@@ -1,7 +1,7 @@
 # Deployment
 
 Deploy the complete `html/` directory after compiling the modules and generating sprites.
-The compiler output and `html/img/sprites/` is ignored by Git and must be created for
+The compiler output and `html/img/sprites/` are ignored by Git and must be created for
 each checkout.
 
 ```bash
@@ -17,7 +17,7 @@ allow the site to work under the GitHub Pages repository path.
 ## GitHub Pages
 
 `.github/workflows/deploy.yml` runs on pushes to `main` and manual dispatch. It
-runs the shared checks, generates sprites in a fresh checkout, uploads `html/`,
+runs the shared checks, compiles modules, generates sprites in a fresh checkout, uploads `html/`,
 and deploys to the `github-pages` environment. Configure the repository's Pages
 source as **GitHub Actions**. Deployment jobs receive only their required token
 permissions, and the Pages concurrency group serializes publication.

@@ -82,7 +82,7 @@ shared mutable objects with keyed lookups and array-like helpers; see the
 
 ## Translations
 
-UI strings live in `src/strings.js`. Static HTML uses `data-i18n="key"`,
+UI strings live in `src/strings.ts`. Static HTML uses `data-i18n="key"`,
 `data-i18n-html="key"`, and `data-i18n-attr-NAME="key"` attributes. English is the
 fallback; bundled Spanish and Chinese dictionaries live in `src/locales/` and are
 registered by the package entry point.
@@ -102,7 +102,7 @@ registerLocale('fr', 'Français', {
 setLocale('fr');
 ```
 
-For a bundled locale, add its module to `src/locales/index.js`; the language picker
+For a bundled locale, add its module to `src/locales/index.ts`; the language picker
 uses the registered locale list automatically.
 
 ## Contributors

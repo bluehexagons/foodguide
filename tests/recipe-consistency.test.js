@@ -249,3 +249,10 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 		assert.ok(twigsReq, 'requirements use SPECIFIC(twigs)');
 	});
 });
+
+it('temperature descriptions omit a generated duration when the data has none', () => {
+	for (const recipe of [recipes.dragonchilisalad, recipes.gazpacho]) {
+		assert.doesNotMatch(recipe.note, /undefined|for 0 secs/);
+		assert.match(recipe.note, /5 minutes/);
+	}
+});

@@ -23,36 +23,78 @@
 		"html/foodguide-data.js",
 		"LICENSE",
 		"docs/",
-		"readme.md"
+		"readme.md",
+		"html/collection.js",
+		"html/constants.d.ts",
+		"html/food.d.ts",
+		"html/recipes.d.ts",
+		"html/functions.d.ts",
+		"html/utils.d.ts",
+		"html/mode-utils.d.ts",
+		"html/strings.d.ts",
+		"html/foodguide-data.d.ts",
+		"html/collection.d.ts",
+		"html/models.d.ts"
 	],
 	"exports": {
-		".": "./html/foodguide-data.js",
-		"./constants": "./html/constants.js",
-		"./food": "./html/food.js",
-		"./recipes": "./html/recipes.js",
-		"./functions": "./html/functions.js",
-		"./utils": "./html/utils.js",
-		"./mode-utils": "./html/mode-utils.js",
-		"./strings": "./html/strings.js",
-		"./locales": "./html/locales/index.js",
-		"./locales/*": "./html/locales/*.js",
+		".": {
+			"types": "./html/foodguide-data.d.ts",
+			"default": "./html/foodguide-data.js"
+		},
+		"./constants": {
+			"types": "./html/constants.d.ts",
+			"default": "./html/constants.js"
+		},
+		"./food": {
+			"types": "./html/food.d.ts",
+			"default": "./html/food.js"
+		},
+		"./recipes": {
+			"types": "./html/recipes.d.ts",
+			"default": "./html/recipes.js"
+		},
+		"./functions": {
+			"types": "./html/functions.d.ts",
+			"default": "./html/functions.js"
+		},
+		"./utils": {
+			"types": "./html/utils.d.ts",
+			"default": "./html/utils.js"
+		},
+		"./mode-utils": {
+			"types": "./html/mode-utils.d.ts",
+			"default": "./html/mode-utils.js"
+		},
+		"./strings": {
+			"types": "./html/strings.d.ts",
+			"default": "./html/strings.js"
+		},
+		"./locales": {
+			"types": "./html/locales/index.d.ts",
+			"default": "./html/locales/index.js"
+		},
+		"./locales/*": {
+			"types": "./html/locales/*.d.ts",
+			"default": "./html/locales/*.js"
+		},
 		"./package.json": "./package.json"
 	},
 	"scripts": {
 		"dev": "npm run build && npm run generate-sprites && http-server html -p 8080 -o /index.htm -a 127.0.0.1 -i false -c -1 -g",
-		"lint": "eslint src tests scripts eslint.config.js",
-		"lint:fix": "eslint src tests scripts eslint.config.js --fix",
-		"format": "prettier --write \"src/**/*.{js,ts}\" \"tests/**/*.js\" \"scripts/**/*.js\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig.json readme.md \"docs/**/*.md\"",
-		"format:check": "prettier --check \"src/**/*.{js,ts}\" \"tests/**/*.js\" \"scripts/**/*.js\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig.json readme.md \"docs/**/*.md\"",
+		"lint": "eslint tests scripts eslint.config.js",
+		"lint:fix": "eslint tests scripts eslint.config.js --fix",
+		"format": "prettier --write \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\" \"tools/**/*.ts\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig*.json readme.md \"docs/**/*.md\"",
+		"format:check": "prettier --check \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\" \"tools/**/*.ts\" html/index.htm html/index.html \"html/style/*.css\" \".github/workflows/*.yml\" eslint.config.js .prettierrc.json package.json tsconfig*.json readme.md \"docs/**/*.md\"",
 		"check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:browser",
 		"fix": "npm run format && npm run lint:fix",
 		"test": "npm run build && node --test",
 		"test:browser": "npm run build && npm run generate-sprites && node tests/browser-smoke.js",
-		"typecheck": "tsc --noEmit",
-		"generate-sprites": "node scripts/generate-sprites.js",
-		"build": "tsc",
+		"typecheck": "npm run build && tsc -p tsconfig.consumer.json && tsc -p tsconfig.consumer.json --module ES2022 --moduleResolution bundler",
+		"generate-sprites": "npm run build && node scripts/generate-sprites.js",
+		"build": "tsc && tsc -p tsconfig.tools.json",
 		"prepare": "npm run build",
-		"prepack": "npm run build"
+		"prepack": "npm run build",
+		"build:watch": "tsc --watch"
 	},
 	"keywords": [
 		"dont-starve",
@@ -72,6 +114,7 @@
 	},
 	"homepage": "https://foodguide.bluehexagons.com",
 	"devDependencies": {
+		"@types/node": "^20.19.43",
 		"eslint": "^10.12.0",
 		"eslint-config-prettier": "^10.1.8",
 		"http-server": "^14.1.1",
@@ -82,5 +125,6 @@
 	},
 	"engines": {
 		"node": "^20.19.0 || ^22.13.0 || >=24"
-	}
+	},
+	"types": "html/foodguide-data.d.ts"
 }

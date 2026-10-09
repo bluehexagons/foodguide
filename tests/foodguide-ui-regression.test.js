@@ -42,7 +42,7 @@ describe('foodguide UI regressions', () => {
 	});
 
 	it('ingredient picker flashes an item-level error when add or remove cannot apply', () => {
-		assert.match(foodguideSource, /const flashIngredientActionError = target =>/);
+		assert.match(foodguideSource, /const flashIngredientActionError = \(?target\)? =>/);
 		assert.match(foodguideSource, /flashIngredientActionError\(target\);/);
 		assert.match(componentsCss, /\.ingredient-action-error/);
 		assert.match(componentsCss, /@keyframes ingredient-action-error/);

@@ -20,8 +20,9 @@ dependencies; this may require administrator access. After upgrading Playwright,
 | `npm run format:check` / `npm run lint` | Check formatting or lint independently.                                 |
 | `npm run fix`                           | Apply Prettier formatting and ESLint's automatic fixes.                 |
 
-The main page controller currently uses `@ts-nocheck`; a passing type check covers
-the other included modules. Browser tests exercise the controller at runtime.
+All production modules, including the page controller and sprite generator, use
+strict TypeScript. JavaScript tests exercise the compiled browser modules. ESLint
+checks the JavaScript tests and configuration; the compiler checks TypeScript.
 `PLAYWRIGHT_EXECUTABLE_PATH` can select an existing Chromium executable for the
 smoke test; CI uses the browser downloaded for the locked Playwright version.
 
@@ -39,16 +40,23 @@ Go is unavailable; the application itself does not require Go.
 | Path                                                                  | Responsibility                                               |
 | --------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `html/index.htm`                                                      | Main application document; `index.html` redirects here.      |
-| `src/foodguide.js`                                                    | Page state, tabs, ingredient pickers, and UI wiring.         |
-| `src/food.js`, `src/recipes.js`                                       | Food and recipe data and initialization.                     |
-| `src/constants.js`, `src/mode-utils.js`, `src/functions.js`           | Game constants, mode/character logic, and recipe predicates. |
-| `src/recipe-calculator.js`, `src/recipe-analyzer.js`                  | Search, recipe matching, and batched combination analysis.   |
-| `src/dropdown.js`, `src/sortable-table.js`, `src/theme-controller.js` | Shared UI controls.                                          |
-| `src/strings.js`, `src/locales/`                                      | Translation helpers and locale dictionaries.                 |
+| `src/foodguide.ts`                                                    | Page state, tabs, ingredient pickers, and UI wiring.         |
+| `src/food.ts`, `src/recipes.ts`                                       | Food and recipe data and initialization.                     |
+| `src/constants.ts`, `src/mode-utils.ts`, `src/functions.ts`           | Game constants, mode/character logic, and recipe predicates. |
+| `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.   |
+| `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                          |
+| `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                 |
 | `html/style/`, `html/img/`                                            | Styles and original icon assets.                             |
-| `scripts/generate-sprites.js`                                         | Sprite sheet generator using Sharp.                          |
+| `tools/generate-sprites.ts`                                           | Sprite sheet generator using Sharp.                          |
 | `tests/`                                                              | Unit, regression, deployment, and browser smoke tests.       |
 | `.github/workflows/`                                                  | Shared checks, CI, and deployment.                           |
+
+TypeScript sources live in `src/`; `npm run build` writes ignored JavaScript and
+declarations to `html/`, retaining the existing module URLs. Edit the source files,
+then rebuild before opening `html/index.htm` or importing the library.
+`npm run build:watch` recompiles browser sources while you edit. Node build tools
+live in `tools/` and compile to `scripts/`. `npm ci --ignore-scripts` requires an
+explicit build; normal installs and package creation run it automatically.
 
 ## Updating assets and data
 
@@ -57,7 +65,7 @@ files, normalizes them to 64-pixel cells, and excludes the background texture.
 `html/img/sprites/` is generated and ignored by Git. Every static deployment must
 generate and copy these files together with the rest of `html/`.
 
-Add recipe changes to `src/recipes.js` and ingredient changes to `src/food.js`.
+Add recipe changes to `src/recipes.ts` and ingredient changes to `src/food.ts`.
 Keep recipe `test` functions and displayed `requirements` consistent, and add a
 regression for the ingredient combination or mode involved. Preserve mode-specific
 keys and cross-references as described in the [data guide](data.md).
@@ -70,5 +78,5 @@ after a version change, and run `npm run check` before committing. Review major
 version changes against upstream release notes. GitHub Actions are pinned to
 full commit SHAs; update the version comment with each pin.
 
-CI runs dependency audits and checks on pushes and pull requests targeting `main`.
+CI runs dependency audits and checks on pushes and pull requests targeting `main`, and on the migration feature branch.
 The deployment workflow also runs the shared checks before publishing.

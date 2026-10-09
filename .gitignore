@@ -11,3 +11,5 @@ html/img/sprites/
 /html/**/*.js
 /html/**/*.d.ts
 /html/**/*.js.map
+
+/scripts/generate-sprites.js

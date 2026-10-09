@@ -1,17 +1,21 @@
 {
 	"compilerOptions": {
-		"checkJs": true,
-		"allowJs": true,
+		"checkJs": false,
+		"allowJs": false,
 		"noEmit": false,
-		"strict": false,
+		"strict": true,
 		"module": "es2022",
 		"moduleResolution": "bundler",
 		"target": "es2022",
 		"lib": ["es2022", "dom"],
 		"rootDir": "src",
 		"outDir": "html",
-		"noEmitOnError": true
+		"noEmitOnError": true,
+		"declaration": true,
+		"verbatimModuleSyntax": true,
+		"forceConsistentCasingInFileNames": true,
+		"types": []
 	},
-	"include": ["src/**/*.js"],
+	"include": ["src/**/*.ts"],
 	"exclude": ["node_modules"]
 }

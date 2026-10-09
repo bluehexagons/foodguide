@@ -4,3 +4,6 @@ build/
 *.log
 .DS_Store
 Thumbs.db
+html/**/*.js
+html/**/*.d.ts
+scripts/generate-sprites.js

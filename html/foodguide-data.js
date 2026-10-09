@@ -10,10 +10,9 @@
  *   import { food } from 'foodguide/food';
  *   import { matchesMode } from 'foodguide/mode-utils';
  *
- * The `utils.js` module contains DOM helpers (icon rendering, link parsing)
- * and is intentionally *not* re-exported here so that Node consumers can
- * pull in just the data without dragging in browser-only code paths.
- * Import it directly via `foodguide/utils` when running in a browser.
+ * Data initialization uses presentation helpers from `utils.js`, which guard
+ * against a missing browser document. DOM helpers are not re-exported here;
+ * import them directly via `foodguide/utils` when running in a browser.
  */
 
 import './locales/index.js';

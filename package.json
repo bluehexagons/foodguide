@@ -8,6 +8,7 @@
 	"sideEffects": [
 		"./html/foodguide.js",
 		"./html/locales/*.js",
+		"./html/recipes.js",
 		"./html/utils.js"
 	],
 	"files": [

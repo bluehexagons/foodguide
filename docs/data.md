@@ -32,6 +32,10 @@ iterable arrays: use `Array.from(food)` when an ordinary array is needed.
 `Object.values(food)` also includes indexes and helper properties after
 initialization, so it is unsuitable for enumerating foods without duplicates.
 
+The package marks `html/recipes.js` as having side effects because it initializes
+both collections. Preserve that metadata when bundling the library; otherwise,
+an import of only `food` from the main entry point can lose its collection helpers.
+
 `byName` expects an exact lowercase display name. A food's `key` identifies its
 record, while `id` identifies the ingredient counted by recipe predicates.
 Mode variants such as `butterflywings@together` share their base ingredient `id`.

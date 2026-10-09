@@ -176,3 +176,52 @@ test('loads the guide, assets, translations, and a rendered food table', async (
 		stopServer(server);
 	}
 });
+
+test('recovers from stale or reserved names in saved preferences', async () => {
+	const { server, ready } = startServer();
+	let browser;
+	try {
+		const baseUrl = await ready;
+		browser = await chromium.launch({
+			headless: true,
+			...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
+				? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+				: {}),
+		});
+		for (const settings of [
+			{ activeTab: '__proto__', version: 'constructor', baseMode: 'toString' },
+			{ activeTab: 'simulator', version: 'together', character: 'constructor' },
+		]) {
+			const page = await browser.newPage();
+			const errors = [];
+			page.on('pageerror', error => errors.push(error.message));
+			await page.addInitScript(
+				state => {
+					localStorage.setItem('foodGuideState', JSON.stringify(state));
+					localStorage.setItem('foodGuideLocale', 'constructor');
+				},
+				{
+					...settings,
+					pickers: [
+						['filter', '__proto__', 'carrot', '0'],
+						['byName', 'constructor', 'meat'],
+					],
+				},
+			);
+			await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+			assert.deepEqual(errors, []);
+			assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+			assert.equal(
+				await page.locator('#navbar [data-tab="simulator"]').getAttribute('aria-pressed'),
+				'true',
+			);
+			assert.equal(await page.locator('#ingredients .icon').count(), 1);
+			assert.equal(await page.locator('#ingredients .icon').getAttribute('title'), 'Carrot');
+			assert.equal(await page.locator('#discovery .ingredient .icon').count(), 1);
+			await page.close();
+		}
+	} finally {
+		await browser?.close();
+		stopServer(server);
+	}
+});

@@ -381,7 +381,7 @@ export function listLocales() {
  * @param {string} code
  */
 export function localeName(code: string) {
-	return locales[code] ? locales[code].name : code;
+	return Object.hasOwn(locales, code) ? locales[code].name : code;
 }
 
 /**
@@ -398,7 +398,7 @@ export function getLocale() {
  * @param {string} code
  */
 export function setLocale(code: string) {
-	if (!locales[code]) {
+	if (!Object.hasOwn(locales, code)) {
 		code = 'en';
 	}
 	activeLocale = code;
@@ -434,13 +434,13 @@ export function initLocale() {
 		const nav = navigator.language.toLowerCase();
 		const candidates = [nav, nav.split('-')[0]];
 		for (const c of candidates) {
-			if (locales[c]) {
+			if (Object.hasOwn(locales, c)) {
 				code = c;
 				break;
 			}
 		}
 	}
-	if (code && locales[code]) {
+	if (code && Object.hasOwn(locales, code)) {
 		setLocale(code);
 	} else {
 		setLocale('en');

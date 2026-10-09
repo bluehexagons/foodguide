@@ -4,6 +4,7 @@ import { parseSavedState } from '../html/preferences.js';
 import { parseSpriteManifest } from '../html/utils.js';
 import { food } from '../html/food.js';
 import { dry_med } from '../html/constants.js';
+import { getCollectionItem } from '../html/collection.js';
 
 test('standalone food exports have initialized helpers and numeric drying times', () => {
 	assert(food.length > 300);
@@ -64,5 +65,26 @@ test('sprite manifests require valid sheet paths and in-bounds integer coordinat
 		{ ...manifest, images: { carrot: { sheet: 0, col: 20, row: 0 } } },
 	]) {
 		assert.throws(() => parseSpriteManifest(value), /Invalid sprite/);
+	}
+});
+
+test('collection key lookup rejects helpers, indexes, and inherited names', () => {
+	assert.equal(getCollectionItem(food, 'carrot'), food.carrot);
+	assert.equal(
+		getCollectionItem(food, 'butterflywings@together'),
+		food['butterflywings@together'],
+	);
+	for (const key of [
+		'0',
+		'length',
+		'filter',
+		'forEach',
+		'sort',
+		'byName',
+		'__proto__',
+		'constructor',
+		'missing',
+	]) {
+		assert.equal(getCollectionItem(food, key), undefined, key);
 	}
 });

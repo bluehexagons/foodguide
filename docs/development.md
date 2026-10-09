@@ -26,6 +26,8 @@ checks TypeScript sources and JavaScript tests with correctness rules and reject
 explicit `any`; warnings fail CI. oxfmt formats source, styles, HTML, documentation,
 and configuration. Generated output and the npm-managed lockfile are excluded.
 The compiler separately checks strict types and public library declarations.
+Unit tests also pack the library and install it offline into a temporary consumer,
+then check its runtime exports and strict NodeNext and bundler type resolution.
 `PLAYWRIGHT_EXECUTABLE_PATH` can select an existing Chromium executable for the
 smoke test; CI uses the browser downloaded for the locked Playwright version.
 

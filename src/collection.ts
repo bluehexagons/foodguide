@@ -35,3 +35,17 @@ export function initializeCollection<T extends { lowerName: string }>(
 	};
 	return collection;
 }
+
+/** Resolve saved or DOM-provided keys without exposing indexes or helper properties. */
+export function getCollectionItem<T extends { lowerName: string; key: string }>(
+	collection: Collection<T>,
+	key: string,
+): T | undefined {
+	const item = collection[key];
+	return Object.hasOwn(collection, key) &&
+		typeof item === 'object' &&
+		item !== null &&
+		item.key === key
+		? item
+		: undefined;
+}

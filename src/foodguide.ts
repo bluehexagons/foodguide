@@ -13,6 +13,7 @@ import type { SortableTable } from './sortable-table.js';
 import type { StringKey } from './strings.js';
 import type { DropdownItem } from './dropdown.js';
 import { parseSavedState } from './preferences.js';
+import { getCollectionItem } from './collection.js';
 import type { SavedState } from './preferences.js';
 
 declare global {
@@ -483,7 +484,7 @@ import './locales/index.js';
 			if (window.localStorage.foodGuideState) {
 				const storage = parseSavedState(window.localStorage.foodGuideState);
 
-				if (storage.activeTab && tabs[storage.activeTab]) {
+				if (storage.activeTab && Object.hasOwn(tabs, storage.activeTab)) {
 					activeTab = tabs[storage.activeTab];
 					activePage = elements[storage.activeTab];
 				} else if (storage.activeTab === 'help') {
@@ -493,7 +494,7 @@ import './locales/index.js';
 				}
 
 				// New format: version + dlc + character
-				if (storage.version && gameVersions[storage.version]) {
+				if (storage.version && Object.hasOwn(gameVersions, storage.version)) {
 					currentVersion = storage.version;
 					if (storage.dlc && typeof storage.dlc === 'object') {
 						activeDlc = {
@@ -501,10 +502,10 @@ import './locales/index.js';
 							shipwrecked: !!storage.dlc.shipwrecked,
 						};
 					}
-					if (storage.character && characters[storage.character]) {
+					if (storage.character && Object.hasOwn(characters, storage.character)) {
 						currentCharacter = storage.character;
 					}
-				} else if (storage.baseMode && baseModes[storage.baseMode]) {
+				} else if (storage.baseMode && Object.hasOwn(baseModes, storage.baseMode)) {
 					// Migrate from previous format (baseMode + character)
 					const bm = storage.baseMode;
 					if (bm === 'together') {
@@ -521,7 +522,7 @@ import './locales/index.js';
 						currentVersion = 'dontstarve';
 						activeDlc = { giants: false, shipwrecked: false };
 					}
-					if (storage.character && characters[storage.character]) {
+					if (storage.character && Object.hasOwn(characters, storage.character)) {
 						currentCharacter = storage.character;
 					}
 				} else if (storage.modeMask !== null) {
@@ -1494,7 +1495,7 @@ import './locales/index.js';
 
 	const getSlot = (slotElement: Element | null): GuideItem | null => {
 		const id = slotElement instanceof HTMLElement ? slotElement.dataset.id : undefined;
-		return id ? food[id] || recipes[id] || null : null;
+		return id ? getCollectionItem(food, id) || getCollectionItem(recipes, id) || null : null;
 	};
 
 	(() => {
@@ -1685,7 +1686,9 @@ import './locales/index.js';
 			};
 
 			const appendSlot = (id?: string) => {
-				const item = id ? food[id] || recipes[id] || null : null;
+				const item = id
+					? getCollectionItem(food, id) || getCollectionItem(recipes, id) || null
+					: null;
 
 				if (!id) {
 					console.warn('ID not set');
@@ -2103,11 +2106,13 @@ import './locales/index.js';
 					if (state && state[index]) {
 						state[index].forEach(id => {
 							// Migrate old _dst IDs to unified format
-							if (id && !food[id] && id.endsWith('_dst')) {
+							if (id && !getCollectionItem(food, id) && id.endsWith('_dst')) {
 								const baseId = id.slice(0, -4);
-								id = food[`${baseId}@together`] ? `${baseId}@together` : baseId;
+								id = getCollectionItem(food, `${baseId}@together`)
+									? `${baseId}@together`
+									: baseId;
 							}
-							if (id && food[id]) {
+							if (id && getCollectionItem(food, id)) {
 								appendSlot(id);
 							}
 						});

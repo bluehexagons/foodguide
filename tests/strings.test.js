@@ -192,11 +192,13 @@ describe('strings locale behavior', () => {
 		strings.setLocale('x-test-fallback');
 		assert.equal(strings.t('tableName'), 'TEST NAME');
 
-		strings.setLocale('missing-code');
-
-		assert.equal(strings.getLocale(), 'en');
-		assert.equal(strings.t('tableName'), 'Name');
-		assert.equal(html.getAttribute('lang'), 'en');
+		for (const code of ['missing-code', 'constructor', 'toString', '__proto__']) {
+			strings.setLocale(code);
+			assert.equal(strings.getLocale(), 'en');
+			assert.equal(strings.t('tableName'), 'Name');
+			assert.equal(html.getAttribute('lang'), 'en');
+			assert.equal(strings.localeName(code), code);
+		}
 	});
 
 	it('package entrypoint registers bundled locales', async () => {

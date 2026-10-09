@@ -1,6 +1,7 @@
 # Development
 
-Use Node.js 24, install the lockfile with `npm ci --ignore-scripts`, and install
+Use Node.js 24 or newer (`nvm use` selects the CI version), install the lockfile
+with `npm ci --ignore-scripts`, and install
 the test browser with `npx playwright install chromium`. On Linux,
 `npx playwright install --with-deps chromium` also installs the browser's system
 dependencies; this may require administrator access. After upgrading Playwright,
@@ -11,12 +12,12 @@ dependencies; this may require administrator access. After upgrading Playwright,
 | Command                                 | Purpose                                                                 |
 | --------------------------------------- | ----------------------------------------------------------------------- |
 | `npm run dev`                           | Build modules, generate sprites, and serve `html/` at `127.0.0.1:8080`. |
-| `npm run build`                         | Compile source modules to the existing `html/*.js` browser paths.       |
+| `npm run build`                         | Compile browser modules to `html/` and build tools to `scripts/`.       |
 | `npm run generate-sprites`              | Rebuild ignored sprite sheets and their manifest.                       |
 | `npm run check`                         | Run all formatting, lint, type, unit, and browser checks.               |
 | `npm test`                              | Run Node's tests, including deployment tests on Linux.                  |
 | `npm run test:browser`                  | Generate sprites and run the Chromium smoke test.                       |
-| `npm run typecheck`                     | Check the source modules covered by `tsconfig.json`.                    |
+| `npm run typecheck`                     | Check strict sources and library consumers with both module resolvers.  |
 | `npm run format:check` / `npm run lint` | Check formatting or lint independently.                                 |
 | `npm run fix`                           | Apply oxfmt formatting and oxlint's safe automatic fixes.               |
 
@@ -42,19 +43,20 @@ Go is unavailable; the application itself does not require Go.
 
 ## Layout
 
-| Path                                                                  | Responsibility                                               |
-| --------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `html/index.htm`                                                      | Main application document; `index.html` redirects here.      |
-| `src/foodguide.ts`                                                    | Page state, tabs, ingredient pickers, and UI wiring.         |
-| `src/food.ts`, `src/recipes.ts`                                       | Food and recipe data and initialization.                     |
-| `src/constants.ts`, `src/mode-utils.ts`, `src/functions.ts`           | Game constants, mode/character logic, and recipe predicates. |
-| `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.   |
-| `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                          |
-| `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                 |
-| `html/style/`, `html/img/`                                            | Styles and original icon assets.                             |
-| `tools/generate-sprites.ts`                                           | Sprite sheet generator using Sharp.                          |
-| `tests/`                                                              | Unit, regression, deployment, and browser smoke tests.       |
-| `.github/workflows/`                                                  | Shared checks, CI, and deployment.                           |
+| Path                                                                  | Responsibility                                                |
+| --------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `html/index.htm`                                                      | Main application document; `index.html` redirects here.       |
+| `src/foodguide.ts`                                                    | Page state, tabs, ingredient pickers, and UI wiring.          |
+| `src/food.ts`, `src/recipes.ts`                                       | Food and recipe data and initialization.                      |
+| `src/constants.ts`, `src/mode-utils.ts`, `src/functions.ts`           | Game constants, mode/character logic, and recipe predicates.  |
+| `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.    |
+| `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                           |
+| `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
+| `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                  |
+| `html/style/`, `html/img/`                                            | Styles and original icon assets.                              |
+| `tools/generate-sprites.ts`                                           | Sprite sheet generator using Sharp.                           |
+| `tests/`                                                              | Unit, regression, deployment, and browser smoke tests.        |
+| `.github/workflows/`                                                  | Shared checks, CI, and deployment.                            |
 
 TypeScript sources live in `src/`; `npm run build` writes ignored JavaScript and
 declarations to `html/`, retaining the existing module URLs. Edit the source files,
@@ -62,6 +64,11 @@ then rebuild before opening `html/index.htm` or importing the library.
 `npm run build:watch` recompiles browser sources while you edit. Node build tools
 live in `tools/` and compile to `scripts/`. `npm ci --ignore-scripts` requires an
 explicit build; normal installs and package creation run it automatically.
+
+The page controller reads saved preferences once at startup. `preferences.ts`
+validates that JSON, translates historical game settings, and handles unavailable
+or corrupt storage. Tab and picker saves merge into the latest stored state so
+one component cannot overwrite another's preferences.
 
 ## Updating assets and data
 

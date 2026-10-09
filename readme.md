@@ -12,8 +12,8 @@ provides an Electron desktop wrapper and release builds.
 
 ## Run locally
 
-Use Node.js 24 and npm. The supported Node ranges are listed in
-[`package.json`](package.json); they match the development tools' requirements.
+Use Node.js 24 or newer and npm. CI uses Node.js 24; `nvm use` selects that
+major version from `.nvmrc`. Dependency installation rejects older Node versions.
 
 ```bash
 npm ci --ignore-scripts

@@ -12,9 +12,8 @@ import type {
 import type { SortableTable } from './sortable-table.js';
 import type { StringKey } from './strings.js';
 import type { DropdownItem } from './dropdown.js';
-import { parseSavedState } from './preferences.js';
+import { createSavedStateStore, restoreGameSelection } from './preferences.js';
 import { getCollectionItem } from './collection.js';
-import type { SavedState } from './preferences.js';
 
 declare global {
 	interface Window {
@@ -52,7 +51,6 @@ const eventElement = (event: Event): HTMLElement => {
 
 import {
 	base_cook_time,
-	baseModes,
 	characters,
 	defaultStatMultipliers,
 	dlcOptions,
@@ -141,9 +139,15 @@ import './locales/index.js';
 	let characterFoodModifiers: { modifyItem: ModifyItem } = { modifyItem: () => ({}) };
 
 	// Mode state: game version + DLC toggles + optional character
-	let currentVersion = 'together';
-	let activeDlc: Record<string, boolean> = { giants: false, shipwrecked: false };
-	let currentCharacter: string | null = null;
+	const preferences = createSavedStateStore({
+		getStorage: () => window.localStorage,
+		onError: error => console.warn('Unable to access saved preferences', error),
+	});
+	const savedState = preferences.load();
+	const selection = restoreGameSelection(savedState);
+	let currentVersion = selection.version;
+	const activeDlc = selection.dlc;
+	let currentCharacter = selection.character;
 	let modeMask = gameVersions[currentVersion].baseMask;
 	let charMask = 0;
 
@@ -480,96 +484,13 @@ import './locales/index.js';
 		activeTab = tabs['simulator'];
 		activePage = elements['simulator'];
 
-		try {
-			if (window.localStorage.foodGuideState) {
-				const storage = parseSavedState(window.localStorage.foodGuideState);
-
-				if (storage.activeTab && Object.hasOwn(tabs, storage.activeTab)) {
-					activeTab = tabs[storage.activeTab];
-					activePage = elements[storage.activeTab];
-				} else if (storage.activeTab === 'help') {
-					// Migrate: 'help' tab was split into 'about' and 'gameinfo'
-					activeTab = tabs['about'];
-					activePage = elements['about'];
-				}
-
-				// New format: version + dlc + character
-				if (storage.version && Object.hasOwn(gameVersions, storage.version)) {
-					currentVersion = storage.version;
-					if (storage.dlc && typeof storage.dlc === 'object') {
-						activeDlc = {
-							giants: !!storage.dlc.giants,
-							shipwrecked: !!storage.dlc.shipwrecked,
-						};
-					}
-					if (storage.character && Object.hasOwn(characters, storage.character)) {
-						currentCharacter = storage.character;
-					}
-				} else if (storage.baseMode && Object.hasOwn(baseModes, storage.baseMode)) {
-					// Migrate from previous format (baseMode + character)
-					const bm = storage.baseMode;
-					if (bm === 'together') {
-						currentVersion = 'together';
-					} else if (bm === 'hamlet') {
-						currentVersion = 'hamlet';
-					} else if (bm === 'shipwrecked') {
-						currentVersion = 'dontstarve';
-						activeDlc = { giants: true, shipwrecked: true };
-					} else if (bm === 'giants') {
-						currentVersion = 'dontstarve';
-						activeDlc = { giants: true, shipwrecked: false };
-					} else {
-						currentVersion = 'dontstarve';
-						activeDlc = { giants: false, shipwrecked: false };
-					}
-					if (storage.character && Object.hasOwn(characters, storage.character)) {
-						currentCharacter = storage.character;
-					}
-				} else if (storage.modeMask !== null) {
-					// Migrate from oldest format: reverse-lookup modeMask.
-					// Old bit values: VANILLA=1, GIANTS=2, SHIPWRECKED=4, TOGETHER=8,
-					// WARLY=16, HAMLET=32, WARLYHAM=64, WARLYDST=128, WEBBER=256
-					const oldMask = storage.modeMask;
-
-					if (oldMask === 119) {
-						// 1|2|4|32|16|64 = VANILLA|GIANTS|SHIPWRECKED|HAMLET|WARLY|WARLYHAM
-						currentVersion = 'hamlet';
-						currentCharacter = 'warly';
-					} else if (oldMask === 23) {
-						// 1|2|4|16 = VANILLA|GIANTS|SHIPWRECKED|WARLY
-						currentVersion = 'dontstarve';
-						activeDlc = { giants: true, shipwrecked: true };
-						currentCharacter = 'warly';
-					} else if (oldMask === 136) {
-						// 8|128 = TOGETHER|WARLYDST
-						currentVersion = 'together';
-						currentCharacter = 'warly';
-					} else if (oldMask === 39) {
-						// 1|2|4|32 = VANILLA|GIANTS|SHIPWRECKED|HAMLET
-						currentVersion = 'hamlet';
-					} else if (oldMask === 7) {
-						// 1|2|4 = VANILLA|GIANTS|SHIPWRECKED
-						currentVersion = 'dontstarve';
-						activeDlc = { giants: true, shipwrecked: true };
-					} else if (oldMask === 3) {
-						// 1|2 = VANILLA|GIANTS
-						currentVersion = 'dontstarve';
-						activeDlc = { giants: true, shipwrecked: false };
-					} else if (oldMask === 1) {
-						// VANILLA
-						currentVersion = 'dontstarve';
-						activeDlc = { giants: false, shipwrecked: false };
-					} else if (oldMask === 8) {
-						// TOGETHER
-						currentVersion = 'together';
-					}
-				}
-			}
-		} catch (err) {
-			console.warn('Unable to access localStorage', err);
-			try {
-				window.localStorage.removeItem('foodGuideState');
-			} catch {}
+		if (savedState.activeTab && Object.hasOwn(tabs, savedState.activeTab)) {
+			activeTab = tabs[savedState.activeTab];
+			activePage = elements[savedState.activeTab];
+		} else if (savedState.activeTab === 'help') {
+			// The old help tab was split into About and Game Info.
+			activeTab = tabs['about'];
+			activePage = elements['about'];
 		}
 
 		activeTab.className = 'selected';
@@ -577,24 +498,14 @@ import './locales/index.js';
 		activePage.style.display = 'block';
 
 		window.addEventListener('beforeunload', () => {
-			let obj: SavedState;
-
-			try {
-				if (!window.localStorage.foodGuideState) {
-					window.localStorage.foodGuideState = '{}';
-				}
-
-				obj = parseSavedState(window.localStorage.foodGuideState);
-				obj.activeTab = activeTab.dataset.tab;
-				obj.version = currentVersion;
-				obj.dlc = { giants: !!activeDlc.giants, shipwrecked: !!activeDlc.shipwrecked };
-				obj.character = currentCharacter;
-				// Keep modeMask for backward compatibility during migration
-				obj.modeMask = modeMask;
-				window.localStorage.foodGuideState = JSON.stringify(obj);
-			} catch (err) {
-				console.warn('Unable to access localStorage', err);
-			}
+			preferences.update(state => {
+				state.activeTab = activeTab.dataset.tab;
+				state.version = currentVersion;
+				state.dlc = { giants: !!activeDlc.giants, shipwrecked: !!activeDlc.shipwrecked };
+				state.character = currentCharacter;
+				// Keep modeMask for backward compatibility during migration.
+				state.modeMask = modeMask;
+			});
 		});
 	})();
 
@@ -1429,29 +1340,15 @@ import './locales/index.js';
 		return makableButton;
 	};
 
-	// Initialize statistics tab if it's the active tab on page load
-	try {
-		if (window.localStorage.foodGuideState) {
-			const storage = parseSavedState(window.localStorage.foodGuideState);
-			const statisticsEl = document.getElementById('statistics');
-			if (
-				storage.activeTab === 'statistics' &&
-				statisticsEl &&
-				!statisticsEl.hasChildNodes()
-			) {
-				statisticsEl.appendChild(makeRecipeGrinder(null, true));
-			}
-		}
-	} catch {
-		// Silently ignore localStorage errors
+	// Initialize statistics content after the grinder factory is available.
+	const statisticsEl = document.getElementById('statistics');
+	if (savedState.activeTab === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
+		statisticsEl.appendChild(makeRecipeGrinder(null, true));
 	}
 
-	const highest = (array: CalculatorRow[], property: string) => {
+	const highestPriority = (array: CalculatorRow[]) => {
 		return array.reduce((previous, current) => {
-			return Math.max(
-				previous,
-				Number((current as unknown as Record<string, unknown>)[property]) || 0,
-			);
+			return Math.max(previous, Number(current.priority) || 0);
 		}, -100000);
 	};
 
@@ -1507,7 +1404,6 @@ import './locales/index.js';
 			let ul: HTMLElement = document.createElement('ul');
 			const picker = pickers[i];
 			const index = i;
-			let state: SavedState['pickers'];
 			const from: import('./models.js').Collection<GuideItem> =
 				picker.dataset.type === 'recipes' ? recipes : food;
 			const allowUncookable = !picker.dataset.cookable;
@@ -1894,7 +1790,7 @@ import './locales/index.js';
 						true,
 						searchFor,
 						(item, array) => {
-							return array.length > 0 && item.priority === highest(array, 'priority');
+							return array.length > 0 && item.priority === highestPriority(array);
 						},
 						undefined,
 						undefined,
@@ -2099,27 +1995,17 @@ import './locales/index.js';
 				limited = false;
 			}
 
-			try {
-				if (window.localStorage.foodGuideState) {
-					state = parseSavedState(window.localStorage.foodGuideState).pickers;
-
-					if (state && state[index]) {
-						state[index].forEach(id => {
-							// Migrate old _dst IDs to unified format
-							if (id && !getCollectionItem(food, id) && id.endsWith('_dst')) {
-								const baseId = id.slice(0, -4);
-								id = getCollectionItem(food, `${baseId}@together`)
-									? `${baseId}@together`
-									: baseId;
-							}
-							if (id && getCollectionItem(food, id)) {
-								appendSlot(id);
-							}
-						});
-					}
+			for (let id of savedState.pickers?.[index] ?? []) {
+				// Migrate old _dst IDs to the unified format.
+				if (id && !getCollectionItem(food, id) && id.endsWith('_dst')) {
+					const baseId = id.slice(0, -4);
+					id = getCollectionItem(food, `${baseId}@together`)
+						? `${baseId}@together`
+						: baseId;
 				}
-			} catch (err) {
-				console.warn('Unable to access localStorage', err);
+				if (id && getCollectionItem(food, id)) {
+					appendSlot(id);
+				}
 			}
 
 			loaded = true;
@@ -2425,27 +2311,12 @@ import './locales/index.js';
 			updateRecipes();
 
 			window.addEventListener('beforeunload', () => {
-				try {
-					if (!window.localStorage.foodGuideState) {
-						window.localStorage.foodGuideState = '{}';
-					}
-					const obj = parseSavedState(window.localStorage.foodGuideState);
-					if (!obj.pickers) {
-						obj.pickers = [];
-					}
-					if (limited) {
-						const serialized = fixedSlots.map(slot => {
-							const item = getSlot(slot);
-							return item ? item.key : null;
-						});
-						obj.pickers[index] = serialized;
-					} else {
-						obj.pickers[index] = slots;
-					}
-					window.localStorage.foodGuideState = JSON.stringify(obj);
-				} catch (error) {
-					console.warn('Unable to save picker state', error);
-				}
+				preferences.update(state => {
+					state.pickers ??= [];
+					state.pickers[index] = limited
+						? fixedSlots.map(slot => getSlot(slot)?.key ?? null)
+						: slots;
+				});
 			});
 
 			modeRefreshers.push(refreshPicker);

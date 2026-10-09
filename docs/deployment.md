@@ -10,7 +10,7 @@ npm run build
 npm run generate-sprites
 ```
 
-Use Node.js 24 and include development dependencies; Sharp is required to generate
+Use Node.js 24 or newer and include development dependencies; Sharp is required to generate
 the sprite assets. Both `index.html` and `index.htm` must be served. Relative URLs
 allow the site to work under the GitHub Pages repository path.
 

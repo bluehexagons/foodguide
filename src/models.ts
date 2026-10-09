@@ -119,11 +119,12 @@ export interface FoodDefinition extends FoodProperties {
 	wet?: string;
 	preparationType?: PreparationType;
 	modes?: string[];
-	modeOverrides?: Record<
-		string,
-		{ [K in keyof Omit<FoodDefinition, 'modeOverrides' | 'modes'>]?: FoodDefinition[K] | false }
-	>;
+	modeOverrides?: Record<string, FoodModeOverride>;
 }
+/** In mode overrides, false removes a property instead of assigning a value. */
+export type FoodModeOverride = {
+	[K in keyof Omit<FoodDefinition, 'modeOverrides' | 'modes'>]?: FoodDefinition[K] | false;
+};
 export interface InitializedItem extends ItemProperties {
 	id: string;
 	key: string;

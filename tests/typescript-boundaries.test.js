@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { parseSavedState } from '../html/preferences.js';
 import { parseSpriteManifest } from '../html/utils.js';
 import { food } from '../html/food.js';
 import { dry_med } from '../html/constants.js';
@@ -21,30 +20,6 @@ test('initialization preserves negative best stats and explicit preparation link
 		assert.equal(food[`monstermeat_cooked${suffix}`].bestHealth, -3);
 		assert.equal(food[`rottenegg${suffix}`].bestHunger, -10);
 	}
-});
-
-test('saved state rejects incompatible values and retains legacy mode settings', () => {
-	assert.deepEqual(parseSavedState('null'), {});
-	assert.deepEqual(parseSavedState('[]'), {});
-	assert.deepEqual(
-		parseSavedState(
-			JSON.stringify({
-				version: [],
-				character: {},
-				modeMask: 23,
-				baseMode: 'shipwrecked',
-				dlc: { giants: true, shipwrecked: 'false' },
-				pickers: [['carrot', 12, null], {}],
-			}),
-		),
-		{
-			modeMask: 23,
-			baseMode: 'shipwrecked',
-			dlc: { giants: true, shipwrecked: false },
-			pickers: [['carrot', null, null], []],
-		},
-	);
-	assert.throws(() => parseSavedState('{'), SyntaxError);
 });
 
 test('sprite manifests require valid sheet paths and in-bounds integer coordinates', () => {

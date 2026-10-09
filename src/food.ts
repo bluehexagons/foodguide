@@ -1,4 +1,4 @@
-import type { Food, FoodDefinition, BestStat } from './models.js';
+import type { Food, FoodDefinition, FoodModeOverride, BestStat } from './models.js';
 import { initializeCollection } from './collection.js';
 import {
 	calories_huge,
@@ -2671,15 +2671,10 @@ However, if I do the same for kelp and rename it to kelp_dst, the simulator woul
 };
 
 // Expand shared definitions into the historical @mode lookup keys.
-const applyOverrides = (
-	item: FoodDefinition,
-	overrides?: FoodDefinition['modeOverrides'] extends Record<string, infer V> | undefined
-		? V
-		: never,
-) => {
+const applyOverrides = (item: FoodDefinition, overrides?: FoodModeOverride) => {
 	for (const [prop, value] of Object.entries(overrides || {})) {
 		if (value === false) {
-			delete (item as unknown as Record<string, unknown>)[prop];
+			Reflect.deleteProperty(item, prop);
 		} else {
 			Object.assign(item, { [prop]: value });
 		}

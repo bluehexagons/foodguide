@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
+import axe from 'axe-core';
 
 const ROOT_DIR = join(import.meta.dirname, '..');
 const HTTP_SERVER = join(ROOT_DIR, 'node_modules/http-server/bin/http-server');
@@ -111,6 +112,261 @@ const trackDiagnostics = page => {
 	});
 	return diagnostics;
 };
+
+test('keyboard navigation covers tabs, picker dismissal, removal, and filter groups', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'simulator',
+		version: 'together',
+		pickers: [
+			['meat', 'berries', 'berries', 'berries'],
+			['meat', 'berries'],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	page.setDefaultTimeout(10_000);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await page
+			.getByRole('link', { name: 'Skip to content', exact: true })
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Enter');
+	assert.equal(await page.locator('main').evaluate(e => e === document.activeElement), true);
+	const active = () => page.evaluate(() => document.activeElement?.outerHTML);
+	const simulator = page.getByRole('tab', { name: 'Simulator', exact: true });
+	await simulator.focus();
+	await simulator.press('ArrowLeft');
+	assert.equal(
+		await page
+			.getByRole('tab', { name: 'Game Info', exact: true })
+			.getAttribute('aria-selected'),
+		'true',
+	);
+	await page.keyboard.press('Home');
+	assert.equal(await simulator.evaluate(e => e === document.activeElement), true);
+	await page.keyboard.press('ArrowRight');
+	assert.equal(
+		await page
+			.getByRole('tab', { name: 'Discovery', exact: true })
+			.getAttribute('aria-selected'),
+		'true',
+	);
+	assert.equal(await page.locator('#navbar [tabindex="0"]').count(), 1);
+	await page.keyboard.press('End');
+	await page.keyboard.press('Tab');
+	// The external game link follows the tablist; then Tab reaches the visible panel.
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await page.locator('#gameinfo').evaluate(e => e === document.activeElement),
+		true,
+		await active(),
+	);
+	await simulator.click();
+	const input = page.locator('#simulator .ingredientpicker');
+	await input.fill('Meat');
+	await input.press('ArrowDown');
+	const descendant = await input.getAttribute('aria-activedescendant');
+	assert.equal(await page.locator(`#${descendant}`).getAttribute('aria-selected'), 'true');
+	await input.press('Enter');
+	assert.match(
+		await page.locator('#simulator [role="status"]').textContent(),
+		/Unable to change Meat/,
+	);
+	await input.press('Escape');
+	assert.equal(await input.getAttribute('aria-expanded'), 'false');
+	assert.equal(await page.locator('#simulator .ingredientdropdown').isVisible(), false);
+	assert.equal(await input.getAttribute('aria-activedescendant'), null);
+	await input.press('Enter');
+	assert.equal(await page.locator('#ingredients [data-id]').count(), 4);
+	await input.press('ArrowDown');
+	assert.equal(await input.getAttribute('aria-expanded'), 'true');
+	const slot = page.locator('#ingredients .ingredient').first();
+	await slot.focus();
+	await slot.press('Space');
+	assert.equal(await slot.evaluate(e => e === document.activeElement), true);
+	assert.equal(await slot.getAttribute('aria-label'), 'Remove Berries');
+	assert.match(await page.locator('#simulator [role="status"]').textContent(), /Removed Meat/);
+	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
+	const meat = page.locator('#inventory [data-id="meat@together"]');
+	await meat.focus();
+	await meat.press('Enter');
+	const berries = page.locator('#inventory [data-id="berries@together"]');
+	assert.equal(await berries.evaluate(e => e === document.activeElement), true, await active());
+	await berries.press('Space');
+	assert.equal(
+		await page.locator('#inventory .ingredient').evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Enter');
+	assert.equal(
+		await page
+			.locator('#discovery .ingredientpicker')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	// Rebuild an inventory for the analyzer using keyboard input only.
+	for (const name of ['Meat', 'Berries']) {
+		const search = page.locator('#discovery .ingredientpicker');
+		await search.fill(name);
+		await search.press('ArrowDown');
+		await search.press('Enter');
+	}
+	const calculate = page.locator('#makable .makablebutton');
+	await calculate.focus();
+	await calculate.press('Enter');
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const group = page.getByRole('toolbar', { name: 'Ingredient filters', exact: true });
+	assert.equal(await group.getAttribute('aria-describedby'), 'discovery-filter-help');
+	assert.equal(await group.locator('[tabindex="0"]').count(), 1);
+	const filter = group.locator('button:has(.icon[data-id="meat@together"])');
+	await filter.focus();
+	await filter.press('Enter');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Required');
+	await filter.press('Space');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Excluded');
+	await filter.press('Shift+Space');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Required');
+	await filter.press('Shift+Enter');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Normal');
+	await filter.press('ArrowRight');
+	assert.equal(
+		await group
+			.getByRole('button', { name: 'Berries: Normal', exact: true })
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Home');
+	assert.equal(
+		await group
+			.locator('button')
+			.first()
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('End');
+	assert.equal(
+		await group
+			.locator('button')
+			.last()
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	assert.equal(await group.locator('[tabindex="0"]').count(), 1);
+	const recipe = page.locator('#makable .recipeFilter button').first();
+	await recipe.focus();
+	await recipe.press('Shift+Enter');
+	assert.match(await recipe.getAttribute('aria-label'), /: Excluded$/);
+	await recipe.press('Shift+Enter');
+	assert.match(await recipe.getAttribute('aria-label'), /: Normal$/);
+	await page.locator('#makable .deleteButton').focus();
+	await page.keyboard.press('Enter');
+	assert.equal(await calculate.evaluate(e => e === document.activeElement), true, await active());
+	await page.emulateMedia({ colorScheme: 'dark' });
+	await page.waitForFunction(
+		() => document.documentElement.getAttribute('data-theme') === 'dark',
+	);
+	assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
+	const inventoryControl = page.locator('#inventory .ingredient').first();
+	await inventoryControl.focus();
+	assert.equal(
+		await inventoryControl.evaluate(
+			e => getComputedStyle(e).outlineColor === getComputedStyle(document.body).color,
+		),
+		true,
+	);
+	await calculate.focus();
+	await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineWidth), '2px');
+	assert.deepEqual(diagnostics, []);
+});
+
+test('accessibility audit covers visible panels, menus, and analyzer results', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [
+			['meat', 'berries', 'berries', 'berries'],
+			['meat', 'berries'],
+		],
+	});
+	page.setDefaultTimeout(15_000);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
+	const findings = [];
+	const audit = async context => {
+		await page.waitForFunction(() =>
+			document.getAnimations().every(animation => animation.playState !== 'running'),
+		);
+		const violations = await page.evaluate(async () => {
+			const { violations } = await window.axe.run();
+			return violations.map(({ id, nodes }) => ({
+				id,
+				nodes: nodes
+					.slice(0, 3)
+					.map(({ target, failureSummary }) => ({ target, failureSummary })),
+			}));
+		});
+		if (violations.length) {
+			findings.push({ ...context, violations });
+		}
+	};
+	for (const theme of ['light', 'dark']) {
+		if ((await page.locator('html').getAttribute('data-theme')) !== theme) {
+			await page.locator('#theme-toggle').click();
+		}
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			for (const tab of [
+				'simulator',
+				'discovery',
+				'foodlist',
+				'crockpot',
+				'statistics',
+				'about',
+				'gameinfo',
+			]) {
+				await page.locator(`#navbar [data-tab="${tab}"]`).click();
+				if (tab === 'discovery') {
+					await page.locator('#makable .makablebutton').click();
+					await page.waitForFunction(
+						() => !document.querySelector('#makable .makablebutton').disabled,
+					);
+					assert.equal(
+						await page
+							.locator('#makable .deleteButton')
+							.evaluate(e => e === document.activeElement),
+						true,
+					);
+				}
+				if (tab === 'statistics') {
+					await page.locator('#statistics .makablebutton').click();
+					await page.locator('#statistics .pauseButton').click();
+				}
+				await audit({ theme, locale, tab });
+				if (tab === 'simulator') {
+					for (const buttonClass of [
+						'searchselector',
+						'displaymodeingredients:not(.densityingredients)',
+						'densityingredients',
+						'sortingredients',
+					]) {
+						await page.locator(`#simulator button.${buttonClass}`).click();
+						await audit({ theme, locale, tab, menu: buttonClass });
+						await page.keyboard.press('Escape');
+					}
+				}
+				if (tab === 'statistics') {
+					await page.locator('#statistics .deleteButton').click();
+				}
+			}
+		}
+	}
+	assert.deepEqual(findings, [], JSON.stringify(findings, null, 2));
+});
 
 // Vary the markup without changing the control's identity or registered listeners.
 const nestControlContents = locator =>
@@ -248,7 +504,7 @@ test('nested control contents preserve mode changes, slot removal, table sorting
 	await nestControlContents(meatballs);
 	await meatballs.locator('.icon').click();
 	assert.equal(
-		await page.locator('#navbar [data-tab="crockpot"]').getAttribute('aria-pressed'),
+		await page.locator('#navbar [data-tab="crockpot"]').getAttribute('aria-selected'),
 		'true',
 	);
 	assert.deepEqual(
@@ -431,7 +687,7 @@ test('loads the guide, assets, translations, and a rendered food table', async t
 	assert.equal(response?.status(), 200);
 	await page.locator('#language-picker').waitFor();
 	assert.equal(await page.title(), "Don't Starve Food Guide");
-	assert.equal(await page.locator('#navbar li[data-tab]').count(), 7);
+	assert.equal(await page.locator('#navbar [data-tab]').count(), 7);
 	assert.equal(await page.locator('#language-picker').count(), 1);
 	assert.equal(await page.locator('#theme-toggle').count(), 1);
 
@@ -493,8 +749,8 @@ test('loads the guide, assets, translations, and a rendered food table', async t
 	assert.equal(await page.locator('#ingredients .icon').count(), 4);
 	await page.locator('#results a').getByText('Meatballs', { exact: true }).first().waitFor();
 
-	await page.locator('#navbar li[data-tab="foodlist"]').focus();
-	await page.locator('#navbar li[data-tab="foodlist"]').press('Enter');
+	await page.locator('#navbar [data-tab="foodlist"]').focus();
+	await page.locator('#navbar [data-tab="foodlist"]').press('Enter');
 	await page.locator('#food table tr:nth-child(2)').waitFor();
 	assert.ok((await page.locator('#food table tr').count()) > 1);
 	assert.match(
@@ -538,7 +794,7 @@ test('recovers from stale or reserved names in saved preferences', async t => {
 		assert.deepEqual(errors, []);
 		assert.equal(await page.locator('html').getAttribute('lang'), 'en');
 		assert.equal(
-			await page.locator('#navbar [data-tab="simulator"]').getAttribute('aria-pressed'),
+			await page.locator('#navbar [data-tab="simulator"]').getAttribute('aria-selected'),
 			'true',
 		);
 		assert.equal(await page.locator('#ingredients .icon').count(), 1);
@@ -574,7 +830,7 @@ test('legacy settings and both ingredient pickers survive migration and reload',
 	page.on('pageerror', error => errors.push(error.message));
 	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 	assert.equal(
-		await page.locator('#navbar [data-tab="about"]').getAttribute('aria-pressed'),
+		await page.locator('#navbar [data-tab="about"]').getAttribute('aria-selected'),
 		'true',
 	);
 	assert.equal(
@@ -678,7 +934,7 @@ test('tables retain sorting, pinned summaries, column visibility, and linked hig
 
 	await page.locator('#food [data-link="recipe:Meatballs"] .icon').first().click();
 	assert.equal(
-		await page.locator('#navbar [data-tab="crockpot"]').getAttribute('aria-pressed'),
+		await page.locator('#navbar [data-tab="crockpot"]').getAttribute('aria-selected'),
 		'true',
 	);
 	assert.deepEqual(

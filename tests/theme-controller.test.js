@@ -29,6 +29,9 @@ const createHarness = ({ savedTheme = null, prefersDark = false, storageThrows =
 	};
 	const toggleButton = {
 		textContent: '',
+		setAttribute(key, value) {
+			this[key] = value;
+		},
 		addEventListener(type, listener) {
 			buttonListeners.set(type, listener);
 		},
@@ -65,6 +68,7 @@ describe('theme controller', () => {
 		assert.strictEqual(harness.controller.getTheme(), 'auto');
 		assert.strictEqual(harness.attributes.get('data-theme'), 'dark');
 		assert.strictEqual(harness.toggleButton.textContent, 'themeToggleToLight');
+		assert.strictEqual(harness.toggleButton['aria-label'], 'themeSwitchToLight');
 	});
 
 	it('switches themes even when the preference cannot be saved', () => {
@@ -73,6 +77,7 @@ describe('theme controller', () => {
 		assert.doesNotThrow(() => harness.buttonListeners.get('click')());
 		assert.strictEqual(harness.controller.getTheme(), 'light');
 		assert.strictEqual(harness.attributes.get('data-theme'), 'light');
+		assert.strictEqual(harness.toggleButton['aria-label'], 'themeSwitchToDark');
 	});
 
 	it('tracks system changes only while using the automatic theme', () => {

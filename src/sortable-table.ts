@@ -213,6 +213,11 @@ export const createSortableTableFactory = ({
 			}
 			const sortKey = headers[header];
 			let control: HTMLElement = th;
+			if (!label) {
+				control = document.createElement('span');
+				control.className = 'sr-only';
+				th.appendChild(control);
+			}
 			if (sortKey) {
 				const button = document.createElement('button');
 				button.type = 'button';
@@ -232,7 +237,7 @@ export const createSortableTableFactory = ({
 			}
 			sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
 			for (const { header, label, sortKey, th, control } of headerCells) {
-				const translatedLabel = translateTableLabel(label);
+				const translatedLabel = translateTableLabel(label || 'Image');
 				if (control.textContent !== translatedLabel) {
 					control.textContent = translatedLabel;
 				}
@@ -241,6 +246,7 @@ export const createSortableTableFactory = ({
 				}
 				if (header.includes(':')) {
 					th.title = translateTableHint(header.split(':')[1]);
+					control.setAttribute('aria-description', th.title);
 				}
 				const selected = sortKey === sorting;
 				const ascending = sorting === 'name' ? !invertSort : invertSort;

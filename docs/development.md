@@ -107,6 +107,25 @@ work, remove translation listeners, and release their table registrations when
 inputs or game settings change. Browser regressions cover nested labels, mouse
 and keyboard entry, filter cycles, and calculation cleanup.
 
+The tabs use one Tab stop with Left/Right, Home, and End navigation. Ingredient
+slots are native buttons: Enter or Space removes a selected item or focuses the
+search field from an empty slot. The picker keeps focus on its input while Up/Down
+changes `aria-activedescendant`; Escape hides the results and arrow keys reopen
+them. Action feedback uses a localized status region.
+
+`filter-controls.ts` owns analyzer keyboard navigation and accessible state
+labels. Each ingredient/recipe toolbar has one Tab stop; arrows, Home, and End
+move within it. Enter/Space cycles filters, while Shift+Enter/Space provides the
+same alternative action as right-click. Keep filter state in `analysis-filters.ts`
+and preserve focus when removing or hiding controls. Analyzer announcements occur
+on pause/resume and completion, rather than on every computation chunk.
+
+The browser suite runs axe-core over all seven panels in both themes and all
+three languages, including open picker menus, completed discovery results, and
+paused statistics results. It also exercises keyboard flows and focus recovery.
+Automated scans do not replace testing with screen readers; review spoken names,
+announcements, and focus visibility when changing interaction patterns.
+
 ## Updating assets and data
 
 Keep source icons in `html/img/`. The generator accepts PNG, WebP, JPEG, and `.jpg`

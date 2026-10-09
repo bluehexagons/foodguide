@@ -32,6 +32,8 @@ const defaultStrings = {
 	// Theme toggle
 	themeToggleToDark: '🌙',
 	themeToggleToLight: '☀️',
+	themeSwitchToLight: 'Switch to light theme',
+	themeSwitchToDark: 'Switch to dark theme',
 	themeToggleTitle: 'Toggle dark/light theme',
 
 	// Language picker
@@ -90,11 +92,23 @@ const defaultStrings = {
 	clearSearchOrIngredients: 'Clear search or remove all ingredients',
 	clearSearch: 'Clear search',
 	clearIngredients: 'Clear all ingredients',
+	skipToContent: 'Skip to content',
+	addIngredient: 'Add an ingredient',
+	removeIngredient: 'Remove {name}',
+	ingredientAdded: 'Added {name}.',
+	ingredientRemoved: 'Removed {name}.',
+	ingredientActionFailed:
+		'Unable to change {name}. The pot may be full or the ingredient is not selected.',
+	ingredientsCleared: 'All ingredients cleared.',
+	ingredientSearchHelp:
+		'Use Up and Down to browse results, Enter to add, and Escape to hide results. Tab to the selected ingredients to remove them.',
 	confirmClearInventory: 'Are you sure you want to clear all ingredients from your inventory?',
 	displayModeNames: 'Display: Names',
 	displayModeIcons: 'Display: Icons',
 	displayModeList: 'Display: List',
 	densityCozy: 'Cozy',
+	pickerDensity: 'Picker density',
+	pickerSearchType: 'Search by',
 	densityNormal: 'Normal',
 	densityCompact: 'Compact',
 	sortDefault: 'Sort: Default',
@@ -119,7 +133,13 @@ const defaultStrings = {
 	computingCombinations: 'Computing combinations..',
 	multipleResultsNote: '* combination has multiple possible results',
 	filterCycleHelp:
-		'Click ingredients/recipes to cycle: normal → required (✓) → excluded (✕). Right-click for quick exclude.',
+		'Use arrow keys to browse each filter group. Click, Enter, or Space cycles normal → required (✓) → excluded (✕). Shift+Enter, Shift+Space, or right-click reverses ingredient filters or toggles recipe exclusions.',
+	filterIngredients: 'Ingredient filters',
+	filterRecipes: 'Recipe filters',
+	filterNormal: 'Normal',
+	filterRequired: 'Required',
+	filterExcluded: 'Excluded',
+	filterLabel: '{name}: {state}',
 	customFilterPlaceholder: 'use custom filter',
 	foundValidRecipes: 'Found {count} valid recipes.',
 	foundValidRecipesInProgress:
@@ -186,6 +206,7 @@ const defaultStrings = {
 	autoColumns: 'Auto',
 	autoColumnsTitle: 'Automatically hide less-important columns on narrow screens',
 	tableName: 'Name',
+	tableImage: 'Image',
 	tableInfo: 'Info',
 	tableMode: 'Mode',
 	tableHealth: 'Health',

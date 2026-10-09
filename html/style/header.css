@@ -21,7 +21,7 @@
 	font-weight: 700;
 	color: rgba(255, 255, 255, 0.9);
 	white-space: nowrap;
-	margin-right: auto;
+	margin: 0 auto 0 0;
 	letter-spacing: -0.01em;
 }
 
@@ -34,7 +34,7 @@
 
 .mode-label {
 	font-size: 11px;
-	color: rgba(255, 255, 255, 0.72);
+	color: var(--header-text);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	margin-right: 2px;
@@ -79,6 +79,7 @@
 }
 
 .mode-btn:focus-visible {
+	opacity: 1;
 	outline: 2px solid var(--header-text);
 	outline-offset: 2px;
 }
@@ -107,7 +108,23 @@
 }
 
 /* Tab navigation - bottom row of header */
+.tab-navigation {
+	display: flex;
+	flex-wrap: wrap;
+	background: rgba(0, 0, 0, 0.15);
+}
+.game-link {
+	color: var(--header-text);
+	padding: 7px 14px;
+	font-size: 12px;
+	align-self: center;
+}
+#navbar li {
+	display: flex;
+}
+
 #navbar {
+	flex: 1;
 	display: flex;
 	flex-wrap: wrap;
 	align-items: stretch;
@@ -118,7 +135,8 @@
 	border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-#navbar li {
+#navbar [role='tab'] {
+	font-family: inherit;
 	display: inline-flex;
 	align-items: center;
 	list-style-type: none;
@@ -130,35 +148,25 @@
 	font-size: 13px;
 	font-weight: 500;
 	color: rgba(255, 255, 255, 0.78);
-	transition: all var(--transition-fast);
+	transition: none;
 	position: relative;
 	white-space: nowrap;
 }
 
-#navbar li:hover {
+#navbar [role='tab']:hover {
 	color: rgba(255, 255, 255, 0.95);
 	background: rgba(255, 255, 255, 0.1);
 }
 
-#navbar li:focus-visible {
+#navbar [role='tab']:focus-visible {
 	outline: 2px solid currentColor;
 	outline-offset: -2px;
 }
 
-#navbar li.selected {
+#navbar [role='tab'].selected {
 	color: var(--dark);
 	font-weight: 600;
 	background: var(--bg-secondary);
-}
-
-#navbar li a {
-	color: rgba(255, 255, 255, 0.72);
-	text-decoration: none;
-	font-size: 12px;
-}
-
-#navbar li a:hover {
-	color: rgba(255, 255, 255, 0.92);
 }
 
 /* Responsive: medium screens */
@@ -186,7 +194,7 @@
 		height: 26px;
 	}
 
-	#navbar li {
+	#navbar [role='tab'] {
 		padding: 6px 10px;
 		font-size: 12px;
 	}
@@ -218,7 +226,7 @@
 		gap: 0;
 	}
 
-	#navbar li {
+	#navbar [role='tab'] {
 		padding: 5px 8px;
 		font-size: 12px;
 	}
@@ -229,7 +237,7 @@
 	height: 32px;
 	border-radius: 5px;
 	border: 2px solid rgba(255, 255, 255, 0.2);
-	background: rgba(255, 255, 255, 0.1);
+	background: var(--header-bg);
 	color: rgba(255, 255, 255, 0.92);
 	font-size: 13px;
 	padding: 0 4px;
@@ -239,7 +247,7 @@
 }
 
 #language-picker:hover {
-	background: rgba(255, 255, 255, 0.2);
+	background: var(--header-accent);
 	border-color: rgba(255, 255, 255, 0.35);
 }
 

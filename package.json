@@ -115,6 +115,7 @@
 	"homepage": "https://foodguide.bluehexagons.com",
 	"devDependencies": {
 		"@types/node": "^24.19.2",
+		"axe-core": "^4.14.0",
 		"http-server": "^14.1.1",
 		"oxfmt": "^0.72.0",
 		"oxlint": "^1.87.0",

@@ -16,7 +16,6 @@ import { createSavedStateStore, restoreGameSelection } from './preferences.js';
 import { createFoodSelectionResolver } from './food-selection.js';
 import { createAnalysisFilters } from './analysis-filters.js';
 import { formatSignedValue } from './number-format.js';
-import type { FilterState } from './analysis-filters.js';
 import { getCollectionItem } from './collection.js';
 
 declare global {
@@ -75,6 +74,7 @@ import {
 } from './constants.js';
 import { food } from './food.js';
 import { createDropdownFactory } from './dropdown.js';
+import { createFilterControls } from './filter-controls.js';
 import { createRecipeCalculator } from './recipe-calculator.js';
 import { createRecipeAnalyzer } from './recipe-analyzer.js';
 import { sortIngredients } from './ingredient-sort.js';
@@ -245,6 +245,7 @@ import './locales/index.js';
 	};
 
 	const tableLabelKeys: Record<string, StringKey> = {
+		Image: 'tableImage',
 		Name: 'tableName',
 		Info: 'tableInfo',
 		Mode: 'tableMode',
@@ -438,7 +439,7 @@ import './locales/index.js';
 	let statisticsGrinder: ReturnType<typeof makeRecipeGrinder> | undefined;
 
 	(() => {
-		const navtabs = navbar.getElementsByTagName('li');
+		const navtabs = Array.from(navbar.querySelectorAll<HTMLElement>('[data-tab]'));
 		const tabs: Record<string, HTMLElement> = {};
 		const elements: Record<string, HTMLElement> = {};
 		let activePage: HTMLElement;
@@ -449,19 +450,29 @@ import './locales/index.js';
 		};
 
 		setTab = tabID => {
+			if (!Object.hasOwn(tabs, tabID)) {
+				return;
+			}
+			const moveFocus =
+				activePage !== elements[tabID] && activePage.contains(document.activeElement);
 			activeTab.className = '';
-			activeTab.setAttribute('aria-pressed', 'false');
+			activeTab.setAttribute('aria-selected', 'false');
+			activeTab.tabIndex = -1;
 			activeTab = tabs[tabID];
-			activePage.style.display = 'none';
+			activePage.hidden = true;
 			activePage = elements[tabID];
 			activeTab.className = 'selected';
-			activeTab.setAttribute('aria-pressed', 'true');
-			activePage.style.display = 'block';
+			activeTab.setAttribute('aria-selected', 'true');
+			activeTab.tabIndex = 0;
+			activePage.hidden = false;
 
 			// Initialize statistics tab content on first visit
 			if (tabID === 'statistics' && !activePage.hasChildNodes()) {
 				statisticsGrinder = makeRecipeGrinder(null, true);
 				activePage.appendChild(statisticsGrinder.button);
+			}
+			if (moveFocus) {
+				activePage.focus();
 			}
 		};
 
@@ -469,13 +480,18 @@ import './locales/index.js';
 			const navtab = navtabs[i];
 
 			if (navtab.dataset.tab) {
-				navtab.setAttribute('role', 'button');
+				navtab.setAttribute('role', 'tab');
+				navtab.id = `tab-${navtab.dataset.tab}`;
 				navtab.setAttribute('aria-controls', navtab.dataset.tab);
-				navtab.setAttribute('aria-pressed', 'false');
-				navtab.tabIndex = 0;
+				navtab.setAttribute('aria-selected', 'false');
+				navtab.tabIndex = -1;
 				tabs[navtab.dataset.tab] = navtab;
 				elements[navtab.dataset.tab] = requireElement(navtab.dataset.tab);
-				elements[navtab.dataset.tab].style.display = 'none';
+				const panel = elements[navtab.dataset.tab];
+				panel.hidden = true;
+				panel.tabIndex = 0;
+				panel.setAttribute('role', 'tabpanel');
+				panel.setAttribute('aria-labelledby', navtab.id);
 				navtab.addEventListener(
 					'selectstart',
 					e => {
@@ -485,9 +501,24 @@ import './locales/index.js';
 				);
 				navtab.addEventListener('click', showTab, false);
 				navtab.addEventListener('keydown', event => {
-					if (event.key === 'Enter' || event.key === ' ') {
+					if (event.altKey || event.ctrlKey || event.metaKey) {
+						return;
+					}
+					let next;
+					if (event.key === 'ArrowRight') {
+						next = (i + 1) % navtabs.length;
+					} else if (event.key === 'ArrowLeft') {
+						next = (i + navtabs.length - 1) % navtabs.length;
+					} else if (event.key === 'Home') {
+						next = 0;
+					} else if (event.key === 'End') {
+						next = navtabs.length - 1;
+					}
+					if (next !== undefined) {
 						event.preventDefault();
-						showTab(event);
+						setTab(navtabs[next].dataset.tab!);
+						navtabs[next].focus();
+						return;
 					}
 				});
 			}
@@ -506,8 +537,9 @@ import './locales/index.js';
 		}
 
 		activeTab.className = 'selected';
-		activeTab.setAttribute('aria-pressed', 'true');
-		activePage.style.display = 'block';
+		activeTab.setAttribute('aria-selected', 'true');
+		activeTab.tabIndex = 0;
+		activePage.hidden = false;
 
 		window.addEventListener('beforeunload', () => {
 			preferences.update(state => {
@@ -801,7 +833,7 @@ import './locales/index.js';
 				const availableIngredients = (ingredients ?? Array.from(food)).filter(testmode);
 				const idealIngredients: Food[] = [];
 				const makableRecipes: string[] = [];
-				const recipeIcons = new Map<string, HTMLSpanElement>();
+				const recipeControls = new Map<string, HTMLButtonElement>();
 				const filters = createAnalysisFilters({
 					excludedIngredients: excludeDefault
 						? availableIngredients
@@ -819,18 +851,9 @@ import './locales/index.js';
 				deleteButton.className = 'deleteButton';
 				deleteButton.addEventListener('click', () => clearResults());
 
-				const displayFilterState = (icon: HTMLElement, state: FilterState) => {
-					icon.classList.toggle('selected', state === 'required');
-					icon.classList.toggle('excluded', state === 'excluded');
-				};
-				const cycleFilterState = (id: string, icon: HTMLElement, reverse = false) => {
-					filters.cycleIngredient(id, reverse);
-					displayFilterState(icon, filters.ingredientState(id));
-					makableTable.update();
-				};
 				const updateRecipeFilters = () => {
-					for (const [id, icon] of recipeIcons) {
-						displayFilterState(icon, filters.recipeState(id));
+					for (const [id, button] of recipeControls) {
+						recipeFilterControls.update(button, filters.recipeState(id));
 					}
 					makableTable.update();
 				};
@@ -935,7 +958,10 @@ import './locales/index.js';
 				});
 				const updateMakableControls = () => {
 					deleteButton.textContent = t('clearResults');
-					customFilterInput.placeholder = t('customFilterPlaceholder');
+					ingredientFilterControls.updateLocale();
+					recipeFilterControls.updateLocale();
+					makableFilter.setAttribute('aria-label', t('filterIngredients'));
+					makableRecipe.setAttribute('aria-label', t('filterRecipes'));
 					pauseButton.textContent =
 						calculationControl && calculationControl.isPaused()
 							? t('resume')
@@ -958,10 +984,18 @@ import './locales/index.js';
 
 				const filterHelp = document.createElement('div');
 				filterHelp.className = 'makableFilterHelp';
+				filterHelp.id = ingredients ? 'discovery-filter-help' : 'statistics-filter-help';
 				const filterHelpText = document.createTextNode(t('filterCycleHelp'));
 				filterHelp.appendChild(filterHelpText);
 				const updateMakableTexts = () => {
-					makableSummaryText.textContent = t('computingCombinations');
+					makableSummaryText.textContent = t(
+						!isCalculating
+							? 'foundValidRecipes'
+							: calculationControl.isPaused()
+								? 'foundValidRecipesPaused'
+								: 'foundValidRecipesInProgress',
+						{ count: made.length },
+					);
 					makableFootnoteText.textContent = t('multipleResultsNote');
 					filterHelpText.textContent = t('filterCycleHelp');
 				};
@@ -970,36 +1004,37 @@ import './locales/index.js';
 				makableDiv.appendChild(makableSummary);
 				makableDiv.appendChild(makableFootnote);
 				makableDiv.appendChild(filterHelp);
+				const analysisStatus = document.createElement('div');
+				analysisStatus.className = 'sr-only';
+				analysisStatus.setAttribute('role', 'status');
+				makableDiv.appendChild(analysisStatus);
 
 				const makableRecipe = document.createElement('div');
 				makableRecipe.className = 'recipeFilter';
+				makableRecipe.setAttribute('aria-label', t('filterRecipes'));
+				const recipeFilterControls = createFilterControls(makableRecipe, filterHelp.id);
 				makableDiv.appendChild(makableRecipe);
 
 				const makableFilter = document.createElement('div');
 				makableFilter.className = 'foodFilter';
+				makableFilter.setAttribute('aria-label', t('filterIngredients'));
+				const ingredientFilterControls = createFilterControls(makableFilter, filterHelp.id);
 
 				idealIngredients.forEach(item => {
 					const img = makeImage(item.img);
 					img.dataset.id = item.key;
-					img.addEventListener('click', () => cycleFilterState(item.key, img), false);
-					img.addEventListener('contextmenu', event => {
-						event.preventDefault();
-						cycleFilterState(item.key, img, true);
+					const button = ingredientFilterControls.add(img, item.name, reverse => {
+						filters.cycleIngredient(item.key, reverse);
+						ingredientFilterControls.update(button, filters.ingredientState(item.key));
+						analysisStatus.textContent = button.getAttribute('aria-label');
+						makableTable.update();
 					});
-					displayFilterState(img, filters.ingredientState(item.key));
+					ingredientFilterControls.update(button, filters.ingredientState(item.key));
 					img.title = item.name;
-					makableFilter.appendChild(img);
+					makableFilter.appendChild(button);
 				});
 
 				makableDiv.appendChild(makableFilter);
-
-				const customFilterHolder = document.createElement('div');
-
-				const customFilterInput = document.createElement('input');
-				customFilterInput.type = 'text';
-				customFilterInput.placeholder = t('customFilterPlaceholder');
-				customFilterInput.className = 'customFilterInput';
-				customFilterHolder.appendChild(customFilterInput);
 
 				makableDiv.appendChild(makableTable);
 				makableButton.after(makableDiv);
@@ -1016,9 +1051,13 @@ import './locales/index.js';
 				isCalculating = true;
 
 				// Set button state BEFORE starting calculation
+				const calculationFocused = document.activeElement === makableButton;
 				updateMakableButtonLabel();
 				makableButton.disabled = true;
 				makableSummary.appendChild(deleteButton);
+				if (calculationFocused) {
+					deleteButton.focus();
+				}
 
 				const calculationControl = getRealRecipesFromCollection(
 					idealIngredients,
@@ -1038,24 +1077,28 @@ import './locales/index.js';
 							const img = makeImage(recipes[makableRecipes[i].toLowerCase()].img);
 
 							const recipeId = data.recipe.id;
-							recipeIcons.set(recipeId, img);
 							img.dataset.recipe = recipeId;
-							img.addEventListener('click', () => {
-								filters.cycleRecipe(recipeId);
-								updateRecipeFilters();
-							});
-							img.addEventListener('contextmenu', event => {
-								event.preventDefault();
-								filters.toggleRecipeExclusion(recipeId);
-								updateRecipeFilters();
-							});
-							displayFilterState(img, filters.recipeState(recipeId));
+							const button = recipeFilterControls.add(
+								img,
+								data.recipe.name,
+								reverse => {
+									if (reverse) {
+										filters.toggleRecipeExclusion(recipeId);
+									} else {
+										filters.cycleRecipe(recipeId);
+									}
+									updateRecipeFilters();
+									analysisStatus.textContent = button.getAttribute('aria-label');
+								},
+							);
+							recipeControls.set(recipeId, button);
+							recipeFilterControls.update(button, filters.recipeState(recipeId));
 							img.title = data.recipe.name;
 
 							if (i < makableRecipe.childNodes.length) {
-								makableRecipe.insertBefore(img, makableRecipe.childNodes[i]);
+								makableRecipe.insertBefore(button, makableRecipe.childNodes[i]);
 							} else {
-								makableRecipe.appendChild(img);
+								makableRecipe.appendChild(button);
 							}
 						}
 
@@ -1090,6 +1133,9 @@ import './locales/index.js';
 
 						// Remove pause button if it exists
 						if (pauseButton.parentNode) {
+							if (document.activeElement === pauseButton) {
+								deleteButton.focus();
+							}
 							pauseButton.parentNode.removeChild(pauseButton);
 						}
 
@@ -1109,6 +1155,9 @@ import './locales/index.js';
 							currentLimit += 500;
 							makableTable.setMaxRows(currentLimit);
 							if (currentLimit >= made.length) {
+								if (document.activeElement === showMoreButton) {
+									deleteButton.focus();
+								}
 								showMoreButton.style.display = 'none';
 							}
 							showMoreButton.textContent = t('showMoreResultsCount', {
@@ -1119,16 +1168,16 @@ import './locales/index.js';
 
 						const summaryText = t('foundValidRecipes', { count: made.length });
 						makableSummaryText.textContent = summaryText;
+						analysisStatus.textContent = summaryText;
 
 						if (made.length > 500) {
 							showMoreButton.textContent = t('showMoreResultsCount', {
 								shown: 500,
 								total: made.length,
 							});
-							makableSummary.appendChild(showMoreButton);
+							makableSummary.insertBefore(showMoreButton, deleteButton);
 						}
 
-						makableSummary.appendChild(deleteButton);
 						isCalculating = false;
 						updateMakableButtonLabel();
 						makableButton.disabled = false;
@@ -1136,6 +1185,7 @@ import './locales/index.js';
 				);
 				document.addEventListener('foodguide:localechange', updateMakableControls);
 				clearResults = () => {
+					const restoreFocus = makableDiv.contains(document.activeElement);
 					calculationControl.cancel();
 					makableDiv.remove();
 					makableTable.dispose();
@@ -1147,6 +1197,9 @@ import './locales/index.js';
 					isCalculating = false;
 					updateMakableButtonLabel();
 					makableButton.disabled = false;
+					if (restoreFocus) {
+						makableButton.focus();
+					}
 					clearResults = () => {};
 				};
 
@@ -1165,6 +1218,7 @@ import './locales/index.js';
 							count: made.length,
 						});
 					}
+					analysisStatus.textContent = makableSummaryText.textContent;
 				});
 			})();
 
@@ -1229,6 +1283,13 @@ import './locales/index.js';
 		}
 
 		slotElement.title = item ? item.name : '';
+		slotElement.setAttribute(
+			'aria-label',
+			item ? t('removeIngredient', { name: item.name }) : t('addIngredient'),
+		);
+		if (item) {
+			slotElement.firstElementChild?.setAttribute('aria-hidden', 'true');
+		}
 	};
 
 	const getSlot = (slotElement: Element | null): GuideItem | null => {
@@ -1262,7 +1323,10 @@ import './locales/index.js';
 			if (!parent.parentElement!.classList.contains('selectionpanel')) {
 				const panel = document.createElement('div');
 				panel.className = 'selectionpanel';
-				const title = document.createElement('div');
+				const title = document.createElement('h2');
+				title.id = `selected-ingredients-${index}`;
+				parent.setAttribute('role', 'group');
+				parent.setAttribute('aria-labelledby', title.id);
 				title.className = 'selectionpanel-title';
 				title.setAttribute(
 					'data-i18n',
@@ -1306,6 +1370,28 @@ import './locales/index.js';
 			const makable = requireElement('makable');
 			const clearSearchBtn = document.createElement('button');
 			const clearIngredientsBtn = document.createElement('button');
+			const pickerStatus = document.createElement('div');
+			pickerStatus.className = 'sr-only';
+			pickerStatus.setAttribute('role', 'status');
+			searchRow.appendChild(pickerStatus);
+			const pickerHelp = document.createElement('div');
+			pickerHelp.className = 'sr-only';
+			pickerHelp.id = `ingredient-help-${index}`;
+			pickerHelp.setAttribute('data-i18n', 'ingredientSearchHelp');
+			pickerHelp.textContent = t('ingredientSearchHelp');
+			searchRow.appendChild(pickerHelp);
+			picker.setAttribute('aria-describedby', pickerHelp.id);
+			const announceIngredient = (
+				key: 'ingredientAdded' | 'ingredientRemoved',
+				id?: string,
+			) => {
+				const item = id ? getCollectionItem(from, id) : undefined;
+				if (item) {
+					pickerStatus.replaceChildren(
+						document.createTextNode(t(key, { name: item.name })),
+					);
+				}
+			};
 
 			const ingredientActionTimers = new WeakMap<
 				HTMLElement,
@@ -1315,6 +1401,10 @@ import './locales/index.js';
 				if (!target) {
 					return;
 				}
+				const id = target.dataset.id;
+				pickerStatus.textContent = t('ingredientActionFailed', {
+					name: id ? getCollectionItem(from, id)?.name || id : t('tableIngredients'),
+				});
 
 				target.classList.remove('ingredient-action-error');
 				void target.offsetWidth;
@@ -1367,6 +1457,7 @@ import './locales/index.js';
 
 			const pickItem = (id: string, target: HTMLElement, isRemoval = false) => {
 				let result;
+				const removing = isRemoval || (!limited && slots.includes(id));
 
 				if (isRemoval) {
 					result = removeSlotById(id);
@@ -1378,6 +1469,8 @@ import './locales/index.js';
 
 				if (result === -1) {
 					flashIngredientActionError(target);
+				} else {
+					announceIngredient(removing ? 'ingredientRemoved' : 'ingredientAdded', id);
 				}
 			};
 
@@ -1385,27 +1478,28 @@ import './locales/index.js';
 				e.preventDefault();
 			};
 
-			let displaying = false;
-
 			const ensureEmptySlot = () => {
 				// Only for unlimited mode (Discovery page)
 				if (limited) {
 					return;
 				}
 
-				// Remove all existing empty slots first
-				const existingEmptySlots =
-					parent.querySelectorAll<HTMLElement>('.ingredient:empty');
-				existingEmptySlots.forEach(slot => {
-					// Only remove if it has no dataset.id (our placeholder slots)
-					if (!slot.dataset.id) {
-						parent.removeChild(slot);
+				// Preserve the add button so removing its neighbor does not lose focus.
+				const existingEmptySlot = parent.querySelector<HTMLElement>(
+					'.ingredient:not([data-id])',
+				);
+				if (existingEmptySlot) {
+					if (existingEmptySlot !== parent.lastElementChild) {
+						parent.appendChild(existingEmptySlot);
 					}
-				});
+					return;
+				}
 
 				// Add a single empty slot at the end
-				const emptySlot = document.createElement('span');
+				const emptySlot = document.createElement('button');
+				emptySlot.type = 'button';
 				emptySlot.className = 'ingredient';
+				setSlot(emptySlot, null);
 				emptySlot.addEventListener('click', () => {
 					picker.focus();
 				});
@@ -1443,7 +1537,8 @@ import './locales/index.js';
 				} else {
 					if (slots.indexOf(id) === -1) {
 						slots.push(id);
-						const i = document.createElement('span');
+						const i = document.createElement('button');
+						i.type = 'button';
 						i.className = 'ingredient';
 						setSlot(i, item);
 						i.addEventListener('click', removeSlot, false);
@@ -1466,6 +1561,7 @@ import './locales/index.js';
 
 			const liIntoPicker = function (this: HTMLElement, item: GuideItem) {
 				const img = makeImage(item.img);
+				img.setAttribute('aria-hidden', 'true');
 
 				img.title = item.name;
 
@@ -1514,6 +1610,7 @@ import './locales/index.js';
 						const removedId = target.dataset.id;
 						setSlot(target, null);
 						updateRecipes();
+						announceIngredient('ingredientRemoved', removedId);
 
 						return removedId;
 					} else {
@@ -1534,18 +1631,30 @@ import './locales/index.js';
 					const removedId = target.dataset.id;
 
 					slots.splice(i, 1);
+					const focused = target.contains(document.activeElement);
+					const nextSlot = target.nextElementSibling || target.previousElementSibling;
 					parent.removeChild(target);
 
 					// Ensure there's always an empty "+" slot at the end
 					ensureEmptySlot();
+					if (focused) {
+						if (nextSlot instanceof HTMLElement && nextSlot.isConnected) {
+							nextSlot.focus();
+						} else {
+							picker.focus();
+						}
+					}
 
 					updateRecipes();
+					announceIngredient('ingredientRemoved', removedId);
 
 					return removedId;
 				}
 			};
 
 			const refreshPicker = () => {
+				dropdown.hidden = false;
+				picker.setAttribute('aria-expanded', 'true');
 				selectedResult = -1;
 				picker.removeAttribute('aria-activedescendant');
 				searchSelectorControls.splitTag();
@@ -1581,6 +1690,8 @@ import './locales/index.js';
 					const result = appendSlot(matches[0].key);
 					if (result === -1) {
 						flashIngredientActionError(target);
+					} else {
+						announceIngredient('ingredientAdded', matches[0].key);
 					}
 				} else {
 					picker.value = name;
@@ -1877,6 +1988,7 @@ import './locales/index.js';
 					},
 				];
 			const baseSearchControls = createDropdown({
+				labelKey: 'pickerSearchType',
 				items: searchTypeKeys,
 				initialValue: 'name',
 				buttonClass: 'searchselector',
@@ -1938,6 +2050,10 @@ import './locales/index.js';
 			refreshPicker();
 
 			clearSearchBtn.className = 'clearingredients clearsearchbtn';
+			clearSearchBtn.type = 'button';
+			clearSearchBtn.setAttribute('data-i18n-attr-aria-label', 'clearSearch');
+			clearSearchBtn.setAttribute('aria-label', t('clearSearch'));
+			clearSearchBtn.setAttribute('data-i18n-attr-title', 'clearSearch');
 			clearSearchBtn.title = t('clearSearch');
 			// Use an inline SVG for clear search or just an X
 			clearSearchBtn.innerHTML = '<span>×</span>';
@@ -1946,9 +2062,14 @@ import './locales/index.js';
 				picker.value = '';
 				searchSelectorControls.setSearchType(0);
 				refreshPicker();
+				picker.focus();
 			});
 
 			clearIngredientsBtn.className = 'clearingredients clearingredientsbtn';
+			clearIngredientsBtn.type = 'button';
+			clearIngredientsBtn.setAttribute('data-i18n-attr-aria-label', 'clearIngredients');
+			clearIngredientsBtn.setAttribute('aria-label', t('clearIngredients'));
+			clearIngredientsBtn.setAttribute('data-i18n-attr-title', 'clearIngredients');
 			clearIngredientsBtn.title = t('clearIngredients');
 			// Use a trash can icon or similar
 			clearIngredientsBtn.innerHTML = '<span>🗑</span>'; // Using a trash emoji, or we can use SVG
@@ -1994,6 +2115,7 @@ import './locales/index.js';
 					ensureEmptySlot();
 					updateRecipes();
 				}
+				pickerStatus.textContent = t('ingredientsCleared');
 			});
 			// Display mode controls (Icons / Names / List)
 			const displayModeControls = createDropdown({
@@ -2026,6 +2148,7 @@ import './locales/index.js';
 
 			// Density controls
 			const densityControls = createDropdown({
+				labelKey: 'pickerDensity',
 				items: [
 					{ value: 'cozy', key: 'densityCozy' },
 					{ value: 'normal', key: 'densityNormal' },
@@ -2071,16 +2194,25 @@ import './locales/index.js';
 				}
 				const options = pickerOptions;
 				if (event.key === 'Enter' && options.length) {
+					if (dropdown.hidden) {
+						return;
+					}
 					event.preventDefault();
 					const target = options[Math.max(0, selectedResult)];
 					pickItem(target.key, target.element);
 					return;
 				}
 				if (event.key === 'Escape') {
+					dropdown.hidden = true;
+					picker.setAttribute('aria-expanded', 'false');
 					selectedResult = -1;
 				} else if (event.key === 'ArrowDown' && options.length) {
+					dropdown.hidden = false;
+					picker.setAttribute('aria-expanded', 'true');
 					selectedResult = (selectedResult + 1) % options.length;
 				} else if (event.key === 'ArrowUp' && options.length) {
+					dropdown.hidden = false;
+					picker.setAttribute('aria-expanded', 'true');
 					selectedResult = selectedResult <= 0 ? options.length - 1 : selectedResult - 1;
 				} else {
 					return;
@@ -2103,9 +2235,8 @@ import './locales/index.js';
 			picker.addEventListener(
 				'focus',
 				() => {
-					if (!displaying) {
-						displaying = true;
-					}
+					dropdown.hidden = false;
+					picker.setAttribute('aria-expanded', 'true');
 				},
 				false,
 			);
@@ -2113,8 +2244,11 @@ import './locales/index.js';
 			picker.addEventListener(
 				'blur',
 				() => {
-					if (displaying) {
-						displaying = false;
+					selectedResult = -1;
+					picker.removeAttribute('aria-activedescendant');
+					for (const { element } of pickerOptions) {
+						element.classList.remove('selected');
+						element.setAttribute('aria-selected', 'false');
 					}
 				},
 				false,
@@ -2156,6 +2290,15 @@ import './locales/index.js';
 				}
 			};
 			modeRefreshers.push(refreshSelection, refreshPicker, updateRecipes);
+			document.addEventListener('foodguide:localechange', () => {
+				for (const slot of parent.querySelectorAll<HTMLElement>('.ingredient')) {
+					const item = getSlot(slot);
+					slot.setAttribute(
+						'aria-label',
+						item ? t('removeIngredient', { name: item.name }) : t('addIngredient'),
+					);
+				}
+			});
 		}
 	})();
 
@@ -2250,6 +2393,7 @@ import './locales/index.js';
 		btn.title = gameVersions[name].name;
 
 		const img = makeImage(`img/${gameVersions[name].img}`);
+		img.setAttribute('aria-hidden', 'true');
 		img.title = gameVersions[name].name;
 		img.dataset.version = name;
 		btn.appendChild(img);
@@ -2284,6 +2428,7 @@ import './locales/index.js';
 		btn.title = `${dlcOptions[name].name}\n${t('dlcToggleHint')}`;
 
 		const img = makeImage(`img/${dlcOptions[name].img}`);
+		img.setAttribute('aria-hidden', 'true');
 		img.title = dlcOptions[name].name;
 		img.dataset.dlc = name;
 		btn.appendChild(img);
@@ -2320,6 +2465,7 @@ import './locales/index.js';
 		btn.title = `${characters[name].name}\n${t('characterToggleHint')}${abilityText}`;
 
 		const img = makeImage(`img/${characters[name].img}`);
+		img.setAttribute('aria-hidden', 'true');
 		img.dataset.character = name;
 		btn.appendChild(img);
 

@@ -15,8 +15,26 @@ import { registerLocale } from '../strings.js';
 /** @type {import('../strings.js').LocaleDict | Record<string, string>} */
 const dict = {
 	themeToggleTitle: 'Cambiar tema claro/oscuro',
+	themeSwitchToLight: 'Cambiar al tema claro',
+	themeSwitchToDark: 'Cambiar al tema oscuro',
 
 	languagePickerLabel: 'Idioma',
+	skipToContent: 'Saltar al contenido',
+	addIngredient: 'Añadir un ingrediente',
+	removeIngredient: 'Quitar {name}',
+	ingredientAdded: '{name} añadido.',
+	ingredientRemoved: '{name} quitado.',
+	ingredientActionFailed:
+		'No se puede cambiar {name}. La olla puede estar llena o el ingrediente no está seleccionado.',
+	ingredientsCleared: 'Todos los ingredientes eliminados.',
+	ingredientSearchHelp:
+		'Usa Arriba y Abajo para explorar los resultados, Intro para añadir y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
+	filterIngredients: 'Filtros de ingredientes',
+	filterRecipes: 'Filtros de recetas',
+	filterNormal: 'Normal',
+	filterRequired: 'Obligatorio',
+	filterExcluded: 'Excluido',
+	filterLabel: '{name}: {state}',
 	languagePickerTitle: 'Cambiar idioma',
 	languageNote:
 		'Las traducciones fueron generadas por Anthropic Claude Opus y pueden requerir revisión de la comunidad.',
@@ -69,6 +87,8 @@ const dict = {
 	displayModeIcons: 'Mostrar: Iconos',
 	displayModeList: 'Mostrar: Lista',
 	densityCozy: 'Cómodo',
+	pickerDensity: 'Densidad del selector',
+	pickerSearchType: 'Buscar por',
 	densityNormal: 'Normal',
 	densityCompact: 'Compacto',
 	sortDefault: 'Orden: Predeterminado',
@@ -92,7 +112,7 @@ const dict = {
 	computingCombinations: 'Calculando combinaciones..',
 	multipleResultsNote: '* la combinación tiene varios resultados posibles',
 	filterCycleHelp:
-		'Haz clic en ingredientes/recetas para alternar: normal → requerido (✓) → excluido (✕). Clic derecho para excluir rápido.',
+		'Usa las flechas para explorar cada grupo de filtros. Clic, Intro o Espacio alternan normal → obligatorio (✓) → excluido (✕). Mayús+Intro, Mayús+Espacio o clic derecho invierten los filtros de ingredientes o alternan la exclusión de recetas.',
 	customFilterPlaceholder: 'usar filtro personalizado',
 	foundValidRecipes: 'Se encontraron {count} recetas válidas.',
 	foundValidRecipesInProgress:
@@ -155,6 +175,7 @@ const dict = {
 	autoColumnsTitle:
 		'Ocultar automáticamente las columnas menos importantes en pantallas estrechas',
 	tableName: 'Nombre',
+	tableImage: 'Imagen',
 	tableInfo: 'Info',
 	tableMode: 'Modo',
 	tableHealth: 'Salud',

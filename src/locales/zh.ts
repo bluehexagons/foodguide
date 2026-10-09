@@ -15,8 +15,25 @@ import { registerLocale } from '../strings.js';
 /** @type {import('../strings.js').LocaleDict | Record<string, string>} */
 const dict = {
 	themeToggleTitle: '切换深色/浅色主题',
+	themeSwitchToLight: '切换到浅色主题',
+	themeSwitchToDark: '切换到深色主题',
 
 	languagePickerLabel: '语言',
+	skipToContent: '跳转到内容',
+	addIngredient: '添加食材',
+	removeIngredient: '移除 {name}',
+	ingredientAdded: '已添加 {name}。',
+	ingredientRemoved: '已移除 {name}。',
+	ingredientActionFailed: '无法更改 {name}。锅可能已满，或未选择该食材。',
+	ingredientsCleared: '已清除所有食材。',
+	ingredientSearchHelp:
+		'用上、下方向键浏览结果，按回车添加，按 Escape 隐藏结果。按 Tab 移至已选食材以移除。',
+	filterIngredients: '食材筛选',
+	filterRecipes: '配方筛选',
+	filterNormal: '普通',
+	filterRequired: '必需',
+	filterExcluded: '排除',
+	filterLabel: '{name}：{state}',
 	languagePickerTitle: '更改语言',
 	languageNote: '翻译由 Anthropic Claude Opus 生成,可能需要社区校对。',
 
@@ -66,6 +83,8 @@ const dict = {
 	displayModeIcons: '显示:图标',
 	displayModeList: '显示:列表',
 	densityCozy: '宽松',
+	pickerDensity: '选择器密度',
+	pickerSearchType: '搜索方式',
 	densityNormal: '标准',
 	densityCompact: '紧凑',
 	sortDefault: '排序:默认',
@@ -88,7 +107,8 @@ const dict = {
 	resume: '继续',
 	computingCombinations: '正在计算组合……',
 	multipleResultsNote: '* 该组合有多个可能结果',
-	filterCycleHelp: '点击食材/配方循环切换:普通 → 必需(✓) → 排除(✕)。右键可快速排除。',
+	filterCycleHelp:
+		'用方向键浏览各筛选组。点击、回车或空格循环切换：普通 → 必需(✓) → 排除(✕)。Shift+回车、Shift+空格或右键可反向切换食材筛选或切换配方排除状态。',
 	customFilterPlaceholder: '使用自定义过滤器',
 	foundValidRecipes: '找到 {count} 个有效配方。',
 	foundValidRecipesInProgress: '找到 {count} 个有效配方……(此过程中可切换标签页)',
@@ -143,6 +163,7 @@ const dict = {
 	autoColumns: '自动',
 	autoColumnsTitle: '在窄屏幕上自动隐藏次要列',
 	tableName: '名称',
+	tableImage: '图像',
 	tableInfo: '信息',
 	tableMode: '模式',
 	tableHealth: '生命',

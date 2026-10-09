@@ -37,6 +37,9 @@ export const createThemeController = ({
 			toggleButton.textContent = translate(
 				isDark() ? 'themeToggleToLight' : 'themeToggleToDark',
 			);
+			const label = translate(isDark() ? 'themeSwitchToLight' : 'themeSwitchToDark');
+			toggleButton.setAttribute('aria-label', label);
+			toggleButton.title = label;
 		}
 	};
 

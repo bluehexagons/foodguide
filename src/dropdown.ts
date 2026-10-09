@@ -13,6 +13,7 @@ interface FactoryOptions {
 interface DropdownOptions<T extends DropdownItem> {
 	items: T[];
 	initialValue: string;
+	labelKey?: StringKey;
 	buttonClass?: string;
 	dropdownClass?: string;
 	containerClass?: string;
@@ -20,6 +21,7 @@ interface DropdownOptions<T extends DropdownItem> {
 	storageKey?: string;
 	storageIndex?: string | number;
 }
+let nextDropdownId = 0;
 /**
  * Creates the small localized dropdown controls used by the ingredient picker.
  *
@@ -31,6 +33,7 @@ export const createDropdownFactory =
 	<T extends DropdownItem>({
 		items,
 		initialValue,
+		labelKey,
 		buttonClass = 'ui-dropdown-btn',
 		dropdownClass = 'ui-dropdown-list',
 		containerClass = 'ui-dropdown-container',
@@ -44,12 +47,16 @@ export const createDropdownFactory =
 		const container = documentRef.createElement('div');
 		container.className = containerClass;
 		const button = documentRef.createElement('button');
+		button.id = `picker-menu-button-${nextDropdownId++}`;
 		button.type = 'button';
 		button.setAttribute('aria-haspopup', 'menu');
 		button.setAttribute('aria-expanded', 'false');
 		button.className =
 			buttonClass === 'ui-dropdown-btn' ? buttonClass : `ui-dropdown-btn ${buttonClass}`;
 		const dropdown = documentRef.createElement('div');
+		dropdown.id = `${button.id}-options`;
+		button.setAttribute('aria-controls', dropdown.id);
+		dropdown.setAttribute('aria-labelledby', button.id);
 		dropdown.setAttribute('role', 'menu');
 		dropdown.className = dropdownClass;
 		dropdown.style.display = 'none';
@@ -122,6 +129,9 @@ export const createDropdownFactory =
 		};
 		const updateLabels = () => {
 			setText(button, getItem());
+			if (labelKey) {
+				button.setAttribute('aria-label', `${translate(labelKey)}: ${button.textContent}`);
+			}
 			for (const child of options) {
 				const item = items.find(option => option.value === child.dataset.value);
 				if (item) {

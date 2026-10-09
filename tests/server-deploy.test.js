@@ -39,6 +39,7 @@ await writeFile('html/img/sprites/sprites.json', '{"generated":true}');
 			version: '1.0.0',
 			scripts: {
 				preinstall: 'node -e "process.exit(1)"',
+				build: 'node generate.mjs',
 				'generate-sprites': 'node generate.mjs',
 			},
 		}),

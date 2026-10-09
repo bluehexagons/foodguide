@@ -1,11 +1,12 @@
 # Deployment
 
-Deploy the complete `html/` directory after generating sprites. There is no
-bundler build, but `html/img/sprites/` is ignored by Git and must be created for
+Deploy the complete `html/` directory after compiling the modules and generating sprites.
+The compiler output and `html/img/sprites/` is ignored by Git and must be created for
 each checkout.
 
 ```bash
 npm ci --ignore-scripts
+npm run build
 npm run generate-sprites
 ```
 
@@ -63,7 +64,7 @@ changes.
 
 Each invocation locks the deployment checkout, fetches `origin/main`, resets the
 checkout to that revision, installs the lockfile with lifecycle scripts disabled,
-generates sprites, and copies `html/` with `rsync --delete`. Local changes in the
+compiles modules, generates sprites, and copies `html/` with `rsync --delete`. Local changes in the
 deployment checkout are discarded. A dependency installation or sprite build
 failure stops before copying files to the serving directory. The final rsync
 updates files in place and does not provide an atomic directory swap.

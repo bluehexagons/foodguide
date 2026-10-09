@@ -7,5 +7,6 @@
  * there is no exported value here. Add new locales by creating a sibling
  * file and importing it below.
  */
+
 import './es.js';
 import './zh.js';

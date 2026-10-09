@@ -14,10 +14,22 @@
  * against a missing browser document. DOM helpers are not re-exported here;
  * import them directly via `foodguide/utils` when running in a browser.
  */
+
 import './locales/index.js';
+
 export * from './constants.js';
 export * from './functions.js';
 export * from './mode-utils.js';
 export { food } from './food.js';
 export { recipes, updateFoodRecipes } from './recipes.js';
-export { t, setLocale, registerLocale, getLocale, listLocales, localeName, initLocale, applyTranslations, strings, } from './strings.js';
+export {
+	t,
+	setLocale,
+	registerLocale,
+	getLocale,
+	listLocales,
+	localeName,
+	initLocale,
+	applyTranslations,
+	strings,
+} from './strings.js';

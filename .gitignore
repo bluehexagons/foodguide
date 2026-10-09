@@ -6,3 +6,8 @@ Desktop.ini
 .DS_Store
 Thumbs.db
 html/img/sprites/
+
+# TypeScript output; edit src/ instead.
+/html/**/*.js
+/html/**/*.d.ts
+/html/**/*.js.map

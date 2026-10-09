@@ -10,6 +10,10 @@ const foods: TableOptions<Food> = {
 		return row;
 	},
 	defaultSort: 'health',
+	linkCallback: (key, control) => {
+		key satisfies string;
+		control satisfies HTMLElement;
+	},
 };
 
 const cooking: TableOptions<CalculatorRow> = {
@@ -30,6 +34,12 @@ const invalidDefault: TableOptions<Food> = {
 	// @ts-expect-error Default sorting must refer to a property of the dataset.
 	defaultSort: 'missing',
 };
+const invalidLinkCallback: TableOptions<Food> = {
+	...foods,
+	// @ts-expect-error Table actions receive a link key, independent of the clicked child.
+	linkCallback: (_event: Event) => {},
+};
 void cooking;
 void invalidHeader;
 void invalidDefault;
+void invalidLinkCallback;

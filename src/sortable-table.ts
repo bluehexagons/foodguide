@@ -30,7 +30,7 @@ export interface TableOptions<T extends SortRow> {
 	rowGenerator: (item: T) => HTMLTableRowElement;
 	defaultSort: TableSortKey<T>;
 	summaryRows?: number;
-	linkCallback?: (event: Event) => void;
+	linkCallback?: (key: string, control: HTMLElement) => void;
 	highlightCallback?: (item: T, items: T[]) => boolean;
 	filterCallback?: (item: T) => boolean;
 	maxRows?: number;
@@ -129,7 +129,7 @@ export const createSortableTableFactory = ({
 		columnConfig,
 	}: TableOptions<T>) => {
 		let table = document.createElement('table');
-		let sorting: TableSortKey<T> | undefined;
+		let sorting = defaultSort;
 		let invertSort = false;
 		let firstHighlight: HTMLElement | null = null;
 		let lastHighlight: HTMLElement | null = null;
@@ -178,41 +178,14 @@ export const createSortableTableFactory = ({
 			}
 		};
 
-		const resolveSortKey = (value: string | null | undefined): TableSortKey<T> | undefined => {
-			for (const key of Object.values(headers)) {
-				if (key && key === value) {
-					return key;
-				}
-			}
+		const selectSort = (sortKey: TableSortKey<T>) => {
+			invertSort = sorting === sortKey ? !invertSort : false;
+			sorting = sortKey;
+			renderTable();
 		};
 
-		const sortDataset = (sortBy: TableSortKey<T>, shouldToggle: boolean) => {
-			if (shouldToggle) {
-				if (sorting === sortBy) {
-					invertSort = !invertSort;
-				} else {
-					sorting = sortBy;
-					invertSort = false;
-				}
-			}
-			sortTableRows(dataset, sortBy, { summaryRows, invert: invertSort });
-		};
-
-		const create = (
-			event: Event | null,
-			explicitSort?: string | null,
-			scrollHighlight = false,
-		) => {
-			const sortBy = resolveSortKey(
-				explicitSort ||
-					(event?.target instanceof HTMLElement
-						? event.target.dataset.sort
-						: undefined) ||
-					sorting,
-			);
-			if (sortBy) {
-				sortDataset(sortBy, Boolean(explicitSort || event));
-			}
+		const renderTable = (scrollHighlight = false) => {
+			sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
 
 			const headerRow = document.createElement('tr');
 			for (const header of headerKeys) {
@@ -228,13 +201,14 @@ export const createSortableTableFactory = ({
 				if (header.includes(':')) {
 					th.title = translateTableHint(header.split(':')[1]);
 				}
-				if (headers[header]) {
-					if (headers[header] === sorting) {
+				const sortKey = headers[header];
+				if (sortKey) {
+					if (sortKey === sorting) {
 						th.classList.add(invertSort ? 'sort-desc' : 'sort-asc');
 					}
 					th.style.cursor = 'pointer';
-					th.dataset.sort = headers[header];
-					th.addEventListener('click', event => create(event), false);
+					th.dataset.sort = sortKey;
+					th.addEventListener('click', () => selectSort(sortKey), false);
 				}
 				headerRow.appendChild(th);
 			}
@@ -267,9 +241,10 @@ export const createSortableTableFactory = ({
 
 			if (linkCallback) {
 				table.className = 'links';
-				Array.prototype.forEach.call(table.getElementsByClassName('link'), link =>
-					link.addEventListener('click', linkCallback, false),
-				);
+				for (const link of table.querySelectorAll<HTMLElement>('.link[data-link]')) {
+					const key = link.dataset.link!;
+					link.addEventListener('click', () => linkCallback(key, link), false);
+				}
 			}
 			applyColumnVisibility();
 			if (oldTable) {
@@ -296,12 +271,12 @@ export const createSortableTableFactory = ({
 			}
 		};
 
-		create(null, defaultSort);
+		renderTable();
 
 		const update = (scrollHighlight = false) => {
 			const scrollX = window.scrollX;
 			const scrollY = window.scrollY;
-			create(null, null, scrollHighlight);
+			renderTable(scrollHighlight);
 			requestAnimationFrame(() => window.scrollTo(scrollX, scrollY));
 		};
 		const setMaxRows = (max: number) => {

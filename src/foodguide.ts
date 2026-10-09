@@ -14,6 +14,8 @@ import type { StringKey } from './strings.js';
 import type { DropdownItem } from './dropdown.js';
 import { createSavedStateStore, restoreGameSelection } from './preferences.js';
 import { createFoodSelectionResolver } from './food-selection.js';
+import { createAnalysisFilters } from './analysis-filters.js';
+import type { FilterState } from './analysis-filters.js';
 import { getCollectionItem } from './collection.js';
 
 declare global {
@@ -32,11 +34,11 @@ const requireElement = (id: string): HTMLElement => {
 	}
 	return element;
 };
-const eventElement = (event: Event): HTMLElement => {
-	if (!(event.target instanceof HTMLElement)) {
-		throw new Error('Expected an element event target');
+const eventControl = (event: Event): HTMLElement => {
+	if (!(event.currentTarget instanceof HTMLElement)) {
+		throw new Error('Expected an element event listener');
 	}
-	return event.target;
+	return event.currentTarget;
 };
 
 /*
@@ -107,14 +109,6 @@ import './locales/index.js';
 		translate: t,
 		getStorage: () => window.localStorage,
 	});
-
-	/** If the click landed on an icon element, return its parent; otherwise return the target itself. */
-	const resolveIconTarget = (el: EventTarget | null): HTMLElement => {
-		if (!(el instanceof HTMLElement)) {
-			throw new Error('Expected an icon or element');
-		}
-		return el.tagName === 'IMG' || el.classList.contains('icon') ? el.parentElement || el : el;
-	};
 
 	const modeRefreshers: (() => void)[] = [];
 	const localeTables = new Set<SortableTable>();
@@ -332,7 +326,9 @@ import './locales/index.js';
 		);
 
 		if (document.getElementById('statistics')?.hasChildNodes()) {
-			requireElement('statistics').replaceChildren(makeRecipeGrinder(null, true));
+			statisticsGrinder?.dispose();
+			statisticsGrinder = makeRecipeGrinder(null, true);
+			requireElement('statistics').replaceChildren(statisticsGrinder.button);
 		}
 
 		// Update version button states
@@ -439,6 +435,7 @@ import './locales/index.js';
 	const getRealRecipesFromCollection = recipeAnalyzer.analyze;
 
 	let setTab: (id: string) => void;
+	let statisticsGrinder: ReturnType<typeof makeRecipeGrinder> | undefined;
 
 	(() => {
 		const navtabs = navbar.getElementsByTagName('li');
@@ -463,7 +460,8 @@ import './locales/index.js';
 
 			// Initialize statistics tab content on first visit
 			if (tabID === 'statistics' && !activePage.hasChildNodes()) {
-				activePage.appendChild(makeRecipeGrinder(null, true));
+				statisticsGrinder = makeRecipeGrinder(null, true);
+				activePage.appendChild(statisticsGrinder.button);
 			}
 		};
 
@@ -669,9 +667,6 @@ import './locales/index.js';
 	let foodHighlighted: Food[] = [];
 	let recipeHighlighted: Recipe[] = [];
 
-	const highlightKey = (input: Event | string) =>
-		typeof input === 'string' ? input : resolveIconTarget(input.target).dataset.link || '';
-
 	const highlightFoods = (name: string, { toggle = false } = {}) => {
 		if (toggle && foodHighlight === name) {
 			foodHighlight = '';
@@ -688,8 +683,7 @@ import './locales/index.js';
 		recipeTable.update(true);
 	};
 
-	const setHighlight = (input: Event | string, { navigateToFood = true } = {}) => {
-		const name = highlightKey(input);
+	const setHighlight = (name: string, { navigateToFood = true } = {}) => {
 		if (name.startsWith('recipe:') || name.startsWith('ingredient:')) {
 			setTab('crockpot');
 			highlightRecipes(name.startsWith('recipe:') ? `*${name.slice(7)}` : name);
@@ -701,10 +695,9 @@ import './locales/index.js';
 		}
 	};
 
-	const setFoodHighlight = (event: Event) => setHighlight(event, { navigateToFood: false });
+	const setFoodHighlight = (name: string) => setHighlight(name, { navigateToFood: false });
 
-	const setRecipeHighlight = (event: Event) => {
-		const name = highlightKey(event);
+	const setRecipeHighlight = (name: string) => {
 		const modeName = name.slice(name.indexOf(':') + 1);
 		if (Object.hasOwn(modes, modeName)) {
 			highlightRecipes(name);
@@ -809,8 +802,8 @@ import './locales/index.js';
 
 	const makeRecipeGrinder = (ingredients: Food[] | null, excludeDefault = false) => {
 		const makableButton = document.createElement('button');
-		let hasTable = false;
 		let isCalculating = false;
+		let clearResults = () => {};
 
 		const updateMakableButtonLabel = () => {
 			makableButton.textContent = isCalculating ? t('calculating') : t('calculateRecipes');
@@ -820,187 +813,43 @@ import './locales/index.js';
 		document.addEventListener('foodguide:localechange', updateMakableButtonLabel);
 		const initializeGrinder = () =>
 			(() => {
+				clearResults();
+				const availableIngredients = (ingredients ?? Array.from(food)).filter(testmode);
 				const idealIngredients: Food[] = [];
 				const makableRecipes: string[] = [];
-				const usedIngredients = new Set<string>();
-				const excludedIngredients = new Set<string>();
-				const excludedRecipes = new Set<string>();
-
-				let i = ingredients ? ingredients.length : 0;
-
-				let selectedRecipe: string | null = null;
-				let selectedRecipeElement: HTMLElement | null = null;
+				const recipeIcons = new Map<string, HTMLSpanElement>();
+				const filters = createAnalysisFilters({
+					excludedIngredients: excludeDefault
+						? availableIngredients
+								.filter(item => item.defaultExclude)
+								.map(item => item.key)
+						: [],
+					excludedRecipes: excludeDefault
+						? recipes.filter(item => item.defaultExclude).map(item => item.id)
+						: [],
+				});
 				let made: AnalysisRow[] = [];
 
 				const deleteButton = document.createElement('button');
 				deleteButton.appendChild(document.createTextNode(t('clearResults')));
 				deleteButton.className = 'deleteButton';
-				deleteButton.addEventListener('click', () => {
-					calculationControl?.cancel();
-					makableDiv.remove();
-					hasTable = false;
-					isCalculating = false;
-					if (updateMakableTexts) {
-						document.removeEventListener('foodguide:localechange', updateMakableTexts);
-					}
-					if (updateMakableControls) {
-						document.removeEventListener(
-							'foodguide:localechange',
-							updateMakableControls,
-						);
-					}
-					updateMakableButtonLabel();
-					makableButton.disabled = false;
-				});
-				if (hasTable) {
-					makableButton.nextSibling?.remove();
-				}
-				hasTable = true;
+				deleteButton.addEventListener('click', () => clearResults());
 
-				const checkExcludes = (item: Food) => excludedIngredients.has(item.key);
-				const checkIngredient = function (this: Food[], item: string) {
-					return this.includes(food[item]);
+				const displayFilterState = (icon: HTMLElement, state: FilterState) => {
+					icon.classList.toggle('selected', state === 'required');
+					icon.classList.toggle('excluded', state === 'excluded');
 				};
-
-				// Cycle through filter states: normal -> required -> excluded -> normal
-				const cycleFilterState = (target: HTMLElement, reverse = false) => {
-					const id = target.dataset.id || '';
-					const isRequired = usedIngredients.has(id);
-					const isExcluded = excludedIngredients.has(id);
-
-					// Determine current state
-					let currentState = 'normal';
-					if (isRequired) {
-						currentState = 'required';
-					} else if (isExcluded) {
-						currentState = 'excluded';
-					}
-
-					// Cycle to next state
-					let nextState;
-					if (reverse) {
-						// Reverse cycle for right-click: normal -> excluded -> required -> normal
-						if (currentState === 'normal') {
-							nextState = 'excluded';
-						} else if (currentState === 'excluded') {
-							nextState = 'required';
-						} else {
-							nextState = 'normal';
-						}
-					} else {
-						// Forward cycle for left-click: normal -> required -> excluded -> normal
-						if (currentState === 'normal') {
-							nextState = 'required';
-						} else if (currentState === 'required') {
-							nextState = 'excluded';
-						} else {
-							nextState = 'normal';
-						}
-					}
-
-					// Clear current state
-					usedIngredients.delete(id);
-					excludedIngredients.delete(id);
-					target.classList.remove('selected', 'excluded');
-
-					// Apply next state
-					if (nextState === 'required') {
-						usedIngredients.add(id);
-						target.classList.add('selected');
-					} else if (nextState === 'excluded') {
-						excludedIngredients.add(id);
-						target.classList.add('excluded');
-					}
-
+				const cycleFilterState = (id: string, icon: HTMLElement, reverse = false) => {
+					filters.cycleIngredient(id, reverse);
+					displayFilterState(icon, filters.ingredientState(id));
 					makableTable.update();
 				};
-
-				const toggleFilter = (e: Event) => {
-					cycleFilterState(eventElement(e), false);
-				};
-
-				const toggleExclude = (e: Event) => {
-					cycleFilterState(eventElement(e), true);
-					e.preventDefault();
-				};
-
-				const setRecipe = (e: Event) => {
-					const target = eventElement(e);
-					const recipeId = target.dataset.recipe || '';
-
-					// Clear all recipe selections first
-					for (const el of makableRecipe.querySelectorAll<HTMLElement>('.icon')) {
-						el.classList.remove('selected', 'excluded');
+				const updateRecipeFilters = () => {
+					for (const [id, icon] of recipeIcons) {
+						displayFilterState(icon, filters.recipeState(id));
 					}
-
-					// Cycle through: normal -> selected -> excluded -> normal
-					if (excludedRecipes.has(recipeId)) {
-						// Currently excluded -> go to normal
-						excludedRecipes.delete(recipeId);
-						selectedRecipeElement = null;
-						selectedRecipe = null;
-					} else if (selectedRecipe === recipeId) {
-						// Currently selected -> go to excluded
-						excludedRecipes.add(recipeId);
-						target.classList.add('excluded');
-						selectedRecipeElement = null;
-						selectedRecipe = null;
-					} else {
-						// Normal or other recipe selected -> select this one
-						excludedRecipes.clear();
-						selectedRecipe = recipeId;
-						selectedRecipeElement = target;
-						target.classList.add('selected');
-					}
-
 					makableTable.update();
 				};
-
-				const excludeRecipe = (e: Event) => {
-					const target = eventElement(e);
-					const recipeId = target.dataset.recipe || '';
-
-					// Clear selection
-					if (selectedRecipeElement) {
-						selectedRecipeElement.classList.remove('selected');
-						selectedRecipeElement = null;
-						selectedRecipe = null;
-					}
-
-					// Toggle excluded state (shortcut for right-click)
-					if (excludedRecipes.has(recipeId)) {
-						excludedRecipes.delete(recipeId);
-						target.classList.remove('excluded');
-					} else {
-						excludedRecipes.add(recipeId);
-						target.classList.add('excluded');
-					}
-
-					makableTable.update();
-
-					e.preventDefault();
-				};
-
-				//TODO: optimize so much around this
-				ingredients ||= Array.from(food);
-				ingredients = ingredients.filter(f =>
-					matchesMode(f.modeMask, modeMask, f.charMask, charMask),
-				);
-				i = ingredients!.length;
-
-				if (excludeDefault) {
-					for (const ingredient of ingredients
-						.filter(ingredient => ingredient.defaultExclude)
-						.map(ingredient => ingredient.key)) {
-						excludedIngredients.add(ingredient);
-					}
-
-					for (const recipe of recipes
-						.filter(recipe => recipe.defaultExclude)
-						.map(recipe => recipe.id)) {
-						excludedRecipes.add(recipe);
-					}
-				}
 
 				const tryPush = (ingredient: Food) => {
 					if (!ingredient.uncookable && !ingredient.skip) {
@@ -1008,8 +857,8 @@ import './locales/index.js';
 					}
 				};
 
-				while (i--) {
-					const ingredient = ingredients![i];
+				for (let i = availableIngredients.length - 1; i >= 0; i--) {
+					const ingredient = availableIngredients[i];
 					const cook = ingredient.cook,
 						dry = ingredient.dry,
 						raw = ingredient.raw,
@@ -1092,11 +941,7 @@ import './locales/index.js';
 						);
 					},
 					defaultSort: 'hungerpls',
-					filterCallback: data =>
-						(!selectedRecipe || data.recipe.id === selectedRecipe) &&
-						!excludedRecipes.has(data.recipe.id) &&
-						(excludedIngredients.size === 0 || !data.ingredients.some(checkExcludes)) &&
-						[...usedIngredients].every(checkIngredient, data.ingredients),
+					filterCallback: filters.matches,
 					maxRows: 25,
 					columnConfig: {
 						toggleable: true,
@@ -1152,11 +997,12 @@ import './locales/index.js';
 				idealIngredients.forEach(item => {
 					const img = makeImage(item.img);
 					img.dataset.id = item.key;
-					img.addEventListener('click', toggleFilter, false);
-					img.addEventListener('contextmenu', toggleExclude, false);
-					if (excludedIngredients.has(item.key)) {
-						img.className = 'excluded';
-					}
+					img.addEventListener('click', () => cycleFilterState(item.key, img), false);
+					img.addEventListener('contextmenu', event => {
+						event.preventDefault();
+						cycleFilterState(item.key, img, true);
+					});
+					displayFilterState(img, filters.ingredientState(item.key));
 					img.title = item.name;
 					makableFilter.appendChild(img);
 				});
@@ -1207,12 +1053,19 @@ import './locales/index.js';
 
 							const img = makeImage(recipes[makableRecipes[i].toLowerCase()].img);
 
-							img.dataset.recipe = makableRecipes[i];
-							img.addEventListener('click', setRecipe, false);
-							img.addEventListener('contextmenu', excludeRecipe, false);
-							if (excludedRecipes.has(data.recipe.id)) {
-								img.className = 'excluded';
-							}
+							const recipeId = data.recipe.id;
+							recipeIcons.set(recipeId, img);
+							img.dataset.recipe = recipeId;
+							img.addEventListener('click', () => {
+								filters.cycleRecipe(recipeId);
+								updateRecipeFilters();
+							});
+							img.addEventListener('contextmenu', event => {
+								event.preventDefault();
+								filters.toggleRecipeExclusion(recipeId);
+								updateRecipeFilters();
+							});
+							displayFilterState(img, filters.recipeState(recipeId));
 							img.title = data.recipe.name;
 
 							if (i < makableRecipe.childNodes.length) {
@@ -1298,6 +1151,21 @@ import './locales/index.js';
 					},
 				);
 				document.addEventListener('foodguide:localechange', updateMakableControls);
+				clearResults = () => {
+					calculationControl.cancel();
+					makableDiv.remove();
+					localeTables.delete(makableTable);
+					responsiveTables.delete(makableTable);
+					document.removeEventListener('foodguide:localechange', updateMakableTexts);
+					document.removeEventListener('foodguide:localechange', updateMakableControls);
+					if (window.analysis?.made === made) {
+						window.analysis = { made: [] };
+					}
+					isCalculating = false;
+					updateMakableButtonLabel();
+					makableButton.disabled = false;
+					clearResults = () => {};
+				};
 
 				// Add pause/resume button functionality
 				pauseButton.addEventListener('click', () => {
@@ -1319,13 +1187,21 @@ import './locales/index.js';
 
 		makableButton.addEventListener('click', initializeGrinder, false);
 
-		return makableButton;
+		return {
+			button: makableButton,
+			clearResults: () => clearResults(),
+			dispose: () => {
+				clearResults();
+				document.removeEventListener('foodguide:localechange', updateMakableButtonLabel);
+			},
+		};
 	};
 
 	// Initialize statistics content after the grinder factory is available.
 	const statisticsEl = document.getElementById('statistics');
 	if (savedState.activeTab === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
-		statisticsEl.appendChild(makeRecipeGrinder(null, true));
+		statisticsGrinder = makeRecipeGrinder(null, true);
+		statisticsEl.appendChild(statisticsGrinder.button);
 	}
 
 	const highestPriority = (array: CalculatorRow[]) => {
@@ -1422,6 +1298,7 @@ import './locales/index.js';
 			}
 			const fixedSlots = Array.from(parent.querySelectorAll<HTMLElement>('.ingredient'));
 			const slots: string[] = [];
+			let pickerOptions: { element: HTMLSpanElement; key: string }[] = [];
 
 			const searchRow = document.createElement('div');
 			searchRow.className = 'ingredient-search-row';
@@ -1505,18 +1382,8 @@ import './locales/index.js';
 				return i;
 			};
 
-			const pickItem = (e: MouseEvent) => {
-				const target = e.currentTarget;
-				if (!(target instanceof HTMLElement)) {
-					throw new Error('Expected an ingredient option');
-				}
-				const id = target.dataset.id || '';
-				const isRemoval = e.button === 2;
+			const pickItem = (id: string, target: HTMLElement, isRemoval = false) => {
 				let result;
-
-				if (e.button !== 0 && !isRemoval) {
-					return;
-				}
 
 				if (isRemoval) {
 					result = removeSlotById(id);
@@ -1526,11 +1393,8 @@ import './locales/index.js';
 					result = appendSlot(id);
 				}
 
-				if (result !== -1) {
-					e.preventDefault();
-				} else {
+				if (result === -1) {
 					flashIngredientActionError(target);
-					e.preventDefault();
 				}
 			};
 
@@ -1632,16 +1496,20 @@ import './locales/index.js';
 				li.appendChild(name);
 
 				li.dataset.id = item.key;
-				li.id = `ingredient-result-${index}-${this.dataset.length}`;
+				li.id = `ingredient-result-${index}-${pickerOptions.length}`;
 				li.setAttribute('role', 'option');
 				li.setAttribute('aria-label', item.name);
 				li.setAttribute('aria-selected', 'false');
 
-				li.addEventListener('mousedown', pickItem, false);
+				li.addEventListener('mousedown', event => {
+					if (event.button === 0 || event.button === 2) {
+						event.preventDefault();
+						pickItem(item.key, li, event.button === 2);
+					}
+				});
 				li.addEventListener('contextmenu', suppressIngredientContextMenu, false);
 				this.appendChild(li);
-
-				this.dataset.length = String(Number(this.dataset.length) + 1);
+				pickerOptions.push({ element: li, key: item.key });
 			};
 
 			const updateFaded = (el: HTMLElement) => {
@@ -1655,7 +1523,7 @@ import './locales/index.js';
 			};
 
 			const removeSlot = (e: Event) => {
-				const target = resolveIconTarget(e.target);
+				const target = eventControl(e);
 				e.preventDefault();
 
 				if (limited) {
@@ -1717,15 +1585,13 @@ import './locales/index.js';
 				dropdown.removeChild(ul);
 
 				ul = document.createElement('div');
-				ul.dataset.length = '0';
+				pickerOptions = [];
 				names.forEach(liIntoPicker, ul);
 
 				dropdown.appendChild(ul);
 			};
 
-			const searchFor = (e: Event) => {
-				const target = resolveIconTarget(e.target);
-				const name = target.dataset.link || '';
+			const searchFor = (name: string, target: HTMLElement) => {
 				const matches = matchingNames(from, name, allowUncookable);
 
 				if (matches.length === 1) {
@@ -1853,7 +1719,10 @@ import './locales/index.js';
 				};
 			} else if (parent.id === 'inventory') {
 				//discovery
+				let discoveryGrinder: ReturnType<typeof makeRecipeGrinder> | undefined;
 				updateRecipes = () => {
+					discoveryGrinder?.dispose();
+					discoveryGrinder = undefined;
 					ingredients = Array.from(parent.querySelectorAll<HTMLElement>('.ingredient'))
 						.map(slot => {
 							const item = getSlot(slot);
@@ -1886,7 +1755,7 @@ import './locales/index.js';
 							dataset: ingredients.filter((item): item is Food => item !== null),
 							rowGenerator: makeFoodRow,
 							defaultSort: 'name',
-							linkCallback: setHighlight,
+							linkCallback: name => setHighlight(name),
 							columnConfig: {
 								toggleable: true,
 								columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
@@ -1916,7 +1785,7 @@ import './locales/index.js';
 								dataset: inventoryrecipes,
 								rowGenerator: makeRecipeRow,
 								defaultSort: 'name',
-								linkCallback: setHighlight,
+								linkCallback: name => setHighlight(name),
 								columnConfig: {
 									toggleable: true,
 									columns: [
@@ -1935,11 +1804,10 @@ import './locales/index.js';
 
 							discover.appendChild(table);
 
-							makable.appendChild(
-								makeRecipeGrinder(
-									ingredients.filter((item): item is Food => item !== null),
-								),
+							discoveryGrinder = makeRecipeGrinder(
+								ingredients.filter((item): item is Food => item !== null),
 							);
+							makable.appendChild(discoveryGrinder.button);
 						}
 					}
 
@@ -2070,19 +1938,7 @@ import './locales/index.js';
 				false,
 			);
 
-			(() => {
-				const names = matchingNames(
-					from,
-					searchSelectorControls.getSearch(),
-					allowUncookable,
-				);
-
-				dropdown.removeChild(ul);
-				ul = document.createElement('div');
-				ul.dataset.length = '0';
-				names.forEach(liIntoPicker, ul);
-				dropdown.appendChild(ul);
-			})();
+			refreshPicker();
 
 			clearSearchBtn.className = 'clearingredients clearsearchbtn';
 			clearSearchBtn.title = t('clearSearch');
@@ -2216,13 +2072,11 @@ import './locales/index.js';
 				if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
 					return;
 				}
-				const options = Array.from(ul.children);
+				const options = pickerOptions;
 				if (event.key === 'Enter' && options.length) {
 					event.preventDefault();
 					const target = options[Math.max(0, selectedResult)];
-					target.dispatchEvent(
-						new MouseEvent('mousedown', { button: 0, bubbles: true, cancelable: true }),
-					);
+					pickItem(target.key, target.element);
 					return;
 				}
 				if (event.key === 'Escape') {
@@ -2235,15 +2089,15 @@ import './locales/index.js';
 					return;
 				}
 				event.preventDefault();
-				options.forEach((option, optionIndex) => {
+				options.forEach(({ element: option }, optionIndex) => {
 					const selected = optionIndex === selectedResult;
 					option.classList.toggle('selected', selected);
 					option.setAttribute('aria-selected', String(selected));
 				});
 				const activeOption = options[selectedResult];
 				if (activeOption) {
-					picker.setAttribute('aria-activedescendant', activeOption.id);
-					activeOption.scrollIntoView({ block: 'nearest' });
+					picker.setAttribute('aria-activedescendant', activeOption.element.id);
+					activeOption.element.scrollIntoView({ block: 'nearest' });
 				} else {
 					picker.removeAttribute('aria-activedescendant');
 				}
@@ -2310,9 +2164,7 @@ import './locales/index.js';
 
 	// --- Mode selector UI ---
 
-	const selectVersion = (e: Event) => {
-		const target = resolveIconTarget(e.target);
-		const versionName = target.dataset.version;
+	const selectVersion = (versionName: string) => {
 		if (!versionName || !gameVersions[versionName]) {
 			return;
 		}
@@ -2327,9 +2179,7 @@ import './locales/index.js';
 		setMode();
 	};
 
-	const toggleDlc = (e: Event) => {
-		const target = resolveIconTarget(e.target);
-		const dlcKey = target.dataset.dlc;
+	const toggleDlc = (dlcKey: string) => {
 		if (!dlcKey || !dlcOptions[dlcKey]) {
 			return;
 		}
@@ -2344,9 +2194,7 @@ import './locales/index.js';
 		setMode();
 	};
 
-	const selectCharacter = (e: Event) => {
-		const target = resolveIconTarget(e.target);
-		const charName = target.dataset.character || '';
+	const selectCharacter = (charName: string) => {
 		if (!charName || !characters[charName]) {
 			return;
 		}
@@ -2401,7 +2249,7 @@ import './locales/index.js';
 		btn.setAttribute('aria-label', gameVersions[name].name);
 		btn.className = 'mode-btn version-btn';
 		btn.dataset.version = name;
-		btn.addEventListener('click', selectVersion, false);
+		btn.addEventListener('click', () => selectVersion(name), false);
 		btn.title = gameVersions[name].name;
 
 		const img = makeImage(`img/${gameVersions[name].img}`);
@@ -2435,7 +2283,7 @@ import './locales/index.js';
 		btn.setAttribute('aria-label', dlcOptions[name].name);
 		btn.className = 'mode-btn dlc-btn';
 		btn.dataset.dlc = name;
-		btn.addEventListener('click', toggleDlc, false);
+		btn.addEventListener('click', () => toggleDlc(name), false);
 		btn.title = `${dlcOptions[name].name}\n${t('dlcToggleHint')}`;
 
 		const img = makeImage(`img/${dlcOptions[name].img}`);
@@ -2469,7 +2317,7 @@ import './locales/index.js';
 		btn.setAttribute('aria-label', characters[name].name);
 		btn.className = 'mode-btn char-btn';
 		btn.dataset.character = name;
-		btn.addEventListener('click', selectCharacter, false);
+		btn.addEventListener('click', () => selectCharacter(name), false);
 		const charAbilities = getCharacterAbilities(name, characters);
 		const abilityText = charAbilities.length > 0 ? `\n${charAbilities.join('\n')}` : '';
 		btn.title = `${characters[name].name}\n${t('characterToggleHint')}${abilityText}`;

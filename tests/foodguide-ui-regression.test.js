@@ -28,29 +28,9 @@ describe('foodguide UI regressions', () => {
 		assert.doesNotMatch(foodguideSource, /picker\.addEventListener\('keyup'/);
 	});
 
-	it('ingredient picker supports right-click remove without opening the browser context menu', () => {
-		assert.match(foodguideSource, /const isRemoval = e\.button === 2;/);
-		assert.match(foodguideSource, /result = removeSlotById\(id\);/);
-		assert.match(
-			foodguideSource,
-			/else if \(!limited && slots\.indexOf\(id\) !== -1\) {\s+result = removeSlotById\(id\);/m,
-		);
-		assert.match(
-			foodguideSource,
-			/li\.addEventListener\('contextmenu', suppressIngredientContextMenu, false\);/,
-		);
-	});
-
-	it('ingredient picker flashes an item-level error when add or remove cannot apply', () => {
-		assert.match(foodguideSource, /const flashIngredientActionError = \(?target\)? =>/);
-		assert.match(foodguideSource, /flashIngredientActionError\(target\);/);
+	it('ingredient action errors have visible feedback and an animation', () => {
 		assert.match(componentsCss, /\.ingredient-action-error/);
 		assert.match(componentsCss, /@keyframes ingredient-action-error/);
-	});
-
-	it('cancels an in-progress statistics calculation when results are cleared', () => {
-		assert.match(foodguideSource, /calculationControl\?\.cancel\(\);/);
-		assert.match(foodguideSource, /makableSummary\.appendChild\(deleteButton\);/);
 	});
 
 	it('shares one resize listener across rebuilt responsive tables', () => {

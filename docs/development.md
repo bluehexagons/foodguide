@@ -54,6 +54,7 @@ Go is unavailable; the application itself does not require Go.
 | `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.   |
 | `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
 | `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.    |
+| `src/analysis-filters.ts`                                             | Analyzer filter states and result matching without DOM state. |
 | `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                  |
 | `html/style/`, `html/img/`                                            | Styles and original icon assets.                              |
 | `tools/generate-sprites.ts`                                           | Sprite sheet generator using Sharp.                           |
@@ -81,6 +82,19 @@ Sortable tables take a `TableOptions<T>` object. Column sort keys and the defaul
 sort are checked against the row type; summary rows have an explicit count.
 The shared sorter preserves the dataset's identity and leaves summary rows above
 the sorted results. Search results use the same name comparator as tables.
+
+Bind control actions to their known keys or listener elements. The clicked child
+(`event.target`) can be an icon or a nested label; use `event.currentTarget` when
+the handler needs the element that owns the listener. Table link callbacks receive
+the link key and its control element, and sortable headers capture a typed sort
+key. Picker mouse and keyboard input call the same action directly.
+
+Analyzer filter state lives in `analysis-filters.ts`; its state queries drive both
+icon classes and result matching. Preserve structural classes such as `icon` when
+updating a filter's appearance. Analyzer controllers expose `dispose()` to cancel
+work, remove translation listeners, and release their table registrations when
+inputs or game settings change. Browser regressions cover nested labels, mouse
+and keyboard entry, filter cycles, and calculation cleanup.
 
 ## Updating assets and data
 

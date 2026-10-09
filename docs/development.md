@@ -69,5 +69,5 @@ after a version change, and run `npm run check` before committing. Review major
 version changes against upstream release notes. GitHub Actions are pinned to
 full commit SHAs; update the version comment with each pin.
 
-CI runs on pushes and pull requests targeting `main`. The deployment workflow
-also runs the shared checks before publishing.
+CI runs dependency audits and checks on pushes and pull requests targeting `main`.
+The deployment workflow also runs the shared checks before publishing.

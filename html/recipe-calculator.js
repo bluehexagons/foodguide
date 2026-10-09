@@ -42,7 +42,7 @@ const requirementMatchesItem = (requirements, item) => {
  */
 export const createRecipeCalculator = ({ getModeMask, getCharMask, getStatMultipliers }) => {
 	const matchingNames = (collection, search, includeUncookable) => {
-		let name = search.toLowerCase();
+		let name = search.trim().toLowerCase();
 		const modeMask = getModeMask();
 		const charMask = getCharMask();
 		let matches = collection.filter(element => {
@@ -113,20 +113,22 @@ export const createRecipeCalculator = ({ getModeMask, getCharMask, getStatMultip
 				.sort(compareByMatch);
 		}
 
+		name = name.replaceAll('_', ' ');
 		const escapedName = escapeRegExp(name);
 		const wordStarts = new RegExp(`\\b${escapedName}.*`);
 		const anywhere = new RegExp(`\\b${[...name].map(escapeRegExp).join('.*')}.*`);
 
 		return matches
 			.filter(element => {
+				const alias = element.id?.replaceAll('_', ' ') || '';
 				if (
 					element.lowerName.startsWith(name) ||
 					(element.raw && element.raw.lowerName.startsWith(name))
 				) {
 					element.match = 3;
-				} else if (wordStarts.test(element.lowerName)) {
+				} else if (wordStarts.test(element.lowerName) || wordStarts.test(alias)) {
 					element.match = 2;
-				} else if (anywhere.test(element.lowerName)) {
+				} else if (anywhere.test(element.lowerName) || anywhere.test(alias)) {
 					element.match = 1;
 				} else {
 					element.match = 0;
@@ -237,12 +239,12 @@ export const createRecipeCalculator = ({ getModeMask, getCharMask, getStatMultip
 export const combinationGenerator = (length, callback, startPos) => {
 	const size = 4;
 	const current = startPos || [0, 0, 0, 0];
-
-	if (length <= 0) {
-		return () => false;
-	}
+	let complete = length <= 0;
 
 	return batch => {
+		if (complete) {
+			return false;
+		}
 		while (batch--) {
 			callback(current);
 			current[0]++;
@@ -250,6 +252,10 @@ export const combinationGenerator = (length, callback, startPos) => {
 
 			while (current[overflow] >= length) {
 				overflow++;
+				if (overflow === size) {
+					complete = true;
+					return false;
+				}
 				current[overflow]++;
 			}
 
@@ -262,10 +268,6 @@ export const combinationGenerator = (length, callback, startPos) => {
 				} else if (current[check] > max) {
 					max = current[check];
 				}
-			}
-
-			if (overflow === size) {
-				return false;
 			}
 		}
 

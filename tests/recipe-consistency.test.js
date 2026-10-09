@@ -101,14 +101,6 @@ describe('cancel/exclusion consistency', () => {
 	});
 });
 
-describe('NAME vs SPECIFIC cooked-variant consistency', () => {
-	it('recipes using NAME() accept cooked variants in test()', () => {
-		// This test documents that NAME() requirements match both raw and cooked variants.
-		// Actual cooked-variant behavior is tested in recipe-matcher.test.js.
-		assert.ok(true, 'NAME/SPECIFIC analysis complete');
-	});
-});
-
 describe('individual food item qualification', () => {
 	it('every food item can be evaluated against every recipe without errors', () => {
 		const errors = [];

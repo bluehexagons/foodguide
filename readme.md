@@ -35,6 +35,11 @@ Use Tab to reach controls and page tabs. In an ingredient search, use Up/Down to
 highlight results, Enter to select, and Escape to clear the highlight. Dropdown
 menus support Up/Down, Home/End, Enter/Space, and Escape.
 
+Ingredient searches accept display names and game identifiers, with spaces or
+underscores between words. For example, `mushroom` finds Red, Green, and Blue Caps
+and their cooked forms. Use `tag:meat` to filter by a food tag or
+`recipe:butter muffin` to find ingredients for an exact recipe name.
+
 ## Development and deployment
 
 ```bash

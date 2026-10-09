@@ -131,6 +131,13 @@ test('loads the guide, assets, translations, and a rendered food table', async (
 		await page.keyboard.press('Enter');
 
 		const search = page.locator('#simulator .ingredientpicker');
+		await search.fill('mushroom');
+		for (const name of ['Red Cap', 'Green Cap', 'Blue Cap']) {
+			assert.equal(
+				await page.locator(`#simulator [role="option"][aria-label="${name}"]`).count(),
+				1,
+			);
+		}
 		for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
 			await search.fill(name);
 			await search.press('ArrowDown');

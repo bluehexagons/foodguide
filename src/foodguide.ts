@@ -655,87 +655,65 @@ import './locales/index.js';
 	let foodHighlighted: Food[] = [];
 	let recipeHighlighted: Recipe[] = [];
 
-	const setHighlight = (e: Event | string) => {
-		let name = typeof e === 'string' ? e : resolveIconTarget(e.target).dataset.link || '';
+	const highlightKey = (input: Event | string) =>
+		typeof input === 'string' ? input : resolveIconTarget(input.target).dataset.link || '';
 
-		if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
-			setTab('crockpot');
-
-			if (name.substring(0, 7) === 'recipe:') {
-				name = `*${name.substring(7)}`;
-			}
-
-			recipeHighlighted = matchingNames(recipes, name);
-			recipeTable.update(true);
+	const highlightFoods = (name: string, { toggle = false } = {}) => {
+		if (toggle && foodHighlight === name) {
+			foodHighlight = '';
+			foodHighlighted = [];
 		} else {
-			setTab('foodlist');
-
-			if (foodHighlight !== name) {
-				foodHighlight = name;
-				foodHighlighted = matchingNames(food, name);
-			} else {
-				foodHighlight = '';
-				foodHighlighted.length = 0;
-			}
-
-			foodTable.update(true);
-		}
-	};
-
-	const setFoodHighlight = (e: Event) => {
-		let name = typeof e === 'string' ? e : resolveIconTarget(e.target).dataset.link || '';
-
-		if (name.substring(0, 7) === 'recipe:' || name.substring(0, 11) === 'ingredient:') {
-			setTab('crockpot');
-
-			if (name.substring(0, 7) === 'recipe:') {
-				name = `*${name.substring(7)}`;
-			}
-
-			recipeHighlighted = matchingNames(recipes, name);
-			recipeTable.update(true);
-		} else {
-			if (foodHighlight !== name) {
-				foodHighlight = name;
-				foodHighlighted = matchingNames(food, name);
-			} else {
-				foodHighlight = '';
-				foodHighlighted.length = 0;
-			}
-
-			foodTable.update(true);
-		}
-	};
-
-	const setRecipeHighlight = (e: Event) => {
-		const name = typeof e === 'string' ? e : resolveIconTarget(e.target).dataset.link || '';
-		const modename = name.substring(name.indexOf(':') + 1);
-
-		if (modes[modename]) {
-			recipeHighlighted = matchingNames(recipes, name);
-			recipeTable.update(true);
-		} else {
-			setTab('foodlist');
 			foodHighlight = name;
 			foodHighlighted = matchingNames(food, name);
-			foodTable.update(true);
+		}
+		foodTable.update(true);
+	};
+
+	const highlightRecipes = (name: string) => {
+		recipeHighlighted = matchingNames(recipes, name);
+		recipeTable.update(true);
+	};
+
+	const setHighlight = (input: Event | string, { navigateToFood = true } = {}) => {
+		const name = highlightKey(input);
+		if (name.startsWith('recipe:') || name.startsWith('ingredient:')) {
+			setTab('crockpot');
+			highlightRecipes(name.startsWith('recipe:') ? `*${name.slice(7)}` : name);
+		} else {
+			if (navigateToFood) {
+				setTab('foodlist');
+			}
+			highlightFoods(name, { toggle: true });
+		}
+	};
+
+	const setFoodHighlight = (event: Event) => setHighlight(event, { navigateToFood: false });
+
+	const setRecipeHighlight = (event: Event) => {
+		const name = highlightKey(event);
+		const modeName = name.slice(name.indexOf(':') + 1);
+		if (Object.hasOwn(modes, modeName)) {
+			highlightRecipes(name);
+		} else {
+			setTab('foodlist');
+			highlightFoods(name);
 		}
 	};
 
 	const testFoodHighlight = (item: Food) => {
-		return foodHighlighted.indexOf(item) !== -1;
+		return foodHighlighted.includes(item);
 	};
 
 	const testRecipeHighlight = (item: Recipe) => {
-		return recipeHighlighted.indexOf(item) !== -1;
+		return recipeHighlighted.includes(item);
 	};
 
 	const testmode = (item: GuideItem) => {
 		return matchesMode(item.modeMask, modeMask, item.charMask, charMask);
 	};
 
-	const foodTable = makeSortableTable(
-		{
+	const foodTable = makeSortableTable({
+		headers: {
 			'': '',
 			Name: 'name',
 			Health: 'health',
@@ -745,24 +723,21 @@ import './locales/index.js';
 			Info: '',
 			Mode: 'modeMask',
 		},
-		Array.from(food),
-		makeFoodRow,
-		'name',
-		false,
-		setFoodHighlight,
-		testFoodHighlight,
-		testmode,
-		undefined,
-		undefined,
-		{
+		dataset: Array.from(food),
+		rowGenerator: makeFoodRow,
+		defaultSort: 'name',
+		linkCallback: setFoodHighlight,
+		highlightCallback: testFoodHighlight,
+		filterCallback: testmode,
+		columnConfig: {
 			toggleable: true,
 			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
 			autoHide: getAutoHideColumns(['Sanity']),
 		},
-	);
+	});
 
-	const recipeTable = makeSortableTable(
-		{
+	const recipeTable = makeSortableTable({
+		headers: {
 			'': '',
 			Name: 'name',
 			Health: 'health',
@@ -776,16 +751,13 @@ import './locales/index.js';
 			Notes: '',
 			Mode: 'modeMask',
 		},
-		Array.from(recipes),
-		makeRecipeRow,
-		'name',
-		false,
-		setRecipeHighlight,
-		testRecipeHighlight,
-		testmode,
-		undefined,
-		undefined,
-		{
+		dataset: Array.from(recipes),
+		rowGenerator: makeRecipeRow,
+		defaultSort: 'name',
+		linkCallback: setRecipeHighlight,
+		highlightCallback: testRecipeHighlight,
+		filterCallback: testmode,
+		columnConfig: {
 			toggleable: true,
 			columns: [
 				'Health',
@@ -799,7 +771,7 @@ import './locales/index.js';
 			],
 			autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 		},
-	);
+	});
 
 	foodElement.appendChild(foodTable);
 	recipesElement.appendChild(recipeTable);
@@ -1077,8 +1049,8 @@ import './locales/index.js';
 
 				made = [];
 
-				const makableTable = makeSortableTable(
-					{
+				const makableTable = makeSortableTable({
+					headers: {
 						'': '',
 						Name: 'name',
 						[headings.health]: 'health',
@@ -1087,8 +1059,8 @@ import './locales/index.js';
 						'Hunger+:Hunger gained compared to ingredients': 'hungerpls',
 						Ingredients: '',
 					},
-					made,
-					data => {
+					dataset: made,
+					rowGenerator: data => {
 						const item = data.recipe;
 
 						return cells(
@@ -1105,23 +1077,19 @@ import './locales/index.js';
 							),
 						);
 					},
-					'hungerpls',
-					false,
-					null,
-					null,
-					data =>
+					defaultSort: 'hungerpls',
+					filterCallback: data =>
 						(!selectedRecipe || data.recipe.id === selectedRecipe) &&
 						!excludedRecipes.has(data.recipe.id) &&
 						(excludedIngredients.size === 0 || !data.ingredients.some(checkExcludes)) &&
 						[...usedIngredients].every(checkIngredient, data.ingredients),
-					0,
-					25,
-					{
+					maxRows: 25,
+					columnConfig: {
 						toggleable: true,
 						columns: ['Health', 'Health+', 'Hunger', 'Hunger+', 'Ingredients'],
 						autoHide: ['Health+', 'Hunger+'],
 					},
-				);
+				});
 				const updateMakableControls = () => {
 					deleteButton.textContent = t('clearResults');
 					customFilterInput.placeholder = t('customFilterPlaceholder');
@@ -1767,8 +1735,8 @@ import './locales/index.js';
 					const hunger = cooking[0].hunger;
 					const sanity = cooking[0].sanity;
 
-					let table = makeSortableTable(
-						{
+					let table = makeSortableTable({
+						headers: {
 							'': '',
 							Name: 'name',
 							[headings.health]: 'health',
@@ -1782,20 +1750,17 @@ import './locales/index.js';
 							Notes: '',
 							'Mode:DLC or Game Mode required': 'modeMask',
 						},
-						cooking,
-						item => {
+						dataset: cooking,
+						rowGenerator: item => {
 							return makeRecipeRow(item, health, hunger, sanity);
 						},
-						'priority',
-						true,
-						searchFor,
-						(item, array) => {
+						defaultSort: 'priority',
+						summaryRows: 2,
+						linkCallback: searchFor,
+						highlightCallback: (item, array) => {
 							return array.length > 0 && item.priority === highestPriority(array);
 						},
-						undefined,
-						undefined,
-						undefined,
-						{
+						columnConfig: {
 							toggleable: true,
 							columns: [
 								'Health',
@@ -1809,7 +1774,7 @@ import './locales/index.js';
 							],
 							autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 						},
-					);
+					});
 
 					while (results.firstChild) {
 						results.removeChild(results.firstChild);
@@ -1825,8 +1790,8 @@ import './locales/index.js';
 
 						if (suggestions.length > 0) {
 							results.appendChild(makeElement('p', t('discoveryMoreSuggestions')));
-							table = makeSortableTable(
-								{
+							table = makeSortableTable({
+								headers: {
 									'': '',
 									Name: 'name',
 									'Health:(% more than ingredients)': 'health',
@@ -1840,18 +1805,13 @@ import './locales/index.js';
 									Notes: '',
 									'Mode:DLC or Game Mode required': 'modeMask',
 								},
-								suggestions,
-								item => {
+								dataset: suggestions,
+								rowGenerator: item => {
 									return makeRecipeRow(item, health, hunger, sanity);
 								},
-								'priority',
-								false,
-								searchFor,
-								undefined,
-								undefined,
-								undefined,
-								undefined,
-								{
+								defaultSort: 'priority',
+								linkCallback: searchFor,
+								columnConfig: {
 									toggleable: true,
 									columns: [
 										'Health',
@@ -1865,7 +1825,7 @@ import './locales/index.js';
 									],
 									autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 								},
-							);
+							});
 							results.appendChild(table);
 						}
 					}
@@ -1895,8 +1855,8 @@ import './locales/index.js';
 					}
 
 					if (ingredients.length > 0) {
-						const foodTable = makeSortableTable(
-							{
+						const foodTable = makeSortableTable({
+							headers: {
 								'': '',
 								Name: 'name',
 								[headings.health]: 'health',
@@ -1906,28 +1866,23 @@ import './locales/index.js';
 								Info: '',
 								'Mode:DLC or Game Mode required': 'modeMask',
 							},
-							ingredients.filter((item): item is Food => item !== null),
-							makeFoodRow,
-							'name',
-							false,
-							setHighlight,
-							undefined,
-							undefined,
-							undefined,
-							undefined,
-							{
+							dataset: ingredients.filter((item): item is Food => item !== null),
+							rowGenerator: makeFoodRow,
+							defaultSort: 'name',
+							linkCallback: setHighlight,
+							columnConfig: {
 								toggleable: true,
 								columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
 								autoHide: getAutoHideColumns(['Sanity']),
 							},
-						);
+						});
 
 						discoverfood.appendChild(foodTable);
 						getSuggestions(inventoryrecipes, ingredients, null, true);
 
 						if (inventoryrecipes.length > 0) {
-							const table = makeSortableTable(
-								{
+							const table = makeSortableTable({
+								headers: {
 									'': '',
 									Name: 'name',
 									[headings.health]: 'health',
@@ -1941,16 +1896,11 @@ import './locales/index.js';
 									Notes: '',
 									'Mode:DLC or Game Mode required': 'modeMask',
 								},
-								inventoryrecipes,
-								makeRecipeRow,
-								'name',
-								false,
-								setHighlight,
-								undefined,
-								undefined,
-								undefined,
-								undefined,
-								{
+								dataset: inventoryrecipes,
+								rowGenerator: makeRecipeRow,
+								defaultSort: 'name',
+								linkCallback: setHighlight,
+								columnConfig: {
 									toggleable: true,
 									columns: [
 										'Health',
@@ -1964,7 +1914,7 @@ import './locales/index.js';
 									],
 									autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 								},
-							);
+							});
 
 							discover.appendChild(table);
 

@@ -51,6 +51,7 @@ Go is unavailable; the application itself does not require Go.
 | `src/constants.ts`, `src/mode-utils.ts`, `src/functions.ts`           | Game constants, mode/character logic, and recipe predicates.  |
 | `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.    |
 | `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                           |
+| `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.   |
 | `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
 | `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                  |
 | `html/style/`, `html/img/`                                            | Styles and original icon assets.                              |
@@ -69,6 +70,11 @@ The page controller reads saved preferences once at startup. `preferences.ts`
 validates that JSON, translates historical game settings, and handles unavailable
 or corrupt storage. Tab and picker saves merge into the latest stored state so
 one component cannot overwrite another's preferences.
+
+Sortable tables take a `TableOptions<T>` object. Column sort keys and the default
+sort are checked against the row type; summary rows have an explicit count.
+The shared sorter preserves the dataset's identity and leaves summary rows above
+the sorted results. Search results use the same name comparator as tables.
 
 ## Updating assets and data
 

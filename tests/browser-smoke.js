@@ -266,3 +266,105 @@ test('legacy settings and both ingredient pickers survive migration and reload',
 	assert.equal(await page.locator('#discovery .ingredient .icon').count(), 2);
 	assert.deepEqual(errors, []);
 });
+
+test('tables retain sorting, pinned summaries, column visibility, and linked highlights', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [
+						{
+							name: 'foodGuideState',
+							value: JSON.stringify({
+								version: 'together',
+								pickers: [
+									[
+										'honey@together',
+										'meat@together',
+										'meat@together',
+										'ice@together',
+									],
+									['carrot@together', 'meat@together', 'berries@together'],
+								],
+							}),
+						},
+					],
+				},
+			],
+		},
+	});
+	const errors = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const cooking = page.locator('#results table').first();
+	const names = () => cooking.locator('td:nth-child(2)').allTextContents();
+	await cooking.locator('th[data-sort="health"]').click();
+	assert.deepEqual(await names(), ['Total', 'Potential', 'Honey Ham', 'Meatballs', 'Wet Goop']);
+	await cooking.locator('th[data-sort="health"]').click();
+	assert.deepEqual(await names(), ['Total', 'Potential', 'Wet Goop', 'Meatballs', 'Honey Ham']);
+
+	const healthToggle = page
+		.locator('#results .column-toggle-bar')
+		.first()
+		.getByRole('button', { name: 'Health', exact: true });
+	await healthToggle.click();
+	assert.equal(await cooking.locator('th[data-sort="health"]').isVisible(), false);
+	assert.equal(await cooking.locator('td:nth-child(3).col-hidden').count(), 5);
+	await cooking.locator('th[data-sort="name"]').click();
+	assert.equal(await cooking.locator('td:nth-child(3).col-hidden').count(), 5);
+	await healthToggle.click();
+	assert.equal(await cooking.locator('th[data-sort="health"]').isVisible(), true);
+
+	await page.locator('#navbar [data-tab="foodlist"]').click();
+	const cookedCarrot = page.locator('#food [data-link="*Roasted Carrot"] .icon').first();
+	await cookedCarrot.click();
+	assert.deepEqual(await page.locator('#food .highlighted td:nth-child(2)').allTextContents(), [
+		'Roasted Carrot',
+	]);
+	await cookedCarrot.click();
+	assert.equal(await page.locator('#food .highlighted').count(), 0);
+
+	await page.locator('#food [data-link="recipe:Meatballs"] .icon').first().click();
+	assert.equal(
+		await page.locator('#navbar [data-tab="crockpot"]').getAttribute('aria-pressed'),
+		'true',
+	);
+	assert.deepEqual(
+		await page.locator('#recipes .highlighted td:nth-child(2)').allTextContents(),
+		['Meatballs'],
+	);
+	await page.locator('#recipes th[data-sort="health"]').click();
+	assert.equal(await page.locator('#recipes .highlighted').count(), 1);
+
+	const meatLink = page.locator('#recipes [data-link="tag:meat"]').first();
+	await meatLink.click();
+	const meatHighlights = await page
+		.locator('#food .highlighted td:nth-child(2)')
+		.allTextContents();
+	assert.ok(meatHighlights.includes('Meat'));
+	assert.ok(meatHighlights.length > 1);
+	await page.locator('#navbar [data-tab="crockpot"]').click();
+	await meatLink.click();
+	assert.deepEqual(
+		await page.locator('#food .highlighted td:nth-child(2)').allTextContents(),
+		meatHighlights,
+	);
+
+	await page.locator('#navbar [data-tab="discovery"]').click();
+	assert.equal(await page.locator('#discoverfood td:nth-child(2)').count(), 3);
+	await page.locator('#discoverfood th[data-sort="health"]').click();
+	await page.locator('#discover th[data-sort="health"]').click();
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => {
+		const button = document.querySelector('#makable .makablebutton');
+		return button && !button.disabled;
+	});
+	assert.ok((await page.locator('#makable td:nth-child(2)').count()) > 0);
+	await page.locator('#makable th[data-sort="name"]').click();
+	const analyzedNames = await page.locator('#makable td:nth-child(2)').allTextContents();
+	assert.deepEqual(analyzedNames, [...analyzedNames].sort());
+	assert.deepEqual(errors, []);
+});

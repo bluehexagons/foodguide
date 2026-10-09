@@ -1,4 +1,8 @@
 import type { StringKey } from './strings.js';
+import type { SortRow, TableSortKey } from './table-sort.js';
+import { sortTableRows } from './table-sort.js';
+import { makeImage } from './utils.js';
+
 export interface SortableTable extends HTMLDivElement {
 	update: (scrollHighlight?: boolean) => void;
 	updateLocale: () => void;
@@ -20,8 +24,18 @@ interface ColumnConfig {
 	columns?: string[];
 	autoHide?: string[];
 }
-type SortRow = { name?: string; basename?: string; raw?: unknown };
-import { makeImage } from './utils.js';
+export interface TableOptions<T extends SortRow> {
+	headers: Record<string, TableSortKey<T> | ''>;
+	dataset: T[];
+	rowGenerator: (item: T) => HTMLTableRowElement;
+	defaultSort: TableSortKey<T>;
+	summaryRows?: number;
+	linkCallback?: (event: Event) => void;
+	highlightCallback?: (item: T, items: T[]) => boolean;
+	filterCallback?: (item: T) => boolean;
+	maxRows?: number;
+	columnConfig?: ColumnConfig;
+}
 
 const statHeaders = new Set([
 	'Health',
@@ -102,25 +116,22 @@ export const createSortableTableFactory = ({
 		return link;
 	};
 
-	const makeSortableTable = <T extends SortRow>(
-		headers: Record<string, string>,
-		dataset: T[],
-		rowGenerator: (item: T) => HTMLTableRowElement,
-		defaultSort: string,
-		hasSummary = false,
-		linkCallback?: ((event: Event) => void) | null,
-		highlightCallback?: ((item: T, items: T[]) => unknown) | null,
-		filterCallback?: ((item: T) => unknown) | null,
-		_startRow?: number,
-		maxRows?: number,
-		columnConfig?: ColumnConfig,
-	) => {
+	const makeSortableTable = <T extends SortRow>({
+		headers,
+		dataset,
+		rowGenerator,
+		defaultSort,
+		summaryRows = 0,
+		linkCallback,
+		highlightCallback,
+		filterCallback,
+		maxRows,
+		columnConfig,
+	}: TableOptions<T>) => {
 		let table = document.createElement('table');
-		let sorting: string | undefined;
+		let sorting: TableSortKey<T> | undefined;
 		let invertSort = false;
-		/** @type {HTMLElement | null} */
 		let firstHighlight: HTMLElement | null = null;
-		/** @type {HTMLElement | null} */
 		let lastHighlight: HTMLElement | null = null;
 		let rows: number;
 		const headerKeys = Object.keys(headers);
@@ -167,35 +178,15 @@ export const createSortableTableFactory = ({
 			}
 		};
 
-		const sortDataset = (sortBy: string, shouldToggle: boolean) => {
-			let summary: T[] = [];
-			if (hasSummary) {
-				summary = dataset.splice(0, 2);
+		const resolveSortKey = (value: string | null | undefined): TableSortKey<T> | undefined => {
+			for (const key of Object.values(headers)) {
+				if (key && key === value) {
+					return key;
+				}
 			}
+		};
 
-			if (sortBy === 'name') {
-				dataset.sort((a, b) => {
-					const aname = a.basename || a.name || '';
-					const bname = b.basename || b.name || '';
-					if (aname !== bname) {
-						return aname > bname ? 1 : -1;
-					}
-					return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
-				});
-			} else {
-				dataset.sort((a, b) => {
-					const left = Number((a as Record<string, unknown>)[sortBy]);
-					const right = Number((b as Record<string, unknown>)[sortBy]);
-					return !isNaN(left) && !isNaN(right)
-						? right - left
-						: isNaN(left) && isNaN(right)
-							? 0
-							: isNaN(left)
-								? 1
-								: -1;
-				});
-			}
-
+		const sortDataset = (sortBy: TableSortKey<T>, shouldToggle: boolean) => {
 			if (shouldToggle) {
 				if (sorting === sortBy) {
 					invertSort = !invertSort;
@@ -204,12 +195,7 @@ export const createSortableTableFactory = ({
 					invertSort = false;
 				}
 			}
-			if (invertSort) {
-				dataset.reverse();
-			}
-			if (hasSummary) {
-				dataset.unshift(...summary);
-			}
+			sortTableRows(dataset, sortBy, { summaryRows, invert: invertSort });
 		};
 
 		const create = (
@@ -217,10 +203,13 @@ export const createSortableTableFactory = ({
 			explicitSort?: string | null,
 			scrollHighlight = false,
 		) => {
-			const sortBy =
+			const sortBy = resolveSortKey(
 				explicitSort ||
-				(event?.target instanceof HTMLElement ? event.target.dataset.sort : undefined) ||
-				sorting;
+					(event?.target instanceof HTMLElement
+						? event.target.dataset.sort
+						: undefined) ||
+					sorting,
+			);
 			if (sortBy) {
 				sortDataset(sortBy, Boolean(explicitSort || event));
 			}

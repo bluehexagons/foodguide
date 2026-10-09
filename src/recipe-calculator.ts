@@ -9,6 +9,7 @@ import type {
 	SummaryRow,
 	CalculatorRow,
 } from './models.js';
+import { compareItemNames } from './table-sort.js';
 import { food } from './food.js';
 import { recipes } from './recipes.js';
 import { excludesMode, matchesMode } from './mode-utils.js';
@@ -16,17 +17,7 @@ import { accumulateIngredients, numericTags } from './utils.js';
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const compareByMatch = (a: GuideItem, b: GuideItem) => {
-	if (a.match === b.match) {
-		const aname = a.basename ? a.basename : a.name;
-		const bname = b.basename ? b.basename : b.name;
-		if (aname !== bname) {
-			return aname > bname ? 1 : -1;
-		}
-		return a.name === b.name ? 0 : 'raw' in a && a.raw === b ? 1 : -1;
-	}
-	return b.match - a.match;
-};
+const compareByMatch = (a: GuideItem, b: GuideItem) => b.match - a.match || compareItemNames(a, b);
 
 const requirementMatchesItem = (requirements: Requirement[], item: Food) => {
 	let failed = true;

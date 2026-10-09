@@ -8,7 +8,14 @@ export function compareItemNames(a: SortRow, b: SortRow): number {
 	if (left !== right) {
 		return left > right ? 1 : -1;
 	}
-	return a.name === b.name ? 0 : a.raw === b ? 1 : -1;
+	// Raw forms precede cooked siblings; names consistently order other variants.
+	const preparationOrder = Number(Boolean(a.raw)) - Number(Boolean(b.raw));
+	if (preparationOrder !== 0) {
+		return preparationOrder;
+	}
+	const leftName = a.name || '';
+	const rightName = b.name || '';
+	return leftName === rightName ? 0 : leftName > rightName ? 1 : -1;
 }
 
 /** Sort the shared dataset in place, keeping summary rows above the results. */

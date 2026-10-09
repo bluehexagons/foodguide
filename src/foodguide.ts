@@ -15,6 +15,7 @@ import type { DropdownItem } from './dropdown.js';
 import { createSavedStateStore, restoreGameSelection } from './preferences.js';
 import { createFoodSelectionResolver } from './food-selection.js';
 import { createAnalysisFilters } from './analysis-filters.js';
+import { formatSignedValue } from './number-format.js';
 import type { FilterState } from './analysis-filters.js';
 import { getCollectionItem } from './collection.js';
 
@@ -529,21 +530,6 @@ import './locales/index.js';
 		responsiveTables,
 	});
 
-	const fractionChars = ['\u215b', '\u00bc', '\u215c', '\u00bd', '\u215d', '\u00be', '\u215e'];
-
-	const sign = (input: number | string | undefined) => {
-		let n = Number(input);
-		if (isNaN(n)) {
-			return '';
-		}
-
-		const nEights = ((Math.abs(n) % 1) * 8) | 0;
-		const fractStr = nEights < 1 || nEights > 7 ? '' : fractionChars[nEights - 1] || '';
-
-		n = Math.floor(n);
-		return (n > 0 ? `+${n}` : n) + fractStr;
-	};
-
 	const rawpct = (base: number, val: number) => {
 		return base < val
 			? (val - base) / Math.abs(base)
@@ -564,8 +550,8 @@ import './locales/index.js';
 		} else {
 			percentChange = 0;
 		}
-		const result = ` (${sign((percentChange * 100).toFixed(0))}%)`;
-		return result.indexOf('Infinity') === -1 ? result : ` (${sign(val - base)})`;
+		const result = ` (${formatSignedValue((percentChange * 100).toFixed(0))}%)`;
+		return result.indexOf('Infinity') === -1 ? result : ` (${formatSignedValue(val - base)})`;
 	};
 
 	const formatDays = (value: number) => formatDuration('day', value);
@@ -582,8 +568,8 @@ import './locales/index.js';
 		const mult = statMultipliers[item.preparationType];
 		const itemMods =
 			'preparationType' in item ? characterFoodModifiers.modifyItem(item, modeMask) : {};
-		let health = sign((itemMods.health ?? item.health ?? NaN) * mult);
-		let hunger = sign((itemMods.hunger ?? item.hunger ?? NaN) * mult);
+		let health = formatSignedValue((itemMods.health ?? item.health ?? NaN) * mult);
+		let hunger = formatSignedValue((itemMods.hunger ?? item.hunger ?? NaN) * mult);
 		let sanity = isNaN(Number(item.sanity))
 			? ''
 			: (itemMods.sanity ?? item.sanity ?? NaN) * mult;
@@ -596,17 +582,17 @@ import './locales/index.js';
 			if ((item.cook.health || 0) !== (item.health || 0)) {
 				const rawHealth = ((itemMods.health ?? item.health) || 0) * mult;
 				const cookedHealth = ((cookMods.health ?? item.cook.health) || 0) * cookmult;
-				health = `${health === '' ? '0' : health} (${sign(cookedHealth - rawHealth)})`;
+				health = `${health === '' ? '0' : health} (${formatSignedValue(cookedHealth - rawHealth)})`;
 			}
 			if ((item.cook.hunger || 0) !== (item.hunger || 0)) {
 				const rawHunger = ((itemMods.hunger ?? item.hunger) || 0) * mult;
 				const cookedHunger = ((cookMods.hunger ?? item.cook.hunger) || 0) * cookmult;
-				hunger = `${hunger === '' ? '0' : hunger} (${sign(cookedHunger - rawHunger)})`;
+				hunger = `${hunger === '' ? '0' : hunger} (${formatSignedValue(cookedHunger - rawHunger)})`;
 			}
 			if ((item.cook.sanity || 0) !== (item.sanity || 0)) {
 				const rawSanity = ((itemMods.sanity ?? item.sanity) || 0) * mult;
 				const cookedSanity = ((cookMods.sanity ?? item.cook.sanity) || 0) * cookmult;
-				sanity = `${sanity === '' ? '0' : sanity} (${sign(cookedSanity - rawSanity)})`;
+				sanity = `${sanity === '' ? '0' : sanity} (${formatSignedValue(cookedSanity - rawSanity)})`;
 			}
 			if ((item.cook.perish || 0) !== (item.perish || 0)) {
 				const dayDifference =
@@ -616,7 +602,7 @@ import './locales/index.js';
 				} else {
 					perish += ` (${
 						item.perish
-							? sign(dayDifference)
+							? formatSignedValue(dayDifference)
 							: formatToDays(Number(item.cook.perish) / total_day_time)
 					})`;
 				}
@@ -648,9 +634,9 @@ import './locales/index.js';
 			'td',
 			item.img ? `${item.img}:${item.name}` : '',
 			fandomHref(item.name),
-			sign(ihealth) + pct(health, ihealth),
-			sign(ihunger) + pct(hunger, ihunger),
-			isNaN(isanity) ? '' : sign(isanity) + pct(sanity, isanity),
+			formatSignedValue(ihealth) + pct(health, ihealth),
+			formatSignedValue(ihunger) + pct(hunger, ihunger),
+			isNaN(isanity) ? '' : formatSignedValue(isanity) + pct(sanity, isanity),
 			formatPerish(item.perish),
 			formatSeconds((item.cooktime * base_cook_time + 0.5) | 0),
 			item.priority || '0',
@@ -928,10 +914,10 @@ import './locales/index.js';
 							'td',
 							item.img ? item.img : '',
 							item.name,
-							sign(item.health),
-							`${sign(data.healthpls)} (${sign((data.healthpct * 100) | 0)}%)`,
-							sign(item.hunger),
-							`${sign(data.hungerpls)} (${sign((data.hungerpct * 100) | 0)}%)`,
+							formatSignedValue(item.health),
+							`${formatSignedValue(data.healthpls)} (${formatSignedValue((data.healthpct * 100) | 0)}%)`,
+							formatSignedValue(item.hunger),
+							`${formatSignedValue(data.hungerpls)} (${formatSignedValue((data.hungerpct * 100) | 0)}%)`,
 							makeLinkable(
 								data.ingredients.reduce(ingredientToIcon, '') +
 									(data.multiple ? '*' : ''),

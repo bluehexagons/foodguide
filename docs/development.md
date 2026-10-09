@@ -52,6 +52,7 @@ Go is unavailable; the application itself does not require Go.
 | `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.    |
 | `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                           |
 | `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.   |
+| `src/number-format.ts`                                                | Signed value formatting with fraction glyphs.                 |
 | `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
 | `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.    |
 | `src/analysis-filters.ts`                                             | Analyzer filter states and result matching without DOM state. |
@@ -86,7 +87,8 @@ the sorted results. Search results use the same name comparator as tables.
 Tables retain their header buttons and rebuild only the result rows. Sorting and
 linked actions use native buttons; `aria-sort` describes the actual row order,
 and column buttons expose their visibility with `aria-pressed`. When a linked
-action rebuilds its own rows, focus returns to the matching link key. Temporary
+action rebuilds its own rows, focus returns to the same row and occurrence of its
+link key, even when that action appears elsewhere in the table. Temporary
 tables must call `dispose()` before their containers are removed or replaced;
 this releases both lifecycle registrations and pending scroll restoration.
 The picker owns its result tables, and analyzer controllers own their analysis

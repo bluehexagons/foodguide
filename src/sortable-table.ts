@@ -200,6 +200,7 @@ export const createSortableTableFactory = ({
 		const head = table.createTHead();
 		const headerRow = head.insertRow();
 		const body = table.createTBody();
+		const rowItems = new WeakMap<HTMLTableRowElement, T>();
 		const headerCells = headerKeys.map(header => {
 			const th = document.createElement('th');
 			th.scope = 'col';
@@ -251,11 +252,21 @@ export const createSortableTableFactory = ({
 					th.removeAttribute('aria-sort');
 				}
 			}
-			const focusedLink =
-				document.activeElement instanceof HTMLElement &&
+			const focusedControl =
+				document.activeElement instanceof HTMLButtonElement &&
 				body.contains(document.activeElement)
-					? document.activeElement.dataset.link
+					? document.activeElement
 					: undefined;
+			const focusedLink = focusedControl?.dataset.link;
+			const focusedRow = focusedControl?.closest('tr');
+			const focusedItem = focusedRow ? rowItems.get(focusedRow) : undefined;
+			const focusedIndex =
+				focusedRow && focusedControl
+					? Array.from(focusedRow.querySelectorAll<HTMLButtonElement>('button.link'))
+							.filter(button => button.dataset.link === focusedLink)
+							.indexOf(focusedControl)
+					: -1;
+			let restoredRow: HTMLTableRowElement | undefined;
 			const content = document.createDocumentFragment();
 			firstHighlight = null;
 			lastHighlight = null;
@@ -267,6 +278,10 @@ export const createSortableTableFactory = ({
 					continue;
 				}
 				const row = rowGenerator(item);
+				rowItems.set(row, item);
+				if (item === focusedItem) {
+					restoredRow = row;
+				}
 				iconColumns.forEach(column => row.children[column]?.classList.add('icon-cell'));
 				numericColumns.forEach(column =>
 					row.children[column]?.classList.add('numeric-cell'),
@@ -296,10 +311,10 @@ export const createSortableTableFactory = ({
 			}
 			body.replaceChildren(content);
 			applyColumnVisibility();
-			if (focusedLink !== undefined) {
-				Array.from(body.querySelectorAll<HTMLButtonElement>('button.link'))
-					.find(button => button.dataset.link === focusedLink)
-					?.focus({ preventScroll: true });
+			if (focusedLink !== undefined && restoredRow) {
+				Array.from(restoredRow.querySelectorAll<HTMLButtonElement>('button.link'))
+					.filter(button => button.dataset.link === focusedLink)
+					[focusedIndex]?.focus({ preventScroll: true });
 			}
 
 			if (scrollHighlight) {

@@ -598,6 +598,24 @@ test('legacy settings and both ingredient pickers survive migration and reload',
 	assert.deepEqual(errors, []);
 });
 
+test('Warly food tables show negative fractional changes without an extra whole unit', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'foodlist',
+		version: 'dontstarve',
+		character: 'warly',
+		dlc: { giants: true, shipwrecked: true },
+		pickers: [[], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const greenCap = page.locator('#food tbody tr').filter({
+		has: page.getByRole('link', { name: 'Green Cap', exact: true }),
+	});
+	assert.equal(await greenCap.locator('td:nth-child(3)').textContent(), '0 (-0⅞)');
+	assert.deepEqual(diagnostics, []);
+});
+
 test('tables retain sorting, pinned summaries, column visibility, and linked highlights', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage({
@@ -770,6 +788,18 @@ test('table controls support keyboard sorting, toggles, and linked highlights wi
 	await carrot.press('Space');
 	assert.equal(await page.locator('#food .highlighted').count(), 0);
 	assert.equal(await carrot.evaluate(button => button === document.activeElement), true);
+	const meat = page.locator('#food button[data-link="tag:meat"]').nth(1);
+	const originalRow = await meat.evaluate(button => button.closest('tr').children[1].textContent);
+	await meat.focus();
+	await meat.press('Enter');
+	assert.ok((await page.locator('#food .highlighted').count()) > 1);
+	assert.equal(
+		await page.evaluate(() => document.activeElement.closest('tr')?.children[1].textContent),
+		originalRow,
+	);
+	await meat.press('Space');
+	assert.equal(await page.locator('#food .highlighted').count(), 0);
+	assert.equal(await meat.evaluate(button => button === document.activeElement), true);
 	assert.deepEqual(diagnostics, []);
 });
 

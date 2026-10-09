@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { compareItemNames, sortTableRows } from '../html/table-sort.js';
+import { food } from '../html/food.js';
 
 test('numeric table sorting preserves negative values and puts missing values after results', () => {
 	const missing = { name: 'Missing' };
@@ -61,4 +62,31 @@ test('empty tables and tables containing only summary rows remain sortable', () 
 	const original = [...rows];
 	sortTableRows(rows, 'name', { summaryRows: 2, invert: true });
 	assert.deepEqual(rows, original);
+});
+
+test('sibling preparation variants have a consistent order regardless of their input order', () => {
+	const raw = { name: 'Berries' };
+	const cooked = { name: 'Roasted Berries', basename: 'Berries', raw };
+	const otherCooked = { name: 'Grilled Berries', basename: 'Berries', raw };
+	for (const rows of [
+		[cooked, raw, otherCooked],
+		[otherCooked, cooked, raw],
+		[raw, otherCooked, cooked],
+	]) {
+		sortTableRows(rows, 'name');
+		assert.deepEqual(rows, [raw, otherCooked, cooked]);
+	}
+});
+
+test('the name comparator orders actual food variants consistently in both directions', () => {
+	const items = Array.from(food);
+	for (const a of items) {
+		for (const b of items) {
+			assert.equal(
+				Math.sign(compareItemNames(a, b)) + Math.sign(compareItemNames(b, a)),
+				0,
+				`${a.key} and ${b.key}`,
+			);
+		}
+	}
 });

@@ -17,6 +17,7 @@ import { createFoodSelectionResolver } from './food-selection.js';
 import { createAnalysisFilters } from './analysis-filters.js';
 import { formatSignedValue } from './number-format.js';
 import { getCollectionItem } from './collection.js';
+import { bindActivation } from './activation.js';
 
 declare global {
 	interface Window {
@@ -1474,10 +1475,6 @@ import './locales/index.js';
 				}
 			};
 
-			const suppressIngredientContextMenu = (e: Event) => {
-				e.preventDefault();
-			};
-
 			const ensureEmptySlot = () => {
 				// Only for unlimited mode (Discovery page)
 				if (limited) {
@@ -1500,10 +1497,7 @@ import './locales/index.js';
 				emptySlot.type = 'button';
 				emptySlot.className = 'ingredient';
 				setSlot(emptySlot, null);
-				emptySlot.addEventListener('click', () => {
-					picker.focus();
-				});
-				emptySlot.addEventListener('contextmenu', removeSlot, false);
+				bindActivation(emptySlot, () => picker.focus(), removeSlot);
 				parent.appendChild(emptySlot);
 			};
 
@@ -1541,8 +1535,7 @@ import './locales/index.js';
 						i.type = 'button';
 						i.className = 'ingredient';
 						setSlot(i, item);
-						i.addEventListener('click', removeSlot, false);
-						i.addEventListener('contextmenu', removeSlot, false);
+						bindActivation(i, removeSlot, removeSlot);
 						parent.appendChild(i);
 
 						// Ensure there's always an empty "+" slot at the end
@@ -1580,13 +1573,11 @@ import './locales/index.js';
 				li.setAttribute('aria-label', item.name);
 				li.setAttribute('aria-selected', 'false');
 
-				li.addEventListener('mousedown', event => {
-					if (event.button === 0 || event.button === 2) {
-						event.preventDefault();
-						pickItem(item.key, li, event.button === 2);
-					}
-				});
-				li.addEventListener('contextmenu', suppressIngredientContextMenu, false);
+				bindActivation(
+					li,
+					() => pickItem(item.key, li),
+					() => pickItem(item.key, li, true),
+				);
 				this.appendChild(li);
 				pickerOptions.push({ element: li, key: item.key });
 			};
@@ -1931,8 +1922,7 @@ import './locales/index.js';
 
 				fixedSlots.forEach(slot => {
 					setSlot(slot, null);
-					slot.addEventListener('click', removeSlot, false);
-					slot.addEventListener('contextmenu', removeSlot, false);
+					bindActivation(slot, removeSlot, removeSlot);
 				});
 			} else {
 				limited = false;
@@ -2039,13 +2029,12 @@ import './locales/index.js';
 			picker.setAttribute('aria-expanded', 'true');
 			picker.setAttribute('aria-controls', dropdown.id);
 			dropdown.appendChild(ul);
-			dropdown.addEventListener(
-				'mousedown',
-				e => {
-					e.preventDefault();
-				},
-				false,
-			);
+			// Keep mouse selections in the combobox without intercepting touch scrolling or focus.
+			dropdown.addEventListener('pointerdown', event => {
+				if (event.pointerType === 'mouse') {
+					event.preventDefault();
+				}
+			});
 
 			refreshPicker();
 

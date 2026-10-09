@@ -112,7 +112,7 @@ const dict = {
 	computingCombinations: 'Calculando combinaciones..',
 	multipleResultsNote: '* la combinación tiene varios resultados posibles',
 	filterCycleHelp:
-		'Usa las flechas para explorar cada grupo de filtros. Clic, Intro o Espacio alternan normal → obligatorio (✓) → excluido (✕). Mayús+Intro, Mayús+Espacio o clic derecho invierten los filtros de ingredientes o alternan la exclusión de recetas.',
+		'Usa las flechas para explorar cada grupo de filtros. Clic, toque, Intro o Espacio alternan normal → obligatorio (✓) → excluido (✕). Mayús+Intro, Mayús+Espacio o clic derecho invierten los filtros de ingredientes o alternan la exclusión de recetas.',
 	customFilterPlaceholder: 'usar filtro personalizado',
 	foundValidRecipes: 'Se encontraron {count} recetas válidas.',
 	foundValidRecipesInProgress:

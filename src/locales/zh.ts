@@ -108,7 +108,7 @@ const dict = {
 	computingCombinations: '正在计算组合……',
 	multipleResultsNote: '* 该组合有多个可能结果',
 	filterCycleHelp:
-		'用方向键浏览各筛选组。点击、回车或空格循环切换：普通 → 必需(✓) → 排除(✕)。Shift+回车、Shift+空格或右键可反向切换食材筛选或切换配方排除状态。',
+		'用方向键浏览各筛选组。鼠标点击、轻触、回车或空格循环切换：普通 → 必需(✓) → 排除(✕)。Shift+回车、Shift+空格或右键可反向切换食材筛选或切换配方排除状态。',
 	customFilterPlaceholder: '使用自定义过滤器',
 	foundValidRecipes: '找到 {count} 个有效配方。',
 	foundValidRecipesInProgress: '找到 {count} 个有效配方……(此过程中可切换标签页)',

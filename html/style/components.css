@@ -64,6 +64,10 @@
 	border-radius: 5px;
 }
 
+.analysis-filter-name {
+	display: none;
+}
+
 .analysis-filter:focus-visible .icon,
 .clearingredients:focus-visible {
 	opacity: 1;

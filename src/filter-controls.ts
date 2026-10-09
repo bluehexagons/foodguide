@@ -1,5 +1,6 @@
 import type { FilterState } from './analysis-filters.js';
 import { t } from './strings.js';
+import { bindActivation } from './activation.js';
 
 /** A compact filter toolbar: one Tab stop, native activation, and named three-state controls. */
 export const createFilterControls = (container: HTMLElement, helpId: string) => {
@@ -43,13 +44,18 @@ export const createFilterControls = (container: HTMLElement, helpId: string) => 
 			button.tabIndex = controls.length ? -1 : 0;
 			icon.setAttribute('aria-hidden', 'true');
 			button.appendChild(icon);
+			const label = document.createElement('span');
+			label.className = 'analysis-filter-name';
+			label.textContent = name;
+			label.setAttribute('aria-hidden', 'true');
+			button.appendChild(label);
 			controls.push({ button, icon, name, state: 'normal' });
 			button.addEventListener('focus', () => setCurrent(button));
-			button.addEventListener('click', () => onCycle(false));
-			button.addEventListener('contextmenu', event => {
-				event.preventDefault();
-				onCycle(true);
-			});
+			bindActivation(
+				button,
+				() => onCycle(false),
+				() => onCycle(true),
+			);
 			button.addEventListener('keydown', event => {
 				if (event.altKey || event.ctrlKey || event.metaKey) {
 					return;

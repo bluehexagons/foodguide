@@ -98,7 +98,9 @@ Bind control actions to their known keys or listener elements. The clicked child
 (`event.target`) can be an icon or a nested label; use `event.currentTarget` when
 the handler needs the element that owns the listener. Table link callbacks receive
 the link key and its button element, and sortable headers capture a typed sort
-key. Picker mouse and keyboard input call the same action directly.
+key. Picker click and keyboard input call the same action directly. Primary
+pointer actions run on release, so dragging away or scrolling cancels activation;
+clicks supplied by assistive technology also work without a preceding press.
 
 Analyzer filter state lives in `analysis-filters.ts`; its state queries drive both
 icon classes and result matching. Preserve structural classes such as `icon` when
@@ -120,11 +122,33 @@ same alternative action as right-click. Keep filter state in `analysis-filters.t
 and preserve focus when removing or hiding controls. Analyzer announcements occur
 on pause/resume and completion, rather than on every computation chunk.
 
+`activation.ts` shares click and secondary-action handling between picker options,
+slots, and analyzer filters. Mouse right-click and keyboard context menus retain
+their alternate actions; touch long presses and their trailing clicks leave the
+selection unchanged. Every filter state is available by ordinary taps, without
+requiring a long press. Do not move selection changes into press handlers or
+cancel touch events needed for native scrolling and zooming.
+
+`html/style/touch.css` uses `any-pointer: coarse` to provide at least 44-pixel
+button and picker targets on touchscreens, including computers with a mouse.
+Compact/icon-only modes retain that minimum. Analyzer filters show visible names
+on touchscreens instead of depending on hover titles. Text fields use 16-pixel type,
+controls wrap on narrow screens, and wide tables scroll inside their own wrappers.
+The viewport allows browser zoom. These choices follow the W3C guidance on
+[pointer cancellation](https://www.w3.org/WAI/WCAG22/Understanding/pointer-cancellation)
+and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced).
+
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
-paused statistics results. It also exercises keyboard flows and focus recovery.
+paused statistics results. English small-screen scans repeat both themes. It also
+exercises keyboard flows and focus recovery,
+trusted Chromium touch taps/canceled gestures, picker/table scrolling, and
+long-press event handling. Touch layout checks cover 320, 375, 768, and 1280-pixel
+viewports in all three languages, plus every picker display/density combination.
 Automated scans do not replace testing with screen readers; review spoken names,
-announcements, and focus visibility when changing interaction patterns.
+announcements, and focus visibility when changing interaction patterns. Emulated
+touch does not replace checks on physical phones and tablets, particularly with
+VoiceOver/TalkBack, browser zoom, and the software keyboard visible.
 
 ## Updating assets and data
 

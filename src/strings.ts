@@ -133,7 +133,7 @@ const defaultStrings = {
 	computingCombinations: 'Computing combinations..',
 	multipleResultsNote: '* combination has multiple possible results',
 	filterCycleHelp:
-		'Use arrow keys to browse each filter group. Click, Enter, or Space cycles normal → required (✓) → excluded (✕). Shift+Enter, Shift+Space, or right-click reverses ingredient filters or toggles recipe exclusions.',
+		'Use arrow keys to browse each filter group. Click, tap, Enter, or Space cycles normal → required (✓) → excluded (✕). Shift+Enter, Shift+Space, or right-click reverses ingredient filters or toggles recipe exclusions.',
 	filterIngredients: 'Ingredient filters',
 	filterRecipes: 'Recipe filters',
 	filterNormal: 'Normal',

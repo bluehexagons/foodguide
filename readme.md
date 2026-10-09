@@ -1,103 +1,116 @@
-# [Don't Starve Food Guide](https://foodguide.bluehexagons.com)
+# Don't Starve Food Guide
 
-Provides some tools for avoiding starvation
-in a game named after the task.
+An unofficial food reference, Crock Pot simulator, and recipe discovery tool for
+Don't Starve, Don't Starve Together, and their supported DLCs and characters.
+The guide is a static JavaScript/HTML/CSS application with reusable food and recipe
+data and no runtime package dependencies.
 
+Use the [live guide](https://foodguide.bluehexagons.com) or the
+[GitHub Pages version](https://bluehexagons.github.io/foodguide/).
+The separate [foodguide-app](https://github.com/bluehexagons/foodguide-app) repository
+provides an Electron desktop wrapper and release builds.
 
-## Use
+## Run locally
 
-Live version - [foodguide.bluehexagons.com](https://foodguide.bluehexagons.com)
-
-github.io - [bluehexagons.github.io/foodguide/](https://bluehexagons.github.io/foodguide/)
-
-
-### Running Offline
-
-This Food Guide must be run on a web server for most browsers to properly open it. With NodeJS installed, an easy way to run this offline is:
+Use Node.js 24 and npm. The supported Node ranges are listed in
+[`package.json`](package.json); they match the development tools' requirements.
 
 ```bash
-npm install
+npm ci --ignore-scripts
 npm run dev
 ```
 
-Using the defaults, it should become accessible locally in a browser at 127.0.0.1:8080/index.htm.
+Open [127.0.0.1:8080/index.htm](http://127.0.0.1:8080/index.htm). The development
+command generates the icon sprites, serves `html/` on loopback, and opens a browser.
+Serve the guide over HTTP; opening the HTML directly with `file://` prevents module
+loading in most browsers. Local use needs no internet connection after dependencies
+are installed, apart from external links to the game and wiki.
 
-### Desktop version (foodguide-app)
+In the Simulator, choose a game version and character, filter ingredients, and add
+up to four items to the pot. Discovery accepts an inventory of ingredients and shows
+possible recipes. Food List and Recipe List provide sortable reference tables.
+The Statistics Analyzer evaluates ingredient combinations in batches and can be paused.
 
-The [foodguide-app](https://github.com/bluehexagons/foodguide-app) repository has source code and release
-builds for a thin Electron wrapper around this project.
+Use Tab to reach controls and page tabs. In an ingredient search, use Up/Down to
+highlight results, Enter to select, and Escape to clear the highlight. Dropdown
+menus support Up/Down, Home/End, Enter/Space, and Escape.
 
+## Development and deployment
 
-## Development
-
-Pull requests and bug reports are greatly appreciated if anything is out of sync with Don't Starve's current versions.
-
-The Unofficial Don't Starve Food Guide is a collection of JavaScript/HTML/CSS files. Install the project dependencies with `npm install`, install the Playwright Chromium used by the browser smoke test with `npx playwright install chromium`, then run `npm run dev` to serve `html/` on a local web server so that the JavaScript modules can be loaded by a web browser.
-
-Run `npm run check` to verify formatting, linting, types, and tests. Use `npm run format` and `npm run lint:fix` to apply the project’s automatic fixes.
-
-
-## Reusing the data and helpers in other projects
-
-The food, recipe, and mode-handling modules are pure ES modules with no
-runtime dependencies and can be imported from Node, Deno, Bun, or any
-bundler-using web project. After installing this package (e.g. as a git
-dependency), the public entry points are:
-
-```js
-// Everything except DOM helpers
-import { food, recipes, modes, AND, NAME, matchesMode } from 'foodguide';
-
-// Or import individual modules
-import { food } from 'foodguide/food';
-import { recipes, updateFoodRecipes } from 'foodguide/recipes';
-import * as constants from 'foodguide/constants';
-import { matchesMode, calculateModeMask } from 'foodguide/mode-utils';
-import { AND, OR, NAME, TAG } from 'foodguide/functions';
-
-// Browser-only DOM helpers
-import { makeImage, makeLinkable } from 'foodguide/utils';
+```bash
+npx playwright install chromium
+npm run check
 ```
 
-The data tables in `food` and `recipes` are the same objects the live tool
-uses — see `html/food.js` and `html/recipes.js` for shape documentation.
+`check` runs formatting, linting, JavaScript type checking, unit tests, and a Chromium
+browser smoke test. On Linux, deployment tests also require Git, Bash, `flock`, and
+`rsync`.
+
+- [Development guide](docs/development.md): commands, module layout, tests, and assets.
+- [Deployment guide](docs/deployment.md): GitHub Pages and the optional server webhook.
+- [Data and library guide](docs/data.md): package exports, data shape, and mode filtering.
+
+Bug reports and pull requests are welcome, especially when the food data differs
+from the game. Include the game version, DLCs, character, ingredients, and a source
+for proposed recipe changes.
+
+## Reuse the data
+
+Install this repository as a Git dependency:
+
+```bash
+npm install git+https://github.com/bluehexagons/foodguide.git
+```
+
+```js
+import { food, recipes, TOGETHER, matchesMode } from 'foodguide';
+
+const togetherRecipes = recipes.filter(recipe =>
+	matchesMode(recipe.modeMask, TOGETHER, recipe.charMask, 0),
+);
+const carrot = food.carrot;
+```
+
+The entry point works in Node and browser module environments. Collections are
+shared mutable objects with keyed lookups and array-like helpers; see the
+[data guide](docs/data.md) before iterating or changing them.
 
 ## Translations
 
-UI strings emitted from JavaScript are centralised in `html/strings.js`,
-and static HTML strings are translated via `data-i18n="key"`,
-`data-i18n-html="key"`, and `data-i18n-attr-NAME="key"` attributes. Built-in
-locales live in `html/locales/` (currently `en`, `es`, and `zh`); the `es`
-and `zh` translations were generated by Anthropic Claude Opus and have not
-yet been reviewed by native-speaking Don't Starve players — corrections
-via PR are welcome.
+JavaScript UI strings live in `html/strings.js`. Static HTML uses `data-i18n="key"`,
+`data-i18n-html="key"`, and `data-i18n-attr-NAME="key"` attributes. English is the
+fallback; bundled Spanish and Chinese dictionaries live in `html/locales/` and are
+registered by the package entry point.
 
-Adding a locale:
+The Spanish and Chinese translations were generated by Anthropic Claude Opus and
+have not yet been reviewed by native-speaking Don't Starve players. Corrections
+are welcome. Food, recipe, character, and DLC names remain in English.
 
 ```js
-import { registerLocale, setLocale } from 'foodguide/strings';
+import { registerLocale, setLocale } from 'foodguide';
 
 registerLocale('fr', 'Français', {
 	pause: 'Pause',
 	resume: 'Reprendre',
-	// ...partial overrides; missing keys fall back to English.
+	// Missing keys fall back to English.
 });
-
 setLocale('fr');
 ```
 
-Names of foods, recipes, characters, and DLCs are intentionally left
-untranslated for now — those should be sourced from the game itself rather
-than re-translated by hand.
-
+For a bundled locale, add its module to `html/locales/index.js`; the language picker
+uses the registered locale list automatically.
 
 ## Contributors
-  [bluehexagons](https://github.com/bluehexagons)
-  [rezecib](https://github.com/rezecib)
-  [levy9527](https://github.com/levy9527)
-  [brewingcode](https://github.com/brewingcode)
-  [agathasilva28](https://github.com/agathasilva28)
-  [6lancmange](https://github.com/6lancmange)
-  [lakhnishMonster](https://github.com/lakhnishMonster)
-  [lormico](https://github.com/lormico)
-  [VaingloriousReptile](https://github.com/VaingloriousReptile)
+
+[bluehexagons](https://github.com/bluehexagons),
+[rezecib](https://github.com/rezecib),
+[levy9527](https://github.com/levy9527),
+[brewingcode](https://github.com/brewingcode),
+[agathasilva28](https://github.com/agathasilva28),
+[6lancmange](https://github.com/6lancmange),
+[lakhnishMonster](https://github.com/lakhnishMonster),
+[lormico](https://github.com/lormico), and
+[VaingloriousReptile](https://github.com/VaingloriousReptile).
+
+Code is licensed under [Apache 2.0](LICENSE). Don't Starve and its game artwork
+belong to Klei Entertainment.

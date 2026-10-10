@@ -1617,6 +1617,160 @@ for (const { tab, slots } of [
 	});
 }
 
+test('compact picker badges leave larger hit areas and an unobstructed ingredient center', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const hasTouch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{
+				activeTab: 'simulator',
+				version: 'together',
+				pickers: [['meat', 'meat', 'meat', 'berries'], []],
+			},
+			{ hasTouch, viewport: { width: 1280, height: 812 } },
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		const panel = page.locator('#simulator');
+		await panel.getByRole('combobox').fill('Meat');
+		const meat = panel.locator('[role=option][data-id="meat@together"]');
+		const activate = (locator, options) =>
+			hasTouch ? locator.tap(options) : locator.click(options);
+		const selectedKeys = () =>
+			page
+				.locator('#ingredients .ingredient[data-id]')
+				.evaluateAll(items => items.map(item => item.dataset.id));
+		for (const mode of ['names', 'list', 'icons']) {
+			await activate(panel.locator('.displaymodeingredients:not(.densityingredients)'));
+			await activate(panel.locator(`[role=menuitemradio][data-value="${mode}"]`));
+			for (const density of ['compact', 'normal', 'cozy']) {
+				await activate(panel.locator('.densityingredients'));
+				await activate(panel.locator(`[role=menuitemradio][data-value="${density}"]`));
+				await meat.scrollIntoViewIfNeeded();
+				const geometry = await meat.evaluate(option => {
+					const rect = option.getBoundingClientRect();
+					const actions = [
+						...option.querySelectorAll('.ingredient-option-actions > span'),
+					];
+					const controls = actions.map(action => {
+						const hit = action.getBoundingClientRect();
+						const badge = action.firstElementChild.getBoundingClientRect();
+						const points = [
+							{ x: hit.left + 1, y: hit.top + 1 },
+							{ x: hit.right - 1, y: hit.bottom - 1 },
+						];
+						const extraHitPoint = points.find(
+							({ x, y }) =>
+								!(
+									x >= badge.left &&
+									x <= badge.right &&
+									y >= badge.top &&
+									y <= badge.bottom
+								) &&
+								document
+									.elementFromPoint(x, y)
+									?.closest('.ingredient-toggle, .ingredient-subtract') ===
+									action,
+						);
+						return {
+							hit: hit.toJSON(),
+							badge: badge.toJSON(),
+							extraHitPoint: extraHitPoint && {
+								x: extraHitPoint.x - hit.left,
+								y: extraHitPoint.y - hit.top,
+							},
+						};
+					});
+					return {
+						rect: rect.toJSON(),
+						controls,
+						centerHasAction: !!document
+							.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+							?.closest('.ingredient-toggle, .ingredient-subtract'),
+					};
+				});
+				const context = `${hasTouch ? 'touch' : 'mouse'} ${mode} ${density}`;
+				assert.equal(
+					geometry.centerHasAction,
+					false,
+					`${context}: Center keeps the ingredient action`,
+				);
+				const [toggle, minus] = geometry.controls;
+				assert.ok(
+					toggle.hit.right <= minus.hit.left ||
+						minus.hit.right <= toggle.hit.left ||
+						toggle.hit.bottom <= minus.hit.top ||
+						minus.hit.bottom <= toggle.hit.top,
+					`${context}: Shortcut hit areas must not overlap`,
+				);
+				for (const { hit, badge, extraHitPoint } of geometry.controls) {
+					assert.ok(
+						badge.width <= 20 && badge.height <= 14,
+						`${context}: Badges remain small`,
+					);
+					assert.ok(
+						hit.width * hit.height > badge.width * badge.height * 1.2,
+						`${context}: Hit area exceeds visual`,
+					);
+					assert.ok(
+						extraHitPoint,
+						`${context}: Transparent area receives the shortcut action`,
+					);
+					assert.ok(
+						badge.left >= hit.left &&
+							badge.right <= hit.right &&
+							badge.top >= hit.top &&
+							badge.bottom <= hit.bottom,
+						`${context}: Badge fits its hit area`,
+					);
+					assert.ok(
+						hit.left >= geometry.rect.left &&
+							hit.right <= geometry.rect.right &&
+							hit.top >= geometry.rect.top &&
+							hit.bottom <= geometry.rect.bottom,
+						`${context}: Hit area stays within its ingredient`,
+					);
+				}
+				if (density !== 'compact') {
+					continue;
+				}
+				if (mode === 'icons') {
+					assert.ok(
+						geometry.rect.width <= 50 && geometry.rect.height <= 45,
+						`${context}: No action footer`,
+					);
+				} else if (mode === 'names') {
+					assert.ok(geometry.rect.width < 160, `${context}: No wide action column`);
+				}
+				const before = await selectedKeys();
+				await activate(meat.locator('.ingredient-subtract'), {
+					position: minus.extraHitPoint,
+				});
+				assert.deepEqual(
+					await selectedKeys(),
+					before.toSpliced(before.lastIndexOf('meat@together'), 1),
+				);
+				await activate(meat.locator('.ingredient-toggle'), {
+					position: toggle.extraHitPoint,
+				});
+				assert.deepEqual(await selectedKeys(), ['berries@together']);
+				for (let i = 0; i < 3; i++) {
+					await activate(meat);
+				}
+				assert.deepEqual(await selectedKeys(), [
+					'berries@together',
+					'meat@together',
+					'meat@together',
+					'meat@together',
+				]);
+			}
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
 test('touch layouts keep controls reachable across widths, languages, and picker densities', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(
@@ -1685,8 +1839,8 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 				elements.flatMap(e => {
 					const r = e.getBoundingClientRect();
 					const option = e.closest('[role=option]').getBoundingClientRect();
-					return r.width >= 31.99 &&
-						r.height >= 31.99 &&
+					return r.width >= 19.99 &&
+						r.height >= 19.99 &&
 						r.left >= option.left &&
 						r.right <= option.right &&
 						r.top >= option.top &&

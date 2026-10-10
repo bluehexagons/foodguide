@@ -162,56 +162,79 @@ table tr.highlighted .name-cell::before {
 	outline-color: var(--header-text);
 }
 
-/* Keep membership actions still when selection or quantity changes. */
+/* Overlay small badges; transparent hit areas do not add a row or wide action column. */
 .ingredientdropdown {
-	--ingredient-action-size: 24px;
-}
-
-@media (any-pointer: coarse) {
-	.ingredientdropdown {
-		--ingredient-action-size: 32px;
-	}
+	--ingredient-action-width: 24px;
 }
 
 .ingredientdropdown .item {
 	position: relative;
-	min-height: max(32px, calc(var(--ingredient-action-size) + 12px));
-}
-
-.ingredientdropdown:not(.hidetext) div {
-	grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+	min-height: 32px;
 }
 
 .ingredientdropdown:not(.hidetext) .item {
-	padding-inline-end: calc(var(--ingredient-action-size) * 2 + 10px);
+	padding-inline-end: var(--ingredient-action-width);
+}
+
+.ingredientdropdown:not(.hidetext).density-compact div {
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 }
 
 .ingredient-option-actions {
 	position: absolute;
-	inset-inline-end: 3px;
-	top: 50%;
-	transform: translateY(-50%);
-	display: flex;
-	gap: 2px;
+	inset: 0;
+	pointer-events: none;
 }
 
 .ingredient-toggle,
 .ingredient-subtract {
 	box-sizing: border-box;
+	position: absolute;
+	inset-inline-end: 0;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	width: var(--ingredient-action-width);
+	height: 50%;
+	max-height: 24px;
+	padding-inline-end: 2px;
+	pointer-events: auto;
+}
+
+.ingredient-toggle {
+	top: 0;
+}
+
+.ingredient-subtract {
+	bottom: 0;
+}
+
+.ingredient-toggle-visual,
+.ingredient-subtract-visual {
+	box-sizing: border-box;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: var(--ingredient-action-size);
-	height: var(--ingredient-action-size);
 	border: 1px solid var(--picked-border);
-	border-radius: 4px;
+	border-radius: 3px;
 	color: var(--fg-primary);
 	background: var(--bg-primary);
 }
 
-.ingredient-subtract::before {
+.ingredient-toggle-visual {
+	min-width: 14px;
+	height: 14px;
+	padding-inline: 1px;
+}
+
+.ingredient-subtract-visual {
+	width: 12px;
+	height: 12px;
+}
+
+.ingredient-subtract-visual::before {
 	content: '';
-	width: 8px;
+	width: 6px;
 	border-bottom: 2px solid currentColor;
 }
 
@@ -238,7 +261,7 @@ table tr.highlighted .name-cell::before {
 .ingredient-picked-marker {
 	display: none;
 	align-items: center;
-	gap: 2px;
+	gap: 1px;
 	font-size: 10px;
 	font-weight: 700;
 	line-height: 1;
@@ -246,14 +269,14 @@ table tr.highlighted .name-cell::before {
 
 .ingredient-picked-marker::before {
 	content: '';
-	width: 6px;
-	height: 4px;
+	width: 4px;
+	height: 3px;
 	border: solid currentColor;
 	border-width: 0 0 2px 2px;
 	transform: rotate(-45deg);
 }
 
-.ingredientdropdown .item.faded .ingredient-toggle {
+.ingredientdropdown .item.faded .ingredient-toggle-visual {
 	background: var(--focus-color);
 	border-color: var(--focus-color);
 	color: var(--bg-secondary);
@@ -263,26 +286,45 @@ table tr.highlighted .name-cell::before {
 	display: inline-flex;
 }
 
-.ingredientdropdown.hidetext:is(.density-compact, .density-normal, .density-cozy) div {
-	grid-template-columns: repeat(
-		auto-fill,
-		minmax(calc(var(--ingredient-action-size) * 2 + 10px), 1fr)
-	);
-}
-
 .ingredientdropdown.hidetext .text {
 	display: none;
 }
 
+/* Opposite corners leave the middle of even a compact icon free to add. */
 .ingredientdropdown.hidetext .item {
-	padding-bottom: calc(var(--ingredient-action-size) + 6px);
+	min-height: 44px;
+	padding: 4px;
 }
 
-.ingredientdropdown.hidetext .ingredient-option-actions {
-	top: auto;
-	bottom: 2px;
-	inset-inline-end: 50%;
-	transform: translateX(50%);
+.ingredientdropdown.hidetext.density-compact div {
+	grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+}
+
+.ingredientdropdown.hidetext.density-cozy .item {
+	padding: 8px;
+}
+
+.ingredientdropdown.hidetext :is(.ingredient-toggle, .ingredient-subtract) {
+	width: 20px;
+	height: 20px;
+	max-height: none;
+}
+
+.ingredientdropdown.hidetext .ingredient-subtract {
+	inset-inline-end: auto;
+	inset-inline-start: 0;
+	justify-content: flex-start;
+	padding-inline: 2px 0;
+}
+
+@media (any-pointer: coarse) {
+	.ingredientdropdown {
+		--ingredient-action-width: 28px;
+	}
+
+	.ingredientdropdown .item {
+		min-height: 44px;
+	}
 }
 
 /* Keyboard highlight and picked state are independent. */
@@ -337,7 +379,7 @@ table tr.highlighted .name-cell::before {
 		opacity: 1;
 	}
 
-	.ingredientdropdown .item.faded .ingredient-toggle {
+	.ingredientdropdown .item.faded .ingredient-toggle-visual {
 		forced-color-adjust: none;
 		background: Highlight;
 		color: HighlightText;

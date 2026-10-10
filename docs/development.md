@@ -178,9 +178,13 @@ cancel touch events needed for native scrolling and zooming.
 
 `html/style/touch.css` uses `any-pointer: coarse` to provide at least 44-pixel
 button and picker targets on touchscreens, including computers with a mouse.
-The optional in-option membership shortcuts use separate 32-pixel targets (24 on
-mouse-only devices), backed by the larger option/slot targets and keyboard commands.
-Compact/icon-only modes retain that minimum. Picker names wrap on touchscreens;
+The optional in-option membership shortcuts overlay small corner badges on larger
+transparent hit areas, backed by the option/slot targets and keyboard commands.
+Named options split their right edge into two separate targets, up to 24 pixels
+wide on mouse-only devices or 28 on touchscreens. Icon-only options use 20-pixel
+targets at opposite corners; their 44-pixel minimum leaves the center free for the
+ingredient's ordinary action. These overlays add no footer or wide action column.
+Picker names wrap on touchscreens;
 selected ingredients and analyzer filters also show names instead of depending
 on hover titles. Text fields use 16-pixel type,
 controls wrap on narrow screens, and wide tables scroll inside their own wrappers.
@@ -192,7 +196,7 @@ and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enh
 menu choices, picked ingredients, visible columns, and highlighted table rows.
 Picked ingredients also have a distinct background and repeated pot ingredients
 show a quantity badge. Clicking its checkbox-shaped target clears all copies;
-the adjacent minus removes one. These are pointer shortcuts inside an atomic
+the minus removes one. These are pointer shortcuts inside an atomic
 listbox option, rather than nested focusable controls; the combobox documents
 and exposes equivalent keyboard commands with `aria-keyshortcuts`. Unpicked
 checkboxes add once, and unavailable minus targets do nothing. Clearing copies

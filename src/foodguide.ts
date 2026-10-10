@@ -1696,11 +1696,17 @@ import './locales/index.js';
 				actions.setAttribute('aria-hidden', 'true');
 				const toggle = document.createElement('span');
 				toggle.className = 'ingredient-toggle';
+				const checkbox = document.createElement('span');
+				checkbox.className = 'ingredient-toggle-visual';
 				const marker = document.createElement('span');
 				marker.className = 'ingredient-picked-marker';
-				toggle.appendChild(marker);
+				checkbox.appendChild(marker);
+				toggle.appendChild(checkbox);
 				const subtract = document.createElement('span');
 				subtract.className = 'ingredient-subtract';
+				const minus = document.createElement('span');
+				minus.className = 'ingredient-subtract-visual';
+				subtract.appendChild(minus);
 				// Draw the minus in CSS so it doesn't alter the ingredient's name.
 				actions.append(toggle, subtract);
 				li.appendChild(actions);

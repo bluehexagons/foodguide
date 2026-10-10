@@ -188,6 +188,12 @@ const defaultStrings = {
 	resume: 'Resume',
 	computingCombinations: 'Computing combinations..',
 	multipleResultsNote: '* combination has multiple possible results',
+	analysisGroupingHelp:
+		'Consecutive combinations for the same recipe are grouped. Expand a recipe to see them; the collapsed row shows the first result in the current sort order. Click the ingredients to try that combination in the Simulator.',
+	analysisShowCombinations: 'Show {count} consecutive combinations for {name}',
+	analysisHideCombinations: 'Hide {count} consecutive combinations for {name}',
+	analysisTryCombination: 'Try {name} in the Simulator with {ingredients}',
+	analysisIngredientsLoaded: 'Loaded {count} ingredients into the crock pot.',
 	filterCycleHelp:
 		'Use arrow keys to browse each filter group. Click, tap, Enter, or Space cycles normal → required (✓) → excluded (✕). Shift+Enter, Shift+Space, or right-click reverses ingredient filters or toggles recipe exclusions.',
 	filterIngredients: 'Ingredient filters',

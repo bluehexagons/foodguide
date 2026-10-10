@@ -161,6 +161,12 @@ const dict = {
 	resume: '继续',
 	computingCombinations: '正在计算组合……',
 	multipleResultsNote: '* 该组合有多个可能结果',
+	analysisGroupingHelp:
+		'同一食谱的连续组合会归为一组。展开食谱即可查看；折叠行显示当前排序中的第一个结果。点击食材即可在模拟器中尝试该组合。',
+	analysisShowCombinations: '显示 {name} 的 {count} 个连续组合',
+	analysisHideCombinations: '隐藏 {name} 的 {count} 个连续组合',
+	analysisTryCombination: '在模拟器中用 {ingredients} 尝试制作 {name}',
+	analysisIngredientsLoaded: '已将 {count} 个食材放入烹饪锅。',
 	filterCycleHelp:
 		'用方向键浏览各筛选组。鼠标点击、轻触、回车或空格循环切换：普通 → 必需(✓) → 排除(✕)。Shift+回车、Shift+空格或右键可反向切换食材筛选或切换配方排除状态。',
 	customFilterPlaceholder: '使用自定义过滤器',

@@ -265,6 +265,20 @@ to right, avoiding gaps beneath shorter cards while preserving reading order.
 A single matching group uses the full available width.
 Resizing and zooming change layout without rebuilding options or focus.
 
+Statistics and Discovery efficiency tables collapse consecutive results for the
+same recipe after sorting, filtering, and pagination. Each collapsed row shows
+the first combination's exact stats and ingredients, not an aggregate; the count
+includes only combinations in the current result limit. Separate runs of the
+same recipe remain separate, preserving numeric sort order. Expanding keeps the
+control focused and reveals ordinary table rows with their own ingredient
+buttons. Expansion survives language changes and pagination when the first
+combination remains the same; changing the sort collapses groups. Stable sorting
+preserves tied combinations across rerenders, with missing numeric values last.
+Clicking an ingredient cell or activating its button replaces the four Simulator
+slots, preserves duplicates, updates recipes and membership badges, switches
+tabs, focuses the first pot slot, announces the change, and saves immediately.
+Discovery inventory and analysis results remain available when returning.
+
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
 paused statistics results, empty filtered tables, empty searches, and full-pot

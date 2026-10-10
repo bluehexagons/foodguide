@@ -64,6 +64,11 @@ calculations, the Food List, or analyzer filters.
 When a search has hidden matches, its summary offers **Show all** to restore them
 without clearing the search or changing the other picker's view.
 
+The Statistics Analyzer and Discovery's efficiency results group consecutive
+combinations for the same recipe without changing the sort order. Expand a recipe
+to see its combinations; a collapsed row shows the first combination's values.
+Click its ingredients to fill the crock pot and open the Simulator.
+
 Ingredient searches accept display names and game identifiers, with spaces or
 underscores between words. For example, `mushroom` finds Red, Green, and Blue Caps
 and their cooked forms. Use `tag:meat` to filter by a food tag or

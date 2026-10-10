@@ -64,6 +64,24 @@ test('empty tables and tables containing only summary rows remain sortable', () 
 	assert.deepEqual(rows, original);
 });
 
+test('repeated sorting preserves tied rows and leaves missing values last in both directions', () => {
+	for (const sortBy of ['name', 'health']) {
+		const first = { name: 'Tied', health: 5 };
+		const second = { name: 'Tied', health: 5 };
+		const rows = [first, { name: 'Other', health: 10 }, second, { name: 'Missing' }];
+		for (const invert of [false, true]) {
+			sortTableRows(rows, sortBy, { invert });
+			const sorted = [...rows];
+			sortTableRows(rows, sortBy, { invert });
+			assert.deepEqual(rows, sorted);
+			assert.ok(rows.indexOf(first) < rows.indexOf(second));
+			if (sortBy === 'health') {
+				assert.equal(rows.at(-1).name, 'Missing');
+			}
+		}
+	}
+});
+
 test('sibling preparation variants have a consistent order regardless of their input order', () => {
 	const raw = { name: 'Berries' };
 	const cooked = { name: 'Roasted Berries', basename: 'Berries', raw };

@@ -84,7 +84,7 @@ import { filterCookingIngredients } from './ingredient-cooking.js';
 import { createThemeController } from './theme-controller.js';
 import { createSortableTableFactory } from './sortable-table.js';
 import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
-import { makeImage, makeLinkable, makeElement } from './utils.js';
+import { makeImage, makeElement } from './utils.js';
 import {
 	matchesMode,
 	getActiveMultipliers,
@@ -827,9 +827,7 @@ import './locales/index.js';
 	});
 
 	// statistics analyzer
-	const ingredientToIcon = (a: string, b: Food) => {
-		return `${a}[ingredient:${food[b.id].name}|${food[b.id].img}]`;
-	};
+	let loadSimulatorIngredients: (items: Food[]) => void;
 
 	const makeRecipeGrinder = (ingredients: Food[] | null, excludeDefault = false) => {
 		const makableButton = document.createElement('button');
@@ -966,8 +964,34 @@ import './locales/index.js';
 					dataset: made,
 					rowGenerator: data => {
 						const item = data.recipe;
+						const combination = document.createElement('button');
+						combination.type = 'button';
+						combination.className = 'analysis-ingredients';
+						combination.dataset.tableAction = 'simulate';
+						combination.setAttribute(
+							'aria-label',
+							t('analysisTryCombination', {
+								name: item.name,
+								ingredients: data.ingredients
+									.map(ingredient => ingredient.name)
+									.join(', '),
+							}),
+						);
+						for (const ingredient of data.ingredients) {
+							const icon = makeImage(ingredient.img);
+							icon.dataset.id = ingredient.key;
+							icon.title = ingredient.name;
+							icon.setAttribute('aria-hidden', 'true');
+							combination.appendChild(icon);
+						}
+						if (data.multiple) {
+							const marker = document.createElement('span');
+							marker.textContent = '*';
+							marker.title = t('multipleResultsNote');
+							combination.appendChild(marker);
+						}
 
-						return cells(
+						const row = cells(
 							'td',
 							item.img ? item.img : '',
 							item.name,
@@ -975,15 +999,28 @@ import './locales/index.js';
 							`${formatSignedValue(data.healthpls)} (${formatSignedValue((data.healthpct * 100) | 0)}%)`,
 							formatSignedValue(item.hunger),
 							`${formatSignedValue(data.hungerpls)} (${formatSignedValue((data.hungerpct * 100) | 0)}%)`,
-							makeLinkable(
-								data.ingredients.reduce(ingredientToIcon, '') +
-									(data.multiple ? '*' : ''),
-							),
+							combination,
 						);
+						row.dataset.recipe = item.id;
+						const ingredientCell = row.cells[6];
+						ingredientCell.className = 'analysis-ingredients-cell';
+						ingredientCell.addEventListener('click', () =>
+							loadSimulatorIngredients(data.ingredients),
+						);
+						return row;
 					},
 					defaultSort: 'hungerpls',
 					filterCallback: filters.matches,
 					maxRows: 25,
+					groupRows: {
+						key: data => data.recipe.id,
+						toggleLabel: (data, count, expanded) =>
+							t(expanded ? 'analysisHideCombinations' : 'analysisShowCombinations', {
+								name: data.recipe.name,
+								count,
+							}),
+						description: () => t('analysisGroupingHelp'),
+					},
 					columnConfig: {
 						toggleable: true,
 						columns: ['Health', 'Health+', 'Hunger', 'Hunger+', 'Ingredients'],
@@ -1021,6 +1058,9 @@ import './locales/index.js';
 				filterHelp.id = ingredients ? 'discovery-filter-help' : 'statistics-filter-help';
 				const filterHelpText = document.createTextNode(t('filterCycleHelp'));
 				filterHelp.appendChild(filterHelpText);
+				const groupingHelp = document.createElement('p');
+				groupingHelp.className = 'makableGroupingHelp';
+				groupingHelp.textContent = t('analysisGroupingHelp');
 				const updateMakableTexts = () => {
 					makableSummaryText.textContent = t(
 						!isCalculating
@@ -1032,12 +1072,14 @@ import './locales/index.js';
 					);
 					makableFootnoteText.textContent = t('multipleResultsNote');
 					filterHelpText.textContent = t('filterCycleHelp');
+					groupingHelp.textContent = t('analysisGroupingHelp');
 				};
 				document.addEventListener('foodguide:localechange', updateMakableTexts);
 
 				makableDiv.appendChild(makableSummary);
 				makableDiv.appendChild(makableFootnote);
 				makableDiv.appendChild(filterHelp);
+				makableDiv.appendChild(groupingHelp);
 				const analysisStatus = document.createElement('div');
 				analysisStatus.className = 'sr-only';
 				analysisStatus.setAttribute('role', 'status');
@@ -1935,6 +1977,18 @@ import './locales/index.js';
 
 			if (parent.id === 'ingredients') {
 				//simulator
+				loadSimulatorIngredients = items => {
+					for (const [slotIndex, slot] of fixedSlots.entries()) {
+						setSlot(slot, items[slotIndex] ?? null);
+					}
+					picker.value = '';
+					refreshPicker(false);
+					updateRecipes();
+					setTab('simulator');
+					fixedSlots[0].focus();
+					announcePicker(t('analysisIngredientsLoaded', { count: items.length }));
+					saveState();
+				};
 
 				const searchFor = (name: string, target: HTMLElement) => {
 					const matches = matchingNames(from, name, allowUncookable);

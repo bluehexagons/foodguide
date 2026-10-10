@@ -44,6 +44,12 @@ export interface TableOptions<T extends SortRow> {
 	highlightCallback?: (item: T, items: T[]) => boolean;
 	filterCallback?: (item: T) => boolean;
 	maxRows?: number;
+	/** Collapse consecutive matching rows after sorting, filtering, and pagination. */
+	groupRows?: {
+		key: (item: T) => string;
+		toggleLabel: (item: T, count: number, expanded: boolean) => string;
+		description?: () => string;
+	};
 	columnConfig?: ColumnConfig;
 }
 
@@ -76,6 +82,7 @@ export const createSortableTableFactory = ({
 	localeTables,
 	responsiveTables,
 }: TableFactoryOptions) => {
+	let tableSequence = 0;
 	const queueIcon = (icon: HTMLSpanElement) => {
 		if (icon.dataset.src) {
 			makeImage.queue(icon, icon.dataset.src);
@@ -138,9 +145,12 @@ export const createSortableTableFactory = ({
 		highlightCallback,
 		filterCallback,
 		maxRows,
+		groupRows,
 		columnConfig,
 	}: TableOptions<T>) => {
 		const table = document.createElement('table');
+		const tableId = `sortable-table-${++tableSequence}`;
+		const expandedGroups = new Set<T>();
 		const container = document.createElement('div') as SortableTable;
 		const wrapper = columnConfig?.toggleable ? document.createElement('div') : container;
 		wrapper.className = 'table-scroll-wrapper';
@@ -265,6 +275,7 @@ export const createSortableTableFactory = ({
 			}
 			invertSort = sorting === sortKey ? !invertSort : false;
 			sorting = sortKey;
+			expandedGroups.clear();
 			renderTable();
 		};
 
@@ -337,12 +348,17 @@ export const createSortableTableFactory = ({
 					? document.activeElement
 					: undefined;
 			const focusedLink = focusedControl?.dataset.link;
+			const focusedAction = focusedControl?.dataset.tableAction;
 			const focusedRow = focusedControl?.closest('tr');
 			const focusedItem = focusedRow ? rowItems.get(focusedRow) : undefined;
 			const focusedIndex =
 				focusedRow && focusedControl
-					? Array.from(focusedRow.querySelectorAll<HTMLButtonElement>('button.link'))
-							.filter(button => button.dataset.link === focusedLink)
+					? Array.from(focusedRow.querySelectorAll<HTMLButtonElement>('button'))
+							.filter(
+								button =>
+									button.dataset.link === focusedLink &&
+									button.dataset.tableAction === focusedAction,
+							)
 							.indexOf(focusedControl)
 					: -1;
 			let restoredRow: HTMLTableRowElement | undefined;
@@ -351,6 +367,7 @@ export const createSortableTableFactory = ({
 			lastHighlight = null;
 			rows = 0;
 			let matchingRows = 0;
+			const groups: { key: string; item: T; rows: HTMLTableRowElement[] }[] = [];
 
 			for (const item of dataset) {
 				const items = dataset;
@@ -366,6 +383,16 @@ export const createSortableTableFactory = ({
 					continue;
 				}
 				const row = rowGenerator(item);
+				if (groupRows) {
+					const key = groupRows.key(item);
+					let group = groups.at(-1);
+					if (!group || group.key !== key) {
+						group = { key, item, rows: [] };
+						groups.push(group);
+					}
+					row.id = `${tableId}-row-${rows}`;
+					group.rows.push(row);
+				}
 				row.children[nameColumn]?.classList.add('name-cell');
 				rowItems.set(row, item);
 				if (item === focusedItem) {
@@ -382,6 +409,49 @@ export const createSortableTableFactory = ({
 				}
 				content.appendChild(row);
 				rows++;
+			}
+			for (const group of groups) {
+				const nameCell = group.rows[0].children[nameColumn];
+				if (group.rows.length < 2 || !nameCell) {
+					continue;
+				}
+				const details = group.rows.slice(1);
+				const toggle = document.createElement('button');
+				toggle.type = 'button';
+				toggle.className = 'table-group-toggle';
+				toggle.dataset.tableAction = 'expand-group';
+				toggle.dataset.count = String(group.rows.length);
+				toggle.setAttribute('aria-controls', details.map(row => row.id).join(' '));
+				if (groupRows?.description) {
+					toggle.setAttribute('aria-description', groupRows.description());
+				}
+				toggle.append(...nameCell.childNodes);
+				nameCell.appendChild(toggle);
+				group.rows[0].classList.add('table-group-start');
+				for (const row of details) {
+					row.classList.add('table-group-detail');
+				}
+				const updateGroup = () => {
+					const expanded = expandedGroups.has(group.item);
+					toggle.setAttribute('aria-expanded', String(expanded));
+					toggle.setAttribute(
+						'aria-label',
+						groupRows!.toggleLabel(group.item, group.rows.length, expanded),
+					);
+					for (const row of details) {
+						row.hidden = !expanded;
+					}
+					updateScrollAccess();
+				};
+				toggle.addEventListener('click', () => {
+					if (expandedGroups.has(group.item)) {
+						expandedGroups.delete(group.item);
+					} else {
+						expandedGroups.add(group.item);
+					}
+					updateGroup();
+				});
+				updateGroup();
 			}
 			if (!rows) {
 				const row = document.createElement('tr');
@@ -408,9 +478,13 @@ export const createSortableTableFactory = ({
 			body.replaceChildren(content);
 			onRender?.({ shown: rows, total: matchingRows });
 			applyColumnVisibility();
-			if (focusedLink !== undefined && restoredRow) {
-				Array.from(restoredRow.querySelectorAll<HTMLButtonElement>('button.link'))
-					.filter(button => button.dataset.link === focusedLink)
+			if ((focusedLink !== undefined || focusedAction !== undefined) && restoredRow) {
+				Array.from(restoredRow.querySelectorAll<HTMLButtonElement>('button'))
+					.filter(
+						button =>
+							button.dataset.link === focusedLink &&
+							button.dataset.tableAction === focusedAction,
+					)
 					[focusedIndex]?.focus({ preventScroll: true });
 			}
 

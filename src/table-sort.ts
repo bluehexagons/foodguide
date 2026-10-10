@@ -25,8 +25,9 @@ export function sortTableRows<T extends SortRow>(
 	{ summaryRows = 0, invert = false }: { summaryRows?: number; invert?: boolean } = {},
 ): void {
 	const summary = dataset.splice(0, summaryRows);
+	const direction = invert ? -1 : 1;
 	if (sortBy === 'name') {
-		dataset.sort(compareItemNames);
+		dataset.sort((a, b) => direction * compareItemNames(a, b));
 	} else {
 		dataset.sort((a, b) => {
 			// The column key is checked against T; absent union fields become NaN.
@@ -38,11 +39,8 @@ export function sortTableRows<T extends SortRow>(
 			if (Number.isNaN(right)) {
 				return -1;
 			}
-			return right - left;
+			return direction * (right - left);
 		});
-	}
-	if (invert) {
-		dataset.reverse();
 	}
 	dataset.unshift(...summary);
 }

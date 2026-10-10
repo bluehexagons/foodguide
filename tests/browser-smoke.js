@@ -2894,6 +2894,196 @@ test('analyzer filter clicks preserve other exclusions and match the displayed r
 	assert.deepEqual(diagnostics, []);
 });
 
+test('analysis groups consecutive sorted recipes and loads combinations into the Simulator', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const hasTouch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{
+				activeTab: 'discovery',
+				version: 'dontstarve',
+				pickers: [
+					['meat', 'meat', 'meat', 'meat'],
+					['meat', 'carrot', 'berries', 'honey'],
+				],
+			},
+			{ hasTouch, viewport: { width: 1280, height: 800 } },
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.locator('#makable .makablebutton').click();
+		await page.waitForFunction(
+			() => !document.querySelector('#makable .makablebutton').disabled,
+		);
+		const captureRows = selector =>
+			page.locator(`${selector} tbody tr:not(.table-empty-row)`).evaluateAll(rows =>
+				rows.map(row => {
+					const toggle = row.querySelector('.table-group-toggle');
+					return {
+						id: row.id,
+						recipe: row.dataset.recipe,
+						hidden: row.hidden,
+						ingredients: [...row.querySelectorAll('.analysis-ingredients .icon')].map(
+							icon => icon.dataset.id,
+						),
+						toggle: toggle && {
+							count: Number(toggle.dataset.count),
+							expanded: toggle.getAttribute('aria-expanded'),
+							controls: toggle.getAttribute('aria-controls').split(' '),
+						},
+					};
+				}),
+			);
+		const assertCollapsedRuns = rows => {
+			const runs = [];
+			for (const row of rows) {
+				const last = runs.at(-1);
+				if (last?.[0].recipe === row.recipe) {
+					last.push(row);
+				} else {
+					runs.push([row]);
+				}
+			}
+			for (const [first, ...details] of runs) {
+				assert.equal(first.hidden, false);
+				if (details.length) {
+					assert.equal(first.toggle.count, details.length + 1);
+					assert.equal(first.toggle.expanded, 'false');
+					assert.deepEqual(
+						first.toggle.controls,
+						details.map(row => row.id),
+					);
+					assert.ok(details.every(row => row.hidden && !row.toggle));
+				} else {
+					assert.equal(first.toggle, null);
+				}
+			}
+			assert.equal(new Set(rows.map(row => row.id)).size, rows.length);
+			return runs;
+		};
+		assertCollapsedRuns(await captureRows('#makable'));
+		let splitRecipes = false;
+		for (const key of ['healthpls', 'hungerpls', 'health', 'hunger', 'name']) {
+			for (const invert of [false, true]) {
+				const expected = await page.evaluate(() =>
+					window.analysis.made.map(row => ({
+						...row,
+						name: row.recipe.basename || row.name,
+						recipe: row.recipe.id,
+						ingredients: row.ingredients.map(item => item.key),
+					})),
+				);
+				expected.sort((a, b) => {
+					const comparison =
+						key === 'name' ? a.name.localeCompare(b.name, 'en') : b[key] - a[key];
+					return invert ? -comparison : comparison;
+				});
+				await page.locator(`#makable th[data-sort="${key}"] button`).click();
+				const rows = await captureRows('#makable');
+				assert.deepEqual(
+					rows.map(({ recipe, ingredients }) => ({ recipe, ingredients })),
+					expected.map(({ recipe, ingredients }) => ({ recipe, ingredients })),
+					`${key} ${invert ? 'ascending' : 'descending'} preserves every combination's order`,
+				);
+				const runs = assertCollapsedRuns(rows);
+				splitRecipes ||= new Set(runs.map(run => run[0].recipe)).size < runs.length;
+			}
+		}
+		assert.equal(splitRecipes, true, 'The fixture exercises separate runs for the same recipe');
+		const toggle = page.locator('#makable .table-group-toggle').first();
+		await toggle.focus();
+		await toggle.press('Enter');
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+		await toggle.press('Space');
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+		await toggle.press('Enter');
+		await page.locator('#language-picker').selectOption('es');
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+		assert.equal(await toggle.evaluate(e => e === document.activeElement), true);
+		assert.match(await toggle.getAttribute('aria-label'), /Ocultar \d+ combinaciones/);
+		const detailId = (await toggle.getAttribute('aria-controls')).split(' ')[0];
+		const detail = page.locator(`[id="${detailId}"]`);
+		assert.equal(await detail.isVisible(), true);
+		const selected = await detail
+			.locator('.analysis-ingredients .icon')
+			.evaluateAll(icons => icons.map(icon => icon.dataset.id));
+		const combination = detail.locator('.analysis-ingredients');
+		await combination.focus();
+		await combination.press('Space');
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page
+				.locator('#ingredients .ingredient')
+				.evaluateAll(slots => slots.map(s => s.dataset.id)),
+			selected,
+		);
+		assert.equal(
+			await page
+				.locator('#ingredients .ingredient')
+				.first()
+				.evaluate(e => e === document.activeElement),
+			true,
+		);
+		assert.match(
+			await page.locator('#simulator [role=status]').textContent(),
+			/4 ingredientes/,
+		);
+		await page.locator('#tab-discovery').click();
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+		const cell = detail.locator('.analysis-ingredients-cell');
+		if (hasTouch) {
+			await cell.tap({ position: { x: 1, y: 1 } });
+		} else {
+			await cell.click({ position: { x: 1, y: 1 } });
+		}
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page.evaluate(() => JSON.parse(localStorage.getItem('foodGuideState')).pickers),
+			[selected, ['meat', 'carrot', 'berries', 'honey']],
+		);
+		await page.reload({ waitUntil: 'networkidle' });
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page
+				.locator('#ingredients .ingredient')
+				.evaluateAll(slots => slots.map(s => s.dataset.id)),
+			selected,
+		);
+		await page.locator('#language-picker').selectOption('en');
+		await page.locator('#tab-statistics').click();
+		await page.locator('#statistics .makablebutton').click();
+		await page.locator('#statistics .pauseButton').click();
+		assertCollapsedRuns(await captureRows('#statistics'));
+		const statsToggle = page.locator('#statistics .table-group-toggle').first();
+		assert.ok((await statsToggle.count()) > 0);
+		if (hasTouch) {
+			await statsToggle.tap();
+		} else {
+			await statsToggle.click();
+		}
+		assert.equal(await statsToggle.getAttribute('aria-expanded'), 'true');
+		const statsCombination = page
+			.locator('#statistics tbody tr:not([hidden]) .analysis-ingredients')
+			.last();
+		const statsKeys = await statsCombination
+			.locator('.icon')
+			.evaluateAll(icons => icons.map(i => i.dataset.id));
+		await statsCombination.click();
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page
+				.locator('#ingredients .ingredient')
+				.evaluateAll(slots => slots.map(s => s.dataset.id)),
+			statsKeys,
+		);
+		await page.locator('#tab-statistics').click();
+		await page.locator('#statistics .deleteButton').click();
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
 test('statistics default exclusions keep visible sprites and recalculation follows the game', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(browser, baseUrl, {

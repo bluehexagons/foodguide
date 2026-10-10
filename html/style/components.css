@@ -481,7 +481,8 @@ div.foodFilter :is(img, .icon).excluded::after {
 	font-style: italic;
 }
 
-.makableFilterHelp {
+.makableFilterHelp,
+.makableGroupingHelp {
 	font-size: 10pt;
 	color: var(--fg-secondary);
 	margin-bottom: 12px;

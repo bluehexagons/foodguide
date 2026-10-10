@@ -171,6 +171,12 @@ const dict = {
 	resume: 'Reanudar',
 	computingCombinations: 'Calculando combinaciones..',
 	multipleResultsNote: '* la combinación tiene varios resultados posibles',
+	analysisGroupingHelp:
+		'Las combinaciones consecutivas de una misma receta se agrupan. Expande una receta para verlas; la fila contraída muestra el primer resultado del orden actual. Haz clic en los ingredientes para probar esa combinación en el Simulador.',
+	analysisShowCombinations: 'Mostrar {count} combinaciones consecutivas de {name}',
+	analysisHideCombinations: 'Ocultar {count} combinaciones consecutivas de {name}',
+	analysisTryCombination: 'Probar {name} en el Simulador con {ingredients}',
+	analysisIngredientsLoaded: 'Se añadieron {count} ingredientes a la olla.',
 	filterCycleHelp:
 		'Usa las flechas para explorar cada grupo de filtros. Clic, toque, Intro o Espacio alternan normal → obligatorio (✓) → excluido (✕). Mayús+Intro, Mayús+Espacio o clic derecho invierten los filtros de ingredientes o alternan la exclusión de recetas.',
 	customFilterPlaceholder: 'usar filtro personalizado',

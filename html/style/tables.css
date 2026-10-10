@@ -136,6 +136,64 @@ table th.sort-desc .table-sort::after {
 	line-height: 1.5;
 }
 
+/* Collapsed runs retain the first sorted combination's values and ingredients. */
+.table-group-toggle {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	min-height: 32px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+
+.table-group-toggle::before {
+	content: '▸';
+}
+
+.table-group-toggle[aria-expanded='true']::before {
+	content: '▾';
+}
+
+.table-group-toggle::after {
+	content: '(' attr(data-count) ')';
+	color: var(--fg-secondary);
+	font-size: 12px;
+}
+
+.table-group-detail .name-cell {
+	padding-inline-start: 30px;
+}
+
+.analysis-ingredients-cell {
+	padding: 0;
+	cursor: pointer;
+}
+
+.analysis-ingredients {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	width: 100%;
+	min-height: 44px;
+	padding: 6px 12px;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+
+.analysis-ingredients-cell:hover {
+	background: var(--selected-bg);
+}
+
 /* Column visibility: user can toggle columns on/off */
 table .col-hidden {
 	display: none;

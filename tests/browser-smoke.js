@@ -1802,34 +1802,52 @@ test('group cards use available width across displays and densities without chan
 					overflow: picker.scrollWidth > picker.clientWidth,
 					groups: [...picker.querySelectorAll('.ingredient-result-group')].map(group => ({
 						rect: group.getBoundingClientRect().toJSON(),
+						fragments: group.getClientRects().length,
 						scrolls: ['auto', 'scroll'].includes(getComputedStyle(group).overflowY),
 						overflow: group.scrollWidth > group.clientWidth + 1,
 					})),
 				}));
-			const firstRowSizes = {};
+			const assertPackedColumns = cards => {
+				const columns = [];
+				for (const card of cards) {
+					const previous = columns.at(-1);
+					assert.equal(card.fragments, 1, 'A card stays together in one column');
+					if (previous && Math.abs(card.rect.left - previous.rect.left) < 1) {
+						assert.ok(
+							Math.abs(card.rect.top - previous.rect.bottom - 12) < 1,
+							'Cards stack without gaps beyond their spacing',
+						);
+						columns[columns.length - 1] = card;
+					} else {
+						if (previous) {
+							assert.ok(
+								card.rect.left >= previous.rect.right,
+								'DOM order follows columns',
+							);
+						}
+						assert.ok(Math.abs(card.rect.top - cards[0].rect.top) < 1);
+						columns.push(card);
+					}
+				}
+				assert.ok(columns.length > 1, 'Wide pickers use multiple columns');
+				return columns.length;
+			};
+			const columnCounts = {};
 			for (const display of ['names', 'icons', 'list']) {
 				await select('.displaymodeingredients:not(.densityingredients)', display);
 				for (const density of ['compact', 'normal', 'cozy']) {
 					await select('.densityingredients', density);
 					const layout = await geometry();
-					const [first, second] = layout.groups;
-					assert.ok(Math.abs(first.rect.top - second.rect.top) < 1);
-					assert.ok(
-						second.rect.left >= first.rect.right,
-						`${tab} ${display} ${density}: Cards share a row`,
-					);
+					columnCounts[`${display}-${density}`] = assertPackedColumns(layout.groups);
 					assert.equal(layout.overflow, false);
 					assert.ok(
 						layout.groups.every(group => !group.scrolls && !group.overflow),
 						'Cards use one outer scroll area and contain their contents',
 					);
-					firstRowSizes[`${display}-${density}`] = layout.groups.filter(
-						group => Math.abs(group.rect.top - first.rect.top) < 1,
-					).length;
 				}
 			}
-			assert.ok(firstRowSizes['names-compact'] > firstRowSizes['names-normal']);
-			assert.ok(firstRowSizes['icons-compact'] > firstRowSizes['names-compact']);
+			assert.ok(columnCounts['names-compact'] > columnCounts['names-normal']);
+			assert.ok(columnCounts['icons-compact'] > columnCounts['names-compact']);
 			await select('.displaymodeingredients:not(.densityingredients)', 'names');
 			await select('.densityingredients', 'compact');
 			for (const width of [320, 1280]) {
@@ -1839,6 +1857,9 @@ test('group cards use available width across displays and densities without chan
 					const layout = await geometry();
 					assert.equal(layout.overflow, false, `${tab} ${locale}: Localized groups fit`);
 					assert.ok(layout.groups.every(group => !group.overflow));
+					if (width === 1280) {
+						assertPackedColumns(layout.groups);
+					}
 				}
 			}
 			await page.locator('#language-picker').selectOption('en');
@@ -1864,10 +1885,7 @@ test('group cards use available width across displays and densities without chan
 						'Narrow containers stack groups',
 					);
 				} else {
-					assert.ok(
-						Math.abs(first.rect.top - second.rect.top) < 1,
-						'Wide containers show groups side by side',
-					);
+					assertPackedColumns(cards);
 				}
 				assert.equal(overflow, false);
 				assert.equal(await search.getAttribute('aria-activedescendant'), activeId);
@@ -1880,13 +1898,22 @@ test('group cards use available width across displays and densities without chan
 			}
 			await search.press('Enter');
 			assert.equal(await panel.locator('.ingredientlist .icon').count(), 2);
+			await search.fill('*Meat');
+			assert.equal(await groups.count(), 1);
+			assert.equal(
+				await panel
+					.locator('.ingredient-result-groups')
+					.evaluate(e => getComputedStyle(e).columnWidth),
+				'auto',
+				'A single matching group uses the available width',
+			);
 			await select('.groupingredients', 'none');
 			assert.equal(await groups.count(), 0);
 			assert.equal(
 				await panel
 					.locator('.ingredient-result-groups')
-					.evaluate(e => getComputedStyle(e).display),
-				'block',
+					.evaluate(e => getComputedStyle(e).columnWidth),
+				'auto',
 			);
 		}
 		assert.deepEqual(diagnostics, []);

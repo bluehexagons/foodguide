@@ -677,18 +677,16 @@ button.makablebutton:disabled:hover {
 
 /* Use the picker's available width, including when browser zoom makes it narrower. */
 @container ingredient-picker (min-width: 640px) {
-	.ingredient-result-groups.is-grouped {
-		display: grid;
-		grid-template-columns: repeat(
-			auto-fit,
-			minmax(min(100%, var(--ingredient-group-width)), 1fr)
-		);
-		align-items: start;
-		gap: 12px;
+	.ingredient-result-groups.is-grouped:has(
+			> .ingredient-result-group + .ingredient-result-group
+		) {
+		columns: var(--ingredient-group-width);
+		column-gap: 12px;
 	}
 
 	.ingredient-result-groups.is-grouped > .ingredient-result-group {
-		margin: 0;
+		break-inside: avoid-column;
+		margin: 0 0 12px;
 		padding: 8px;
 		border: 1px solid var(--border-color);
 		border-radius: 6px;

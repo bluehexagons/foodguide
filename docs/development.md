@@ -249,11 +249,14 @@ containing the strongest match. Sorting remains stable within each group. Arrow
 navigation spans the flattened option order and skips headings; global
 `aria-posinset`/`aria-setsize` describe that order. Grouping preferences persist
 independently for Simulator and Discovery. Only `.ingredient-options` gets the
-ingredient grid/list styling. Grouped wrappers get a separate card grid when the
+ingredient grid/list styling. Grouped wrappers get card columns when the
 picker's container is at least 640 pixels wide; density and display mode determine
 the minimum card width. Narrower pickers stack groups. Card order follows DOM and
 keyboard order, with one outer scroll area rather than independently scrolling
-cards. Resizing and zooming change layout without rebuilding options or focus.
+cards. Each card stays in one column; groups fill columns top to bottom, then left
+to right, avoiding gaps beneath shorter cards while preserving reading order.
+A single matching group uses the full available width.
+Resizing and zooming change layout without rebuilding options or focus.
 
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and

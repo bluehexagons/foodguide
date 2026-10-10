@@ -315,6 +315,7 @@ test('selection indicators survive forced colors and track modes, menus, columns
 	});
 	const diagnostics = trackDiagnostics(page);
 	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
 	const indicatorVisible = (locator, pseudo = '::after') =>
 		locator.evaluate((element, pseudo) => {
 			const style = getComputedStyle(element, pseudo);
@@ -418,6 +419,16 @@ test('selection indicators survive forced colors and track modes, menus, columns
 		await page.keyboard.press('ArrowDown');
 		const selected = page.locator('#simulator [role=option][aria-selected=true]');
 		assert.equal(await selected.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+		const violations = await page.evaluate(async () =>
+			(
+				await window.axe.run({ runOnly: { type: 'rule', values: ['color-contrast'] } })
+			).violations.map(({ id, nodes }) => ({ id, targets: nodes.map(n => n.target) })),
+		);
+		assert.deepEqual(
+			violations,
+			[],
+			`${theme} forced-color selection contrast: ${JSON.stringify(violations)}`,
+		);
 	}
 	assert.deepEqual(diagnostics, []);
 });

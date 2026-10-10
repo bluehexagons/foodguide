@@ -306,7 +306,7 @@ table tr.highlighted .name-cell::before {
 		--border-light: CanvasText;
 		--table-bg: Canvas;
 		--table-hover: Canvas;
-		--table-highlight: Highlight;
+		--table-highlight: Canvas;
 		--darkest: CanvasText;
 		--darker: CanvasText;
 		--dark: CanvasText;
@@ -320,7 +320,7 @@ table tr.highlighted .name-cell::before {
 		--header-accent: CanvasText;
 		--header-bg: Canvas;
 		--header-text: CanvasText;
-		--selected-bg: Highlight;
+		--selected-bg: Canvas;
 		--selected-border: Highlight;
 		--excluded-bg: Canvas;
 		--excluded-border: CanvasText;

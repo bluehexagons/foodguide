@@ -1882,6 +1882,143 @@ test('legacy settings and both ingredient pickers survive migration and reload',
 	assert.deepEqual(errors, []);
 });
 
+test('current selections persist before unload and recover after an interrupted session', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('foodGuideState')));
+	const pick = async (panel, name) => {
+		const search = page.locator(`${panel} .ingredientpicker`);
+		await search.fill(name);
+		await search.press('Enter');
+	};
+	await pick('#simulator', 'Meat');
+	assert.deepEqual((await stored()).pickers[0], ['meat@together', null, null, null]);
+	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
+	assert.equal((await stored()).activeTab, 'discovery');
+	await pick('#discovery', 'Berries');
+	await pick('#discovery', 'Carrot');
+	assert.deepEqual((await stored()).pickers[1], ['berries@together', 'carrot@together']);
+	await page.locator('#inventory [data-id="berries@together"]').click();
+	assert.deepEqual((await stored()).pickers[1], ['carrot@together']);
+	await page.locator('.version-btn[data-version="dontstarve"]').click();
+	assert.equal((await stored()).version, 'dontstarve');
+	assert.deepEqual((await stored()).pickers, [['meat', null, null, null], ['carrot']]);
+	await page.locator('.dlc-btn[data-dlc="giants"]').click();
+	assert.equal((await stored()).dlc.giants, true);
+	await page.locator('.char-btn[data-character="wigfrid"]').click();
+	assert.equal((await stored()).character, 'wigfrid');
+	await page.locator('.char-btn[data-character="wigfrid"]').click();
+	assert.equal((await stored()).character, null);
+	await pick('#discovery', 'Cactus Flesh');
+	await page.locator('.dlc-btn[data-dlc="giants"]').click();
+	assert.deepEqual((await stored()).pickers[1], ['carrot']);
+	await page.getByRole('tab', { name: 'Simulator', exact: true }).click();
+	await page.locator('#ingredients [data-id="meat"]').click();
+	assert.deepEqual((await stored()).pickers[0], [null, null, null, null]);
+	await pick('#simulator', 'Berries');
+	await page.locator('#simulator .clearingredientsbtn').click();
+	assert.deepEqual((await stored()).pickers[0], [null, null, null, null]);
+	await pick('#simulator', 'Meat');
+	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
+	// Capture storage while the original page is still open; no unload handler can save it.
+	const recovery = await browser.newContext({
+		storageState: await page.context().storageState(),
+	});
+	t.after(() => recovery.close());
+	const restored = await recovery.newPage();
+	await restored.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(await restored.locator('#tab-discovery').getAttribute('aria-selected'), 'true');
+	assert.equal(await restored.locator('#ingredients [data-id="meat"]').count(), 1);
+	assert.equal(await restored.locator('#inventory [data-id="carrot"]').count(), 1);
+	page.once('dialog', dialog => dialog.dismiss());
+	await page.locator('#discovery .clearingredientsbtn').click();
+	assert.deepEqual((await stored()).pickers[1], ['carrot']);
+	page.once('dialog', dialog => dialog.accept());
+	await page.locator('#discovery .clearingredientsbtn').click();
+	assert.deepEqual((await stored()).pickers[1], []);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('completed analysis pagination follows filters and locale without discarding its limit', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [
+			[],
+			[
+				'meat',
+				'berries',
+				'carrot',
+				'honey',
+				'twigs',
+				'ice',
+				'bird_egg',
+				'monstermeat',
+				'cave_banana',
+				'pumpkin',
+				'tomato',
+				'potato',
+				'eggplant',
+			],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const rows = page.locator('#makable tbody tr:not(.table-empty-row)');
+	const more = page.locator('#makable .showMoreButton');
+	const total = await page.evaluate(() => window.analysis.made.length);
+	assert.ok(total > 1000, `Need multiple result batches, got ${total}`);
+	assert.equal(await rows.count(), 500);
+	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await more.textContent(), `Mostrar más resultados (500 de ${total})`);
+	await more.click();
+	assert.equal(await rows.count(), 1000);
+	const meatballs = page
+		.locator('#makable .recipeFilter button')
+		.filter({ has: page.locator('[title="Meatballs"]') });
+	await meatballs.click();
+	assert.ok((await rows.count()) > 0 && (await rows.count()) < 500);
+	assert.deepEqual(
+		[...new Set(await page.locator('#makable tbody td:nth-child(2)').allTextContents())],
+		['Meatballs'],
+	);
+	assert.equal(await more.isVisible(), false);
+	await meatballs.click(); // Exclude Meatballs: pagination counts only the remaining matches.
+	const remaining =
+		total -
+		(await page.evaluate(
+			() => window.analysis.made.filter(row => row.recipe.name === 'Meatballs').length,
+		));
+	assert.equal(await rows.count(), Math.min(1000, remaining));
+	assert.equal(await more.isVisible(), remaining > 1000);
+	assert.equal(
+		await more.textContent(),
+		`Mostrar más resultados (${Math.min(1000, remaining)} de ${remaining})`,
+	);
+	await meatballs.click(); // Restore the original dataset and the expanded limit.
+	assert.equal(await rows.count(), 1000);
+	await page.locator('#language-picker').selectOption('zh');
+	assert.equal(await more.textContent(), `显示更多结果(1000 / ${total})`);
+	await more.focus();
+	for (let limit = 1000; limit < total; limit += 500) {
+		assert.equal(await more.isVisible(), true);
+		await more.press('Enter');
+	}
+	assert.equal(await rows.count(), total);
+	assert.equal(
+		await page.locator('#makable .deleteButton').evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.locator('#makable .deleteButton').click();
+	assert.equal(await page.locator('#makable .makableContainer').count(), 0);
+	assert.deepEqual(diagnostics, []);
+});
+
 test('Warly food tables show negative fractional changes without an extra whole unit', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(browser, baseUrl, {

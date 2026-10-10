@@ -25,8 +25,14 @@ interface ColumnConfig {
 	columns?: string[];
 	autoHide?: string[];
 }
+export interface TableRowCounts {
+	shown: number;
+	total: number;
+}
 export interface TableOptions<T extends SortRow> {
 	captionKey: StringKey;
+	/** Report visible and matching rows after rendering, excluding the empty placeholder. */
+	onRender?: (counts: TableRowCounts) => void;
 	/** Override the localized empty-table message for a view's current state. */
 	emptyMessage?: () => string;
 	headers: Record<string, TableSortKey<T> | ''>;
@@ -121,6 +127,7 @@ export const createSortableTableFactory = ({
 
 	const makeSortableTable = <T extends SortRow>({
 		captionKey,
+		onRender,
 		emptyMessage = () => translate('tableEmpty'),
 		headers,
 		dataset,
@@ -343,10 +350,19 @@ export const createSortableTableFactory = ({
 			firstHighlight = null;
 			lastHighlight = null;
 			rows = 0;
+			let matchingRows = 0;
 
 			for (const item of dataset) {
 				const items = dataset;
-				if ((maxRows && rows >= maxRows) || (filterCallback && !filterCallback(item))) {
+				// Only pagination consumers need a full matching count beyond the visible limit.
+				if (maxRows && rows >= maxRows && !onRender) {
+					continue;
+				}
+				if (filterCallback && !filterCallback(item)) {
+					continue;
+				}
+				matchingRows++;
+				if (maxRows && rows >= maxRows) {
 					continue;
 				}
 				const row = rowGenerator(item);
@@ -390,6 +406,7 @@ export const createSortableTableFactory = ({
 				}
 			}
 			body.replaceChildren(content);
+			onRender?.({ shown: rows, total: matchingRows });
 			applyColumnVisibility();
 			if (focusedLink !== undefined && restoredRow) {
 				Array.from(restoredRow.querySelectorAll<HTMLButtonElement>('button.link'))

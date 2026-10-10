@@ -3,6 +3,10 @@ import type { TableOptions } from '../../html/sortable-table.js';
 
 const foods: TableOptions<Food> = {
 	captionKey: 'tabFoodList',
+	onRender: ({ shown, total }) => {
+		shown satisfies number;
+		total satisfies number;
+	},
 	headers: { Name: 'name', Health: 'health', Info: '' },
 	dataset: [],
 	rowGenerator: item => {

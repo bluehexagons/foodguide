@@ -71,8 +71,12 @@ explicit build; normal installs and package creation run it automatically.
 
 The page controller reads saved preferences once at startup. `preferences.ts`
 validates that JSON, translates historical game settings, and handles unavailable
-or corrupt storage. Tab and picker saves merge into the latest stored state so
-one component cannot overwrite another's preferences.
+or corrupt storage. Controllers register state writers with the page's shared
+save function. After initialization, each successful ingredient edit, tab change,
+and game/character/DLC change saves a complete snapshot immediately, including
+ingredients removed by a game change. Recovery does not depend on an unload event;
+the browser regression opens the saved snapshot while the original page remains
+open. Writes still merge into the latest stored state.
 
 Ingredient selections follow the active game on restoration and mode changes.
 Shared ingredients resolve to an available variant by their base ID; ingredients
@@ -90,6 +94,9 @@ horizontal scrolling works consistently across platforms. Keys on table buttons,
 modified keys, and other scrolling commands retain their browser behavior.
 Empty tables display localized feedback across their visible columns. Views can
 provide an `emptyMessage` callback when that explanation depends on their state.
+An optional `onRender` callback receives shown and matching row counts, excluding
+the empty placeholder. Pagination uses these counts from the same filtering pass
+as the rendered rows.
 The shared sorter preserves the dataset's identity and leaves summary rows above
 the sorted results. Search results use the same name comparator as tables.
 
@@ -122,6 +129,9 @@ work, remove translation listeners, and release their table registrations when
 inputs or game settings change. An unfinished calculation displays up to 25
 results after its first batch and refreshes them on pause/resume. Completion
 raises the initial limit to 500, with further results available through Show more.
+That control reports matching rows, hides when all matches are visible, and updates
+with the language. Filtering preserves the expanded limit so restoring filters
+does not collapse the table.
 Avoid redrawing the growing table on every calculation batch. Resume can finish
 synchronously; its completion callback owns the final controls and announcement.
 Empty filtered results explain whether the search is still unfinished or which

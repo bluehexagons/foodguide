@@ -12,7 +12,7 @@ import type {
 import type { SortableTable } from './sortable-table.js';
 import type { StringKey } from './strings.js';
 import type { DropdownItem } from './dropdown.js';
-import { createSavedStateStore, restoreGameSelection } from './preferences.js';
+import { createSavedStateStore, restoreGameSelection, type SavedState } from './preferences.js';
 import { createFoodSelectionResolver } from './food-selection.js';
 import { createAnalysisFilters } from './analysis-filters.js';
 import { formatSignedValue } from './number-format.js';
@@ -139,6 +139,18 @@ import './locales/index.js';
 		getStorage: () => window.localStorage,
 		onError: error => console.warn('Unable to access saved preferences', error),
 	});
+	const stateWriters: ((state: SavedState) => void)[] = [];
+	let initialized = false;
+	// Capture all controllers together, including selections pruned by a game change.
+	const saveState = () => {
+		if (initialized) {
+			preferences.update(state => {
+				for (const write of stateWriters) {
+					write(state);
+				}
+			});
+		}
+	};
 	const savedState = preferences.load();
 	const selection = restoreGameSelection(savedState);
 	let currentVersion = selection.version;
@@ -153,6 +165,13 @@ import './locales/index.js';
 		characters,
 	);
 	let charMask = calculateCharMask(currentCharacter, currentVersion, activeDlc, characters);
+	stateWriters.push(state => {
+		state.version = currentVersion;
+		state.dlc = { giants: !!activeDlc.giants, shipwrecked: !!activeDlc.shipwrecked };
+		state.character = currentCharacter;
+		// Keep modeMask for backward compatibility during migration.
+		state.modeMask = modeMask;
+	});
 	const resolveIngredient = createFoodSelectionResolver(food);
 
 	const themeController = createThemeController({
@@ -386,6 +405,7 @@ import './locales/index.js';
 		for (let i = 0; i < modeRefreshers.length; i++) {
 			modeRefreshers[i]();
 		}
+		saveState();
 	};
 
 	const { matchingNames, getSuggestions, getRecipes } = createRecipeCalculator({
@@ -471,6 +491,7 @@ import './locales/index.js';
 			if (moveFocus) {
 				activePage.focus();
 			}
+			saveState();
 		};
 
 		for (let i = 0; i < navtabs.length; i++) {
@@ -538,15 +559,8 @@ import './locales/index.js';
 		activeTab.tabIndex = 0;
 		activePage.hidden = false;
 
-		window.addEventListener('beforeunload', () => {
-			preferences.update(state => {
-				state.activeTab = activeTab.dataset.tab;
-				state.version = currentVersion;
-				state.dlc = { giants: !!activeDlc.giants, shipwrecked: !!activeDlc.shipwrecked };
-				state.character = currentCharacter;
-				// Keep modeMask for backward compatibility during migration.
-				state.modeMask = modeMask;
-			});
+		stateWriters.push(state => {
+			state.activeTab = activeTab.dataset.tab;
 		});
 	})();
 
@@ -917,9 +931,25 @@ import './locales/index.js';
 				}
 
 				made = [];
+				let currentLimit = 500;
+				const showMoreButton = document.createElement('button');
+				showMoreButton.className = 'showMoreButton';
+				showMoreButton.hidden = true;
+				showMoreButton.addEventListener('click', () => {
+					currentLimit += 500;
+					makableTable.setMaxRows(currentLimit);
+				});
 
 				const makableTable = makeSortableTable({
 					captionKey: 'tableEfficientRecipes',
+					onRender: ({ shown, total }) => {
+						const hide = isCalculating || shown >= total;
+						if (hide && document.activeElement === showMoreButton) {
+							deleteButton.focus();
+						}
+						showMoreButton.hidden = hide;
+						showMoreButton.textContent = t('showMoreResultsCount', { shown, total });
+					},
 					emptyMessage: () =>
 						t(isCalculating ? 'analysisNoResultsYet' : 'analysisNoMatchingResults'),
 					headers: {
@@ -1056,7 +1086,7 @@ import './locales/index.js';
 				const calculationFocused = document.activeElement === makableButton;
 				updateMakableButtonLabel();
 				makableButton.disabled = true;
-				makableSummary.appendChild(deleteButton);
+				makableSummary.append(showMoreButton, deleteButton);
 				if (calculationFocused) {
 					deleteButton.focus();
 				}
@@ -1145,40 +1175,11 @@ import './locales/index.js';
 							made,
 						};
 
-						// Start with a reasonable batch size
-						makableTable.setMaxRows(500);
-
-						// Add "Show more" functionality if there are many results
-						const showMoreButton = document.createElement('button');
-						showMoreButton.appendChild(document.createTextNode(t('showMoreResults')));
-						showMoreButton.className = 'showMoreButton';
-						let currentLimit = 500;
-						showMoreButton.addEventListener('click', () => {
-							currentLimit += 500;
-							makableTable.setMaxRows(currentLimit);
-							if (currentLimit >= made.length) {
-								if (document.activeElement === showMoreButton) {
-									deleteButton.focus();
-								}
-								showMoreButton.style.display = 'none';
-							}
-							showMoreButton.textContent = t('showMoreResultsCount', {
-								shown: Math.min(currentLimit, made.length),
-								total: made.length,
-							});
-						});
+						makableTable.setMaxRows(currentLimit);
 
 						const summaryText = t('foundValidRecipes', { count: made.length });
 						makableSummaryText.textContent = summaryText;
 						analysisStatus.textContent = summaryText;
-
-						if (made.length > 500) {
-							showMoreButton.textContent = t('showMoreResultsCount', {
-								shown: 500,
-								total: made.length,
-							});
-							makableSummary.insertBefore(showMoreButton, deleteButton);
-						}
 
 						isCalculating = false;
 						updateMakableButtonLabel();
@@ -1467,6 +1468,7 @@ import './locales/index.js';
 							setSlot(fixedSlots[i], null);
 							if (loaded) {
 								updateRecipes();
+								saveState();
 							}
 
 							return i;
@@ -1491,6 +1493,7 @@ import './locales/index.js';
 				ensureEmptySlot();
 				if (loaded) {
 					updateRecipes();
+					saveState();
 				}
 
 				return i;
@@ -1566,6 +1569,7 @@ import './locales/index.js';
 							setSlot(fixedSlots[i], item);
 							if (loaded) {
 								updateRecipes();
+								saveState();
 							}
 
 							return i;
@@ -1588,6 +1592,7 @@ import './locales/index.js';
 
 						if (loaded) {
 							updateRecipes();
+							saveState();
 						}
 
 						return 1;
@@ -1646,6 +1651,7 @@ import './locales/index.js';
 						const removedId = target.dataset.id;
 						setSlot(target, null);
 						updateRecipes();
+						saveState();
 						announceIngredient('ingredientRemoved', removedId);
 
 						return removedId;
@@ -1682,6 +1688,7 @@ import './locales/index.js';
 					}
 
 					updateRecipes();
+					saveState();
 					announceIngredient('ingredientRemoved', removedId);
 
 					return removedId;
@@ -2159,6 +2166,7 @@ import './locales/index.js';
 					ensureEmptySlot();
 					updateRecipes();
 				}
+				saveState();
 				announcePicker(t('ingredientsCleared'));
 			});
 			// Display mode controls (Icons / Names / List)
@@ -2308,13 +2316,11 @@ import './locales/index.js';
 
 			updateRecipes();
 
-			window.addEventListener('beforeunload', () => {
-				preferences.update(state => {
-					state.pickers ??= [];
-					state.pickers[index] = limited
-						? fixedSlots.map(slot => getSlot(slot)?.key ?? null)
-						: slots;
-				});
+			stateWriters.push(state => {
+				state.pickers ??= [];
+				state.pickers[index] = limited
+					? fixedSlots.map(slot => getSlot(slot)?.key ?? null)
+					: [...slots];
 			});
 
 			const refreshSelection = () => {
@@ -2528,4 +2534,6 @@ import './locales/index.js';
 	headerTop.appendChild(charSection);
 
 	setMode();
+	initialized = true;
+	saveState();
 })();

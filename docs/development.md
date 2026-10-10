@@ -203,8 +203,10 @@ cancel touch events needed for native scrolling and zooming.
 button and picker targets on touchscreens, including computers with a mouse.
 The optional membership shortcuts appear only for picked ingredients. They overlay
 the existing content with larger transparent hit areas, backed by option/slot
-targets and keyboard commands. Compact uses inline badges over the text and
-20-pixel targets; its list rows follow the content width. Normal uses corner
+targets and keyboard commands. Compact anchors the checkbox at the trailing edge,
+with the optional minus immediately before it, so hiding the minus leaves no gap
+or movement of the checkbox. These inline badges overlay the text and use
+20-pixel targets; list rows follow the content width. Normal uses corner
 overlays and wider targets. Cozy names use cards with the name below the icon,
 while cozy list mode retains larger rows. Icon-only options place the controls
 at opposite corners, leaving the center free for the ordinary ingredient action.

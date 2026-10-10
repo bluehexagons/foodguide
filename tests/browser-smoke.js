@@ -2159,7 +2159,7 @@ test('hidden search matches offer localized keyboard and touch recovery without 
 	}
 });
 
-test('compact picker badges leave larger hit areas and an unobstructed ingredient center', async t => {
+test('picker badges keep the checkbox anchored, larger hit areas, and an unobstructed ingredient center', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	for (const hasTouch of [false, true]) {
 		const page = await createSavedPage(
@@ -2244,6 +2244,10 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 				);
 				const [toggle, minus] = geometry.controls;
 				assert.ok(
+					Math.abs(toggle.hit.right - geometry.rect.right) <= 1.1,
+					`${context}: The checkbox stays at the trailing edge`,
+				);
+				assert.ok(
 					toggle.hit.right <= minus.hit.left ||
 						minus.hit.right <= toggle.hit.left ||
 						toggle.hit.bottom <= minus.hit.top ||
@@ -2291,25 +2295,31 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 						);
 					}
 				}
-				if (density !== 'compact') {
-					continue;
-				}
-				if (mode === 'icons') {
-					assert.ok(
-						geometry.rect.width <= 50 && geometry.rect.height <= 45,
-						`${context}: No action footer`,
-					);
-				} else if (mode === 'names') {
-					assert.ok(geometry.rect.width < 160, `${context}: No wide action column`);
-				}
-				if (mode !== 'icons') {
-					assert.ok(
-						toggle.badge.right > geometry.text.left &&
-							toggle.badge.left < geometry.text.right &&
-							toggle.badge.bottom > geometry.text.top &&
-							toggle.badge.top < geometry.text.bottom,
-						`${context}: Compact badges overlay text instead of reserving space`,
-					);
+				if (density === 'compact') {
+					if (mode === 'icons') {
+						assert.ok(
+							geometry.rect.width <= 50 && geometry.rect.height <= 45,
+							`${context}: No action footer`,
+						);
+					} else {
+						if (mode === 'names') {
+							assert.ok(
+								geometry.rect.width < 160,
+								`${context}: No wide action column`,
+							);
+						}
+						assert.ok(
+							toggle.badge.right > geometry.text.left &&
+								toggle.badge.left < geometry.text.right &&
+								toggle.badge.bottom > geometry.text.top &&
+								toggle.badge.top < geometry.text.bottom,
+							`${context}: Compact badges overlay text instead of reserving space`,
+						);
+						assert.ok(
+							Math.abs(minus.hit.right - toggle.hit.left) < 1,
+							`${context}: The minus sits immediately before the checkbox`,
+						);
+					}
 				}
 				const layout = () =>
 					panel
@@ -2328,9 +2338,29 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 				await activate(meat.locator('.ingredient-subtract'), {
 					position: minus.extraHitPoint,
 				});
+				const afterOneRemoval = before.toSpliced(
+					before.lastIndexOf('meat_cooked@together'),
+					1,
+				);
+				assert.deepEqual(await selectedKeys(), afterOneRemoval);
+				await activate(meat.locator('.ingredient-subtract'), {
+					position: minus.extraHitPoint,
+				});
 				assert.deepEqual(
 					await selectedKeys(),
-					before.toSpliced(before.lastIndexOf('meat_cooked@together'), 1),
+					afterOneRemoval.toSpliced(
+						afterOneRemoval.lastIndexOf('meat_cooked@together'),
+						1,
+					),
+				);
+				assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
+				assert.deepEqual(
+					await meat.locator('.ingredient-toggle').evaluate(e => {
+						const rect = e.getBoundingClientRect();
+						return [rect.x, rect.y, rect.width, rect.height];
+					}),
+					[toggle.hit.x, toggle.hit.y, toggle.hit.width, toggle.hit.height],
+					`${context}: Hiding the minus leaves the checkbox in place`,
 				);
 				await activate(meat.locator('.ingredient-toggle'), {
 					position: toggle.extraHitPoint,

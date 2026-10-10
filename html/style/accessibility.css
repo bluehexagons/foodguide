@@ -295,7 +295,8 @@ table tr.highlighted .name-cell::before {
 	transform: translateY(-50%);
 }
 
-.ingredientdropdown.density-compact:not(.hidetext) .ingredient-toggle {
+/* Keep the checkbox anchored when the optional minus appears or disappears. */
+.ingredientdropdown.density-compact:not(.hidetext) .ingredient-subtract {
 	inset-inline-end: var(--ingredient-hit-width);
 }
 

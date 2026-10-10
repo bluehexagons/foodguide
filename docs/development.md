@@ -147,9 +147,13 @@ changes `aria-activedescendant`; Escape hides the results and arrow keys reopen
 them. Visible result counts and empty-search messages are localized. Search
 announcements wait for a short typing pause, skip IME composition, and are canceled
 when focus leaves the search or an ingredient action takes priority. Action
-feedback uses the same atomic status region. Failed actions display persistent,
-localized explanations and recovery steps; the next search or successful action
-clears them. Their optional flash uses one bounded timer per target, so cleanup
+feedback uses the same atomic status region between the picker and selection.
+An invisible grid measures the available error messages in the current language
+and game mode, reserving enough space for wrapping without moving the ingredients.
+Only the result count or visible error occupies that space at a time. Failed
+actions display persistent explanations and recovery steps; changing language
+translates the active error, while a new search or successful action clears it.
+Their optional flash uses one bounded timer per target, so cleanup
 does not depend on animation events that reduced-motion settings suppress.
 
 `filter-controls.ts` owns analyzer keyboard navigation and accessible state
@@ -177,7 +181,12 @@ The viewport allows browser zoom. These choices follow the W3C guidance on
 and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced).
 
 `html/style/accessibility.css` provides drawn checkmarks for selected game modes,
-menu choices, visible columns, and highlighted table rows. These cues supplement
+menu choices, picked ingredients, visible columns, and highlighted table rows.
+Picked ingredients also have a distinct background and repeated pot ingredients
+show a quantity badge. Rebuilds after search, sort, and game changes derive this
+state from the slots; `aria-description` describes membership independently of
+the keyboard highlight's `aria-selected`. Focus rings use the theme's focus color
+and stay inside joined search inputs and scrolling menu items. These cues supplement
 color without changing accessible names. Targeted forced-color rules retain the
 user's system palette, remove the slot texture, and preserve selection outlines
 and filter badges. Keep this stylesheet last so it can adjust the shared styles.

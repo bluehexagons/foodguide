@@ -99,6 +99,10 @@ const defaultStrings = {
 	ingredientRemoved: 'Removed {name}.',
 	ingredientActionFailed:
 		'Unable to change {name}. The pot may be full or the ingredient is not selected.',
+	ingredientInPot: 'In the pot: {count}.',
+	ingredientInInventory: 'In your inventory.',
+	ingredientDiscoverySearchHelp:
+		'Use Up and Down to browse results, Enter to add or remove, and Escape to hide results. Tab to the selected ingredients to remove them.',
 	ingredientPotFull: 'The pot is full. Remove an ingredient before adding {name}.',
 	ingredientNotSelected: '{name} is not selected. Add it before trying to remove it.',
 	ingredientSlotEmpty: 'This slot is empty. Select an ingredient from the search results.',
@@ -266,7 +270,7 @@ const defaultStrings = {
 		"The Discovery tab finds what recipes can be prepared using a collection of ingredients. It doesn't take item quantity into account, instead assuming you have four of each. You are also able to calculate efficient recipes using your ingredients to get the most health or hunger benefit from cooking them in the crock pot. This works identically to the Statistics Analyzer tab, but limited to your inventory.",
 	aboutFoodRecipeListsHeading: 'Food List & Recipe List',
 	aboutFoodRecipeListsBody:
-		"Browse all foods and Crock Pot recipes available in the selected game version. Use the version selector in the upper-left to switch between Don't Starve Together, Don't Starve, and Hamlet.",
+		"Browse all foods and Crock Pot recipes available in the selected game version. Use the version selector at the top to switch between Don't Starve Together, Don't Starve, and Hamlet.",
 	aboutStatisticsHeading: 'Statistics Analyzer',
 	aboutStatisticsBody:
 		'The Statistics Analyzer tab is for those who just want to explore ingredient combinations. It will calculate every valid ingredient combination possible (using an "ideal" ingredient selection, generally excluding uncooked food) and allows filtration by recipe and ingredient contents. Computation may take some time on slower computers.',
@@ -293,7 +297,7 @@ const defaultStrings = {
 		"In recipe requirements, cooked/uncooked usually doesn't make a difference. If it does, then only the valid form will be listed.",
 	gameInfoVersionsHeading: 'Game Versions and DLC',
 	gameInfoVersionsBody:
-		"The game version selector in the upper-left lets you switch between Don't Starve Together (DST), Don't Starve (DS), and Hamlet. When Don't Starve is selected, you can toggle the Reign of Giants and Shipwrecked DLC on or off to control which foods and recipes are shown. You can also select a character like Warly or Webber to see their special recipes and food mechanics.",
+		"The game version selector at the top lets you switch between Don't Starve Together (DST), Don't Starve (DS), and Hamlet. When Don't Starve is selected, you can toggle the Reign of Giants and Shipwrecked DLC on or off to control which foods and recipes are shown. You can also select a character like Warly or Webber to see their special recipes and food mechanics.",
 	gameInfoCharactersHeading: 'Character Food Mechanics',
 	gameInfoWarly:
 		'<strong>Warly</strong> is a chef character who can only be played in Shipwrecked, Hamlet, and DST. In Shipwrecked, his meals are more filling when prepared as recipes but less effective when eaten raw, dried, or cooked. He also has access to unique recipes not available to other characters.',

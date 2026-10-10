@@ -1377,27 +1377,70 @@ import './locales/index.js';
 			pickerStatus.className = 'sr-only';
 			pickerStatus.setAttribute('role', 'status');
 			pickerStatus.setAttribute('aria-atomic', 'true');
-			searchRow.appendChild(pickerStatus);
+			pickerStatus.id = `ingredient-feedback-${index}`;
+			const feedbackSpace = document.createElement('div');
+			feedbackSpace.className = 'ingredient-feedback-space';
+			const feedbackSizing = document.createElement('div');
+			feedbackSizing.className = 'ingredient-feedback-sizing';
+			feedbackSizing.setAttribute('aria-hidden', 'true');
+			// Grid overlays measure every possible error so wrapping never moves the slots.
+			const updateFeedbackSizing = () => {
+				const samples = [t('ingredientSlotEmpty')];
+				for (const item of Array.from(from).filter(testmode)) {
+					if (fixedSlots.length) {
+						samples.push(t('ingredientPotFull', { name: item.name }));
+					}
+					samples.push(t('ingredientNotSelected', { name: item.name }));
+				}
+				feedbackSizing.replaceChildren(
+					...samples.map(message => {
+						const sample = document.createElement('div');
+						sample.className = 'ingredient-feedback';
+						sample.textContent = message;
+						return sample;
+					}),
+				);
+			};
 			const pickerSummary = document.createElement('div');
 			pickerSummary.className = 'ingredient-search-summary';
 			pickerSummary.id = `ingredient-summary-${index}`;
 			const pickerHelp = document.createElement('div');
 			pickerHelp.className = 'sr-only';
 			pickerHelp.id = `ingredient-help-${index}`;
-			pickerHelp.setAttribute('data-i18n', 'ingredientSearchHelp');
-			pickerHelp.textContent = t('ingredientSearchHelp');
+			const helpKey = fixedSlots.length
+				? 'ingredientSearchHelp'
+				: 'ingredientDiscoverySearchHelp';
+			pickerHelp.setAttribute('data-i18n', helpKey);
+			pickerHelp.textContent = t(helpKey);
 			searchRow.appendChild(pickerHelp);
 			picker.setAttribute('aria-describedby', `${pickerHelp.id} ${pickerSummary.id}`);
 			let searchAnnouncement: number | undefined;
+			let pickerError:
+				| {
+						key: 'ingredientPotFull' | 'ingredientNotSelected' | 'ingredientSlotEmpty';
+						params: { name?: string };
+				  }
+				| undefined;
+			const updateSummaryVisibility = () => {
+				pickerSummary.hidden = dropdown.hidden || Boolean(pickerError);
+			};
 			const cancelSearchAnnouncement = () => {
 				window.clearTimeout(searchAnnouncement);
 				searchAnnouncement = undefined;
 			};
 			const announcePicker = (message: string, visible = false) => {
 				cancelSearchAnnouncement();
+				if (!visible) {
+					pickerError = undefined;
+				}
 				pickerStatus.classList.toggle('sr-only', !visible);
 				pickerStatus.classList.toggle('ingredient-feedback', visible);
 				pickerStatus.replaceChildren(document.createTextNode(message));
+				updateSummaryVisibility();
+				picker.setAttribute(
+					'aria-describedby',
+					`${pickerHelp.id} ${pickerSummary.id}${visible ? ` ${pickerStatus.id}` : ''}`,
+				);
 			};
 			const updateSearchFeedback = (announce = false) => {
 				cancelSearchAnnouncement();
@@ -1414,7 +1457,7 @@ import './locales/index.js';
 					{ count },
 				);
 				pickerSummary.textContent = message;
-				pickerSummary.hidden = dropdown.hidden;
+				updateSummaryVisibility();
 				if (announce && searchRow.contains(document.activeElement)) {
 					searchAnnouncement = window.setTimeout(() => {
 						searchAnnouncement = undefined;
@@ -1438,11 +1481,16 @@ import './locales/index.js';
 				HTMLElement,
 				ReturnType<typeof setTimeout>
 			>();
-			const flashIngredientActionError = (target: HTMLElement | null, message: string) => {
+			const flashIngredientActionError = (
+				target: HTMLElement | null,
+				key: NonNullable<typeof pickerError>['key'],
+				params: { name?: string } = {},
+			) => {
 				if (!target) {
 					return;
 				}
-				announcePicker(message, true);
+				pickerError = { key, params };
+				announcePicker(t(key, params), true);
 
 				window.clearTimeout(ingredientActionTimers.get(target));
 				target.classList.remove('ingredient-action-error');
@@ -1514,9 +1562,10 @@ import './locales/index.js';
 				if (result === -1) {
 					flashIngredientActionError(
 						target,
-						t(limited && !removing ? 'ingredientPotFull' : 'ingredientNotSelected', {
+						limited && !removing ? 'ingredientPotFull' : 'ingredientNotSelected',
+						{
 							name: getCollectionItem(from, id)?.name || id,
-						}),
+						},
 					);
 				} else {
 					announceIngredient(removing ? 'ingredientRemoved' : 'ingredientAdded', id);
@@ -1616,6 +1665,10 @@ import './locales/index.js';
 				name.classList.add('text');
 				name.appendChild(document.createTextNode(item.name));
 				li.appendChild(name);
+				const marker = document.createElement('span');
+				marker.className = 'ingredient-picked-marker';
+				marker.setAttribute('aria-hidden', 'true');
+				li.appendChild(marker);
 
 				li.dataset.id = item.key;
 				li.id = `ingredient-result-${index}-${pickerOptions.length}`;
@@ -1632,13 +1685,27 @@ import './locales/index.js';
 				pickerOptions.push({ element: li, key: item.key });
 			};
 
-			const updateFaded = (el: HTMLElement) => {
-				if (ingredients.includes(food[el.dataset.id || ''])) {
-					if (!el.classList.contains('faded')) {
-						el.classList.add('faded');
+			const updateSelectionIndicators = () => {
+				const counts = new Map<string, number>();
+				const selected = limited ? fixedSlots.map(slot => slot.dataset.id) : slots;
+				for (const id of selected) {
+					if (id) {
+						counts.set(id, (counts.get(id) || 0) + 1);
 					}
-				} else if (el.classList.contains('faded')) {
-					el.classList.remove('faded');
+				}
+				for (const { element, key } of pickerOptions) {
+					const count = counts.get(key) || 0;
+					element.classList.toggle('faded', count > 0);
+					element.querySelector('.ingredient-picked-marker')!.textContent =
+						count > 1 ? String(count) : '';
+					if (count) {
+						element.setAttribute(
+							'aria-description',
+							t(limited ? 'ingredientInPot' : 'ingredientInInventory', { count }),
+						);
+					} else {
+						element.removeAttribute('aria-description');
+					}
 				}
 			};
 
@@ -1658,7 +1725,7 @@ import './locales/index.js';
 					} else {
 						// Empty slot clicked - focus the search bar
 						if (e.type === 'contextmenu') {
-							flashIngredientActionError(target, t('ingredientSlotEmpty'));
+							flashIngredientActionError(target, 'ingredientSlotEmpty');
 						} else {
 							picker.focus();
 						}
@@ -1667,7 +1734,7 @@ import './locales/index.js';
 				} else {
 					const i = slots.indexOf(target.dataset.id || '');
 					if (i === -1) {
-						flashIngredientActionError(target, t('ingredientSlotEmpty'));
+						flashIngredientActionError(target, 'ingredientSlotEmpty');
 						return null;
 					}
 					const removedId = target.dataset.id;
@@ -1724,6 +1791,7 @@ import './locales/index.js';
 				names.forEach(liIntoPicker, ul);
 
 				dropdown.appendChild(ul);
+				updateSelectionIndicators();
 				updateSearchFeedback(announce);
 			};
 
@@ -1744,12 +1812,9 @@ import './locales/index.js';
 					if (matches.length === 1) {
 						const result = appendSlot(matches[0].key);
 						if (result === -1) {
-							flashIngredientActionError(
-								target,
-								t('ingredientPotFull', {
-									name: matches[0].name,
-								}),
-							);
+							flashIngredientActionError(target, 'ingredientPotFull', {
+								name: matches[0].name,
+							});
 						} else {
 							announceIngredient('ingredientAdded', matches[0].key);
 						}
@@ -1870,9 +1935,7 @@ import './locales/index.js';
 						}
 					}
 
-					ul &&
-						ul.firstChild &&
-						Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
+					updateSelectionIndicators();
 				};
 			} else if (parent.id === 'inventory') {
 				//discovery
@@ -1973,9 +2036,7 @@ import './locales/index.js';
 						}
 					}
 
-					if (ul && ul.firstChild) {
-						Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
-					}
+					updateSelectionIndicators();
 				};
 			}
 
@@ -2238,7 +2299,8 @@ import './locales/index.js';
 			searchRow.appendChild(controlsGroup);
 
 			searchRow.parentNode!.insertBefore(dropdown, parent.parentElement!);
-			searchRow.parentNode!.insertBefore(pickerSummary, parent.parentElement!);
+			feedbackSpace.append(feedbackSizing, pickerSummary, pickerStatus);
+			searchRow.parentNode!.insertBefore(feedbackSpace, parent.parentElement!);
 
 			picker.addEventListener('input', event => refreshPicker(!event.isComposing));
 			picker.addEventListener('compositionstart', cancelSearchAnnouncement);
@@ -2259,7 +2321,7 @@ import './locales/index.js';
 				}
 				if (event.key === 'Escape') {
 					dropdown.hidden = true;
-					pickerSummary.hidden = true;
+					updateSummaryVisibility();
 					cancelSearchAnnouncement();
 					picker.setAttribute('aria-expanded', 'false');
 					selectedResult = -1;
@@ -2281,7 +2343,7 @@ import './locales/index.js';
 					option.setAttribute('aria-selected', String(selected));
 				});
 				const activeOption = options[selectedResult];
-				pickerSummary.hidden = dropdown.hidden;
+				updateSummaryVisibility();
 				if (activeOption) {
 					picker.setAttribute('aria-activedescendant', activeOption.element.id);
 					activeOption.element.scrollIntoView({ block: 'nearest' });
@@ -2294,7 +2356,7 @@ import './locales/index.js';
 				'focus',
 				() => {
 					dropdown.hidden = false;
-					pickerSummary.hidden = false;
+					updateSummaryVisibility();
 					picker.setAttribute('aria-expanded', 'true');
 				},
 				false,
@@ -2347,9 +2409,21 @@ import './locales/index.js';
 					ensureEmptySlot();
 				}
 			};
-			modeRefreshers.push(refreshSelection, refreshPicker, updateRecipes);
+			modeRefreshers.push(
+				refreshSelection,
+				refreshPicker,
+				updateRecipes,
+				updateFeedbackSizing,
+			);
 			document.addEventListener('foodguide:localechange', () => {
+				const error = pickerError;
+				updateFeedbackSizing();
+				updateSelectionIndicators();
 				updateSearchFeedback();
+				if (error) {
+					pickerError = error;
+					announcePicker(t(error.key, error.params), true);
+				}
 				for (const slot of parent.querySelectorAll<HTMLElement>('.ingredient')) {
 					const item = getSlot(slot);
 					slot.setAttribute(

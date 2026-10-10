@@ -65,18 +65,147 @@ table tr.highlighted .name-cell::before {
 	left: 12px;
 }
 
+.ingredient-feedback-space,
+.ingredient-feedback-sizing {
+	display: grid;
+}
+
+.ingredient-feedback-space {
+	margin-top: 6px;
+	min-width: 0;
+}
+
+.ingredient-feedback-space > *,
+.ingredient-feedback-sizing > * {
+	grid-area: 1 / 1;
+	align-self: start;
+}
+
+.ingredient-feedback-sizing {
+	visibility: hidden;
+	pointer-events: none;
+	user-select: none;
+}
+
+.ingredient-feedback-space .ingredient-search-summary {
+	margin: 0;
+	align-self: center;
+}
+
 .ingredient-feedback {
-	padding: 8px 10px;
+	padding: 6px 10px;
 	border: 1px solid var(--excluded-border);
+	border-inline-start-width: 3px;
 	border-radius: 4px;
 	color: var(--fg-primary);
-	background: var(--bg-primary);
+	background: var(--excluded-bg);
 	font-size: 14px;
-	line-height: 1.5;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}
+
+/* Keep the joined search field's ring inside its rounded border. */
+.ingredient-search-input-group .ingredientpicker:focus {
+	border-color: var(--focus-color);
+	box-shadow: inset 0 0 0 1px var(--focus-color);
+}
+
+.ingredient-search-input-group .ingredientpicker:focus-visible {
+	outline: 2px solid var(--focus-color);
+	outline-offset: -2px;
+	box-shadow: none;
+}
+
+.ui-dropdown-list button:focus-visible {
+	outline-offset: -2px;
+}
+
+#theme-toggle:focus-visible,
+#language-picker:focus-visible {
+	outline-color: var(--header-text);
+}
+
+/* Reserve badge space before selection so labels and touch targets stay still. */
+.ingredientdropdown .item {
+	position: relative;
+}
+
+.ingredientdropdown:not(.hidetext) .item {
+	padding-inline-end: 20px;
+}
+
+.ingredientdropdown .item.faded {
+	background: var(--picked-bg);
+	border-color: var(--picked-border);
+	border-style: solid;
+	color: var(--fg-primary);
+}
+
+.ingredientdropdown .item.faded .icon {
+	opacity: 0.65;
+}
+
+.ingredientdropdown .item.faded.ingredient-action-error {
+	border-color: var(--excluded-border);
+}
+
+.ingredient-picked-marker {
+	display: none;
+	position: absolute;
+	top: 0;
+	right: 0;
+	align-items: center;
+	gap: 2px;
+	min-height: 12px;
+	padding: 1px 3px 2px;
+	border-radius: 0 2px 0 3px;
+	background: var(--focus-color);
+	color: var(--bg-secondary);
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 1;
+	pointer-events: none;
+}
+
+.ingredient-picked-marker::before {
+	content: '';
+	width: 6px;
+	height: 4px;
+	border: solid currentColor;
+	border-width: 0 0 2px 2px;
+	transform: rotate(-45deg);
+}
+
+.ingredientdropdown .item.faded .ingredient-picked-marker {
+	display: inline-flex;
+}
+
+/* Keyboard highlight and picked state are independent. */
+.ingredientdropdown .item.selected {
+	outline: 2px solid var(--focus-color);
+	outline-offset: -2px;
 }
 
 /* Keep native system colors and restore cues that forced colors would erase. */
 @media (forced-colors: active) {
+	html[data-theme] {
+		--focus-color: Highlight;
+	}
+
+	.ingredientdropdown .item.faded {
+		background: Canvas;
+		border-color: CanvasText;
+	}
+
+	.ingredientdropdown .item.faded .icon {
+		opacity: 1;
+	}
+
+	.ingredient-picked-marker {
+		background: Highlight;
+		color: HighlightText;
+	}
+
 	.ingredient {
 		background-image: none;
 	}

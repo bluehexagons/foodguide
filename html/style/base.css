@@ -13,6 +13,9 @@ html {
 	--fg-primary: #000;
 	--fg-secondary: #333;
 	--fg-tertiary: #444;
+	--focus-color: #426783;
+	--picked-bg: #d9e2e9;
+	--picked-border: #708699;
 	--border-color: #d4d4d4;
 	--border-light: #e8e8e8;
 	--table-bg: #eaeae8;
@@ -91,7 +94,7 @@ body {
 }
 
 :is(button, input, select, a, [tabindex]):focus-visible {
-	outline: 2px solid currentColor;
+	outline: 2px solid var(--focus-color);
 	outline-offset: 2px;
 }
 
@@ -115,6 +118,9 @@ html[data-theme='dark'] {
 	--fg-primary: #e0e0e0;
 	--fg-secondary: #d0d0d0;
 	--fg-tertiary: #c0c0c0;
+	--focus-color: #85a8c4;
+	--picked-bg: #303e49;
+	--picked-border: #728fa7;
 	--border-color: #444;
 	--border-light: #333;
 	--table-bg: #2a2a2a;
@@ -157,6 +163,9 @@ html[data-theme='light'] {
 	--fg-primary: #000;
 	--fg-secondary: #333;
 	--fg-tertiary: #444;
+	--focus-color: #426783;
+	--picked-bg: #d9e2e9;
+	--picked-border: #708699;
 	--border-color: #d4d4d4;
 	--border-light: #e8e8e8;
 	--table-bg: #eaeae8;

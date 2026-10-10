@@ -8,6 +8,23 @@ import axe from 'axe-core';
 const ROOT_DIR = join(import.meta.dirname, '..');
 const HTTP_SERVER = join(ROOT_DIR, 'node_modules/http-server/bin/http-server');
 
+const colorContrast = (first, second) => {
+	const luminance = color => {
+		const channels = color
+			.match(/[\d.]+/g)
+			.slice(0, 3)
+			.map(Number)
+			.map(value => {
+				const s = value / 255;
+				return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+			});
+		return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+	};
+	const a = luminance(first);
+	const b = luminance(second);
+	return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+};
+
 const startServer = () => {
 	const server = spawn(
 		process.execPath,
@@ -265,19 +282,24 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	await page.locator('#makable .deleteButton').focus();
 	await page.keyboard.press('Enter');
 	assert.equal(await calculate.evaluate(e => e === document.activeElement), true, await active());
-	await page.emulateMedia({ colorScheme: 'dark' });
-	await page.waitForFunction(
-		() => document.documentElement.getAttribute('data-theme') === 'dark',
-	);
-	assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
 	const inventoryControl = page.locator('#inventory .ingredient').first();
-	await inventoryControl.focus();
-	assert.equal(
-		await inventoryControl.evaluate(
-			e => getComputedStyle(e).outlineColor === getComputedStyle(document.body).color,
-		),
-		true,
-	);
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+		await page.waitForFunction(
+			theme => document.documentElement.dataset.theme === theme,
+			theme,
+		);
+		await inventoryControl.focus();
+		const colors = await inventoryControl.evaluate(e => ({
+			outline: getComputedStyle(e).outlineColor,
+			background: getComputedStyle(e.closest('.selectionpanel')).backgroundColor,
+			style: getComputedStyle(e).outlineStyle,
+			width: getComputedStyle(e).outlineWidth,
+		}));
+		assert.equal(colors.style, 'solid');
+		assert.equal(colors.width, '2px');
+		assert.ok(colorContrast(colors.outline, colors.background) >= 3, `${theme} focus contrast`);
+	}
 	await calculate.focus();
 	await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
 	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
@@ -535,6 +557,189 @@ test('ingredient errors explain recovery in every language and clear on a new se
 			.getByRole('option', { name: 'Carrot', exact: true })
 			.click({ button: 'right' });
 		assert.equal(await inventory.getByRole('status').textContent(), missing);
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('picked markers and quantities survive picker rebuilds and remain distinct from keyboard highlight', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['meat', 'meat'], ['meat']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const tab of ['simulator', 'discovery']) {
+		await page.locator(`#tab-${tab}`).click();
+		const panel = page.locator(`#${tab}`);
+		const search = panel.getByRole('combobox');
+		await search.fill('Meat');
+		const meat = panel.getByRole('option', { name: 'Meat', exact: true });
+		assert.match(await meat.getAttribute('class'), /faded/);
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		assert.equal(
+			await meat.locator('.ingredient-picked-marker').textContent(),
+			tab === 'simulator' ? '2' : '',
+		);
+		const pickedColors = await meat.evaluate(e => ({
+			bg: getComputedStyle(e).backgroundColor,
+			border: getComputedStyle(e).borderColor,
+		}));
+		const normalColors = await panel
+			.getByRole('option', { name: 'Cooked Meat', exact: true })
+			.evaluate(e => ({
+				bg: getComputedStyle(e).backgroundColor,
+				border: getComputedStyle(e).borderColor,
+			}));
+		assert.notEqual(
+			pickedColors.bg,
+			normalColors.bg,
+			'Compact mode must preserve the picked background',
+		);
+		assert.notEqual(
+			pickedColors.border,
+			normalColors.border,
+			'Compact mode must preserve the picked border',
+		);
+		await search.press('ArrowDown');
+		assert.equal(await meat.getAttribute('aria-selected'), 'true');
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		await search.fill('Berries');
+		await search.fill('Meat');
+		assert.equal(await meat.getAttribute('aria-selected'), 'false');
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		await panel.getByRole('button', { name: 'Sort: Default', exact: true }).click();
+		await panel.getByRole('menuitemradio', { name: 'Sort: Health', exact: true }).click();
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		if (tab === 'discovery') {
+			for (const [locale, description] of Object.entries({
+				en: 'In your inventory.',
+				es: 'En tu inventario.',
+				zh: '已在背包中。',
+			})) {
+				await page.locator('#language-picker').selectOption(locale);
+				assert.equal(await meat.getAttribute('aria-description'), description);
+			}
+			await page.locator('#language-picker').selectOption('en');
+		}
+		await meat.click();
+		assert.equal(
+			await meat.locator('.ingredient-picked-marker').isVisible(),
+			tab === 'simulator',
+		);
+		assert.equal(
+			await meat.locator('.ingredient-picked-marker').textContent(),
+			tab === 'simulator' ? '3' : '',
+		);
+		for (const [locale, description] of Object.entries(
+			tab === 'simulator'
+				? { en: 'In the pot: 3.', es: 'En la olla: 3.', zh: '锅中数量：3。' }
+				: { en: null, es: null, zh: null },
+		)) {
+			await page.locator('#language-picker').selectOption(locale);
+			assert.equal(await meat.getAttribute('aria-description'), description);
+		}
+		await page.locator('#language-picker').selectOption('en');
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('picker errors occupy reserved space above the selection without moving slots', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			version: 'together',
+			pickers: [['meat', 'berries', 'berries', 'berries'], []],
+		},
+		{ reducedMotion: 'reduce' },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const width of [320, 768, 1280]) {
+		await page.setViewportSize({ width, height: 900 });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			await page.locator('#tab-simulator').click();
+			const panel = page.locator('#simulator');
+			const search = panel.getByRole('combobox');
+			const status = panel.getByRole('status');
+			for (const name of ['Carrot', 'Winter Koalefant Trunk', 'Roasted Juicy Berries']) {
+				await search.fill(name);
+				const position = () =>
+					page
+						.locator('#ingredients')
+						.evaluate(e => e.getBoundingClientRect().top + scrollY);
+				const before = await position();
+				await panel.getByRole('option', { name, exact: true }).click();
+				assert.ok(
+					Math.abs((await position()) - before) <= 1,
+					`${locale} at ${width}: full-pot error moved the slots`,
+				);
+				assert.equal(
+					await status.evaluate(e => {
+						const picker = e
+							.closest('[role=tabpanel]')
+							.querySelector('.ingredientdropdown');
+						const selected = e
+							.closest('[role=tabpanel]')
+							.querySelector('.selectionpanel');
+						const rect = e.getBoundingClientRect();
+						return (
+							rect.top >= picker.getBoundingClientRect().bottom &&
+							rect.bottom <= selected.getBoundingClientRect().top &&
+							e.scrollHeight <= e.clientHeight + 1
+						);
+					}),
+					true,
+					'Feedback must sit between the picker and selected ingredients without clipping',
+				);
+				await panel.getByRole('option', { name, exact: true }).click({ button: 'right' });
+				assert.ok(
+					Math.abs((await position()) - before) <= 1,
+					'Switching error types must preserve position',
+				);
+				await search.focus();
+				await search.press('Escape');
+				await search.press('ArrowDown');
+				assert.equal(
+					await panel.locator('.ingredient-search-summary').isVisible(),
+					false,
+					'Reopening results must not overlay their count on the error',
+				);
+				await page.locator('#language-picker').selectOption(locale === 'es' ? 'en' : 'es');
+				assert.equal(
+					await status.evaluate(e => e.classList.contains('ingredient-feedback')),
+					true,
+					'Changing language preserves the active error',
+				);
+				assert.match(
+					await status.textContent(),
+					locale === 'es' ? /not selected/ : /no está seleccionado/,
+				);
+				await page.locator('#language-picker').selectOption(locale);
+				await panel.locator('.clearsearchbtn').click();
+				// Clear changes the result list height; compare the cleared state before a new error.
+				await search.fill(name);
+				assert.equal(
+					await status.evaluate(e => e.classList.contains('ingredient-feedback')),
+					false,
+				);
+			}
+			await page.locator('#tab-discovery').click();
+			const emptySlot = page.locator('#inventory .ingredient:not([data-id])');
+			const inventory = page.locator('#inventory');
+			const before = await inventory.evaluate(e => e.getBoundingClientRect().top + scrollY);
+			await emptySlot.click({ button: 'right' });
+			assert.ok(
+				Math.abs(
+					(await inventory.evaluate(e => e.getBoundingClientRect().top + scrollY)) -
+						before,
+				) <= 1,
+				`${locale} at ${width}: empty-slot error moved the selection`,
+			);
+		}
 	}
 	assert.deepEqual(diagnostics, []);
 });

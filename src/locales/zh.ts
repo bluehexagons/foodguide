@@ -25,6 +25,10 @@ const dict = {
 	ingredientAdded: '已添加 {name}。',
 	ingredientRemoved: '已移除 {name}。',
 	ingredientActionFailed: '无法更改 {name}。锅可能已满，或未选择该食材。',
+	ingredientInPot: '锅中数量：{count}。',
+	ingredientInInventory: '已在背包中。',
+	ingredientDiscoverySearchHelp:
+		'使用上下方向键浏览结果，回车添加或移除，Escape 隐藏结果。使用 Tab 移至已选食材并移除。',
 	ingredientPotFull: '锅已满。请先移除一种食材，再添加 {name}。',
 	ingredientNotSelected: '尚未选择 {name}。请先添加，再尝试移除。',
 	ingredientSlotEmpty: '此格子为空。请从搜索结果中选择食材。',
@@ -218,7 +222,7 @@ const dict = {
 		'发现标签页根据一组食材查找可制作的配方。它不考虑物品数量,而是假设每种你都有四个。你也可以计算使用现有食材的高效配方,以便锅炉烹饪时获得最大的生命或饥饿收益。其工作方式与统计分析器相同,但仅限于你的背包。',
 	aboutFoodRecipeListsHeading: '食物列表与配方列表',
 	aboutFoodRecipeListsBody:
-		"浏览所选游戏版本中可用的全部食物和锅炉配方。使用左上角的版本选择器在 Don't Starve Together、Don't Starve 和 Hamlet 之间切换。",
+		"浏览所选游戏版本中可用的全部食物和锅炉配方。使用顶部的版本选择器在 Don't Starve Together、Don't Starve 和 Hamlet 之间切换。",
 	aboutStatisticsHeading: '统计分析器',
 	aboutStatisticsBody:
 		'统计分析器标签页适合喜欢探索食材组合的玩家。它会计算所有有效的食材组合(使用"理想"食材选择,通常排除生食),并允许按配方和食材内容进行筛选。在较慢的电脑上计算可能需要一些时间。',
@@ -243,7 +247,7 @@ const dict = {
 	gameInfoCooked: '配方需求中,通常不区分熟食与生食。如有区别,只会列出可用的形态。',
 	gameInfoVersionsHeading: '游戏版本与 DLC',
 	gameInfoVersionsBody:
-		"左上角的游戏版本选择器可在 Don't Starve Together (DST)、Don't Starve (DS) 和 Hamlet 之间切换。选中 Don't Starve 时,可启用或禁用 Reign of Giants 和 Shipwrecked DLC,以控制显示的食物和配方。也可以选择 Warly 或 Webber 等角色,查看其专属配方和食物机制。",
+		"顶部的游戏版本选择器可在 Don't Starve Together (DST)、Don't Starve (DS) 和 Hamlet 之间切换。选中 Don't Starve 时,可启用或禁用 Reign of Giants 和 Shipwrecked DLC,以控制显示的食物和配方。也可以选择 Warly 或 Webber 等角色,查看其专属配方和食物机制。",
 	gameInfoCharactersHeading: '角色食物机制',
 	gameInfoWarly:
 		'<strong>Warly</strong> 是一名厨师角色,只能在 Shipwrecked、Hamlet 和 DST 中游玩。在 Shipwrecked 中,他制作配方时菜肴更具饱腹感,而生吃、晒干或简单烹饪时效果较弱。他还有其他角色无法使用的独特配方。',

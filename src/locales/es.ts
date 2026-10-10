@@ -26,6 +26,10 @@ const dict = {
 	ingredientRemoved: '{name} quitado.',
 	ingredientActionFailed:
 		'No se puede cambiar {name}. La olla puede estar llena o el ingrediente no está seleccionado.',
+	ingredientInPot: 'En la olla: {count}.',
+	ingredientInInventory: 'En tu inventario.',
+	ingredientDiscoverySearchHelp:
+		'Usa Arriba y Abajo para explorar resultados, Intro para añadir o quitar y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
 	ingredientPotFull: 'La olla está llena. Quita un ingrediente antes de añadir {name}.',
 	ingredientNotSelected: '{name} no está seleccionado. Añádelo antes de intentar quitarlo.',
 	ingredientSlotEmpty:
@@ -233,7 +237,7 @@ const dict = {
 		'La pestaña Descubrimiento encuentra qué recetas pueden prepararse con un conjunto de ingredientes. No tiene en cuenta la cantidad de cada uno; asume que tienes cuatro de cada. También puedes calcular las recetas más eficientes con tus ingredientes para sacar el máximo provecho de salud o hambre al cocinarlos. Funciona igual que la pestaña Analizador de Estadísticas, pero limitado a tu inventario.',
 	aboutFoodRecipeListsHeading: 'Lista de Comida y Lista de Recetas',
 	aboutFoodRecipeListsBody:
-		"Explora todas las comidas y recetas de Olla disponibles en la versión de juego seleccionada. Usa el selector de versión arriba a la izquierda para cambiar entre Don't Starve Together, Don't Starve y Hamlet.",
+		"Explora todas las comidas y recetas de Olla disponibles en la versión de juego seleccionada. Usa el selector de versión en la parte superior para cambiar entre Don't Starve Together, Don't Starve y Hamlet.",
 	aboutStatisticsHeading: 'Analizador de Estadísticas',
 	aboutStatisticsBody:
 		'La pestaña Analizador de Estadísticas es para quienes quieren explorar combinaciones de ingredientes. Calcula todas las combinaciones válidas posibles (con una selección "ideal", excluyendo en general la comida cruda) y permite filtrar por contenido de recetas e ingredientes. El cálculo puede tardar en computadoras lentas.',
@@ -259,7 +263,7 @@ const dict = {
 		'En los requisitos de receta, normalmente da igual si el ingrediente está cocinado o no. Cuando importa, solo se indica la forma válida.',
 	gameInfoVersionsHeading: 'Versiones del juego y DLC',
 	gameInfoVersionsBody:
-		"El selector de versión arriba a la izquierda permite cambiar entre Don't Starve Together (DST), Don't Starve (DS) y Hamlet. Con Don't Starve seleccionado, puedes activar o desactivar los DLC Reign of Giants y Shipwrecked para controlar qué comidas y recetas se muestran. También puedes elegir un personaje como Warly o Webber para ver sus recetas y mecánicas especiales.",
+		"El selector de versión en la parte superior permite cambiar entre Don't Starve Together (DST), Don't Starve (DS) y Hamlet. Con Don't Starve seleccionado, puedes activar o desactivar los DLC Reign of Giants y Shipwrecked para controlar qué comidas y recetas se muestran. También puedes elegir un personaje como Warly o Webber para ver sus recetas y mecánicas especiales.",
 	gameInfoCharactersHeading: 'Mecánicas de comida por personaje',
 	gameInfoWarly:
 		'<strong>Warly</strong> es un personaje chef que solo puede jugarse en Shipwrecked, Hamlet y DST. En Shipwrecked, sus comidas son más saciantes preparadas como recetas pero menos efectivas crudas, secas o cocinadas. También tiene acceso a recetas únicas no disponibles para otros personajes.',

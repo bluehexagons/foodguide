@@ -762,12 +762,6 @@ button.makablebutton:disabled:hover {
 .ingredient-search-controls-right {
 	position: relative;
 }
-.ingredientdropdown .item.faded {
-	background: var(--table-hover);
-	color: var(--fg-tertiary);
-	border-style: dashed;
-}
-
 /* Density variations for ingredient dropdown */
 /* Compact */
 .ingredientdropdown.density-compact div {
@@ -947,7 +941,7 @@ button.makablebutton:disabled:hover {
 }
 
 .ui-dropdown-btn:focus-visible {
-	outline: 2px solid var(--fg-primary);
+	outline: 2px solid var(--focus-color);
 	outline-offset: 2px;
 }
 

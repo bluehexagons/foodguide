@@ -253,6 +253,10 @@ export const createRecipeCalculator = ({
 	return { matchingNames, getSuggestions, getRecipes };
 };
 
+/** Unordered four-slot combinations, including repeated ingredients: C(n + 3, 4). */
+export const countCombinations = (length: number): number =>
+	(length * (length + 1) * (length + 2) * (length + 3)) / 24;
+
 /**
  * Iterates over unordered four-item combinations in bounded batches.
  *

@@ -292,6 +292,18 @@ The analyzer drains delivered results from its batch buffer; the UI owns the
 retained result collection. Gains from a zero ingredient baseline have no relative
 percentage and show only the signed absolute change.
 
+The analyzer checks a 16 ms work budget between combinations and bounds batch
+growth, yielding through the scheduler so scrolling and pause actions stay
+responsive. Sorted recipe priorities let matching stop after the winning priority
+and its ties. Progress counts checked input combinations, including those with no
+valid output, against C(n + 3, 4); it is distinct from valid result rows, which can
+include multiple outcomes for one combination. The native progress bar and its
+visible description update together and localize without restarting the run.
+Progress updates do not enter the live announcement region. Configuration is
+captured at the start, including a copy of mutable multipliers. Cancellation from
+callbacks cannot enqueue another batch or invoke completion; a paused run leaves
+no scheduled work behind.
+
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
 paused statistics results, empty filtered tables, empty searches, and full-pot

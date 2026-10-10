@@ -3,7 +3,11 @@ import { describe, it } from 'node:test';
 
 import { defaultStatMultipliers, TOGETHER } from '../html/constants.js';
 import { food } from '../html/food.js';
-import { combinationGenerator, createRecipeCalculator } from '../html/recipe-calculator.js';
+import {
+	combinationGenerator,
+	countCombinations,
+	createRecipeCalculator,
+} from '../html/recipe-calculator.js';
 
 const createTogetherCalculator = () =>
 	createRecipeCalculator({
@@ -87,6 +91,18 @@ describe('combination generator', () => {
 			[1, 1, 1, 0],
 			[1, 1, 1, 1],
 		]);
+	});
+
+	it('counts combinations including repetition without enumerating them', () => {
+		for (let length = 0; length <= 8; length++) {
+			const combinations = collect(length);
+			assert.strictEqual(countCombinations(length), combinations.length);
+			assert.strictEqual(
+				new Set(combinations.map(items => items.join(','))).size,
+				combinations.length,
+			);
+		}
+		assert.strictEqual(countCombinations(100), 4_421_275);
 	});
 
 	it('finishes immediately for an empty collection', () => {

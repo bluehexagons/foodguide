@@ -171,6 +171,8 @@ const dict = {
 	analysisResetFiltersHelp: '恢复本次分析原来的食材和食谱筛选条件。',
 	analysisFiltersReset: '分析筛选条件已重置。',
 	analysisResultCount: '已加载 {total} 个匹配组合中的 {shown} 个。',
+	analysisProgressLabel: '组合检查进度',
+	analysisProgressCount: '已检查 {total} 个组合中的 {checked} 个({percent}%)。',
 	analysisSnapshotNotice: '暂停后可查看最新结果；计算期间表格显示的是结果快照。',
 	filterCycleHelp:
 		'用方向键浏览各筛选组。鼠标点击、轻触、回车或空格循环切换：普通 → 必需(✓) → 排除(✕)。Shift+回车、Shift+空格或右键可反向切换食材筛选或切换配方排除状态。',

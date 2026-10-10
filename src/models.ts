@@ -226,6 +226,10 @@ export interface AnalysisResult {
 	tags: { health: number; hunger: number };
 	multiple: boolean;
 }
+export interface AnalysisProgress {
+	checked: number;
+	total: number;
+}
 export interface RecipeData {
 	recipes: Recipe[];
 	test: RequirementTest[];

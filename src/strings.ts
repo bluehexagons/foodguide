@@ -199,6 +199,8 @@ const defaultStrings = {
 		'Restore the original ingredient and recipe filters for this analysis.',
 	analysisFiltersReset: 'Analysis filters reset.',
 	analysisResultCount: 'Loaded {shown} of {total} matching combinations.',
+	analysisProgressLabel: 'Combination checking progress',
+	analysisProgressCount: 'Checked {checked} of {total} combinations ({percent}%).',
 	analysisSnapshotNotice:
 		'Pause to inspect the latest results; the table shows a snapshot while calculation continues.',
 	filterCycleHelp:

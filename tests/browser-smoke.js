@@ -1221,6 +1221,18 @@ test('paused analysis exposes its current results and explains empty filters', a
 	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), true);
 	await pause.click();
 	const summary = page.locator('#makable .makableSummary');
+	const progress = page.locator('#makable progress');
+	const checked = await progress.evaluate(e => ({ value: e.value, max: e.max }));
+	const ingredientCount = await page.locator('#makable .foodFilter button').count();
+	const expectedTotal =
+		(ingredientCount * (ingredientCount + 1) * (ingredientCount + 2) * (ingredientCount + 3)) /
+		24;
+	assert.equal(checked.max, expectedTotal);
+	assert.ok(checked.value > 0 && checked.value < checked.max);
+	assert.match(
+		await progress.getAttribute('aria-valuetext'),
+		/^Checked \d+ of \d+ combinations \(\d+%\)\.$/,
+	);
 	assert.match(await summary.textContent(), /Found [1-9]\d* valid combinations \(paused\)/);
 	const found = Number((await summary.textContent()).match(/Found (\d+)/)[1]);
 	const rows = page.locator('#makable tbody tr:not(.table-empty-row)');
@@ -1282,6 +1294,15 @@ test('paused analysis exposes its current results and explains empty filters', a
 		await page.locator('#language-picker').selectOption(locale);
 		assert.equal(await empty.textContent(), message);
 		assert.equal(await empty.isVisible(), true);
+		assert.deepEqual(await progress.evaluate(e => ({ value: e.value, max: e.max })), checked);
+		assert.equal(
+			await progress.getAttribute('aria-label'),
+			locale === 'es'
+				? 'Progreso de comprobación de combinaciones'
+				: locale === 'zh'
+					? '组合检查进度'
+					: 'Combination checking progress',
+		);
 	}
 	for (let index = 0; index < 5; index++) {
 		await filters.nth(index).click();
@@ -1317,6 +1338,11 @@ test('analysis that finishes during resume retains its completion message', asyn
 	await pause.click();
 	assert.equal(await page.locator('#makable .makablebutton').isEnabled(), true);
 	assert.equal(await pause.count(), 0);
+	assert.equal(await page.locator('#makable progress').evaluate(e => e.value === e.max), true);
+	assert.match(
+		await page.locator('#makable progress').getAttribute('aria-valuetext'),
+		/\(100%\)/,
+	);
 	const summary = await page
 		.locator('#makable .makableSummary')
 		.evaluate(e => e.firstChild.textContent);
@@ -3163,6 +3189,9 @@ test('analysis reports zero-baseline gains accurately and its new controls remai
 		]) {
 			await page.locator('#language-picker').selectOption(locale);
 			const reset = page.locator('#makable .resetAnalysisFiltersButton');
+			const progress = page.locator('#makable progress');
+			assert.equal(await progress.evaluate(e => e.value === e.max), true);
+			assert.match(await progress.getAttribute('aria-valuetext'), /\(100%\)/);
 			assert.equal(await reset.textContent(), label);
 			await page.locator('#makable .foodFilter button').first().tap();
 			await reset.tap();

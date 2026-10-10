@@ -3,6 +3,8 @@ import type {
 	Food,
 	RecipeData,
 	AnalysisResult,
+	AnalysisProgress,
+	Recipe,
 	IngredientNames,
 	IngredientTags,
 } from './models.js';
@@ -15,7 +17,7 @@ interface AnalyzerOptions extends CalculatorOptions {
 }
 import { recipes } from './recipes.js';
 import { matchesMode } from './mode-utils.js';
-import { combinationGenerator } from './recipe-calculator.js';
+import { combinationGenerator, countCombinations } from './recipe-calculator.js';
 import { accumulateIngredients } from './utils.js';
 
 /**
@@ -31,18 +33,18 @@ export const createRecipeAnalyzer = ({
 	onRecipeData,
 	schedule = (callback, delay) => globalThis.setTimeout(callback, delay),
 	cancelSchedule = timeoutId => globalThis.clearTimeout(timeoutId),
-	now = () => Date.now(),
-	desiredBlockTime = 100,
+	now = () => performance.now(),
+	desiredBlockTime = 16,
 }: AnalyzerOptions) => {
 	const analyze = (
 		items: Food[],
 		mainCallback: (result: AnalysisResult) => void,
-		chunkCallback?: () => void,
+		chunkCallback?: (progress: AnalysisProgress) => void,
 		endCallback?: () => void,
 	) => {
 		const modeMask = getModeMask();
 		const charMask = getCharMask();
-		const statMultipliers = getStatMultipliers();
+		const statMultipliers = { ...getStatMultipliers() };
 		const availableRecipes = recipes
 			.filter(
 				item =>
@@ -60,7 +62,8 @@ export const createRecipeAnalyzer = ({
 		onRecipeData?.(recipeData);
 
 		const pendingResults: AnalysisResult[] = [];
-		let previousElapsed: number | undefined;
+		const total = countCombinations(items.length);
+		let checked = 0;
 		let blockSize = 100;
 		let paused = false;
 		let cancelled = false;
@@ -68,38 +71,36 @@ export const createRecipeAnalyzer = ({
 		let timeoutId: number | null = null;
 
 		const callback = (combination: number[]) => {
+			checked++;
 			const ingredients = combination.map(index => items[index]);
 			/** @type {Record<string, number>} */
 			const names: IngredientNames = {};
 			/** @type {Record<string, number>} */
 			const tags: IngredientTags = {};
-			let created: AnalysisResult | null = null;
-			let multiple = false;
 
 			accumulateIngredients(ingredients, names, tags, statMultipliers);
 			tags.hunger = tags.bestHunger;
 			tags.health = tags.bestHealth;
 			tags.sanity = tags.bestSanity;
 
-			const matches = recipeData.recipes.filter(recipe => recipe.test(null, names, tags));
-			const maxPriority = matches.reduce(
-				(max, recipe) => Math.max(recipe.priority, max),
-				-Infinity,
-			);
-
-			for (const recipe of matches.filter(recipe => recipe.priority >= maxPriority)) {
-				if (created !== null) {
-					multiple = true;
-					created.multiple = true;
+			const matches: Recipe[] = [];
+			// Recipes are sorted by priority. Once one matches, only its ties can win.
+			for (const recipe of recipeData.recipes) {
+				if (matches.length && recipe.priority < matches[0].priority) {
+					break;
 				}
+				if (recipe.test(null, names, tags)) {
+					matches.push(recipe);
+				}
+			}
 
-				created = {
+			for (const recipe of matches) {
+				pendingResults.push({
 					recipe,
 					ingredients,
 					tags: { health: tags.health, hunger: tags.hunger },
-					multiple,
-				};
-				pendingResults.push(created);
+					multiple: matches.length > 1,
+				});
 			}
 		};
 
@@ -112,26 +113,45 @@ export const createRecipeAnalyzer = ({
 			}
 
 			const start = now();
-			const hasMore = getCombinations(blockSize);
+			let processed = 0;
+			let hasMore: boolean;
+			do {
+				hasMore = getCombinations(1);
+				processed++;
+			} while (hasMore && processed < blockSize && now() - start < desiredBlockTime);
 
 			for (const result of pendingResults) {
 				mainCallback(result);
 			}
 			// The consumer owns delivered results; retain only the current batch here.
 			pendingResults.length = 0;
-
-			const elapsed = Math.max(1, now() - start);
-			if (previousElapsed !== elapsed) {
-				previousElapsed = elapsed;
-				blockSize = Math.max(1, ((desiredBlockTime / elapsed) * blockSize + 1) | 0);
+			if (cancelled) {
+				return;
 			}
 
-			chunkCallback?.();
+			const elapsed = Math.max(1, now() - start);
+			// Cap growth and retain a clock-independent bound on each batch.
+			blockSize = Math.max(
+				1,
+				Math.min(
+					10_000,
+					blockSize * 2,
+					Math.floor((desiredBlockTime / elapsed) * processed),
+				),
+			);
+
+			chunkCallback?.({ checked, total });
+			if (cancelled) {
+				return;
+			}
 
 			if (hasMore) {
-				timeoutId = schedule(computeNextBlock, 0);
+				if (!paused) {
+					timeoutId = schedule(computeNextBlock, 0);
+				}
 			} else {
 				complete = true;
+				paused = false;
 				endCallback?.();
 			}
 		};

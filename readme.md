@@ -69,6 +69,8 @@ combinations for the same recipe without changing the sort order. Expand a recip
 to see its combinations; a collapsed row shows the first combination's values.
 Click its ingredients to fill the crock pot and open the Simulator.
 Pause a running analysis to inspect its latest results and load more combinations.
+Its progress bar reports combinations checked out of the full search, including
+combinations that produce no valid recipe.
 The table reports how many matching combinations are loaded; recipe groups can
 contain several of those combinations. **Reset filters** restores the analysis's
 original filters, including the Statistics Analyzer's default exclusions.

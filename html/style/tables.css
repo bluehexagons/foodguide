@@ -136,11 +136,26 @@ table th.sort-desc .table-sort::after {
 	line-height: 1.5;
 }
 
+.analysis-progress,
 .analysis-result-count,
 .analysis-snapshot-notice {
 	margin: 8px 0;
 	color: var(--fg-secondary);
 	font-size: 13px;
+}
+
+.analysis-progress {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.analysis-progress progress {
+	width: 200px;
+	max-width: 100%;
+	height: 12px;
+	accent-color: var(--focus-color);
 }
 
 /* Collapsed runs retain the first sorted combination's values and ingredients. */

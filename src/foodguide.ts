@@ -5,6 +5,7 @@ import type {
 	CalculatorRow,
 	ModifyItem,
 	AnalysisRow,
+	AnalysisProgress,
 	RecipeData,
 	FoodCollection,
 	RecipeCollection,
@@ -928,6 +929,26 @@ import './locales/index.js';
 				let paused = false;
 				const resultCount = document.createElement('p');
 				resultCount.className = 'analysis-result-count';
+				const progressContainer = document.createElement('div');
+				progressContainer.className = 'analysis-progress';
+				const progressBar = document.createElement('progress');
+				const progressText = document.createElement('span');
+				let progress: AnalysisProgress = { checked: 0, total: 0 };
+				const updateProgress = () => {
+					const percent = progress.total
+						? Math.floor((progress.checked / progress.total) * 100)
+						: 100;
+					progressBar.max = progress.total || 1;
+					progressBar.value = progress.total ? progress.checked : 1;
+					progressBar.setAttribute('aria-label', t('analysisProgressLabel'));
+					progressText.textContent = t('analysisProgressCount', {
+						checked: progress.checked.toLocaleString(getLocale()),
+						total: progress.total.toLocaleString(getLocale()),
+						percent,
+					});
+					progressBar.setAttribute('aria-valuetext', progressText.textContent);
+				};
+				progressContainer.append(progressBar, progressText);
 				const snapshotNotice = document.createElement('p');
 				snapshotNotice.className = 'analysis-snapshot-notice';
 				snapshotNotice.textContent = t('analysisSnapshotNotice');
@@ -1048,6 +1069,7 @@ import './locales/index.js';
 					resetFiltersButton.textContent = t('analysisResetFilters');
 					resetFiltersButton.title = t('analysisResetFiltersHelp');
 					snapshotNotice.textContent = t('analysisSnapshotNotice');
+					updateProgress();
 					ingredientFilterControls.updateLocale();
 					recipeFilterControls.updateLocale();
 					makableFilter.setAttribute('aria-label', t('filterIngredients'));
@@ -1095,7 +1117,7 @@ import './locales/index.js';
 				};
 				document.addEventListener('foodguide:localechange', updateMakableTexts);
 
-				makableDiv.appendChild(makableSummary);
+				makableDiv.append(makableSummary, progressContainer);
 				makableDiv.appendChild(makableFootnote);
 				makableDiv.appendChild(filterHelp);
 				makableDiv.appendChild(groupingHelp);
@@ -1214,8 +1236,10 @@ import './locales/index.js';
 						};
 						made.push(row);
 					},
-					() => {
+					currentProgress => {
 						// Chunk callback - show pause button if this is called (meaning async operation)
+						progress = currentProgress;
+						updateProgress();
 						if (isCalculating && !pauseButton.parentNode) {
 							makableSummary.appendChild(pauseButton);
 						}

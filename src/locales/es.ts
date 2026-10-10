@@ -182,6 +182,8 @@ const dict = {
 		'Restaurar los filtros originales de ingredientes y recetas de este análisis.',
 	analysisFiltersReset: 'Filtros del análisis restablecidos.',
 	analysisResultCount: 'Se cargaron {shown} de {total} combinaciones coincidentes.',
+	analysisProgressLabel: 'Progreso de comprobación de combinaciones',
+	analysisProgressCount: 'Se comprobaron {checked} de {total} combinaciones ({percent}%).',
 	analysisSnapshotNotice:
 		'Pausa para consultar los resultados más recientes; la tabla muestra una instantánea mientras continúa el cálculo.',
 	filterCycleHelp:

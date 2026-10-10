@@ -294,8 +294,11 @@ announcing every calculation batch.
 Refresh results and completion refresh the snapshot without restarting calculation.
 The refresh action stays available for unfinished and paused analyses, including
 empty snapshots, and hides on completion. If focused, it hands focus to the groups
-per page selector. Refresh preserves the first visible group and expanded
-combination where possible by matching retained row identities in the new snapshot.
+per page selector. An untouched overview stays on page one to show the start of
+the final ranking. After paging ahead or expanding a run, refresh preserves the
+browsed group and combination where possible by matching retained row identities
+in the new snapshot. Keep a focused result at its previous viewport position when
+new runs shift its row; scroll a fallback control into view if the result disappears.
 Page-size changes keep the previous first row within the new page. Both toolbar
 copies synchronize, and locale changes preserve page sizes. Filter changes and
 reset return to the first overview page; reset restores initial exclusions and clears user requirements.

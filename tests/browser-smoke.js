@@ -4484,6 +4484,29 @@ test('large recipe groups allow direct browsing without rendering the whole data
 	});
 	assert.equal(await overview.locator('[data-table-action=page-number]').inputValue(), '3');
 	assert.equal(await fixture.locator('tr[data-recipe=other-9]').count(), 1);
+	await overview.locator('[data-table-action=page-first]').tap();
+	await overview.locator('[data-table-action=page-next]').tap();
+	await input.focus();
+	const readingOffset = await input.evaluate(e => e.getBoundingClientRect().top);
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.push(
+			...Array.from({ length: 5 }, (_, index) => ({
+				name: `Later recipe ${index}`,
+				recipe: `later-${index}`,
+				hunger: 3000 - index,
+				index: 2000 + index,
+			})),
+		);
+		table.refresh();
+	});
+	await page.waitForFunction(offset => {
+		const input = document.querySelector(
+			'#large-group-fixture .table-group-pager:not([hidden]) input',
+		);
+		return Math.abs(input.getBoundingClientRect().top - offset) < 1;
+	}, readingOffset);
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
 	await overview.locator('[data-table-action=page-number]').focus();
 	await page.evaluate(() => {
 		const { table, dataset } = window.paginationFixture;
@@ -4564,11 +4587,8 @@ test('running analysis refreshes without pausing and reloads its final results w
 		(await page.locator('#makable .makableSummary').textContent()).match(/Found (\d+)/)[1],
 	);
 	assert.match(await count.textContent(), new RegExp(`; ${found} matching combinations`));
-	const next = overview.locator('[data-table-action=page-next]');
-	if ((await next.isVisible()) && (await next.isEnabled())) {
-		await next.click();
-	}
 	const currentPage = await overview.locator('[data-table-action=page-number]').inputValue();
+	assert.equal(currentPage, '1', 'Refreshing an untouched overview keeps the best results first');
 	await refresh.click();
 	assert.equal(
 		await overview.locator('[data-table-action=page-number]').inputValue(),
@@ -4578,6 +4598,11 @@ test('running analysis refreshes without pausing and reloads its final results w
 	await page.clock.runFor(1000);
 	assert.equal(await page.locator('#makable .makablebutton').isEnabled(), true);
 	assert.equal(await refresh.isVisible(), false);
+	assert.equal(
+		await overview.locator('[data-table-action=page-number]').inputValue(),
+		'1',
+		'Completion keeps an untouched overview at the start of the final ranking',
+	);
 	assert.equal(
 		await overview
 			.locator('[data-table-action=group-page-size]')

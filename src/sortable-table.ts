@@ -436,7 +436,14 @@ export const createSortableTableFactory = ({
 				sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
 				if (groupRows) {
 					const previous = groupedSnapshot;
-					const firstVisible = previous[groupPage * groupPageSize]?.item;
+					// Keep an untouched first page at the beginning of the final ranking.
+					// Follow a browsing anchor only after paging ahead or opening a run.
+					const firstVisible =
+						groupPage > 0
+							? previous[groupPage * groupPageSize]?.item
+							: previous
+									.slice(0, groupPageSize)
+									.find(group => expandedGroups.has(group.item))?.item;
 					groupedSnapshot = groupConsecutiveRows(dataset, groupRows.key, filterCallback);
 					aliases = reconcileGroupViews(
 						previous,
@@ -767,8 +774,22 @@ export const createSortableTableFactory = ({
 				scrollFrame = undefined;
 			}
 			const scrollX = window.scrollX;
-			const scrollY = window.scrollY;
+			let scrollY = window.scrollY;
+			const focusedOffset =
+				preservePage && body.contains(document.activeElement)
+					? document.activeElement!.getBoundingClientRect().top
+					: undefined;
 			renderTable(scrollHighlight, refreshSnapshot, preservePage);
+			if (focusedOffset !== undefined) {
+				const focused = document.activeElement;
+				if (focused && body.contains(focused)) {
+					// Keep a focused result at its reading position as preceding runs grow.
+					scrollY += focused.getBoundingClientRect().top - focusedOffset;
+				} else {
+					focused?.scrollIntoView({ block: 'nearest' });
+					scrollY = window.scrollY;
+				}
+			}
 			if (!scrollHighlight) {
 				scrollFrame = requestAnimationFrame(() => {
 					scrollFrame = undefined;

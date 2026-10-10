@@ -1348,7 +1348,7 @@ import './locales/index.js';
 			}
 			const fixedSlots = Array.from(parent.querySelectorAll<HTMLElement>('.ingredient'));
 			const slots: string[] = [];
-			let pickerOptions: { element: HTMLSpanElement; key: string }[] = [];
+			let pickerOptions: { element: HTMLSpanElement; key: string; name: string }[] = [];
 
 			const searchRow = document.createElement('div');
 			searchRow.className = 'ingredient-search-row';
@@ -1665,6 +1665,7 @@ import './locales/index.js';
 				name.classList.add('text');
 				name.appendChild(document.createTextNode(item.name));
 				li.appendChild(name);
+				li.appendChild(document.createTextNode(' '));
 				const marker = document.createElement('span');
 				marker.className = 'ingredient-picked-marker';
 				marker.setAttribute('aria-hidden', 'true');
@@ -1682,7 +1683,7 @@ import './locales/index.js';
 					() => pickItem(item.key, li, true),
 				);
 				this.appendChild(li);
-				pickerOptions.push({ element: li, key: item.key });
+				pickerOptions.push({ element: li, key: item.key, name: item.name });
 			};
 
 			const updateSelectionIndicators = () => {
@@ -1693,11 +1694,13 @@ import './locales/index.js';
 						counts.set(id, (counts.get(id) || 0) + 1);
 					}
 				}
-				for (const { element, key } of pickerOptions) {
+				for (const { element, key, name } of pickerOptions) {
 					const count = counts.get(key) || 0;
 					element.classList.toggle('faded', count > 0);
 					element.querySelector('.ingredient-picked-marker')!.textContent =
 						count > 1 ? String(count) : '';
+					// The accessible name must include the quantity shown in the badge.
+					element.setAttribute('aria-label', count > 1 ? `${name} ${count}` : name);
 					if (count) {
 						element.setAttribute(
 							'aria-description',

@@ -357,7 +357,7 @@ test('selection indicators survive forced colors and track modes, menus, columns
 		await page.locator('#simulator .clearingredientsbtn').click();
 		for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
 			await page.locator('#simulator .ingredientpicker').fill(name);
-			await page.getByRole('option', { name, exact: true }).click();
+			await page.getByRole('option', { name: new RegExp(`^${name}(?: \\d)?$`) }).click();
 		}
 		await page.locator('#simulator .clearsearchbtn').click();
 
@@ -569,12 +569,17 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 	});
 	const diagnostics = trackDiagnostics(page);
 	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
 	for (const tab of ['simulator', 'discovery']) {
 		await page.locator(`#tab-${tab}`).click();
 		const panel = page.locator(`#${tab}`);
 		const search = panel.getByRole('combobox');
 		await search.fill('Meat');
-		const meat = panel.getByRole('option', { name: 'Meat', exact: true });
+		const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
+		assert.equal(
+			await meat.getAttribute('aria-label'),
+			tab === 'simulator' ? 'Meat 2' : 'Meat',
+		);
 		assert.match(await meat.getAttribute('class'), /faded/);
 		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
 		assert.equal(
@@ -631,6 +636,30 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 			await meat.locator('.ingredient-picked-marker').textContent(),
 			tab === 'simulator' ? '3' : '',
 		);
+		assert.equal(
+			await meat.getAttribute('aria-label'),
+			tab === 'simulator' ? 'Meat 3' : 'Meat',
+		);
+		for (const colorScheme of ['light', 'dark']) {
+			await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
+			const violations = await page.evaluate(async () => {
+				const { violations } = await window.axe.run({
+					runOnly: {
+						type: 'rule',
+						values: ['label-content-name-mismatch', 'color-contrast'],
+					},
+				});
+				return violations.map(({ id, nodes }) => ({
+					id,
+					targets: nodes.map(n => n.target),
+				}));
+			});
+			assert.deepEqual(
+				violations,
+				[],
+				`${tab} ${colorScheme}: ${JSON.stringify(violations)}`,
+			);
+		}
 		for (const [locale, description] of Object.entries(
 			tab === 'simulator'
 				? { en: 'In the pot: 3.', es: 'En la olla: 3.', zh: '锅中数量：3。' }
@@ -640,6 +669,17 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 			assert.equal(await meat.getAttribute('aria-description'), description);
 		}
 		await page.locator('#language-picker').selectOption('en');
+		if (tab === 'simulator') {
+			for (let i = 0; i < 2; i++) {
+				await panel
+					.getByRole('button', { name: 'Remove Meat', exact: true })
+					.first()
+					.click();
+			}
+			assert.equal(await meat.getAttribute('aria-label'), 'Meat');
+			assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+			assert.equal(await meat.locator('.ingredient-picked-marker').textContent(), '');
+		}
 	}
 	assert.deepEqual(diagnostics, []);
 });
@@ -1345,7 +1385,7 @@ for (const { tab, slots } of [
 		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 		const session = await page.context().newCDPSession(page);
 		const search = page.locator(`#${tab} .ingredientpicker`);
-		const meat = page.locator(`#${tab}`).getByRole('option', { name: 'Meat', exact: true });
+		const meat = page.locator(`#${tab}`).getByRole('option', { name: /^Meat(?: \d)?$/ });
 		const selectedKeys = () =>
 			page
 				.locator(`${slots} .ingredient[data-id]`)
@@ -1616,7 +1656,7 @@ for (const { tab, slots, limited } of [
 		const diagnostics = trackDiagnostics(page);
 		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 		const search = page.locator(`#${tab} .ingredientpicker`);
-		const meat = page.locator(`#${tab}`).getByRole('option', { name: 'Meat', exact: true });
+		const meat = page.locator(`#${tab}`).getByRole('option', { name: /^Meat(?: \d)?$/ });
 		const selectedKeys = () =>
 			page
 				.locator(`${slots} .ingredient[data-id]`)

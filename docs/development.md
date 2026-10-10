@@ -184,10 +184,11 @@ and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enh
 menu choices, picked ingredients, visible columns, and highlighted table rows.
 Picked ingredients also have a distinct background and repeated pot ingredients
 show a quantity badge. Rebuilds after search, sort, and game changes derive this
-state from the slots; `aria-description` describes membership independently of
-the keyboard highlight's `aria-selected`. Focus rings use the theme's focus color
+state from the slots; quantities also appear in accessible names, while
+`aria-description` describes membership independently of the keyboard highlight's
+`aria-selected`. Focus rings use the theme's focus color
 and stay inside joined search inputs and scrolling menu items. These cues supplement
-color without changing accessible names. Targeted forced-color rules retain the
+color. Targeted forced-color rules retain the
 user's system palette, remove the slot texture, and preserve selection outlines
 and filter badges. Keep this stylesheet last so it can adjust the shared styles.
 

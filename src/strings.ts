@@ -199,6 +199,14 @@ const defaultStrings = {
 		'Restore the original ingredient and recipe filters for this analysis.',
 	analysisFiltersReset: 'Analysis filters reset.',
 	analysisResultCount: 'Recipe groups {first}–{last} of {groups}; {total} matching combinations.',
+	analysisRefresh: 'Refresh results',
+	analysisRefreshHelp:
+		'Update the table with the combinations found so far without interrupting calculation.',
+	analysisRefreshed: 'Results refreshed.',
+	paginationGroupsPerPage: 'Groups per page',
+	paginationCombinationsPerPage: 'Combinations per group page',
+	paginationCombinationSizeChanged:
+		'Expanded groups now show up to {size} combinations per page.',
 	paginationGroups: 'Recipe group pages',
 	paginationCombinations: 'Combination pages for {name}',
 	paginationGroupRange: 'Recipe groups {first}–{last} of {total}',
@@ -213,7 +221,7 @@ const defaultStrings = {
 	analysisProgressLabel: 'Combination checking progress',
 	analysisProgressCount: 'Checked {checked} of {total} combinations ({percent}%).',
 	analysisSnapshotNotice:
-		'Pause to inspect the latest results; the table shows a snapshot while calculation continues.',
+		'Refresh to inspect the latest results without pausing. The table refreshes automatically when calculation finishes.',
 	filterCycleHelp:
 		'Use arrow keys to browse each filter group. Click, tap, Enter, or Space cycles normal → required (✓) → excluded (✕). Shift+Enter, Shift+Space, or right-click reverses ingredient filters or toggles recipe exclusions.',
 	filterIngredients: 'Ingredient filters',

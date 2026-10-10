@@ -128,3 +128,87 @@ export const createTablePagination = (
 		},
 	};
 };
+
+export const PAGE_SIZES = [10, 25, 50, 100] as const;
+
+export const createPageSizeControl = (
+	translate: (key: StringKey) => string,
+	labelKey: StringKey,
+	action: string,
+	onChange: (size: number) => void,
+) => {
+	const element = document.createElement('label');
+	const text = document.createElement('span');
+	const select = document.createElement('select');
+	select.dataset.tableAction = action;
+	for (const size of PAGE_SIZES) {
+		const option = document.createElement('option');
+		option.value = String(size);
+		option.textContent = String(size);
+		select.appendChild(option);
+	}
+	select.addEventListener('change', () => onChange(Number(select.value)));
+	element.append(text, select);
+	return {
+		element,
+		select,
+		update: (size: number) => {
+			text.textContent = translate(labelKey);
+			select.value = String(size);
+		},
+	};
+};
+
+/** Carry expanded runs forward when incoming rows change a run's first item. */
+export const reconcileGroupViews = <T>(
+	previous: ConsecutiveGroup<T>[],
+	current: ConsecutiveGroup<T>[],
+	expanded: Set<T>,
+	pages: Map<T, number>,
+	size: number,
+) => {
+	const views = new Map(
+		previous
+			.filter(group => expanded.has(group.item) || pages.has(group.item))
+			.map(group => [
+				group.item,
+				{
+					expanded: expanded.has(group.item),
+					page: pages.get(group.item) ?? 0,
+					first: group.items[(pages.get(group.item) ?? 0) * size],
+				},
+			]),
+	);
+	const aliases = new Map<T, T>();
+	expanded.clear();
+	pages.clear();
+	for (const group of current) {
+		let source: ReturnType<typeof views.get>;
+		for (const item of group.items) {
+			const view = views.get(item);
+			if (!view) {
+				continue;
+			}
+			aliases.set(item, group.item);
+			if (!source || (!source.expanded && view.expanded)) {
+				source = view;
+			}
+		}
+		if (!source) {
+			continue;
+		}
+		if (source.expanded) {
+			expanded.add(group.item);
+		}
+		const position = source.expanded ? group.items.indexOf(source.first) : -1;
+		pages.set(
+			group.item,
+			pageRange(
+				group.items.length,
+				position >= 0 ? Math.floor(position / size) : source.page,
+				size,
+			).page,
+		);
+	}
+	return aliases;
+};

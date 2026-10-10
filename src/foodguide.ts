@@ -967,6 +967,12 @@ import './locales/index.js';
 
 				const makableTable = makeSortableTable({
 					captionKey: 'tableEfficientRecipes',
+					refreshControl: {
+						available: () => isCalculating,
+						onRefresh: () => {
+							analysisStatus.textContent = `${t('analysisRefreshed')} ${resultCount.textContent}`;
+						},
+					},
 					onRender: ({ total, groups }) => {
 						resultCount.textContent = t('analysisResultCount', {
 							first: groups!.first,
@@ -1254,7 +1260,7 @@ import './locales/index.js';
 							made,
 						};
 
-						makableTable.update();
+						makableTable.refresh();
 
 						const summaryText = t('foundValidRecipes', { count: made.length });
 						makableSummaryText.textContent = summaryText;

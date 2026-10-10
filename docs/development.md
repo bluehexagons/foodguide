@@ -131,9 +131,10 @@ work, remove translation listeners, and release their table registrations when
 inputs or game settings change. An unfinished calculation displays a snapshot after
 its first batch and refreshes it on pause/resume or filter changes. Group the entire sorted, filtered snapshot before
 pagination, so one long recipe run cannot hide later recipes. The overview displays
-25 consecutive recipe groups per page; expanding a group renders at most 25 of its
-combinations at a time. Both levels offer first/previous/next/last controls and a
-page-number jump. Pagination reuses the snapshot without sorting it again.
+25 consecutive recipe groups per page by default; expanding a group renders 25
+combinations by default. Independent main-toolbar controls select 10, 25, 50, or
+100 groups and combinations per page. Keep rendering bounded at both levels. Both
+levels offer first/previous/next/last controls and a page-number jump. Pagination reuses the snapshot without sorting it again.
 Avoid redrawing the growing table on every calculation batch. Resume can finish
 synchronously; its completion callback owns the final controls and announcement.
 Empty filtered results explain whether the search is still unfinished or which
@@ -272,9 +273,10 @@ count
 covers the full consecutive run in the filtered snapshot. Separate runs of the
 same recipe remain separate, preserving numeric sort order. Expanding keeps the
 control focused and renders a combination page with ordinary rows and their own
-ingredient buttons. The expanded header shows the first combination on the current
-detail page;
-the range identifies its position within the group. Expansion survives language
+ingredient buttons. Tint and borders mark the entire expanded run; the last row
+(or pager on a one-combination page) closes its boundary. These borders remain
+visible with hidden columns and forced colors. The expanded header shows the first
+combination on the current detail page; the range identifies its position within the group. Expansion survives language
 changes and pagination when the first combination remains the same; changing the
 sort collapses groups. Stable sorting
 preserves tied combinations across rerenders, with missing numeric values last.
@@ -289,8 +291,14 @@ the table. The overview count reports group range and all matching combinations,
 while the calculation summary counts all valid combinations found so far.
 Filter changes, resets, pausing, and pagination announce the matching count without
 announcing every calculation batch.
-Completion refreshes the snapshot. Filter changes and reset return to the first
-overview page; reset restores initial exclusions and clears user requirements.
+Refresh results and completion refresh the snapshot without restarting calculation.
+The refresh action stays available for unfinished and paused analyses, including
+empty snapshots, and hides on completion. If focused, it hands focus to the groups
+per page selector. Refresh preserves the first visible group and expanded
+combination where possible by matching retained row identities in the new snapshot.
+Page-size changes keep the previous first row within the new page. Both toolbar
+copies synchronize, and locale changes preserve page sizes. Filter changes and
+reset return to the first overview page; reset restores initial exclusions and clears user requirements.
 Locale changes preserve the snapshot, overview page, detail pages, expansion, and
 focused controls. Sorting collapses groups and resets both levels. Pagination
 announces the new range without announcing every calculation batch. Bottom overview

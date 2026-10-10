@@ -183,6 +183,14 @@ const dict = {
 	analysisFiltersReset: 'Filtros del análisis restablecidos.',
 	analysisResultCount:
 		'Grupos de recetas {first}–{last} de {groups}; {total} combinaciones coincidentes.',
+	analysisRefresh: 'Actualizar resultados',
+	analysisRefreshHelp:
+		'Actualiza la tabla con las combinaciones encontradas sin interrumpir el cálculo.',
+	analysisRefreshed: 'Resultados actualizados.',
+	paginationGroupsPerPage: 'Grupos por página',
+	paginationCombinationsPerPage: 'Combinaciones por página de grupo',
+	paginationCombinationSizeChanged:
+		'Los grupos expandidos muestran hasta {size} combinaciones por página.',
 	paginationGroups: 'Páginas de grupos de recetas',
 	paginationCombinations: 'Páginas de combinaciones de {name}',
 	paginationGroupRange: 'Grupos de recetas {first}–{last} de {total}',
@@ -197,7 +205,7 @@ const dict = {
 	analysisProgressLabel: 'Progreso de comprobación de combinaciones',
 	analysisProgressCount: 'Se comprobaron {checked} de {total} combinaciones ({percent}%).',
 	analysisSnapshotNotice:
-		'Pausa para consultar los resultados más recientes; la tabla muestra una instantánea mientras continúa el cálculo.',
+		'Actualiza para ver los últimos resultados sin pausar. La tabla se actualiza automáticamente al terminar el cálculo.',
 	filterCycleHelp:
 		'Usa las flechas para explorar cada grupo de filtros. Clic, toque, Intro o Espacio alternan normal → obligatorio (✓) → excluido (✕). Mayús+Intro, Mayús+Espacio o clic derecho invierten los filtros de ingredientes o alternan la exclusión de recetas.',
 	customFilterPlaceholder: 'usar filtro personalizado',

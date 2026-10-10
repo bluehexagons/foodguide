@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { groupConsecutiveRows, pageRange } from '../html/table-pagination.js';
+import { groupConsecutiveRows, pageRange, reconcileGroupViews } from '../html/table-pagination.js';
 
 test('a long recipe run cannot consume the overview or truncate its count', () => {
 	const rows = Array.from({ length: 620 }, (_, index) => ({ recipe: 'stew', index }));
@@ -62,4 +62,44 @@ test('filtering joins newly consecutive recipes and handles empty or out-of-rang
 	assert.deepEqual(pageRange(0, 20, 25), { page: 0, pages: 1, start: 0, end: 0 });
 	assert.deepEqual(pageRange(51, -1, 25), { page: 0, pages: 3, start: 0, end: 25 });
 	assert.deepEqual(pageRange(51, 2, 25), { page: 2, pages: 3, start: 50, end: 51 });
+});
+
+test('refresh preserves expanded combinations when new rows change a run anchor', () => {
+	const rows = Array.from({ length: 120 }, (_, index) => ({ recipe: 'stew', index }));
+	const previous = groupConsecutiveRows(rows, item => item.recipe);
+	const expanded = new Set([rows[0]]);
+	const pages = new Map([[rows[0], 3]]);
+	const incoming = Array.from({ length: 37 }, (_, index) => ({
+		recipe: 'stew',
+		index: index - 37,
+	}));
+	const current = groupConsecutiveRows([...incoming, ...rows], item => item.recipe);
+	const aliases = reconcileGroupViews(previous, current, expanded, pages, 25);
+	assert.deepEqual([...expanded], [incoming[0]]);
+	assert.equal(aliases.get(rows[0]), incoming[0]);
+	const range = pageRange(current[0].items.length, pages.get(incoming[0]), 25);
+	assert.ok(
+		current[0].items.slice(range.start, range.end).includes(rows[75]),
+		'The combination at the start of the old page remains on the new page',
+	);
+});
+
+test('refresh keeps separate runs separate, prefers expanded state on merging, and prunes removed runs', () => {
+	const first = { recipe: 'stew' };
+	const other = { recipe: 'pie' };
+	const last = { recipe: 'stew' };
+	const previous = groupConsecutiveRows([first, other, last], item => item.recipe);
+	const expanded = new Set([last, other]);
+	const pages = new Map([
+		[first, 0],
+		[other, 0],
+		[last, 0],
+	]);
+	reconcileGroupViews(previous, previous, expanded, pages, 25);
+	assert.deepEqual([...expanded], [other, last]);
+	assert.equal(pages.size, 3);
+	const current = groupConsecutiveRows([first, last], item => item.recipe);
+	reconcileGroupViews(previous, current, expanded, pages, 25);
+	assert.deepEqual([...expanded], [first]);
+	assert.deepEqual([...pages], [[first, 0]]);
 });

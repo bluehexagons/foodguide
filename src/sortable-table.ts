@@ -1,5 +1,11 @@
 import type { TextParams } from './models.js';
-import { createTablePagination, groupConsecutiveRows, pageRange } from './table-pagination.js';
+import {
+	createTablePagination,
+	createPageSizeControl,
+	groupConsecutiveRows,
+	pageRange,
+	reconcileGroupViews,
+} from './table-pagination.js';
 import type { ConsecutiveGroup } from './table-pagination.js';
 import type { StringKey } from './strings.js';
 import type { SortRow, TableSortKey } from './table-sort.js';
@@ -10,6 +16,8 @@ export interface SortableTable extends HTMLDivElement {
 	update: (scrollHighlight?: boolean) => void;
 	updateLocale: () => void;
 	setMaxRows: (max: number) => void;
+	/** Refresh a grouped snapshot while preserving the current browsing position. */
+	refresh: () => void;
 	/** Release registrations and scheduled scrolling before removing the container. */
 	dispose: () => void;
 	updateResponsive?: () => void;
@@ -54,6 +62,7 @@ export interface TableOptions<T extends SortRow> {
 		toggleLabel: (item: T, count: number, expanded: boolean) => string;
 		description?: () => string;
 	};
+	refreshControl?: { available: () => boolean; onRefresh?: () => void };
 	columnConfig?: ColumnConfig;
 }
 
@@ -150,6 +159,7 @@ export const createSortableTableFactory = ({
 		filterCallback,
 		maxRows,
 		groupRows,
+		refreshControl,
 		columnConfig,
 	}: TableOptions<T>) => {
 		const table = document.createElement('table');
@@ -157,6 +167,8 @@ export const createSortableTableFactory = ({
 		const expandedGroups = new Set<T>();
 		const combinationPages = new Map<T, number>();
 		let groupPage = 0;
+		let groupPageSize = 25;
+		let combinationPageSize = 25;
 		let groupedSnapshot: ConsecutiveGroup<T>[] = [];
 		let matchingRows = 0;
 		const container = document.createElement('div') as SortableTable;
@@ -356,34 +368,94 @@ export const createSortableTableFactory = ({
 						paginationStatus.textContent =
 							pager.element.querySelector('.table-page-range')!.textContent;
 					});
+					const settings = document.createElement('div');
+					settings.className = 'table-page-settings';
+					const groupSize = createPageSizeControl(
+						translate,
+						'paginationGroupsPerPage',
+						'group-page-size',
+						size => {
+							groupPage = Math.floor((groupPage * groupPageSize) / size);
+							groupPageSize = size;
+							renderTable(false, false);
+							paginationStatus.textContent =
+								pager.element.querySelector('.table-page-range')!.textContent;
+						},
+					);
+					const combinationSize = createPageSizeControl(
+						translate,
+						'paginationCombinationsPerPage',
+						'combination-page-size',
+						size => {
+							for (const [item, page] of combinationPages) {
+								combinationPages.set(
+									item,
+									Math.floor((page * combinationPageSize) / size),
+								);
+							}
+							combinationPageSize = size;
+							renderTable(false, false);
+							paginationStatus.textContent = translate(
+								'paginationCombinationSizeChanged',
+								{ size },
+							);
+						},
+					);
+					settings.append(groupSize.element, combinationSize.element);
+					const refreshButton = document.createElement('button');
+					refreshButton.type = 'button';
+					refreshButton.dataset.tableAction = 'refresh';
+					refreshButton.addEventListener('click', () => {
+						container.refresh();
+						refreshControl?.onRefresh?.();
+					});
+					if (refreshControl) {
+						settings.appendChild(refreshButton);
+					}
+					pager.element.appendChild(settings);
 					pager.element.classList.add('table-group-pagination');
-					return pager;
+					return { ...pager, groupSize, combinationSize, refreshButton };
 				})
 			: [];
 
-		const renderTable = (scrollHighlight = false, refreshSnapshot = true) => {
+		const renderTable = (
+			scrollHighlight = false,
+			refreshSnapshot = true,
+			preservePage = false,
+		) => {
 			if (disposed) {
 				return;
 			}
+			if (scrollFrame !== undefined) {
+				cancelAnimationFrame(scrollFrame);
+				scrollFrame = undefined;
+			}
+			let aliases = new Map<T, T>();
 			caption.textContent = translate(captionKey);
 			if (refreshSnapshot) {
 				sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
 				if (groupRows) {
+					const previous = groupedSnapshot;
+					const firstVisible = previous[groupPage * groupPageSize]?.item;
 					groupedSnapshot = groupConsecutiveRows(dataset, groupRows.key, filterCallback);
+					aliases = reconcileGroupViews(
+						previous,
+						groupedSnapshot,
+						expandedGroups,
+						combinationPages,
+						combinationPageSize,
+					);
 					matchingRows = groupedSnapshot.reduce(
 						(sum, group) => sum + group.items.length,
 						0,
 					);
-					groupPage = 0;
-					const anchors = new Set(groupedSnapshot.map(group => group.item));
-					for (const item of expandedGroups) {
-						if (!anchors.has(item)) {
-							expandedGroups.delete(item);
-						}
-					}
-					for (const item of combinationPages.keys()) {
-						if (!anchors.has(item)) {
-							combinationPages.delete(item);
+					if (!preservePage) {
+						groupPage = 0;
+					} else if (firstVisible) {
+						const anchor = aliases.get(firstVisible) ?? firstVisible;
+						const index = groupedSnapshot.findIndex(group => group.item === anchor);
+						if (index >= 0) {
+							groupPage = Math.floor(index / groupPageSize);
 						}
 					}
 				}
@@ -419,7 +491,12 @@ export const createSortableTableFactory = ({
 			const focusedLink = focusedControl?.dataset.link;
 			const focusedAction = focusedControl?.dataset.tableAction;
 			const focusedRow = focusedControl?.closest('tr');
-			const focusedItem = focusedRow ? rowItems.get(focusedRow) : undefined;
+			const originalItem = focusedRow ? rowItems.get(focusedRow) : undefined;
+			const focusedItem =
+				originalItem &&
+				(focusedAction === 'expand-group' || focusedAction?.startsWith('page-'))
+					? (aliases.get(originalItem) ?? originalItem)
+					: originalItem;
 			const focusedIndex =
 				focusedRow && focusedControl
 					? Array.from(
@@ -457,7 +534,7 @@ export const createSortableTableFactory = ({
 				rows++;
 				return row;
 			};
-			const groupRange = pageRange(groupedSnapshot.length, groupPage, 25);
+			const groupRange = pageRange(groupedSnapshot.length, groupPage, groupPageSize);
 			groupPage = groupRange.page;
 			if (groupRows) {
 				for (let index = groupRange.start; index < groupRange.end; index++) {
@@ -466,7 +543,7 @@ export const createSortableTableFactory = ({
 					const range = pageRange(
 						group.items.length,
 						combinationPages.get(group.item) ?? 0,
-						25,
+						combinationPageSize,
 					);
 					combinationPages.set(group.item, range.page);
 					const items = expanded
@@ -491,7 +568,7 @@ export const createSortableTableFactory = ({
 					const pager = createTablePagination(translate, page => {
 						combinationPages.set(group.item, page);
 						renderTable(false, false);
-						const updated = pageRange(group.items.length, page, 25);
+						const updated = pageRange(group.items.length, page, combinationPageSize);
 						paginationStatus.textContent = translate('paginationCombinationRange', {
 							first: updated.start + 1,
 							last: updated.end,
@@ -511,12 +588,20 @@ export const createSortableTableFactory = ({
 					);
 					pagerRow.insertCell().appendChild(pager.element);
 					content.appendChild(pagerRow);
+					const renderedGroupRows = [first, pagerRow];
 					const detailIds: string[] = [];
 					for (let offset = 1; offset < items.length; offset++) {
 						const row = appendRow(items[offset]);
 						row.id = `${tableId}-group-${index}-row-${range.start + offset}`;
 						row.classList.add('analysis-combination-row', 'table-group-detail');
 						detailIds.push(row.id);
+						renderedGroupRows.push(row);
+					}
+					if (expanded) {
+						for (const row of renderedGroupRows) {
+							row.classList.add('table-group-expanded');
+						}
+						renderedGroupRows.at(-1)!.classList.add('table-group-end');
 					}
 					const toggle = document.createElement('button');
 					toggle.type = 'button';
@@ -549,13 +634,27 @@ export const createSortableTableFactory = ({
 					total: groupedSnapshot.length,
 				});
 				for (const pager of groupPagers) {
-					pager.element.hidden = groupedSnapshot.length === 0;
+					const focusedRefresh = document.activeElement === pager.refreshButton;
+					const focusedForm = pager.element.contains(document.activeElement)
+						? document.activeElement?.closest('form')
+						: null;
+					pager.groupSize.update(groupPageSize);
+					pager.combinationSize.update(combinationPageSize);
+					pager.refreshButton.textContent = translate('analysisRefresh');
+					pager.refreshButton.title = translate('analysisRefreshHelp');
+					pager.refreshButton.hidden = !refreshControl?.available();
+					if (pager.refreshButton.hidden && focusedRefresh) {
+						pager.groupSize.select.focus({ preventScroll: true });
+					}
 					pager.update(
 						groupRange.page,
 						groupRange.pages,
 						translate('paginationGroups'),
 						rangeText,
 					);
+					if (focusedForm?.hidden) {
+						pager.groupSize.select.focus({ preventScroll: true });
+					}
 				}
 			} else {
 				matchingRows = 0;
@@ -624,6 +723,7 @@ export const createSortableTableFactory = ({
 							control.dataset.tableAction === focusedAction,
 					)[focusedIndex];
 				if (
+					!refreshSnapshot &&
 					restored instanceof HTMLInputElement &&
 					focusedControl instanceof HTMLInputElement
 				) {
@@ -633,7 +733,13 @@ export const createSortableTableFactory = ({
 					restored instanceof HTMLButtonElement && restored.disabled
 						? restored.closest('form')?.querySelector('input')
 						: restored;
-				target?.focus({ preventScroll: true });
+				const fallback =
+					groupPagers[0]?.groupSize.select ??
+					head.querySelector<HTMLButtonElement>('button');
+				const visibleTarget = target?.closest('form')?.hidden
+					? restoredRows[0]?.querySelector<HTMLButtonElement>('.table-group-toggle')
+					: target;
+				(visibleTarget ?? fallback)?.focus({ preventScroll: true });
 			}
 
 			const firstHighlight = highlightedRows[0];
@@ -652,7 +758,7 @@ export const createSortableTableFactory = ({
 
 		renderTable();
 
-		const update = (scrollHighlight = false, refreshSnapshot = true) => {
+		const update = (scrollHighlight = false, refreshSnapshot = true, preservePage = false) => {
 			if (disposed) {
 				return;
 			}
@@ -662,7 +768,7 @@ export const createSortableTableFactory = ({
 			}
 			const scrollX = window.scrollX;
 			const scrollY = window.scrollY;
-			renderTable(scrollHighlight, refreshSnapshot);
+			renderTable(scrollHighlight, refreshSnapshot, preservePage);
 			if (!scrollHighlight) {
 				scrollFrame = requestAnimationFrame(() => {
 					scrollFrame = undefined;
@@ -670,6 +776,7 @@ export const createSortableTableFactory = ({
 				});
 			}
 		};
+		container.refresh = () => update(false, true, true);
 		const setMaxRows = (max: number) => {
 			maxRows = max;
 			update();

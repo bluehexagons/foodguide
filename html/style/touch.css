@@ -86,11 +86,13 @@
 
 @media (pointer: coarse) {
 	.table-pagination button,
-	.table-pagination input {
+	.table-pagination input,
+	.table-pagination select {
 		min-height: 44px;
 	}
 
-	.table-pagination input {
+	.table-pagination input,
+	.table-pagination select {
 		font-size: 16px;
 	}
 }

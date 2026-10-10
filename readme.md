@@ -68,12 +68,16 @@ The Statistics Analyzer and Discovery's efficiency results group consecutive
 combinations for the same recipe across the full filtered dataset, preserving
 sort order. The overview shows 25 groups per page with each group's full count.
 Expand a group to browse its combinations, 25 at a time. Both levels support
-first/previous/next/last navigation and direct page-number jumps. Sort by **Name**
-to browse each recipe's combinations together, or by a stat to compare outcomes.
+first/previous/next/last navigation and direct page-number jumps. The main paging
+bars let you choose groups per page and, separately, combinations per expanded group page (10, 25, 50, or 100). Expanded runs
+have a tinted background and borders marking where their paged results start and end.
+Sort by **Name** to browse each recipe's combinations together, or by a stat to compare outcomes.
 Each row shows the exact combination's values; click its ingredients to fill the
 crock pot and open the Simulator.
-Pause a running analysis to refresh its snapshot. Its progress bar reports
-combinations checked out of the full search, including combinations that produce
+**Refresh results** updates a running analysis without pausing or restarting it.
+Completion automatically refreshes the table, preserving your browsing position
+where possible. You can also pause to inspect a stable snapshot. Its progress bar
+reports combinations checked out of the full search, including combinations that produce
 no valid recipe. The table reports the group range and total matching combinations.
 **Reset filters** restores the analysis's original filters, including the Statistics
 Analyzer's default exclusions, and returns to the first overview page.

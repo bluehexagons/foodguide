@@ -4376,6 +4376,54 @@ test('large recipe groups allow direct browsing without rendering the whole data
 		true,
 	);
 	assert.ok(await input.evaluate(e => e.getBoundingClientRect().height >= 44));
+	const groupSize = overview.locator('[data-table-action=group-page-size]');
+	const combinationSize = overview.locator('[data-table-action=combination-page-size]');
+	await groupSize.selectOption('50');
+	assert.equal(await fixture.locator('tr[data-recipe]:not(.table-group-detail)').count(), 50);
+	assert.equal(
+		await fixture
+			.locator('.table-group-pagination')
+			.last()
+			.locator('[data-table-action=group-page-size]')
+			.inputValue(),
+		'50',
+	);
+	await combinationSize.selectOption('100');
+	assert.equal(await input.inputValue(), '7');
+	assert.equal(
+		await fixture.locator('tr[data-recipe=stew]').first().getAttribute('data-index'),
+		'600',
+	);
+	await details.locator('[data-table-action=page-first]').tap();
+	assert.equal(await fixture.locator('tr[data-recipe=stew]').count(), 100);
+	assert.equal(await fixture.locator('.table-group-expanded').count(), 101);
+	assert.equal(await fixture.locator('.table-group-end').count(), 1);
+	assert.equal(await fixture.locator('.table-group-end').getAttribute('data-index'), '99');
+	assert.equal(
+		await fixture
+			.locator('.table-group-expanded td')
+			.first()
+			.evaluate(e => getComputedStyle(e).borderInlineStartWidth),
+		'3px',
+	);
+	assert.equal(
+		await fixture
+			.locator('.table-group-end td')
+			.first()
+			.evaluate(e => getComputedStyle(e).borderBottomWidth),
+		'2px',
+	);
+	assert.equal(
+		await fixture
+			.locator('tr[data-recipe=other-0]')
+			.evaluate(e => e.classList.contains('table-group-expanded')),
+		false,
+	);
+	await groupSize.selectOption('10');
+	await combinationSize.selectOption('10');
+	assert.equal(await fixture.locator('tr[data-recipe]:not(.table-group-detail)').count(), 10);
+	assert.equal(await fixture.locator('tr[data-recipe=stew]').count(), 10);
+	assert.ok(await groupSize.evaluate(e => e.getBoundingClientRect().height >= 44));
 	await page.evaluate(axe.source);
 	for (const theme of ['light', 'dark']) {
 		await page.emulateMedia({ colorScheme: theme });
@@ -4394,5 +4442,161 @@ test('large recipe groups allow direct browsing without rendering the whole data
 			);
 		}
 	}
+	await input.fill('20');
+	await input.press('Enter');
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.push(
+			...Array.from({ length: 37 }, (_, index) => ({
+				name: 'Meaty Stew',
+				recipe: 'stew',
+				hunger: 1001 - index / 1000,
+				index: index - 37,
+			})),
+		);
+		table.refresh();
+	});
+	assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+	assert.equal(await toggle.getAttribute('data-count'), '657');
+	assert.equal(await input.inputValue(), '23');
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	assert.ok(
+		(
+			await fixture
+				.locator('tr[data-recipe=stew]')
+				.evaluateAll(rows => rows.map(row => Number(row.dataset.index)))
+		).includes(190),
+		'Refresh retains the previously displayed combination when new rows precede it',
+	);
+	await overview.locator('[data-table-action=page-next]').tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-9');
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.push(
+			...Array.from({ length: 13 }, (_, index) => ({
+				name: `New recipe ${index}`,
+				recipe: `new-${index}`,
+				hunger: 2000 - index,
+				index: 1000 + index,
+			})),
+		);
+		table.refresh();
+	});
+	assert.equal(await overview.locator('[data-table-action=page-number]').inputValue(), '3');
+	assert.equal(await fixture.locator('tr[data-recipe=other-9]').count(), 1);
+	await overview.locator('[data-table-action=page-number]').focus();
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.splice(0, dataset.length, ...dataset.filter(item => item.recipe === 'stew'));
+		table.refresh();
+	});
+	assert.equal(await overview.locator('form').isVisible(), false);
+	assert.equal(await groupSize.evaluate(e => e === document.activeElement), true);
+	await input.focus();
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.splice(2);
+		table.refresh();
+	});
+	assert.equal(await details.locator('form').isVisible(), false);
+	assert.equal(await toggle.evaluate(e => e === document.activeElement), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('running analysis refreshes without pausing and reloads its final results with page sizes intact', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [
+			[],
+			[
+				'meat',
+				'berries',
+				'carrot',
+				'honey',
+				'twigs',
+				'ice',
+				'bird_egg',
+				'monstermeat',
+				'cave_banana',
+				'pumpkin',
+				'tomato',
+				'potato',
+				'eggplant',
+				'asparagus',
+				'garlic',
+				'onion',
+				'pepper',
+				'green_mushroom',
+				'red_mushroom',
+			],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	await page.locator('#makable .makablebutton').click();
+	const overview = page.locator('#makable .table-group-pagination').first();
+	const refresh = overview.locator('[data-table-action=refresh]');
+	const progress = page.locator('#makable progress');
+	const count = page.locator('#makable .analysis-result-count');
+	await overview.locator('[data-table-action=group-page-size]').selectOption('10');
+	await overview.locator('[data-table-action=combination-page-size]').selectOption('50');
+	const initial = await count.textContent();
+	const initialProgress = await progress.evaluate(e => e.value);
+	await page.clock.runFor(1);
+	assert.equal(await page.locator('#makable .makablebutton').isDisabled(), true);
+	assert.ok((await progress.evaluate(e => e.value)) > initialProgress);
+	assert.equal(await count.textContent(), initial, 'New batches do not interrupt table browsing');
+	const checked = await progress.evaluate(e => e.value);
+	await refresh.focus();
+	await refresh.press('Space');
+	assert.notEqual(await count.textContent(), initial);
+	assert.equal(await progress.evaluate(e => e.value), checked);
+	assert.equal(await page.locator('#makable .pauseButton').textContent(), 'Pause');
+	assert.match(
+		await page.locator('#makable [role=status]').first().textContent(),
+		/Results refreshed/,
+	);
+	const found = Number(
+		(await page.locator('#makable .makableSummary').textContent()).match(/Found (\d+)/)[1],
+	);
+	assert.match(await count.textContent(), new RegExp(`; ${found} matching combinations`));
+	const next = overview.locator('[data-table-action=page-next]');
+	if ((await next.isVisible()) && (await next.isEnabled())) {
+		await next.click();
+	}
+	const currentPage = await overview.locator('[data-table-action=page-number]').inputValue();
+	await refresh.click();
+	assert.equal(
+		await overview.locator('[data-table-action=page-number]').inputValue(),
+		currentPage,
+	);
+	await refresh.focus();
+	await page.clock.runFor(1000);
+	assert.equal(await page.locator('#makable .makablebutton').isEnabled(), true);
+	assert.equal(await refresh.isVisible(), false);
+	assert.equal(
+		await overview
+			.locator('[data-table-action=group-page-size]')
+			.evaluate(e => e === document.activeElement),
+		true,
+		'Completion recovers focus when hiding Refresh',
+	);
+	assert.equal(await overview.locator('[data-table-action=group-page-size]').inputValue(), '10');
+	assert.equal(
+		await overview.locator('[data-table-action=combination-page-size]').inputValue(),
+		'50',
+	);
+	const total = await page.evaluate(() => window.analysis.made.length);
+	assert.ok(total > found);
+	assert.match(
+		await count.textContent(),
+		new RegExp(`; ${total} matching combinations`),
+		'Completion refreshes the final snapshot automatically',
+	);
+	assert.equal(await progress.evaluate(e => e.value === e.max), true);
 	assert.deepEqual(diagnostics, []);
 });

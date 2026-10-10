@@ -335,7 +335,8 @@ table.links .link.strike {
 }
 
 .table-pagination button,
-.table-pagination input {
+.table-pagination input,
+.table-pagination select {
 	box-sizing: border-box;
 	min-height: 32px;
 	margin: 0;
@@ -378,4 +379,42 @@ table.links .link.strike {
 .table-pagination button:disabled {
 	opacity: 0.55;
 	cursor: default;
+}
+
+.table-page-settings,
+.table-page-settings label {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+
+.table-page-settings {
+	gap: 8px 16px;
+	flex-basis: 100%;
+}
+
+.table-pagination select {
+	padding: 4px 6px;
+}
+
+/* Borders show the entire expanded run even in forced colors or when columns hide. */
+.table-group-expanded > td {
+	background: color-mix(in srgb, var(--table-bg) 92%, var(--focus-color));
+}
+
+.table-group-expanded > td:nth-child(1 of :not(.col-hidden)) {
+	border-inline-start: 3px solid var(--focus-color);
+}
+
+.table-group-expanded > td:nth-last-child(1 of :not(.col-hidden)) {
+	border-inline-end: 3px solid var(--focus-color);
+}
+
+.table-group-start.table-group-expanded > td {
+	border-block-start: 2px solid var(--focus-color);
+}
+
+.table-group-end > td {
+	border-block-end: 2px solid var(--focus-color);
 }

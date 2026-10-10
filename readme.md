@@ -41,7 +41,8 @@ Picked ingredients show a checkbox to remove all copies. When there is more than
 one copy, a minus also appears to remove one.
 The ingredient itself adds another copy in the Simulator and toggles membership
 in Discovery. Choose Compact for dense rows, Normal for larger rows, or Cozy for
-cards; list and icon-only views are also available.
+cards; list and icon-only views are also available. Compact icons pack into smaller
+tiles, with larger targets retained on touchscreens.
 
 Group results by ingredient type or preparation, or leave them ungrouped. Groups
 appear as cards across wider pickers and stack on narrow screens. Auto

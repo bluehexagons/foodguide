@@ -210,7 +210,9 @@ or movement of the checkbox. These inline badges overlay the text and use
 overlays and wider targets. Cozy names use cards with the name below the icon,
 while cozy list mode retains larger rows. Icon-only options use square tiles with
 centered artwork and controls aligned at the top corners, leaving the center free
-for the ordinary ingredient action.
+for the ordinary ingredient action. Compact icons use fixed 36-pixel tiles and
+tighter group spacing, so wider cards fit more icons rather than stretching the
+tiles. Touchscreens keep 44-pixel tiles and larger shortcut targets.
 Visibility and quantity changes add no padding, footer, or layout movement.
 Quantity badges stay opaque; minus controls brighten on hover or keyboard
 highlight, and touch/forced-color modes keep them fully visible.

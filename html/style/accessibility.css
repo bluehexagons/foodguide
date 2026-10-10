@@ -383,8 +383,23 @@ table tr.highlighted .name-cell::before {
 	padding: 4px;
 }
 
+/* Compact tiles keep a fixed size so wider cards add icons instead of empty space. */
+.ingredientdropdown.hidetext.density-compact {
+	--ingredient-icon-tile-size: 36px;
+	--ingredient-hit-height: 16px;
+}
+
 .ingredientdropdown.hidetext.density-compact .ingredient-options {
-	grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+	grid-template-columns: repeat(auto-fill, var(--ingredient-icon-tile-size));
+}
+
+.ingredientdropdown.hidetext.density-compact .item {
+	min-height: var(--ingredient-icon-tile-size);
+	padding: 2px;
+}
+
+.ingredientdropdown.hidetext.density-compact .ingredient-subtract {
+	width: 14px;
 }
 
 .ingredientdropdown.hidetext.density-normal .ingredient-options {
@@ -442,6 +457,15 @@ table tr.highlighted .name-cell::before {
 
 	.ingredientdropdown.density-compact .item {
 		min-height: 44px;
+	}
+
+	.ingredientdropdown.hidetext.density-compact {
+		--ingredient-icon-tile-size: 44px;
+		--ingredient-hit-height: 20px;
+	}
+
+	.ingredientdropdown.hidetext.density-compact .ingredient-subtract {
+		width: var(--ingredient-hit-width);
 	}
 
 	.ingredientdropdown.density-compact:not(.hidetext) .item {

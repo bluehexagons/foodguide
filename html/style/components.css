@@ -657,6 +657,8 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown {
 	container: ingredient-picker / inline-size;
 	--ingredient-group-width: 20rem;
+	--ingredient-group-gap: 12px;
+	--ingredient-group-padding: 8px;
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -668,7 +670,7 @@ button.makablebutton:disabled:hover {
 }
 
 .ingredient-result-group + .ingredient-result-group {
-	margin-top: 12px;
+	margin-top: var(--ingredient-group-gap);
 }
 
 .ingredient-result-group {
@@ -681,13 +683,13 @@ button.makablebutton:disabled:hover {
 			> .ingredient-result-group + .ingredient-result-group
 		) {
 		columns: var(--ingredient-group-width);
-		column-gap: 12px;
+		column-gap: var(--ingredient-group-gap);
 	}
 
 	.ingredient-result-groups.is-grouped > .ingredient-result-group {
 		break-inside: avoid-column;
-		margin: 0 0 12px;
-		padding: 8px;
+		margin: 0 0 var(--ingredient-group-gap);
+		padding: var(--ingredient-group-padding);
 		border: 1px solid var(--border-color);
 		border-radius: 6px;
 		background: var(--bg-secondary);
@@ -791,6 +793,12 @@ button.makablebutton:disabled:hover {
 }
 .ingredientdropdown.density-compact {
 	--ingredient-group-width: 16rem;
+	--ingredient-group-gap: 8px;
+	--ingredient-group-padding: 6px;
+}
+.ingredientdropdown.density-compact .ingredient-group-heading {
+	margin-bottom: 4px;
+	padding-block: 2px;
 }
 .ingredientdropdown.hidetext.density-compact {
 	--ingredient-group-width: 12rem;

@@ -1809,6 +1809,8 @@ test('group cards use available width across displays and densities without chan
 					overflow: picker.scrollWidth > picker.clientWidth,
 					groups: [...picker.querySelectorAll('.ingredient-result-group')].map(group => ({
 						rect: group.getBoundingClientRect().toJSON(),
+						tile: group.querySelector('[role=option]').getBoundingClientRect().toJSON(),
+						spacing: parseFloat(getComputedStyle(group).marginBottom),
 						fragments: group.getClientRects().length,
 						scrolls: ['auto', 'scroll'].includes(getComputedStyle(group).overflowY),
 						overflow: group.scrollWidth > group.clientWidth + 1,
@@ -1821,7 +1823,7 @@ test('group cards use available width across displays and densities without chan
 					assert.equal(card.fragments, 1, 'A card stays together in one column');
 					if (previous && Math.abs(card.rect.left - previous.rect.left) < 1) {
 						assert.ok(
-							Math.abs(card.rect.top - previous.rect.bottom - 12) < 1,
+							Math.abs(card.rect.top - previous.rect.bottom - previous.spacing) < 1,
 							'Cards stack without gaps beyond their spacing',
 						);
 						columns[columns.length - 1] = card;
@@ -1855,6 +1857,32 @@ test('group cards use available width across displays and densities without chan
 			}
 			assert.ok(columnCounts['names-compact'] > columnCounts['names-normal']);
 			assert.ok(columnCounts['icons-compact'] > columnCounts['names-compact']);
+			await select('.displaymodeingredients:not(.densityingredients)', 'icons');
+			for (const width of [1280, 2048]) {
+				await page.setViewportSize({ width, height: 800 });
+				const layouts = {};
+				for (const density of ['compact', 'normal']) {
+					await select('.densityingredients', density);
+					layouts[density] = await geometry();
+					assertPackedColumns(layouts[density].groups);
+					assert.equal(layouts[density].overflow, false);
+				}
+				const compact = layouts.compact.groups[0];
+				const normal = layouts.normal.groups[0];
+				const context = `${tab} ${hasTouch ? 'touch' : 'mouse'} ${width}px`;
+				assert.ok(
+					compact.tile.width <= normal.tile.width * (hasTouch ? 0.9 : 0.75),
+					`${context}: Compact icons are distinctly smaller than normal`,
+				);
+				assert.ok(
+					compact.rect.height < normal.rect.height * 0.8,
+					`${context}: Compact groups fit more ingredients in less height`,
+				);
+				if (hasTouch) {
+					assert.ok(compact.tile.width >= 44 && compact.tile.height >= 44);
+				}
+			}
+			await page.setViewportSize({ width: 1280, height: 800 });
 			await select('.displaymodeingredients:not(.densityingredients)', 'names');
 			await select('.densityingredients', 'compact');
 			for (const width of [320, 1280]) {

@@ -26,6 +26,7 @@ interface ColumnConfig {
 	autoHide?: string[];
 }
 export interface TableOptions<T extends SortRow> {
+	captionKey: StringKey;
 	headers: Record<string, TableSortKey<T> | ''>;
 	dataset: T[];
 	rowGenerator: (item: T) => HTMLTableRowElement;
@@ -117,6 +118,7 @@ export const createSortableTableFactory = ({
 	};
 
 	const makeSortableTable = <T extends SortRow>({
+		captionKey,
 		headers,
 		dataset,
 		rowGenerator,
@@ -130,10 +132,32 @@ export const createSortableTableFactory = ({
 	}: TableOptions<T>) => {
 		const table = document.createElement('table');
 		const container = document.createElement('div') as SortableTable;
+		const wrapper = columnConfig?.toggleable ? document.createElement('div') : container;
+		wrapper.className = 'table-scroll-wrapper';
+		const caption = table.createCaption();
+		caption.className = 'sr-only';
 		let disposed = false;
+		const updateScrollAccess = () => {
+			if (disposed) {
+				return;
+			}
+			const overflowing = wrapper.scrollWidth > wrapper.clientWidth + 1;
+			if (overflowing) {
+				wrapper.tabIndex = 0;
+				wrapper.setAttribute('role', 'region');
+				wrapper.setAttribute('aria-label', translate(captionKey));
+				wrapper.setAttribute('aria-description', translate('tableScrollHelp'));
+			} else {
+				for (const attribute of ['tabindex', 'role', 'aria-label', 'aria-description']) {
+					wrapper.removeAttribute(attribute);
+				}
+			}
+		};
+		const scrollObserver = new ResizeObserver(updateScrollAccess);
 		let scrollFrame: number | undefined;
 		container.dispose = () => {
 			disposed = true;
+			scrollObserver.disconnect();
 			if (scrollFrame !== undefined) {
 				cancelAnimationFrame(scrollFrame);
 				scrollFrame = undefined;
@@ -185,6 +209,7 @@ export const createSortableTableFactory = ({
 					row.children[index].classList.toggle('col-hidden', hidden.has(index));
 				}
 			}
+			updateScrollAccess();
 		};
 
 		const selectSort = (sortKey: TableSortKey<T>) => {
@@ -235,6 +260,7 @@ export const createSortableTableFactory = ({
 			if (disposed) {
 				return;
 			}
+			caption.textContent = translate(captionKey);
 			sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
 			for (const { header, label, sortKey, th, control } of headerCells) {
 				const translatedLabel = translateTableLabel(label || 'Image');
@@ -359,10 +385,11 @@ export const createSortableTableFactory = ({
 			maxRows = max;
 			update();
 		};
+		wrapper.appendChild(table);
+		scrollObserver.observe(wrapper);
+		scrollObserver.observe(table);
 
 		if (!columnConfig?.toggleable) {
-			container.className = 'table-scroll-wrapper';
-			container.appendChild(table);
 			container.update = update;
 			container.updateLocale = () => update();
 			container.setMaxRows = setMaxRows;
@@ -421,9 +448,6 @@ export const createSortableTableFactory = ({
 		updateLabels();
 		updateToggleButtons();
 
-		const wrapper = document.createElement('div');
-		wrapper.className = 'table-scroll-wrapper';
-		wrapper.appendChild(table);
 		container.appendChild(toggleBar);
 		container.appendChild(wrapper);
 		container.update = scrollHighlight => {

@@ -7,6 +7,10 @@
 	max-width: 100%;
 }
 
+.table-scroll-wrapper:focus-visible {
+	outline-offset: -2px;
+}
+
 table {
 	width: 100%;
 	font-size: 15px;

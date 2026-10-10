@@ -27,6 +27,14 @@ const dict = {
 	ingredientActionFailed:
 		'No se puede cambiar {name}. La olla puede estar llena o el ingrediente no está seleccionado.',
 	ingredientsCleared: 'Todos los ingredientes eliminados.',
+	ingredientSearchEmpty:
+		'No hay ingredientes coincidentes. Prueba otra búsqueda o selección de juego.',
+	ingredientSearchOne: '1 ingrediente coincidente.',
+	ingredientSearchCount: '{count} ingredientes coincidentes.',
+	tableCookingResults: 'Resultados de la Olla',
+	tableRecipeSuggestions: 'Sugerencias de recetas',
+	tableEfficientRecipes: 'Recetas eficientes',
+	tableScrollHelp: 'Tabla desplazable. Usa Izquierda y Derecha para desplazarte.',
 	ingredientSearchHelp:
 		'Usa Arriba y Abajo para explorar los resultados, Intro para añadir y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
 	filterIngredients: 'Filtros de ingredientes',

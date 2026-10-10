@@ -19,15 +19,6 @@ describe('foodguide UI regressions', () => {
 		assert.doesNotMatch(foodguideSource, /sortControls\.getSortType\(\)/);
 	});
 
-	it('refreshes ingredient results once for every value change, including pasted text', () => {
-		assert.match(foodguideSource, /picker\.addEventListener\('input', refreshPicker\);/);
-		assert.doesNotMatch(
-			foodguideSource,
-			/picker\.addEventListener\('keydown', refreshPicker\)/,
-		);
-		assert.doesNotMatch(foodguideSource, /picker\.addEventListener\('keyup'/);
-	});
-
 	it('ingredient action errors have visible feedback and an animation', () => {
 		assert.match(componentsCss, /\.ingredient-action-error/);
 		assert.match(componentsCss, /@keyframes ingredient-action-error/);

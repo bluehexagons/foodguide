@@ -737,6 +737,7 @@ import './locales/index.js';
 	};
 
 	const foodTable = makeSortableTable({
+		captionKey: 'tabFoodList',
 		headers: {
 			'': '',
 			Name: 'name',
@@ -761,6 +762,7 @@ import './locales/index.js';
 	});
 
 	const recipeTable = makeSortableTable({
+		captionKey: 'tabRecipeList',
 		headers: {
 			'': '',
 			Name: 'name',
@@ -921,6 +923,7 @@ import './locales/index.js';
 				made = [];
 
 				const makableTable = makeSortableTable({
+					captionKey: 'tableEfficientRecipes',
 					headers: {
 						'': '',
 						Name: 'name',
@@ -1272,15 +1275,14 @@ import './locales/index.js';
 		if (item !== null) {
 			const img = makeImage(item.img);
 			img.title = item.name;
-			if (slotElement.firstChild) {
-				slotElement.replaceChild(img, slotElement.firstChild);
-			} else {
-				slotElement.appendChild(img);
-			}
+			img.setAttribute('aria-hidden', 'true');
+			const name = document.createElement('span');
+			name.className = 'ingredient-name';
+			name.textContent = item.name;
+			name.setAttribute('aria-hidden', 'true');
+			slotElement.replaceChildren(img, name);
 		} else {
-			if (slotElement.firstChild) {
-				slotElement.removeChild(slotElement.firstChild);
-			}
+			slotElement.replaceChildren();
 		}
 
 		slotElement.title = item ? item.name : '';
@@ -1288,9 +1290,6 @@ import './locales/index.js';
 			'aria-label',
 			item ? t('removeIngredient', { name: item.name }) : t('addIngredient'),
 		);
-		if (item) {
-			slotElement.firstElementChild?.setAttribute('aria-hidden', 'true');
-		}
 	};
 
 	const getSlot = (slotElement: Element | null): GuideItem | null => {
@@ -1374,23 +1373,56 @@ import './locales/index.js';
 			const pickerStatus = document.createElement('div');
 			pickerStatus.className = 'sr-only';
 			pickerStatus.setAttribute('role', 'status');
+			pickerStatus.setAttribute('aria-atomic', 'true');
 			searchRow.appendChild(pickerStatus);
+			const pickerSummary = document.createElement('div');
+			pickerSummary.className = 'ingredient-search-summary';
+			pickerSummary.id = `ingredient-summary-${index}`;
 			const pickerHelp = document.createElement('div');
 			pickerHelp.className = 'sr-only';
 			pickerHelp.id = `ingredient-help-${index}`;
 			pickerHelp.setAttribute('data-i18n', 'ingredientSearchHelp');
 			pickerHelp.textContent = t('ingredientSearchHelp');
 			searchRow.appendChild(pickerHelp);
-			picker.setAttribute('aria-describedby', pickerHelp.id);
+			picker.setAttribute('aria-describedby', `${pickerHelp.id} ${pickerSummary.id}`);
+			let searchAnnouncement: number | undefined;
+			const cancelSearchAnnouncement = () => {
+				window.clearTimeout(searchAnnouncement);
+				searchAnnouncement = undefined;
+			};
+			const announcePicker = (message: string) => {
+				cancelSearchAnnouncement();
+				pickerStatus.replaceChildren(document.createTextNode(message));
+			};
+			const updateSearchFeedback = (announce = false) => {
+				cancelSearchAnnouncement();
+				const count = pickerOptions.length;
+				const message = t(
+					count === 0
+						? 'ingredientSearchEmpty'
+						: count === 1
+							? 'ingredientSearchOne'
+							: 'ingredientSearchCount',
+					{ count },
+				);
+				pickerSummary.textContent = message;
+				pickerSummary.hidden = dropdown.hidden;
+				if (announce && searchRow.contains(document.activeElement)) {
+					searchAnnouncement = window.setTimeout(() => {
+						searchAnnouncement = undefined;
+						if (!dropdown.hidden && searchRow.contains(document.activeElement)) {
+							announcePicker(message);
+						}
+					}, 300);
+				}
+			};
 			const announceIngredient = (
 				key: 'ingredientAdded' | 'ingredientRemoved',
 				id?: string,
 			) => {
 				const item = id ? getCollectionItem(from, id) : undefined;
 				if (item) {
-					pickerStatus.replaceChildren(
-						document.createTextNode(t(key, { name: item.name })),
-					);
+					announcePicker(t(key, { name: item.name }));
 				}
 			};
 
@@ -1403,9 +1435,11 @@ import './locales/index.js';
 					return;
 				}
 				const id = target.dataset.id;
-				pickerStatus.textContent = t('ingredientActionFailed', {
-					name: id ? getCollectionItem(from, id)?.name || id : t('tableIngredients'),
-				});
+				announcePicker(
+					t('ingredientActionFailed', {
+						name: id ? getCollectionItem(from, id)?.name || id : t('tableIngredients'),
+					}),
+				);
 
 				target.classList.remove('ingredient-action-error');
 				void target.offsetWidth;
@@ -1643,7 +1677,7 @@ import './locales/index.js';
 				}
 			};
 
-			const refreshPicker = () => {
+			const refreshPicker = (announce = true) => {
 				dropdown.hidden = false;
 				picker.setAttribute('aria-expanded', 'true');
 				selectedResult = -1;
@@ -1672,6 +1706,7 @@ import './locales/index.js';
 				names.forEach(liIntoPicker, ul);
 
 				dropdown.appendChild(ul);
+				updateSearchFeedback(announce);
 			};
 
 			const searchFor = (name: string, target: HTMLElement) => {
@@ -1713,6 +1748,7 @@ import './locales/index.js';
 					const sanity = cooking[0].sanity;
 
 					let table = makeSortableTable({
+						captionKey: 'tableCookingResults',
 						headers: {
 							'': '',
 							Name: 'name',
@@ -1769,6 +1805,7 @@ import './locales/index.js';
 						if (suggestions.length > 0) {
 							results.appendChild(makeElement('p', t('discoveryMoreSuggestions')));
 							table = makeSortableTable({
+								captionKey: 'tableRecipeSuggestions',
 								headers: {
 									'': '',
 									Name: 'name',
@@ -1839,6 +1876,7 @@ import './locales/index.js';
 
 					if (ingredients.length > 0) {
 						const foodTable = makeSortableTable({
+							captionKey: 'discoveryFoodStatsHeading',
 							headers: {
 								'': '',
 								Name: 'name',
@@ -1866,6 +1904,7 @@ import './locales/index.js';
 
 						if (inventoryrecipes.length > 0) {
 							const table = makeSortableTable({
+								captionKey: 'discoveryRecipesHeading',
 								headers: {
 									'': '',
 									Name: 'name',
@@ -2104,7 +2143,7 @@ import './locales/index.js';
 					ensureEmptySlot();
 					updateRecipes();
 				}
-				pickerStatus.textContent = t('ingredientsCleared');
+				announcePicker(t('ingredientsCleared'));
 			});
 			// Display mode controls (Icons / Names / List)
 			const displayModeControls = createDropdown({
@@ -2175,8 +2214,11 @@ import './locales/index.js';
 			searchRow.appendChild(controlsGroup);
 
 			searchRow.parentNode!.insertBefore(dropdown, parent.parentElement!);
+			searchRow.parentNode!.insertBefore(pickerSummary, parent.parentElement!);
 
-			picker.addEventListener('input', refreshPicker);
+			picker.addEventListener('input', event => refreshPicker(!event.isComposing));
+			picker.addEventListener('compositionstart', cancelSearchAnnouncement);
+			picker.addEventListener('compositionend', () => updateSearchFeedback(true));
 			picker.addEventListener('keydown', event => {
 				if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
 					return;
@@ -2193,6 +2235,8 @@ import './locales/index.js';
 				}
 				if (event.key === 'Escape') {
 					dropdown.hidden = true;
+					pickerSummary.hidden = true;
+					cancelSearchAnnouncement();
 					picker.setAttribute('aria-expanded', 'false');
 					selectedResult = -1;
 				} else if (event.key === 'ArrowDown' && options.length) {
@@ -2213,6 +2257,7 @@ import './locales/index.js';
 					option.setAttribute('aria-selected', String(selected));
 				});
 				const activeOption = options[selectedResult];
+				pickerSummary.hidden = dropdown.hidden;
 				if (activeOption) {
 					picker.setAttribute('aria-activedescendant', activeOption.element.id);
 					activeOption.element.scrollIntoView({ block: 'nearest' });
@@ -2225,6 +2270,7 @@ import './locales/index.js';
 				'focus',
 				() => {
 					dropdown.hidden = false;
+					pickerSummary.hidden = false;
 					picker.setAttribute('aria-expanded', 'true');
 				},
 				false,
@@ -2233,6 +2279,7 @@ import './locales/index.js';
 			picker.addEventListener(
 				'blur',
 				() => {
+					cancelSearchAnnouncement();
 					selectedResult = -1;
 					picker.removeAttribute('aria-activedescendant');
 					for (const { element } of pickerOptions) {
@@ -2280,6 +2327,7 @@ import './locales/index.js';
 			};
 			modeRefreshers.push(refreshSelection, refreshPicker, updateRecipes);
 			document.addEventListener('foodguide:localechange', () => {
+				updateSearchFeedback();
 				for (const slot of parent.querySelectorAll<HTMLElement>('.ingredient')) {
 					const item = getSlot(slot);
 					slot.setAttribute(

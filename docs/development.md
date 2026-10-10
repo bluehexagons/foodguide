@@ -79,8 +79,12 @@ Shared ingredients resolve to an available variant by their base ID; ingredients
 absent from the selected game are removed. Discovery keeps one of each ingredient,
 while the simulator preserves quantities in its four slots.
 
-Sortable tables take a `TableOptions<T>` object. Column sort keys and the default
-sort are checked against the row type; summary rows have an explicit count.
+Sortable tables take a `TableOptions<T>` object with a required localized caption.
+Overflowing wrappers become named, focusable regions so keyboard users can scroll
+with Left/Right; wrappers that fit do not add a Tab stop. A `ResizeObserver` tracks
+table and wrapper sizes, including changes to visible columns, and `dispose()`
+disconnects it. Column sort keys and the default sort are checked against the row
+type; summary rows have an explicit count.
 The shared sorter preserves the dataset's identity and leaves summary rows above
 the sorted results. Search results use the same name comparator as tables.
 
@@ -113,7 +117,10 @@ The tabs use one Tab stop with Left/Right, Home, and End navigation. Ingredient
 slots are native buttons: Enter or Space removes a selected item or focuses the
 search field from an empty slot. The picker keeps focus on its input while Up/Down
 changes `aria-activedescendant`; Escape hides the results and arrow keys reopen
-them. Action feedback uses a localized status region.
+them. Visible result counts and empty-search messages are localized. Search
+announcements wait for a short typing pause, skip IME composition, and are canceled
+when focus leaves the search or an ingredient action takes priority. Action
+feedback uses the same atomic status region.
 
 `filter-controls.ts` owns analyzer keyboard navigation and accessible state
 labels. Each ingredient/recipe toolbar has one Tab stop; arrows, Home, and End
@@ -131,8 +138,9 @@ cancel touch events needed for native scrolling and zooming.
 
 `html/style/touch.css` uses `any-pointer: coarse` to provide at least 44-pixel
 button and picker targets on touchscreens, including computers with a mouse.
-Compact/icon-only modes retain that minimum. Analyzer filters show visible names
-on touchscreens instead of depending on hover titles. Text fields use 16-pixel type,
+Compact/icon-only modes retain that minimum. Picker names wrap on touchscreens;
+selected ingredients and analyzer filters also show names instead of depending
+on hover titles. Text fields use 16-pixel type,
 controls wrap on narrow screens, and wide tables scroll inside their own wrappers.
 The viewport allows browser zoom. These choices follow the W3C guidance on
 [pointer cancellation](https://www.w3.org/WAI/WCAG22/Understanding/pointer-cancellation)
@@ -141,10 +149,13 @@ and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enh
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
 paused statistics results. English small-screen scans repeat both themes. It also
-exercises keyboard flows and focus recovery,
+exercises keyboard flows, native horizontal table scrolling, search feedback,
+and focus recovery,
 trusted Chromium touch taps/canceled gestures, picker/table scrolling, and
 long-press event handling. Touch layout checks cover 320, 375, 768, and 1280-pixel
 viewports in all three languages, plus every picker display/density combination.
+Narrow-screen checks also apply the [increased text spacing](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing)
+values and verify that selected ingredient names remain unclipped.
 Automated scans do not replace testing with screen readers; review spoken names,
 announcements, and focus visibility when changing interaction patterns. Emulated
 touch does not replace checks on physical phones and tablets, particularly with

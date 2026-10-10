@@ -100,6 +100,13 @@ const defaultStrings = {
 	ingredientActionFailed:
 		'Unable to change {name}. The pot may be full or the ingredient is not selected.',
 	ingredientsCleared: 'All ingredients cleared.',
+	ingredientSearchEmpty: 'No matching ingredients. Try another search or game selection.',
+	ingredientSearchOne: '1 matching ingredient.',
+	ingredientSearchCount: '{count} matching ingredients.',
+	tableCookingResults: 'Crock pot results',
+	tableRecipeSuggestions: 'Recipe suggestions',
+	tableEfficientRecipes: 'Efficient recipes',
+	tableScrollHelp: 'Scrollable table. Use Left and Right to scroll.',
 	ingredientSearchHelp:
 		'Use Up and Down to browse results, Enter to add, and Escape to hide results. Tab to the selected ingredients to remove them.',
 	confirmClearInventory: 'Are you sure you want to clear all ingredients from your inventory?',

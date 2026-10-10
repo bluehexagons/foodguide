@@ -285,6 +285,162 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	assert.deepEqual(diagnostics, []);
 });
 
+test('search feedback covers empty results, localization, composition, and action priority', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [[], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	for (const locale of ['en', 'es', 'zh']) {
+		await page.locator('#language-picker').selectOption(locale);
+		for (const tab of ['simulator', 'discovery']) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.getByRole('combobox');
+			const summary = panel.locator('.ingredient-search-summary');
+			const status = panel.getByRole('status');
+			await search.fill('zzzznomatches');
+			assert.equal(await panel.getByRole('option').count(), 0);
+			const emptyMessage = await summary.textContent();
+			assert.ok(emptyMessage.length > 0);
+			assert.match(emptyMessage, { en: /^No matching/, es: /^No hay/, zh: /^没有/ }[locale]);
+			assert.equal(await summary.isVisible(), true);
+			assert.equal(await search.evaluate(e => e === document.activeElement), true);
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), emptyMessage);
+			assert.equal(await status.getAttribute('aria-atomic'), 'true');
+
+			await search.fill('Roasted Juicy Berries');
+			assert.equal(await panel.getByRole('option').count(), 1);
+			const singleMessage = await summary.textContent();
+			assert.match(singleMessage, /^1 /);
+			assert.equal(
+				await status.textContent(),
+				emptyMessage,
+				'Typing must not announce immediately',
+			);
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), singleMessage);
+
+			await search.fill('zzzznomatches');
+			await search.fill('Meat');
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), await summary.textContent());
+			assert.match(
+				await status.textContent(),
+				new RegExp(`^${await panel.getByRole('option').count()} `),
+			);
+			assert.notEqual(
+				await status.textContent(),
+				emptyMessage,
+				'A newer search cancels the older announcement',
+			);
+
+			await search.fill('Roasted Juicy Berries');
+			await search.press('Enter');
+			const actionMessage = await status.textContent();
+			assert.match(actionMessage, /Roasted Juicy Berries/);
+			await page.clock.runFor(350);
+			assert.equal(
+				await status.textContent(),
+				actionMessage,
+				'A result count must not overwrite an ingredient action',
+			);
+
+			await search.dispatchEvent('compositionstart');
+			await search.evaluate(element => {
+				element.value = 'zzzznomatches';
+				element.dispatchEvent(
+					new InputEvent('input', { bubbles: true, isComposing: true }),
+				);
+			});
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), actionMessage);
+			await search.dispatchEvent('compositionend');
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), emptyMessage);
+
+			await search.fill('Meat');
+			await search.press('Escape');
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), emptyMessage);
+			assert.equal(await summary.isVisible(), false);
+			await search.press('ArrowDown');
+			assert.equal(await summary.isVisible(), true);
+			await search.fill('Carrot');
+			await page.locator('#theme-toggle').focus();
+			await page.clock.runFor(350);
+			assert.equal(
+				await status.textContent(),
+				emptyMessage,
+				'Leaving the search cancels pending feedback',
+			);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('wide tables have localized names and native keyboard scrolling only while overflowing', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			version: 'together',
+			pickers: [
+				['meat', 'berries', 'berries', 'berries'],
+				['meat', 'berries'],
+			],
+		},
+		{ viewport: { width: 320, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#tab-crockpot').click();
+	const table = page.getByRole('table', { name: 'Recipe List', exact: true });
+	const wrapper = page.getByRole('region', { name: 'Recipe List', exact: true });
+	await wrapper.waitFor({ state: 'visible' });
+	assert.match(await wrapper.getAttribute('aria-description'), /Left and Right/);
+	const sortBefore = await table.locator('th[aria-sort]').getAttribute('aria-sort');
+	await page.locator('#recipes .column-toggle-bar button').last().focus();
+	await page.keyboard.press('Tab');
+	assert.equal(await wrapper.evaluate(e => e === document.activeElement), true);
+	assert.equal(await wrapper.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+	await page.keyboard.press('ArrowRight');
+	await page.waitForFunction(
+		() => document.querySelector('#recipes .table-scroll-wrapper').scrollLeft > 0,
+	);
+	assert.equal(await table.locator('th[aria-sort]').getAttribute('aria-sort'), sortBefore);
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await table
+			.locator('th[data-sort="name"] button')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	for (const [locale, name] of [
+		['es', 'Lista de recetas'],
+		['zh', '配方列表'],
+		['en', 'Recipe List'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await page.getByRole('table', { name, exact: true }).count(), 1);
+		assert.equal(await page.getByRole('region', { name, exact: true }).count(), 1);
+	}
+	await page.setViewportSize({ width: 3200, height: 812 });
+	await page.waitForFunction(
+		() => document.querySelector('#recipes .table-scroll-wrapper').tabIndex === -1,
+	);
+	assert.equal(await page.getByRole('region', { name: 'Recipe List', exact: true }).count(), 0);
+	assert.equal(await table.getAttribute('aria-label'), null);
+	assert.equal(await table.locator('caption').textContent(), 'Recipe List');
+	assert.deepEqual(diagnostics, []);
+});
+
 test('accessibility audit covers visible panels, menus, and analyzer results', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const findings = [];
@@ -368,6 +524,9 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 							await audit({ theme, locale, tab, menu: buttonClass });
 							await page.keyboard.press('Escape');
 						}
+						await page.locator('#simulator .ingredientpicker').fill('zzzznomatches');
+						await audit({ theme, locale, tab, search: 'no matches' });
+						await page.locator('#simulator .clearsearchbtn').click();
 					}
 					if (tab === 'statistics') {
 						await page.locator('#statistics .deleteButton').click();
@@ -543,6 +702,22 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 				}),
 			);
 		assert.deepEqual(issues, [], `${context}: ${JSON.stringify(issues)}`);
+		const clippedNames = await page
+			.locator('.ingredientdropdown:not(.hidetext) .text:visible')
+			.evaluateAll(elements =>
+				elements
+					.filter(
+						element =>
+							element.scrollWidth > element.clientWidth + 1 ||
+							element.scrollHeight > element.clientHeight + 1,
+					)
+					.map(element => element.textContent),
+			);
+		assert.deepEqual(
+			clippedNames,
+			[],
+			`${context}: Touch users need complete ingredient names`,
+		);
 		assert.equal(
 			await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
 			true,
@@ -587,6 +762,51 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 				.evaluate(e => getComputedStyle(e).fontSize),
 			'16px',
 		);
+	}
+	await page.setViewportSize({ width: 320, height: 812 });
+	await page.addStyleTag({
+		content: `
+		* { line-height: 1.5 !important; letter-spacing: .12em !important; word-spacing: .16em !important; }
+		p { margin-bottom: 2em !important; }
+	`,
+	});
+	for (const locale of ['en', 'es', 'zh']) {
+		await page.locator('#language-picker').selectOption(locale);
+		for (const tab of [
+			'simulator',
+			'discovery',
+			'foodlist',
+			'crockpot',
+			'statistics',
+			'about',
+			'gameinfo',
+		]) {
+			await page.locator(`#tab-${tab}`).tap();
+			await checkTargets(`320px ${locale} ${tab} with increased text spacing`);
+			if (tab === 'simulator' || tab === 'discovery') {
+				const slots = page.locator(`#${tab} .ingredient[data-id]`);
+				assert.ok((await slots.count()) > 0);
+				const issues = await slots.evaluateAll(elements =>
+					elements.flatMap(element => {
+						const name = element.querySelector('.ingredient-name');
+						const visible = name && getComputedStyle(name).display !== 'none';
+						const fits =
+							element.scrollHeight <= element.clientHeight + 1 &&
+							element.scrollWidth <= element.clientWidth + 1;
+						return visible &&
+							fits &&
+							element.getAttribute('aria-label').includes(name.textContent)
+							? []
+							: [element.outerHTML];
+					}),
+				);
+				assert.deepEqual(
+					issues,
+					[],
+					'Selected ingredient names must remain visible and unclipped',
+				);
+			}
+		}
 	}
 	assert.deepEqual(diagnostics, []);
 });
@@ -1336,6 +1556,21 @@ test('repeated picker edits release replaced tables immediately', async t => {
 	});
 	await page.addInitScript(() => {
 		const registrations = new Map();
+		const observers = new Map();
+		const NativeResizeObserver = window.ResizeObserver;
+		window.ResizeObserver = class extends NativeResizeObserver {
+			observe(target) {
+				if (!observers.has(this)) {
+					observers.set(this, new Set());
+				}
+				observers.get(this).add(target);
+				super.observe(target);
+			}
+			disconnect() {
+				observers.delete(this);
+				super.disconnect();
+			}
+		};
 		const add = Set.prototype.add;
 		const remove = Set.prototype.delete;
 		Set.prototype.add = function (value) {
@@ -1354,6 +1589,12 @@ test('repeated picker edits release replaced tables immediately', async t => {
 			return remove.call(this, value);
 		};
 		window.tableAudit = () => ({
+			observers: {
+				count: observers.size,
+				detached: [...observers.values()]
+					.flatMap(targets => [...targets])
+					.filter(target => !target.isConnected).length,
+			},
 			live: [...document.querySelectorAll('div')].filter(
 				element => typeof element.updateLocale === 'function',
 			).length,
@@ -1367,6 +1608,8 @@ test('repeated picker edits release replaced tables immediately', async t => {
 	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 	const assertReleased = async () => {
 		const audit = await page.evaluate(() => window.tableAudit());
+		assert.equal(audit.observers.count, audit.live, JSON.stringify(audit));
+		assert.equal(audit.observers.detached, 0, JSON.stringify(audit));
 		assert.equal(audit.registries.length, 2);
 		for (const registry of audit.registries) {
 			assert.equal(registry.detached, 0, JSON.stringify(audit));
@@ -1419,6 +1662,7 @@ test('table updates honor highlight scrolling and cancel restoration on disposal
 		document.body.appendChild(spacer);
 		let highlight = false;
 		const highlighted = makeSortableTable({
+			captionKey: 'tableCookingResults',
 			headers: { Name: 'name' },
 			dataset: [{ name: 'Carrot' }],
 			defaultSort: 'name',
@@ -1438,6 +1682,7 @@ test('table updates honor highlight scrolling and cancel restoration on disposal
 		for (const toggleable of [false, true]) {
 			const dataset = [{ name: 'Carrot' }];
 			const table = makeSortableTable({
+				captionKey: 'tableCookingResults',
 				headers: { Name: 'name' },
 				dataset,
 				defaultSort: 'name',

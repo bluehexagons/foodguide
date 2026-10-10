@@ -2,6 +2,7 @@ import type { CalculatorRow, Food } from '../../html/models.js';
 import type { TableOptions } from '../../html/sortable-table.js';
 
 const foods: TableOptions<Food> = {
+	captionKey: 'tabFoodList',
 	headers: { Name: 'name', Health: 'health', Info: '' },
 	dataset: [],
 	rowGenerator: item => {
@@ -17,6 +18,7 @@ const foods: TableOptions<Food> = {
 };
 
 const cooking: TableOptions<CalculatorRow> = {
+	captionKey: 'tableCookingResults',
 	headers: { Name: 'name', Mode: 'modeMask', Priority: 'priority' },
 	dataset: [],
 	rowGenerator: () => document.createElement('tr'),

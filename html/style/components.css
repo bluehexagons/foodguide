@@ -68,6 +68,17 @@
 	display: none;
 }
 
+.ingredient-name {
+	display: none;
+}
+
+.ingredient-search-summary {
+	margin-top: 6px;
+	color: var(--fg-secondary);
+	font-size: 13px;
+	line-height: 1.5;
+}
+
 .analysis-filter:focus-visible .icon,
 .clearingredients:focus-visible {
 	opacity: 1;

@@ -26,6 +26,13 @@ const dict = {
 	ingredientRemoved: '已移除 {name}。',
 	ingredientActionFailed: '无法更改 {name}。锅可能已满，或未选择该食材。',
 	ingredientsCleared: '已清除所有食材。',
+	ingredientSearchEmpty: '没有匹配的食材。请尝试其他搜索内容或游戏选择。',
+	ingredientSearchOne: '1 个匹配的食材。',
+	ingredientSearchCount: '{count} 个匹配的食材。',
+	tableCookingResults: '锅中配方结果',
+	tableRecipeSuggestions: '配方建议',
+	tableEfficientRecipes: '高效配方',
+	tableScrollHelp: '可滚动表格。使用左、右方向键滚动。',
 	ingredientSearchHelp:
 		'用上、下方向键浏览结果，按回车添加，按 Escape 隐藏结果。按 Tab 移至已选食材以移除。',
 	filterIngredients: '食材筛选',

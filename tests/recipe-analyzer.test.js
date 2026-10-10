@@ -53,6 +53,38 @@ const enoughIngredientsForMultipleBatches = [
 ];
 
 describe('recipe analyzer', () => {
+	it('delivers each result once in order across many drained batches', () => {
+		const run = smallBatches => {
+			const scheduler = createScheduler();
+			let clock = 0;
+			let batches = 0;
+			const results = [];
+			const { analyze } = createRecipeAnalyzer({
+				...analyzerOptions(scheduler),
+				...(smallBatches ? { desiredBlockTime: 1, now: () => (clock += 10) } : {}),
+			});
+			const control = analyze(
+				enoughIngredientsForMultipleBatches,
+				result => results.push(result),
+				() => batches++,
+			);
+			while (scheduler.runNext()) {
+				assert.ok(batches < 1000);
+			}
+			assert.equal(control.isComplete(), true);
+			return { batches, results };
+		};
+		const baseline = run(false);
+		const batched = run(true);
+		assert.ok(batched.batches > baseline.batches);
+		assert.ok(batched.results.length > 0);
+		assert.deepEqual(batched.results, baseline.results);
+		const ids = batched.results.map(
+			result => `${result.recipe.id}:${result.ingredients.map(item => item.key).join(',')}`,
+		);
+		assert.equal(new Set(ids).size, ids.length);
+	});
+
 	it('pauses and resumes scheduled combination work', () => {
 		const scheduler = createScheduler();
 		const { analyze } = createRecipeAnalyzer(analyzerOptions(scheduler));

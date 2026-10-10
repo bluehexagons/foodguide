@@ -1,5 +1,21 @@
 const fractionChars = ['⅛', '¼', '⅜', '½', '⅝', '¾', '⅞'];
 
+/** A zero baseline has no meaningful relative percentage. */
+export function percentageGain(base: number, value: number): number | null {
+	if (base === 0) {
+		return null;
+	}
+	const gain = (value - base) / Math.abs(base);
+	return Number.isFinite(gain) ? gain : null;
+}
+
+export function formatStatGain(gain: number, percentage: number | null): string {
+	const value = formatSignedValue(gain);
+	return percentage === null
+		? value
+		: `${value} (${formatSignedValue(Math.trunc(percentage * 100))}%)`;
+}
+
 /** Show signed values with the guide's existing eighth-unit fraction glyphs. */
 export function formatSignedValue(input: number | string | undefined): string {
 	const value = Number(input);

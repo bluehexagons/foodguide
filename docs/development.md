@@ -279,6 +279,19 @@ slots, preserves duplicates, updates recipes and membership badges, switches
 tabs, focuses the first pot slot, announces the change, and saves immediately.
 Discovery inventory and analysis results remain available when returning.
 
+Running analyses keep a bounded table snapshot instead of sorting and rebuilding
+it on every calculation batch. The snapshot notice explains this; pausing refreshes
+the table and enables pagination. The loaded/matching count includes hidden group
+details, while the calculation summary counts all valid combinations found so far.
+Filter changes, resets, pausing, and pagination announce the matching count without
+announcing every calculation batch.
+Completion raises the initial 25-combination limit to 500 without discarding a
+larger limit selected while paused. Reset filters restores the initial exclusions
+and clears user requirements without changing sorting, expansion, or pagination.
+The analyzer drains delivered results from its batch buffer; the UI owns the
+retained result collection. Gains from a zero ingredient baseline have no relative
+percentage and show only the signed absolute change.
+
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
 paused statistics results, empty filtered tables, empty searches, and full-pot

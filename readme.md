@@ -68,6 +68,12 @@ The Statistics Analyzer and Discovery's efficiency results group consecutive
 combinations for the same recipe without changing the sort order. Expand a recipe
 to see its combinations; a collapsed row shows the first combination's values.
 Click its ingredients to fill the crock pot and open the Simulator.
+Pause a running analysis to inspect its latest results and load more combinations.
+The table reports how many matching combinations are loaded; recipe groups can
+contain several of those combinations. **Reset filters** restores the analysis's
+original filters, including the Statistics Analyzer's default exclusions.
+Stat gains show absolute changes; percentages appear when the ingredient baseline
+is nonzero.
 
 Ingredient searches accept display names and game identifiers, with spaces or
 underscores between words. For example, `mushroom` finds Red, Green, and Blue Caps

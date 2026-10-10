@@ -15,7 +15,7 @@ import type { DropdownItem } from './dropdown.js';
 import { createSavedStateStore, restoreGameSelection, type SavedState } from './preferences.js';
 import { createFoodSelectionResolver } from './food-selection.js';
 import { createAnalysisFilters } from './analysis-filters.js';
-import { formatSignedValue } from './number-format.js';
+import { formatSignedValue, formatStatGain, percentageGain } from './number-format.js';
 import { getCollectionItem } from './collection.js';
 import { bindActivation } from './activation.js';
 
@@ -575,14 +575,6 @@ import './locales/index.js';
 		responsiveTables,
 	});
 
-	const rawpct = (base: number, val: number) => {
-		return base < val
-			? (val - base) / Math.abs(base)
-			: base > val
-				? -(base - val) / Math.abs(base)
-				: 0;
-	};
-
 	const pct = (base: number, val: number) => {
 		if (isNaN(base) || base === val) {
 			return '';
@@ -847,6 +839,7 @@ import './locales/index.js';
 				const idealIngredients: Food[] = [];
 				const makableRecipes: string[] = [];
 				const recipeControls = new Map<string, HTMLButtonElement>();
+				const ingredientControls = new Map<string, HTMLButtonElement>();
 				const filters = createAnalysisFilters({
 					excludedIngredients: excludeDefault
 						? availableIngredients
@@ -931,24 +924,45 @@ import './locales/index.js';
 				}
 
 				made = [];
-				let currentLimit = 500;
+				let currentLimit = 25;
+				let paused = false;
+				const resultCount = document.createElement('p');
+				resultCount.className = 'analysis-result-count';
+				const snapshotNotice = document.createElement('p');
+				snapshotNotice.className = 'analysis-snapshot-notice';
+				snapshotNotice.textContent = t('analysisSnapshotNotice');
+				const resetFiltersButton = document.createElement('button');
+				resetFiltersButton.type = 'button';
+				resetFiltersButton.className = 'resetAnalysisFiltersButton';
+				resetFiltersButton.textContent = t('analysisResetFilters');
+				resetFiltersButton.title = t('analysisResetFiltersHelp');
+				resetFiltersButton.addEventListener('click', () => {
+					filters.reset();
+					for (const [id, button] of ingredientControls) {
+						ingredientFilterControls.update(button, filters.ingredientState(id));
+					}
+					updateRecipeFilters();
+					analysisStatus.textContent = `${t('analysisFiltersReset')} ${resultCount.textContent}`;
+				});
 				const showMoreButton = document.createElement('button');
 				showMoreButton.className = 'showMoreButton';
 				showMoreButton.hidden = true;
 				showMoreButton.addEventListener('click', () => {
 					currentLimit += 500;
 					makableTable.setMaxRows(currentLimit);
+					analysisStatus.textContent = resultCount.textContent;
 				});
 
 				const makableTable = makeSortableTable({
 					captionKey: 'tableEfficientRecipes',
 					onRender: ({ shown, total }) => {
-						const hide = isCalculating || shown >= total;
+						const hide = (isCalculating && !paused) || shown >= total;
 						if (hide && document.activeElement === showMoreButton) {
 							deleteButton.focus();
 						}
 						showMoreButton.hidden = hide;
 						showMoreButton.textContent = t('showMoreResultsCount', { shown, total });
+						resultCount.textContent = t('analysisResultCount', { shown, total });
 					},
 					emptyMessage: () =>
 						t(isCalculating ? 'analysisNoResultsYet' : 'analysisNoMatchingResults'),
@@ -998,9 +1012,9 @@ import './locales/index.js';
 							item.img ? item.img : '',
 							item.name,
 							formatSignedValue(item.health),
-							`${formatSignedValue(data.healthpls)} (${formatSignedValue((data.healthpct * 100) | 0)}%)`,
+							formatStatGain(data.healthpls, data.healthpct),
 							formatSignedValue(item.hunger),
-							`${formatSignedValue(data.hungerpls)} (${formatSignedValue((data.hungerpct * 100) | 0)}%)`,
+							formatStatGain(data.hungerpls, data.hungerpct),
 							combination,
 						);
 						row.dataset.recipe = item.id;
@@ -1031,6 +1045,9 @@ import './locales/index.js';
 				});
 				const updateMakableControls = () => {
 					deleteButton.textContent = t('clearResults');
+					resetFiltersButton.textContent = t('analysisResetFilters');
+					resetFiltersButton.title = t('analysisResetFiltersHelp');
+					snapshotNotice.textContent = t('analysisSnapshotNotice');
 					ingredientFilterControls.updateLocale();
 					recipeFilterControls.updateLocale();
 					makableFilter.setAttribute('aria-label', t('filterIngredients'));
@@ -1104,17 +1121,18 @@ import './locales/index.js';
 					const button = ingredientFilterControls.add(img, item.name, reverse => {
 						filters.cycleIngredient(item.key, reverse);
 						ingredientFilterControls.update(button, filters.ingredientState(item.key));
-						analysisStatus.textContent = button.getAttribute('aria-label');
 						makableTable.update();
+						analysisStatus.textContent = `${button.getAttribute('aria-label')} ${resultCount.textContent}`;
 					});
 					ingredientFilterControls.update(button, filters.ingredientState(item.key));
+					ingredientControls.set(item.key, button);
 					img.title = item.name;
 					makableFilter.appendChild(button);
 				});
 
 				makableDiv.appendChild(makableFilter);
 
-				makableDiv.appendChild(makableTable);
+				makableDiv.append(snapshotNotice, resultCount, makableTable);
 				makableButton.after(makableDiv);
 				makableDiv.appendChild(makableFootnote);
 
@@ -1132,7 +1150,7 @@ import './locales/index.js';
 				const calculationFocused = document.activeElement === makableButton;
 				updateMakableButtonLabel();
 				makableButton.disabled = true;
-				makableSummary.append(showMoreButton, deleteButton);
+				makableSummary.append(showMoreButton, resetFiltersButton, deleteButton);
 				if (calculationFocused) {
 					deleteButton.focus();
 				}
@@ -1166,7 +1184,7 @@ import './locales/index.js';
 										filters.cycleRecipe(recipeId);
 									}
 									updateRecipeFilters();
-									analysisStatus.textContent = button.getAttribute('aria-label');
+									analysisStatus.textContent = `${button.getAttribute('aria-label')} ${resultCount.textContent}`;
 								},
 							);
 							recipeControls.set(recipeId, button);
@@ -1189,8 +1207,8 @@ import './locales/index.js';
 							ihunger: data.tags.hunger,
 							healthpls: (data.recipe.health || 0) - data.tags.health,
 							hungerpls: (data.recipe.hunger || 0) - data.tags.hunger,
-							healthpct: rawpct(data.tags.health, data.recipe.health || 0),
-							hungerpct: rawpct(data.tags.hunger, data.recipe.hunger || 0),
+							healthpct: percentageGain(data.tags.health, data.recipe.health || 0),
+							hungerpct: percentageGain(data.tags.hunger, data.recipe.hunger || 0),
 							sanity: data.recipe.sanity,
 							perish: data.recipe.perish,
 						};
@@ -1208,6 +1226,8 @@ import './locales/index.js';
 					() => {
 						//computation finished
 						isCalculating = false;
+						paused = false;
+						snapshotNotice.hidden = true;
 
 						// Remove pause button if it exists
 						if (pauseButton.parentNode) {
@@ -1221,6 +1241,7 @@ import './locales/index.js';
 							made,
 						};
 
+						currentLimit = Math.max(500, currentLimit);
 						makableTable.setMaxRows(currentLimit);
 
 						const summaryText = t('foundValidRecipes', { count: made.length });
@@ -1266,10 +1287,12 @@ import './locales/index.js';
 					if (!isCalculating) {
 						return;
 					}
+					paused = calculationControl.isPaused();
+					snapshotNotice.hidden = paused;
 					pauseButton.textContent = t(calculationControl.isPaused() ? 'resume' : 'pause');
 					makableTable.update();
 					updateMakableTexts();
-					analysisStatus.textContent = makableSummaryText.textContent;
+					analysisStatus.textContent = `${makableSummaryText.textContent} ${resultCount.textContent}`;
 				});
 			})();
 

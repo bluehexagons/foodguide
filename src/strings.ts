@@ -194,6 +194,13 @@ const defaultStrings = {
 	analysisHideCombinations: 'Hide {count} consecutive combinations for {name}',
 	analysisTryCombination: 'Try {name} in the Simulator with {ingredients}',
 	analysisIngredientsLoaded: 'Loaded {count} ingredients into the crock pot.',
+	analysisResetFilters: 'Reset filters',
+	analysisResetFiltersHelp:
+		'Restore the original ingredient and recipe filters for this analysis.',
+	analysisFiltersReset: 'Analysis filters reset.',
+	analysisResultCount: 'Loaded {shown} of {total} matching combinations.',
+	analysisSnapshotNotice:
+		'Pause to inspect the latest results; the table shows a snapshot while calculation continues.',
 	filterCycleHelp:
 		'Use arrow keys to browse each filter group. Click, tap, Enter, or Space cycles normal → required (✓) → excluded (✕). Shift+Enter, Shift+Space, or right-click reverses ingredient filters or toggles recipe exclusions.',
 	filterIngredients: 'Ingredient filters',
@@ -203,10 +210,10 @@ const defaultStrings = {
 	filterExcluded: 'Excluded',
 	filterLabel: '{name}: {state}',
 	customFilterPlaceholder: 'use custom filter',
-	foundValidRecipes: 'Found {count} valid recipes.',
+	foundValidRecipes: 'Found {count} valid combinations.',
 	foundValidRecipesInProgress:
-		'Found {count} valid recipes.. (you can change Food Guide tabs during this process)',
-	foundValidRecipesPaused: 'Found {count} valid recipes (paused)',
+		'Found {count} valid combinations… (you can change Food Guide tabs during this process)',
+	foundValidRecipesPaused: 'Found {count} valid combinations (paused)',
 	showMoreResults: 'Show more results',
 	showMoreResultsCount: 'Show more results ({shown} of {total})',
 	durationNever: 'Never',

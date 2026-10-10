@@ -136,6 +136,13 @@ table th.sort-desc .table-sort::after {
 	line-height: 1.5;
 }
 
+.analysis-result-count,
+.analysis-snapshot-notice {
+	margin: 8px 0;
+	color: var(--fg-secondary);
+	font-size: 13px;
+}
+
 /* Collapsed runs retain the first sorted combination's values and ingredients. */
 .table-group-toggle {
 	display: flex;

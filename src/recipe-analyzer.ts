@@ -59,8 +59,7 @@ export const createRecipeAnalyzer = ({
 		};
 		onRecipeData?.(recipeData);
 
-		const built: AnalysisResult[] = [];
-		let renderedTo = 0;
+		const pendingResults: AnalysisResult[] = [];
 		let previousElapsed: number | undefined;
 		let blockSize = 100;
 		let paused = false;
@@ -100,7 +99,7 @@ export const createRecipeAnalyzer = ({
 					tags: { health: tags.health, hunger: tags.hunger },
 					multiple,
 				};
-				built.push(created);
+				pendingResults.push(created);
 			}
 		};
 
@@ -115,9 +114,11 @@ export const createRecipeAnalyzer = ({
 			const start = now();
 			const hasMore = getCombinations(blockSize);
 
-			for (; renderedTo < built.length; renderedTo++) {
-				mainCallback(built[renderedTo]);
+			for (const result of pendingResults) {
+				mainCallback(result);
 			}
+			// The consumer owns delivered results; retain only the current batch here.
+			pendingResults.length = 0;
 
 			const elapsed = Math.max(1, now() - start);
 			if (previousElapsed !== elapsed) {
@@ -160,7 +161,7 @@ export const createRecipeAnalyzer = ({
 				}
 				cancelled = true;
 				paused = false;
-				built.length = 0;
+				pendingResults.length = 0;
 				if (timeoutId !== null) {
 					cancelSchedule(timeoutId);
 					timeoutId = null;

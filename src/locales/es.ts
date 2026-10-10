@@ -177,13 +177,20 @@ const dict = {
 	analysisHideCombinations: 'Ocultar {count} combinaciones consecutivas de {name}',
 	analysisTryCombination: 'Probar {name} en el Simulador con {ingredients}',
 	analysisIngredientsLoaded: 'Se añadieron {count} ingredientes a la olla.',
+	analysisResetFilters: 'Restablecer filtros',
+	analysisResetFiltersHelp:
+		'Restaurar los filtros originales de ingredientes y recetas de este análisis.',
+	analysisFiltersReset: 'Filtros del análisis restablecidos.',
+	analysisResultCount: 'Se cargaron {shown} de {total} combinaciones coincidentes.',
+	analysisSnapshotNotice:
+		'Pausa para consultar los resultados más recientes; la tabla muestra una instantánea mientras continúa el cálculo.',
 	filterCycleHelp:
 		'Usa las flechas para explorar cada grupo de filtros. Clic, toque, Intro o Espacio alternan normal → obligatorio (✓) → excluido (✕). Mayús+Intro, Mayús+Espacio o clic derecho invierten los filtros de ingredientes o alternan la exclusión de recetas.',
 	customFilterPlaceholder: 'usar filtro personalizado',
-	foundValidRecipes: 'Se encontraron {count} recetas válidas.',
+	foundValidRecipes: 'Se encontraron {count} combinaciones válidas.',
 	foundValidRecipesInProgress:
-		'Se encontraron {count} recetas válidas.. (puedes cambiar de pestaña durante este proceso)',
-	foundValidRecipesPaused: 'Se encontraron {count} recetas válidas (en pausa)',
+		'Se encontraron {count} combinaciones válidas… (puedes cambiar de pestaña durante este proceso)',
+	foundValidRecipesPaused: 'Se encontraron {count} combinaciones válidas (en pausa)',
 	showMoreResults: 'Mostrar más resultados',
 	showMoreResultsCount: 'Mostrar más resultados ({shown} de {total})',
 	durationNever: 'Nunca',

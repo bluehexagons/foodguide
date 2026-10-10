@@ -90,3 +90,22 @@ test('right-click recipe exclusion clears any required recipe', () => {
 	assert.equal(filters.matches(row('wetgoop')), true);
 	assert.equal(filters.matches(row('jam')), false);
 });
+
+test('reset restores the initial exclusions and clears ingredient and recipe requirements', () => {
+	const filters = createAnalysisFilters({
+		excludedIngredients: ['honey'],
+		excludedRecipes: ['wetgoop'],
+	});
+	filters.cycleIngredient('honey');
+	filters.cycleIngredient('meat');
+	filters.cycleIngredient('ice', true);
+	filters.cycleRecipe('meatballs');
+	filters.reset();
+	assert.equal(filters.ingredientState('honey'), 'excluded');
+	assert.equal(filters.ingredientState('meat'), 'normal');
+	assert.equal(filters.ingredientState('ice'), 'normal');
+	assert.equal(filters.recipeState('wetgoop'), 'excluded');
+	assert.equal(filters.recipeState('meatballs'), 'normal');
+	assert.equal(filters.matches(row('jam', 'berries')), true);
+	assert.equal(filters.matches(row('jam', 'honey')), false);
+});

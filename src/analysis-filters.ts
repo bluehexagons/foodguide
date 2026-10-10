@@ -12,8 +12,10 @@ export function createAnalysisFilters({
 	excludedRecipes = [],
 }: InitialFilters = {}) {
 	const requiredIngredients = new Set<string>();
-	const blockedIngredients = new Set(excludedIngredients);
-	const blockedRecipes = new Set(excludedRecipes);
+	const initialIngredients = new Set(excludedIngredients);
+	const initialRecipes = new Set(excludedRecipes);
+	const blockedIngredients = new Set(initialIngredients);
+	const blockedRecipes = new Set(initialRecipes);
 	let requiredRecipe: string | null = null;
 
 	const ingredientState = (id: string): FilterState =>
@@ -28,6 +30,18 @@ export function createAnalysisFilters({
 	return {
 		ingredientState,
 		recipeState,
+		reset() {
+			requiredIngredients.clear();
+			requiredRecipe = null;
+			blockedIngredients.clear();
+			blockedRecipes.clear();
+			for (const id of initialIngredients) {
+				blockedIngredients.add(id);
+			}
+			for (const id of initialRecipes) {
+				blockedRecipes.add(id);
+			}
+		},
 		cycleIngredient(id: string, reverse = false) {
 			const cycle: FilterState[] = reverse
 				? ['normal', 'excluded', 'required']

@@ -242,6 +242,6 @@ export interface AnalysisRow extends AnalysisResult {
 	ihunger: number;
 	healthpls: number;
 	hungerpls: number;
-	healthpct: number;
-	hungerpct: number;
+	healthpct: number | null;
+	hungerpct: number | null;
 }

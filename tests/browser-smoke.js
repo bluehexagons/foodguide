@@ -1218,15 +1218,29 @@ test('paused analysis exposes its current results and explains empty filters', a
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	await page.locator('#makable .makablebutton').click();
 	const pause = page.locator('#makable .pauseButton');
+	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), true);
 	await pause.click();
 	const summary = page.locator('#makable .makableSummary');
-	assert.match(await summary.textContent(), /Found [1-9]\d* valid recipes \(paused\)/);
+	assert.match(await summary.textContent(), /Found [1-9]\d* valid combinations \(paused\)/);
 	const found = Number((await summary.textContent()).match(/Found (\d+)/)[1]);
 	const rows = page.locator('#makable tbody tr:not(.table-empty-row)');
 	assert.equal(
 		await rows.count(),
 		Math.min(25, found),
 		'Pausing shows a bounded snapshot of current results',
+	);
+	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), false);
+	assert.ok(found > 25, 'This fixture offers more paused results to inspect');
+	await page.locator('#makable .showMoreButton').click();
+	assert.equal(await rows.count(), Math.min(525, found));
+	assert.equal(
+		await page.locator('#makable .analysis-result-count').textContent(),
+		`Loaded ${Math.min(525, found)} of ${found} matching combinations.`,
+	);
+	assert.equal(
+		await page.locator('#makable [role=status]').textContent(),
+		await page.locator('#makable .analysis-result-count').textContent(),
+		'Loading more announces the resulting count',
 	);
 	const filters = page.locator('#makable .foodFilter .analysis-filter');
 	assert.ok((await filters.count()) >= 5);
@@ -1241,8 +1255,20 @@ test('paused analysis exposes its current results and explains empty filters', a
 	const empty = page.locator('#makable .table-empty-row');
 	assert.equal(await empty.isVisible(), true);
 	assert.match(await empty.textContent(), /No matching combinations found so far/);
+	assert.match(await page.locator('#makable [role=status]').textContent(), /Loaded 0 of 0/);
 	const visibleColumns = () => page.locator('#makable th:not(.col-hidden)').count();
 	assert.equal(await empty.locator('td').evaluate(cell => cell.colSpan), await visibleColumns());
+	await page.locator('#makable .resetAnalysisFiltersButton').click();
+	assert.equal(await rows.count(), Math.min(525, found));
+	assert.equal(await empty.count(), 0);
+	assert.equal(await page.locator('#makable .foodFilter .selected').count(), 0);
+	assert.match(
+		await page.locator('#makable [role=status]').textContent(),
+		/Analysis filters reset/,
+	);
+	for (let index = 0; index < 5; index++) {
+		await filters.nth(index).click();
+	}
 	await page
 		.locator('#makable .column-toggle-bar')
 		.getByRole('button', { name: 'Health', exact: true })
@@ -1294,7 +1320,7 @@ test('analysis that finishes during resume retains its completion message', asyn
 	const summary = await page
 		.locator('#makable .makableSummary')
 		.evaluate(e => e.firstChild.textContent);
-	assert.match(summary, /^Found \d+ valid recipes\.$/);
+	assert.match(summary, /^Found \d+ valid combinations\.$/);
 	assert.equal(await page.locator('#makable [role=status]').textContent(), summary);
 	assert.equal(
 		await page.locator('#makable .deleteButton').evaluate(e => e === document.activeElement),
@@ -3091,6 +3117,75 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 	}
 });
 
+test('analysis reports zero-baseline gains accurately and its new controls remain accessible', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			activeTab: 'discovery',
+			version: 'together',
+			pickers: [[], ['bird_egg', 'green_mushroom', 'twigs']],
+		},
+		{ hasTouch: true, viewport: { width: 375, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	page.setDefaultTimeout(15_000);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const total = await page.evaluate(() => window.analysis.made.length);
+	assert.ok(total > 0);
+	assert.equal(
+		await page.evaluate(() => window.analysis.made.every(row => row.healthpct === null)),
+		true,
+		'Zero-health ingredients must not produce a relative percentage',
+	);
+	const ratatouille = page.locator('#makable tbody tr[data-recipe=ratatouille_dst]').first();
+	assert.equal(await ratatouille.locator('td:nth-child(4)').textContent(), '+3');
+	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), false);
+	await page.evaluate(axe.source);
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ colorScheme: theme });
+		await page.waitForFunction(
+			theme => document.documentElement.dataset.theme === theme,
+			theme,
+		);
+		for (const [locale, label, count] of [
+			['en', 'Reset filters', `Loaded ${total} of ${total} matching combinations.`],
+			[
+				'es',
+				'Restablecer filtros',
+				`Se cargaron ${total} de ${total} combinaciones coincidentes.`,
+			],
+			['zh', '重置筛选', `已加载 ${total} 个匹配组合中的 ${total} 个。`],
+		]) {
+			await page.locator('#language-picker').selectOption(locale);
+			const reset = page.locator('#makable .resetAnalysisFiltersButton');
+			assert.equal(await reset.textContent(), label);
+			await page.locator('#makable .foodFilter button').first().tap();
+			await reset.tap();
+			assert.equal(await reset.evaluate(e => e === document.activeElement), true);
+			assert.equal(await page.locator('#makable .foodFilter .selected').count(), 0);
+			assert.equal(
+				await page.locator('#makable .analysis-result-count').textContent(),
+				count,
+			);
+			assert.ok(await reset.evaluate(e => e.getBoundingClientRect().height >= 44));
+			const violations = await page.evaluate(async () => {
+				const { violations } = await window.axe.run();
+				return violations.map(({ id, nodes }) => ({
+					id,
+					targets: nodes.map(node => node.target),
+				}));
+			});
+			assert.deepEqual(violations, [], `${theme}, ${locale} analyzer accessibility`);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
 test('statistics default exclusions keep visible sprites and recalculation follows the game', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(browser, baseUrl, {
@@ -3120,6 +3215,24 @@ test('statistics default exclusions keep visible sprites and recalculation follo
 				),
 			),
 			true,
+		);
+		const filterStates = () =>
+			page.locator('#statistics .analysis-filter .icon').evaluateAll(icons =>
+				icons.map(icon => ({
+					id: icon.dataset.id || icon.dataset.recipe,
+					required: icon.classList.contains('selected'),
+					excluded: icon.classList.contains('excluded'),
+				})),
+			);
+		const original = await filterStates();
+		await page.locator('#statistics .foodFilter button').first().click();
+		await page.locator('#statistics .recipeFilter button').first().click();
+		assert.notDeepEqual(await filterStates(), original);
+		await page.locator('#statistics .resetAnalysisFiltersButton').click();
+		assert.deepEqual(
+			await filterStates(),
+			original,
+			'Reset restores the Statistics default exclusions',
 		);
 		await page.locator('#statistics .deleteButton').click();
 		assert.equal(await page.locator('#statistics .makableContainer').count(), 0);
@@ -3470,10 +3583,15 @@ test('completed analysis pagination follows filters and locale without discardin
 	const total = await page.evaluate(() => window.analysis.made.length);
 	assert.ok(total > 1000, `Need multiple result batches, got ${total}`);
 	assert.equal(await rows.count(), 500);
+	const firstGroup = page.locator('#makable .table-group-toggle').first();
+	await firstGroup.click();
+	assert.equal(await firstGroup.getAttribute('aria-expanded'), 'true');
 	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await firstGroup.getAttribute('aria-expanded'), 'true');
 	assert.equal(await more.textContent(), `Mostrar más resultados (500 de ${total})`);
 	await more.click();
 	assert.equal(await rows.count(), 1000);
+	assert.equal(await firstGroup.getAttribute('aria-expanded'), 'true');
 	const meatballs = page
 		.locator('#makable .recipeFilter button')
 		.filter({ has: page.locator('[title="Meatballs"]') });

@@ -85,6 +85,9 @@ with Left/Right; wrappers that fit do not add a Tab stop. A `ResizeObserver` tra
 table and wrapper sizes, including changes to visible columns, and `dispose()`
 disconnects it. Column sort keys and the default sort are checked against the row
 type; summary rows have an explicit count.
+The focused scroll region handles unmodified Left/Right keys directly so
+horizontal scrolling works consistently across platforms. Keys on table buttons,
+modified keys, and other scrolling commands retain their browser behavior.
 Empty tables display localized feedback across their visible columns. Views can
 provide an `emptyMessage` callback when that explanation depends on their state.
 The shared sorter preserves the dataset's identity and leaves summary rows above
@@ -173,7 +176,7 @@ The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
 paused statistics results, empty filtered tables, empty searches, and full-pot
 feedback. English small-screen and forced-color scans repeat both themes. It also
-exercises keyboard flows, native horizontal table scrolling, search feedback,
+exercises keyboard flows, horizontal table scrolling, search feedback,
 and focus recovery,
 trusted Chromium touch taps/canceled gestures, picker/table scrolling, and
 long-press event handling. Touch layout checks cover 320, 375, 768, and 1280-pixel

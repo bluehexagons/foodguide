@@ -638,7 +638,7 @@ test('search feedback covers empty results, localization, composition, and actio
 	assert.deepEqual(diagnostics, []);
 });
 
-test('wide tables have localized names and native keyboard scrolling only while overflowing', async t => {
+test('wide tables have localized names and keyboard scrolling only while overflowing', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(
 		browser,
@@ -669,6 +669,30 @@ test('wide tables have localized names and native keyboard scrolling only while 
 		() => document.querySelector('#recipes .table-scroll-wrapper').scrollLeft > 0,
 	);
 	assert.equal(await table.locator('th[aria-sort]').getAttribute('aria-sort'), sortBefore);
+	await wrapper.evaluate(element => {
+		element.scrollLeft = 0;
+		const selection = getSelection();
+		selection.selectAllChildren(document.querySelector('#recipes .column-toggle-bar'));
+		element.focus();
+	});
+	await page.keyboard.press('ArrowRight');
+	assert.ok(await wrapper.evaluate(element => element.scrollLeft > 0));
+	await page.keyboard.press('ArrowLeft');
+	assert.equal(await wrapper.evaluate(element => element.scrollLeft), 0);
+	const preventsArrow = (locator, modifiers = {}) =>
+		locator.evaluate((element, modifiers) => {
+			const event = new KeyboardEvent('keydown', {
+				key: 'ArrowRight',
+				bubbles: true,
+				cancelable: true,
+				...modifiers,
+			});
+			element.dispatchEvent(event);
+			return event.defaultPrevented;
+		}, modifiers);
+	for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
+		assert.equal(await preventsArrow(wrapper, { [modifier]: true }), false);
+	}
 	await page.keyboard.press('Tab');
 	assert.equal(
 		await table
@@ -676,6 +700,7 @@ test('wide tables have localized names and native keyboard scrolling only while 
 			.evaluate(e => e === document.activeElement),
 		true,
 	);
+	assert.equal(await preventsArrow(table.locator('th[data-sort="name"] button')), false);
 	for (const [locale, name] of [
 		['es', 'Lista de recetas'],
 		['zh', '配方列表'],
@@ -690,6 +715,7 @@ test('wide tables have localized names and native keyboard scrolling only while 
 		() => document.querySelector('#recipes .table-scroll-wrapper').tabIndex === -1,
 	);
 	assert.equal(await page.getByRole('region', { name: 'Recipe List', exact: true }).count(), 0);
+	assert.equal(await preventsArrow(page.locator('#recipes .table-scroll-wrapper')), false);
 	assert.equal(await table.getAttribute('aria-label'), null);
 	assert.equal(await table.locator('caption').textContent(), 'Recipe List');
 	assert.deepEqual(diagnostics, []);

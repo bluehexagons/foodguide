@@ -156,6 +156,23 @@ export const createSortableTableFactory = ({
 				}
 			}
 		};
+		wrapper.addEventListener('keydown', event => {
+			if (
+				disposed ||
+				event.target !== wrapper ||
+				event.altKey ||
+				event.ctrlKey ||
+				event.metaKey ||
+				event.shiftKey ||
+				wrapper.scrollWidth <= wrapper.clientWidth + 1 ||
+				(event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
+			) {
+				return;
+			}
+			// Keep focused regions scrollable even when platform default key handling does nothing.
+			event.preventDefault();
+			wrapper.scrollLeft += event.key === 'ArrowLeft' ? -40 : 40;
+		});
 		const scrollObserver = new ResizeObserver(updateScrollAccess);
 		let scrollFrame: number | undefined;
 		container.dispose = () => {

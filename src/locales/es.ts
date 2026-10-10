@@ -26,6 +26,10 @@ const dict = {
 	ingredientRemoved: '{name} quitado.',
 	ingredientActionFailed:
 		'No se puede cambiar {name}. La olla puede estar llena o el ingrediente no está seleccionado.',
+	ingredientPotFull: 'La olla está llena. Quita un ingrediente antes de añadir {name}.',
+	ingredientNotSelected: '{name} no está seleccionado. Añádelo antes de intentar quitarlo.',
+	ingredientSlotEmpty:
+		'Esta ranura está vacía. Selecciona un ingrediente de los resultados de búsqueda.',
 	ingredientsCleared: 'Todos los ingredientes eliminados.',
 	ingredientSearchEmpty:
 		'No hay ingredientes coincidentes. Prueba otra búsqueda o selección de juego.',

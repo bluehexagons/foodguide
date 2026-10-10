@@ -1,0 +1,119 @@
+/* Draw state markers without adding generated text to accessible names. */
+.mode-btn.selected::after,
+.ui-dropdown-list button.is-selected::after,
+.column-toggle-bar button.active::after,
+table tr.highlighted .name-cell::before {
+	content: '';
+	position: absolute;
+	width: 8px;
+	height: 5px;
+	border: solid currentColor;
+	border-width: 0 0 2px 2px;
+	transform: rotate(-45deg);
+	pointer-events: none;
+}
+
+.mode-btn.selected {
+	color: var(--header-text);
+}
+
+.mode-btn.selected::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 14px;
+	height: 14px;
+	border: 1px solid currentColor;
+	border-radius: 50%;
+	background: var(--header-bg);
+	pointer-events: none;
+}
+
+.mode-btn.selected::after {
+	top: 3px;
+	right: 3px;
+}
+
+.ui-dropdown-list button {
+	position: relative;
+	padding-inline-end: 30px;
+}
+
+.ui-dropdown-list button.is-selected::after {
+	top: calc(50% - 4px);
+	right: 12px;
+}
+
+.column-toggle-bar button {
+	position: relative;
+	padding-inline-end: 20px;
+}
+
+.column-toggle-bar button.active::after {
+	top: calc(50% - 4px);
+	right: 6px;
+}
+
+table .name-cell {
+	position: relative;
+	padding-inline-start: 28px;
+}
+
+table tr.highlighted .name-cell::before {
+	top: calc(50% - 4px);
+	left: 12px;
+}
+
+.ingredient-feedback {
+	padding: 8px 10px;
+	border: 1px solid var(--excluded-border);
+	border-radius: 4px;
+	color: var(--fg-primary);
+	background: var(--bg-primary);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+/* Keep native system colors and restore cues that forced colors would erase. */
+@media (forced-colors: active) {
+	.ingredient {
+		background-image: none;
+	}
+
+	.mode-btn:not(.disabled),
+	div.foodFilter :is(img, .icon),
+	div.recipeFilter :is(img, .icon) {
+		opacity: 1;
+		filter: none;
+	}
+
+	.mode-btn.selected,
+	.column-toggle-bar button.active {
+		border-color: Highlight;
+	}
+
+	.mode-btn.selected::before,
+	div.foodFilter .icon:is(.selected, .excluded)::after,
+	div.recipeFilter .icon:is(.selected, .excluded)::after {
+		background: ButtonFace;
+		color: ButtonText;
+		border-color: ButtonText;
+	}
+
+	.ingredientdropdown .item.selected {
+		background: Highlight;
+		color: HighlightText;
+	}
+
+	.ui-dropdown-list button.is-selected {
+		/* Override the shared hover/focus background while keeping its text legible. */
+		background: Highlight !important;
+		color: HighlightText;
+	}
+
+	.ingredientdropdown .item.selected {
+		outline: 2px solid Highlight;
+		outline-offset: -2px;
+	}
+}

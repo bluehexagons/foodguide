@@ -120,7 +120,10 @@ changes `aria-activedescendant`; Escape hides the results and arrow keys reopen
 them. Visible result counts and empty-search messages are localized. Search
 announcements wait for a short typing pause, skip IME composition, and are canceled
 when focus leaves the search or an ingredient action takes priority. Action
-feedback uses the same atomic status region.
+feedback uses the same atomic status region. Failed actions display persistent,
+localized explanations and recovery steps; the next search or successful action
+clears them. Their optional flash uses one bounded timer per target, so cleanup
+does not depend on animation events that reduced-motion settings suppress.
 
 `filter-controls.ts` owns analyzer keyboard navigation and accessible state
 labels. Each ingredient/recipe toolbar has one Tab stop; arrows, Home, and End
@@ -146,9 +149,16 @@ The viewport allows browser zoom. These choices follow the W3C guidance on
 [pointer cancellation](https://www.w3.org/WAI/WCAG22/Understanding/pointer-cancellation)
 and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced).
 
+`html/style/accessibility.css` provides drawn checkmarks for selected game modes,
+menu choices, visible columns, and highlighted table rows. These cues supplement
+color without changing accessible names. Targeted forced-color rules retain the
+user's system palette, remove the slot texture, and preserve selection outlines
+and filter badges. Keep this stylesheet last so it can adjust the shared styles.
+
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
-paused statistics results. English small-screen scans repeat both themes. It also
+paused statistics results, empty searches, and full-pot feedback. English
+small-screen and forced-color scans repeat both themes. It also
 exercises keyboard flows, native horizontal table scrolling, search feedback,
 and focus recovery,
 trusted Chromium touch taps/canceled gestures, picker/table scrolling, and

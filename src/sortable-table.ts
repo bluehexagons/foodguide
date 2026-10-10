@@ -171,6 +171,7 @@ export const createSortableTableFactory = ({
 		let lastHighlight: HTMLElement | null = null;
 		let rows: number;
 		const headerKeys = Object.keys(headers);
+		const nameColumn = headerKeys.findIndex(header => labelFromHeader(header) === 'Name');
 		const iconColumns: number[] = [];
 		const numericColumns: number[] = [];
 		const hiddenColumns = new Set<number>();
@@ -310,6 +311,7 @@ export const createSortableTableFactory = ({
 					continue;
 				}
 				const row = rowGenerator(item);
+				row.children[nameColumn]?.classList.add('name-cell');
 				rowItems.set(row, item);
 				if (item === focusedItem) {
 					restoredRow = row;

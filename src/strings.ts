@@ -99,6 +99,9 @@ const defaultStrings = {
 	ingredientRemoved: 'Removed {name}.',
 	ingredientActionFailed:
 		'Unable to change {name}. The pot may be full or the ingredient is not selected.',
+	ingredientPotFull: 'The pot is full. Remove an ingredient before adding {name}.',
+	ingredientNotSelected: '{name} is not selected. Add it before trying to remove it.',
+	ingredientSlotEmpty: 'This slot is empty. Select an ingredient from the search results.',
 	ingredientsCleared: 'All ingredients cleared.',
 	ingredientSearchEmpty: 'No matching ingredients. Try another search or game selection.',
 	ingredientSearchOne: '1 matching ingredient.',

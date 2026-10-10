@@ -1246,9 +1246,11 @@ import './locales/index.js';
 	}
 
 	const highestPriority = (array: CalculatorRow[]) => {
-		return array.reduce((previous, current) => {
-			return Math.max(previous, Number(current.priority) || 0);
-		}, -100000);
+		return array.reduce(
+			(highest, { priority }) =>
+				typeof priority === 'number' ? Math.max(highest, priority) : highest,
+			Number.NEGATIVE_INFINITY,
+		);
 	};
 
 	window.food = food;
@@ -1390,12 +1392,17 @@ import './locales/index.js';
 				window.clearTimeout(searchAnnouncement);
 				searchAnnouncement = undefined;
 			};
-			const announcePicker = (message: string) => {
+			const announcePicker = (message: string, visible = false) => {
 				cancelSearchAnnouncement();
+				pickerStatus.classList.toggle('sr-only', !visible);
+				pickerStatus.classList.toggle('ingredient-feedback', visible);
 				pickerStatus.replaceChildren(document.createTextNode(message));
 			};
 			const updateSearchFeedback = (announce = false) => {
 				cancelSearchAnnouncement();
+				if (pickerStatus.classList.contains('ingredient-feedback')) {
+					announcePicker('');
+				}
 				const count = pickerOptions.length;
 				const message = t(
 					count === 0
@@ -1430,24 +1437,23 @@ import './locales/index.js';
 				HTMLElement,
 				ReturnType<typeof setTimeout>
 			>();
-			const flashIngredientActionError = (target: HTMLElement | null) => {
+			const flashIngredientActionError = (target: HTMLElement | null, message: string) => {
 				if (!target) {
 					return;
 				}
-				const id = target.dataset.id;
-				announcePicker(
-					t('ingredientActionFailed', {
-						name: id ? getCollectionItem(from, id)?.name || id : t('tableIngredients'),
-					}),
-				);
+				announcePicker(message, true);
 
+				window.clearTimeout(ingredientActionTimers.get(target));
 				target.classList.remove('ingredient-action-error');
 				void target.offsetWidth;
 				target.classList.add('ingredient-action-error');
-				const clearError = () => target.classList.remove('ingredient-action-error');
-				target.addEventListener('animationend', clearError, { once: true });
-				window.clearTimeout(ingredientActionTimers.get(target));
-				ingredientActionTimers.set(target, window.setTimeout(clearError, 400));
+				ingredientActionTimers.set(
+					target,
+					window.setTimeout(() => {
+						target.classList.remove('ingredient-action-error');
+						ingredientActionTimers.delete(target);
+					}, 400),
+				);
 			};
 
 			const removeSlotById = (id?: string) => {
@@ -1503,7 +1509,12 @@ import './locales/index.js';
 				}
 
 				if (result === -1) {
-					flashIngredientActionError(target);
+					flashIngredientActionError(
+						target,
+						t(limited && !removing ? 'ingredientPotFull' : 'ingredientNotSelected', {
+							name: getCollectionItem(from, id)?.name || id,
+						}),
+					);
 				} else {
 					announceIngredient(removing ? 'ingredientRemoved' : 'ingredientAdded', id);
 				}
@@ -1641,7 +1652,7 @@ import './locales/index.js';
 					} else {
 						// Empty slot clicked - focus the search bar
 						if (e.type === 'contextmenu') {
-							flashIngredientActionError(target);
+							flashIngredientActionError(target, t('ingredientSlotEmpty'));
 						} else {
 							picker.focus();
 						}
@@ -1650,7 +1661,7 @@ import './locales/index.js';
 				} else {
 					const i = slots.indexOf(target.dataset.id || '');
 					if (i === -1) {
-						flashIngredientActionError(target);
+						flashIngredientActionError(target, t('ingredientSlotEmpty'));
 						return null;
 					}
 					const removedId = target.dataset.id;
@@ -1709,22 +1720,6 @@ import './locales/index.js';
 				updateSearchFeedback(announce);
 			};
 
-			const searchFor = (name: string, target: HTMLElement) => {
-				const matches = matchingNames(from, name, allowUncookable);
-
-				if (matches.length === 1) {
-					const result = appendSlot(matches[0].key);
-					if (result === -1) {
-						flashIngredientActionError(target);
-					} else {
-						announceIngredient('ingredientAdded', matches[0].key);
-					}
-				} else {
-					picker.value = name;
-					refreshPicker();
-				}
-			};
-
 			const pickerTables: SortableTable[] = [];
 			const disposePickerTables = () => {
 				for (const table of pickerTables) {
@@ -1735,6 +1730,28 @@ import './locales/index.js';
 
 			if (parent.id === 'ingredients') {
 				//simulator
+
+				const searchFor = (name: string, target: HTMLElement) => {
+					const matches = matchingNames(from, name, allowUncookable);
+
+					if (matches.length === 1) {
+						const result = appendSlot(matches[0].key);
+						if (result === -1) {
+							flashIngredientActionError(
+								target,
+								t('ingredientPotFull', {
+									name: matches[0].name,
+								}),
+							);
+						} else {
+							announceIngredient('ingredientAdded', matches[0].key);
+						}
+					} else {
+						picker.value = name;
+						refreshPicker();
+					}
+				};
+
 				updateRecipes = () => {
 					disposePickerTables();
 					ingredients = fixedSlots.map(slot => {

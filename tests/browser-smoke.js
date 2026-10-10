@@ -174,7 +174,7 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	await input.press('Enter');
 	assert.match(
 		await page.locator('#simulator [role="status"]').textContent(),
-		/Unable to change Meat/,
+		/The pot is full\. Remove an ingredient before adding Meat\./,
 	);
 	await input.press('Escape');
 	assert.equal(await input.getAttribute('aria-expanded'), 'false');
@@ -282,6 +282,260 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
 	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
 	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineWidth), '2px');
+	assert.deepEqual(diagnostics, []);
+});
+
+test('selection indicators survive forced colors and track modes, menus, columns, and matches', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['meat', 'berries', 'berries', 'berries'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const indicatorVisible = (locator, pseudo = '::after') =>
+		locator.evaluate((element, pseudo) => {
+			const style = getComputedStyle(element, pseudo);
+			return (
+				style.content !== 'none' &&
+				style.display !== 'none' &&
+				parseFloat(style.width) > 0 &&
+				parseFloat(style.height) > 0
+			);
+		}, pseudo);
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ forcedColors: 'active', colorScheme: theme });
+		if ((await page.locator('html').getAttribute('data-theme')) !== theme) {
+			await page.locator('#theme-toggle').click();
+		}
+		const together = page.getByRole('button', { name: "Don't Starve Together", exact: true });
+		const solo = page.getByRole('button', { name: "Don't Starve", exact: true });
+		assert.equal(
+			await indicatorVisible(together),
+			true,
+			'A selected game must have a visible non-color indicator',
+		);
+		assert.equal(await indicatorVisible(solo), false);
+		assert.equal(await together.evaluate(e => getComputedStyle(e).opacity), '1');
+		await solo.click();
+		assert.equal(await indicatorVisible(solo), true);
+		assert.equal(await indicatorVisible(together), false);
+		const dlc = page.locator('.dlc-btn[data-dlc="giants"]');
+		await dlc.click();
+		assert.equal(
+			await indicatorVisible(dlc),
+			(await dlc.getAttribute('aria-pressed')) === 'true',
+		);
+		await together.click();
+		const warly = page.locator('.char-btn[data-character="warly"]');
+		await warly.click();
+		assert.equal(await indicatorVisible(warly), true);
+		await warly.click();
+		assert.equal(await indicatorVisible(warly), false);
+		await page.locator('#simulator .clearingredientsbtn').click();
+		for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
+			await page.locator('#simulator .ingredientpicker').fill(name);
+			await page.getByRole('option', { name, exact: true }).click();
+		}
+		await page.locator('#simulator .clearsearchbtn').click();
+
+		const menuButton = page.locator('#simulator .densityingredients');
+		await menuButton.click();
+		const cozy = page.getByRole('menuitemradio', { name: 'Cozy', exact: true });
+		const compact = page.getByRole('menuitemradio', { name: 'Compact', exact: true });
+		assert.equal(await indicatorVisible(compact), true);
+		assert.equal(await indicatorVisible(cozy), false);
+		const systemColors = await page.evaluate(() => {
+			const probe = document.createElement('span');
+			probe.style.background = 'Highlight';
+			probe.style.color = 'HighlightText';
+			document.body.appendChild(probe);
+			const style = getComputedStyle(probe);
+			const palette = { background: style.backgroundColor, color: style.color };
+			probe.remove();
+			return palette;
+		});
+		await compact.hover();
+		await compact.focus();
+		assert.deepEqual(
+			await compact.evaluate(element => {
+				const style = getComputedStyle(element);
+				return { background: style.backgroundColor, color: style.color };
+			}),
+			systemColors,
+			'Selected menu text must retain its system color pair during hover and focus',
+		);
+		await cozy.click();
+		await menuButton.click();
+		assert.equal(await indicatorVisible(cozy), true);
+		assert.equal(await indicatorVisible(compact), false);
+		await compact.click();
+
+		const columns = page.locator('#results .column-toggle-bar').first();
+		const health = columns.getByRole('button', { name: 'Health', exact: true });
+		assert.equal(await indicatorVisible(health), true);
+		await health.click();
+		assert.equal(await indicatorVisible(health), false);
+		await health.click();
+		assert.equal(await indicatorVisible(health), true);
+		const match = page.locator('#results tr.highlighted').first().locator('td').nth(1);
+		assert.equal(await match.textContent(), 'Meatballs');
+		assert.equal(
+			await indicatorVisible(match, '::before'),
+			true,
+			'Cooking matches must remain identifiable without their background color',
+		);
+		assert.equal(
+			await page
+				.locator('#ingredients .ingredient')
+				.first()
+				.evaluate(e => getComputedStyle(e).backgroundImage),
+			'none',
+		);
+		await page.locator('#simulator .ingredientpicker').fill('Meat');
+		await page.keyboard.press('ArrowDown');
+		const selected = page.locator('#simulator [role=option][aria-selected=true]');
+		assert.equal(await selected.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('full-pot errors remain readable with reduced motion and release temporary feedback', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			version: 'together',
+			pickers: [['meat', 'berries', 'berries', 'berries'], []],
+		},
+		{ reducedMotion: 'reduce' },
+	);
+	await page.addInitScript(() => {
+		const listeners = new WeakMap();
+		const add = EventTarget.prototype.addEventListener;
+		const remove = EventTarget.prototype.removeEventListener;
+		EventTarget.prototype.addEventListener = function (type, listener, options) {
+			if (type === 'animationend') {
+				if (!listeners.has(this)) {
+					listeners.set(this, new Set());
+				}
+				listeners.get(this).add(listener);
+			}
+			return add.call(this, type, listener, options);
+		};
+		EventTarget.prototype.removeEventListener = function (type, listener, options) {
+			if (type === 'animationend') {
+				listeners.get(this)?.delete(listener);
+			}
+			return remove.call(this, type, listener, options);
+		};
+		window.animationListenerCount = element => listeners.get(element)?.size || 0;
+	});
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	const panel = page.locator('#simulator');
+	const search = panel.getByRole('combobox');
+	const status = panel.getByRole('status');
+	const readableStatus = () =>
+		status.evaluate(
+			e =>
+				getComputedStyle(e).clipPath === 'none' &&
+				e.clientWidth > 10 &&
+				e.clientHeight > 10,
+		);
+	await search.fill('Carrot');
+	const carrot = panel.getByRole('option', { name: 'Carrot', exact: true });
+	for (let attempt = 0; attempt < 4; attempt++) {
+		await carrot.click();
+		await page.clock.runFor(500);
+		assert.equal(
+			await carrot.evaluate(e => window.animationListenerCount(e)),
+			0,
+			'A missing animationend event must not retain listeners',
+		);
+		assert.equal(
+			await carrot.evaluate(e => e.classList.contains('ingredient-action-error')),
+			false,
+		);
+		assert.equal(
+			await readableStatus(),
+			true,
+			'A brief flash must not be the only visible error feedback',
+		);
+		assert.equal(
+			await status.textContent(),
+			'The pot is full. Remove an ingredient before adding Carrot.',
+		);
+	}
+	await page.clock.runFor(2000);
+	assert.equal(await readableStatus(), true);
+	assert.equal(await panel.locator('.ingredient[data-id]').count(), 4);
+	await panel.getByRole('button', { name: 'Remove Berries', exact: true }).first().click();
+	assert.equal(await readableStatus(), false, 'A successful action clears the visible error');
+	await carrot.click();
+	assert.equal(await panel.locator('.ingredient[data-id]').count(), 4);
+	assert.equal(await status.textContent(), 'Added Carrot.');
+});
+
+test('ingredient errors explain recovery in every language and clear on a new search', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['meat', 'berries', 'berries', 'berries'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const messages = {
+		en: [
+			'The pot is full. Remove an ingredient before adding Carrot.',
+			'Carrot is not selected. Add it before trying to remove it.',
+			'This slot is empty. Select an ingredient from the search results.',
+		],
+		es: [
+			'La olla está llena. Quita un ingrediente antes de añadir Carrot.',
+			'Carrot no está seleccionado. Añádelo antes de intentar quitarlo.',
+			'Esta ranura está vacía. Selecciona un ingrediente de los resultados de búsqueda.',
+		],
+		zh: [
+			'锅已满。请先移除一种食材，再添加 Carrot。',
+			'尚未选择 Carrot。请先添加，再尝试移除。',
+			'此格子为空。请从搜索结果中选择食材。',
+		],
+	};
+	for (const [locale, [full, missing, empty]] of Object.entries(messages)) {
+		await page.locator('#language-picker').selectOption(locale);
+		await page.locator('#tab-simulator').click();
+		const panel = page.locator('#simulator');
+		const search = panel.getByRole('combobox');
+		const status = panel.getByRole('status');
+		await search.fill('Carrot');
+		await panel.getByRole('option', { name: 'Carrot', exact: true }).click();
+		assert.equal(await status.textContent(), full);
+		assert.equal(await status.evaluate(e => getComputedStyle(e).clipPath), 'none');
+		await search.fill('Berries');
+		assert.equal(
+			await status.evaluate(e => e.classList.contains('ingredient-feedback')),
+			false,
+		);
+		await search.fill('Carrot');
+		await panel.getByRole('option', { name: 'Carrot', exact: true }).click({ button: 'right' });
+		assert.equal(await status.textContent(), missing);
+		await page.locator('#tab-discovery').click();
+		const inventory = page.locator('#discovery');
+		await inventory.locator('.ingredient:not([data-id])').click({ button: 'right' });
+		assert.equal(await inventory.getByRole('status').textContent(), empty);
+		assert.equal(
+			await inventory.getByRole('status').evaluate(e => getComputedStyle(e).clipPath),
+			'none',
+		);
+		await inventory.getByRole('combobox').fill('Carrot');
+		await inventory
+			.getByRole('option', { name: 'Carrot', exact: true })
+			.click({ button: 'right' });
+		assert.equal(await inventory.getByRole('status').textContent(), missing);
+	}
 	assert.deepEqual(diagnostics, []);
 });
 
@@ -444,9 +698,11 @@ test('wide tables have localized names and native keyboard scrolling only while 
 test('accessibility audit covers visible panels, menus, and analyzer results', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const findings = [];
+	let scans = 0;
 	for (const options of [
 		{},
 		{ hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } },
+		{ forcedColors: 'active' },
 	]) {
 		const page = await createSavedPage(
 			browser,
@@ -476,15 +732,27 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 						.map(({ target, failureSummary }) => ({ target, failureSummary })),
 				}));
 			});
+			scans++;
 			if (violations.length) {
-				findings.push({ touch: !!options.hasTouch, ...context, violations });
+				findings.push({
+					touch: !!options.hasTouch,
+					forcedColors: !!options.forcedColors,
+					...context,
+					violations,
+				});
 			}
 		};
 		for (const theme of ['light', 'dark']) {
+			await page.emulateMedia({
+				colorScheme: theme,
+				forcedColors: options.forcedColors || 'none',
+			});
 			if ((await page.locator('html').getAttribute('data-theme')) !== theme) {
 				await page.locator('#theme-toggle').click();
 			}
-			for (const locale of options.hasTouch ? ['en'] : ['en', 'es', 'zh']) {
+			for (const locale of options.hasTouch || options.forcedColors
+				? ['en']
+				: ['en', 'es', 'zh']) {
 				await page.locator('#language-picker').selectOption(locale);
 				for (const tab of [
 					'simulator',
@@ -527,6 +795,10 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 						await page.locator('#simulator .ingredientpicker').fill('zzzznomatches');
 						await audit({ theme, locale, tab, search: 'no matches' });
 						await page.locator('#simulator .clearsearchbtn').click();
+						await page.locator('#simulator .ingredientpicker').fill('Carrot');
+						await page.locator('#simulator [role=option][aria-label="Carrot"]').click();
+						await audit({ theme, locale, tab, action: 'full pot' });
+						await page.locator('#simulator .clearsearchbtn').click();
 					}
 					if (tab === 'statistics') {
 						await page.locator('#statistics .deleteButton').click();
@@ -536,6 +808,7 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 		}
 		await page.close();
 	}
+	t.diagnostic(`Completed ${scans} accessibility scans`);
 	assert.deepEqual(findings, [], JSON.stringify(findings, null, 2));
 });
 

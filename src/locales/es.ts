@@ -122,6 +122,17 @@ const dict = {
 	groupNone: 'Agrupar por: Ninguno',
 	groupType: 'Agrupar por: Tipo de ingrediente',
 	groupPreparation: 'Agrupar por: Preparación',
+	cookingAll: 'Cocinar: Todos',
+	cookingPractical: 'Cocinar: Prácticos',
+	cookingEveryday: 'Cocinar: Cotidianos',
+	cookingAllHelp:
+		'Mostrar todos los ingredientes disponibles para el juego y la búsqueda actuales.',
+	cookingPracticalHelp:
+		'Ingredientes para la olla. Oculta variantes redundantes e ingredientes poco habituales, conservando los especiales para recetas del juego y personaje seleccionados. Elige Todos para encontrar ingredientes ocultos.',
+	cookingEverydayHelp:
+		'Una lista reducida para cocinar a diario. Oculta ingredientes especiales poco habituales y variantes redundantes, conservando los ingredientes preparados necesarios para recetas. Elige Todos para encontrar ingredientes ocultos.',
+	ingredientCookingEmpty:
+		'No hay ingredientes coincidentes en esta vista. Elige «{view}» para mostrar las coincidencias ocultas.',
 	ingredientGroupMonster: 'Comida de monstruo',
 	ingredientGroupFish: 'Pescado y marisco',
 	ingredientGroupMeat: 'Carne',

@@ -114,6 +114,8 @@ const defaultStrings = {
 	ingredientSlotEmpty: 'This slot is empty. Select an ingredient from the search results.',
 	ingredientsCleared: 'All ingredients cleared.',
 	ingredientSearchEmpty: 'No matching ingredients. Try another search or game selection.',
+	ingredientCookingEmpty:
+		'No matching ingredients in this view. Choose “{view}” to show hidden matches.',
 	ingredientSearchOne: '1 matching ingredient.',
 	ingredientSearchCount: '{count} matching ingredients.',
 	tableCookingResults: 'Crock pot results',
@@ -139,6 +141,14 @@ const defaultStrings = {
 	groupNone: 'Group by: None',
 	groupType: 'Group by: Ingredient type',
 	groupPreparation: 'Group by: Preparation',
+	cookingAll: 'Cooking: All',
+	cookingPractical: 'Cooking: Practical',
+	cookingEveryday: 'Cooking: Everyday',
+	cookingAllHelp: 'Show all ingredients allowed by the current game and search.',
+	cookingPracticalHelp:
+		'Focus on crock pot cooking. Hide redundant forms and uncommon ingredients, keeping specialties for recipes in the current game and character selection. Choose All to find hidden ingredients.',
+	cookingEverydayHelp:
+		'A smaller list for routine crock pot cooking. Hide uncommon specialties and redundant forms, keeping prepared ingredients needed by recipes. Choose All to find hidden ingredients.',
 	ingredientGroupMonster: 'Monster foods',
 	ingredientGroupFish: 'Fish & seafood',
 	ingredientGroupMeat: 'Meat',

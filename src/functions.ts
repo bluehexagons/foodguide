@@ -107,6 +107,7 @@ export const COMPARE = (op: ComparisonOperator, qty: number): CompareQty => ({
 	toString: COMPAREString,
 });
 export const AND = (item1: Requirement, item2: Requirement): Requirement => ({
+	operator: 'and',
 	item1,
 	item2,
 	test: ANDTest,
@@ -114,6 +115,7 @@ export const AND = (item1: Requirement, item2: Requirement): Requirement => ({
 	cancel: item1.cancel && item2.cancel,
 });
 export const OR = (item1: Requirement, item2: Requirement): Requirement => ({
+	operator: 'or',
 	item1,
 	item2,
 	test: ORTest,
@@ -121,6 +123,7 @@ export const OR = (item1: Requirement, item2: Requirement): Requirement => ({
 	cancel: item1.cancel || item2.cancel,
 });
 export const NOT = (item: Requirement): Requirement => ({
+	operator: 'not',
 	item,
 	test: NOTTest,
 	toString: NOTString,

@@ -53,6 +53,7 @@ Go is unavailable; the application itself does not require Go.
 | `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                           |
 | `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.   |
 | `src/ingredient-sort.ts`, `src/ingredient-groups.ts`                  | Picker relevance, explicit sorting, and disjoint groups.      |
+| `src/ingredient-cooking.ts`                                           | Curated cooking views and recipe specialty preservation.      |
 | `src/number-format.ts`                                                | Signed value formatting with fraction glyphs.                 |
 | `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
 | `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.    |
@@ -140,6 +141,24 @@ filters to adjust. Locale changes update Discovery tables and analyzer controls
 in place, preserving calculations, filters, and column choices. Browser
 regressions cover nested labels, mouse and keyboard entry, filter cycles, and
 calculation cleanup.
+
+Cooking views filter search results before sorting and grouping, independently
+of selected slots and analyzer exclusions. `ingredient-cooking.ts` contains the
+explicit substitute and uncommon-input lists; keep these choices auditable and
+check their IDs when updating food data. Never infer rarity from `defaultExclude`
+or `skip`: these are analysis hints and include everyday staples. A substitute
+is hidden only when its cookable representative exists in the selected game.
+Fish Morsel's preparation link denotes butchering, so it must remain available.
+Practical retains uncommon ingredients with positive named requirements in
+applicable recipes; Everyday omits those specialties. Negative requirements,
+generic tags, trash, and roughage recipes do not qualify. Requirement `operator`
+metadata lets alternatives share a role while AND retains separate roles; it
+does not change predicate evaluation. Hide a duplicate prepared form only when
+its preferred base satisfies the same named role. Preserve needed prepared
+forms such as Roasted Birchnut and Roasted Coffee Beans. All preserves existing
+search behavior, including non-cookable Discovery foods. Empty searches distinguish
+hidden matches from no matches and explain how to restore All. Each picker saves
+its view under `foodGuideCookingPreference`.
 
 The tabs use one Tab stop with Left/Right, Home, and End navigation. Ingredient
 slots are native buttons: Enter or Space removes a selected item or focuses the

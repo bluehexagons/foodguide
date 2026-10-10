@@ -1441,6 +1441,7 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 							'densityingredients',
 							'sortingredients',
 							'groupingredients',
+							'cookingingredients',
 						]) {
 							await page.locator(`#simulator button.${buttonClass}`).click();
 							await audit({ theme, locale, tab, menu: buttonClass });
@@ -1459,6 +1460,15 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 						await page
 							.locator('#simulator [role=menuitemradio][data-value="none"]')
 							.click();
+						for (const cooking of ['practical', 'everyday', 'all']) {
+							await page.locator('#simulator .cookingingredients').click();
+							await page
+								.locator(`#simulator [role=menuitemradio][data-value="${cooking}"]`)
+								.click();
+							if (cooking !== 'all') {
+								await audit({ theme, locale, tab, cooking });
+							}
+						}
 						await page.locator('#simulator .ingredientpicker').fill('zzzznomatches');
 						await audit({ theme, locale, tab, search: 'no matches' });
 						await page.locator('#simulator .clearsearchbtn').click();
@@ -1753,6 +1763,136 @@ test('grouped ingredient results retain relevance, keyboard navigation, localiza
 		'Group by: Preparation',
 	);
 	assert.deepEqual(diagnostics, []);
+});
+
+test('cooking views preserve selections, support keyboard and touch, and persist independently', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const touch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{
+				version: 'together',
+				pickers: [
+					['meat_cooked', 'butter'],
+					['meat_cooked', 'butter'],
+				],
+			},
+			touch ? { hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } } : {},
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		const selectCooking = async (panel, value) => {
+			const button = panel.locator('.cookingingredients');
+			if (touch) {
+				await button.tap();
+				await panel.locator(`[role=menuitemradio][data-value="${value}"]`).tap();
+			} else {
+				await button.focus();
+				await button.press('ArrowDown');
+				await page.keyboard.press('Home');
+				for (let i = 0; i < ['all', 'practical', 'everyday'].indexOf(value); i++) {
+					await page.keyboard.press('ArrowDown');
+				}
+				await page.keyboard.press('Enter');
+				assert.equal(await button.evaluate(e => e === document.activeElement), true);
+			}
+		};
+		for (const [tab, preference] of [
+			['simulator', 'practical'],
+			['discovery', 'everyday'],
+		]) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.getByRole('combobox');
+			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
+			await search.fill('*Cooked Meat');
+			assert.equal(await panel.locator('[role=option]').count(), 1);
+			await selectCooking(panel, preference);
+			assert.equal(await panel.locator('[role=option]').count(), 0);
+			assert.equal(await panel.locator('.ingredientlist .icon').count(), 2);
+			for (const [locale, hint] of [
+				['en', 'Cooking: All'],
+				['es', 'Cocinar: Todos'],
+				['zh', '烹饪：全部'],
+			]) {
+				await page.locator('#language-picker').selectOption(locale);
+				assert.ok(
+					(await panel.locator('.ingredient-search-summary').textContent()).includes(
+						hint,
+					),
+				);
+				const help = await panel
+					.locator('.cookingingredients')
+					.getAttribute('aria-describedby');
+				assert.equal(
+					await page.locator(`#${help}`).textContent(),
+					await panel.locator('.cookingingredients').getAttribute('title'),
+				);
+			}
+			await page.locator('#language-picker').selectOption('en');
+			await search.fill('*Butter');
+			assert.equal(await panel.locator('[role=option]').count(), tab === 'simulator' ? 1 : 0);
+			assert.equal(
+				await panel.locator('[role=option][data-id="butter@together"]').count(),
+				tab === 'simulator' ? 1 : 0,
+			);
+			await search.fill('goatmilk');
+			assert.ok(
+				(await panel.locator('.ingredient-search-summary').textContent()).includes(
+					'Cooking: All',
+				),
+			);
+			await selectCooking(panel, 'all');
+			assert.equal(await panel.locator('[role=option]').count(), 1);
+			await selectCooking(panel, preference);
+			await search.fill('zzzznomatches');
+			assert.equal(
+				await panel.locator('.ingredient-search-summary').textContent(),
+				'No matching ingredients. Try another search or game selection.',
+			);
+		}
+		await page.locator('#tab-simulator').click();
+		const search = page.locator('#simulator .ingredientpicker');
+		await search.fill('lightninggoathorn');
+		assert.equal(await page.locator('#simulator [role=option]').count(), 0);
+		await page.locator('.char-btn[data-character=warly]').click();
+		assert.equal(await page.locator('#simulator [role=option]').count(), 1);
+		await page.locator('.char-btn[data-character=warly]').click();
+		assert.equal(await page.locator('#simulator [role=option]').count(), 0);
+		await page.locator('.version-btn[data-version=dontstarve]').click();
+		assert.equal(
+			await page.locator('#simulator .ingredient-search-summary').textContent(),
+			'No matching ingredients. Try another search or game selection.',
+		);
+		await page.locator('.version-btn[data-version=together]').click();
+		await page.reload({ waitUntil: 'networkidle' });
+		assert.equal(
+			await page.locator('#simulator .cookingingredients').textContent(),
+			'Cooking: Practical',
+		);
+		assert.equal(
+			await page.locator('#discovery .cookingingredients').textContent(),
+			'Cooking: Everyday',
+		);
+		assert.deepEqual(
+			await page.evaluate(() =>
+				JSON.parse(localStorage.getItem('foodGuideCookingPreference')),
+			),
+			['practical', 'everyday'],
+		);
+		assert.equal(await page.locator('#ingredients .icon').count(), 2);
+		await page.locator('#ingredients .ingredient[data-id="meat_cooked@together"]').click();
+		assert.equal(
+			await page.locator('#ingredients .icon').count(),
+			1,
+			'A hidden selection remains removable',
+		);
+		await page.locator('#tab-discovery').click();
+		assert.equal(await page.locator('#inventory .icon').count(), 2);
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
 });
 
 test('compact picker badges leave larger hit areas and an unobstructed ingredient center', async t => {

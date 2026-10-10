@@ -43,6 +43,7 @@ export type RequirementTest = (
 export interface Requirement {
 	test: RequirementTest;
 	toString: () => string;
+	operator?: 'and' | 'or' | 'not';
 	cancel?: boolean;
 	name?: string;
 	tag?: string;

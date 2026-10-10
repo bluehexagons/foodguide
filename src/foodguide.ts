@@ -80,6 +80,7 @@ import { createRecipeCalculator } from './recipe-calculator.js';
 import { createRecipeAnalyzer } from './recipe-analyzer.js';
 import { sortIngredients } from './ingredient-sort.js';
 import { groupIngredients } from './ingredient-groups.js';
+import { filterCookingIngredients } from './ingredient-cooking.js';
 import { createThemeController } from './theme-controller.js';
 import { createSortableTableFactory } from './sortable-table.js';
 import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
@@ -1433,6 +1434,7 @@ import './locales/index.js';
 			searchRow.appendChild(pickerHelp);
 			picker.setAttribute('aria-describedby', `${pickerHelp.id} ${pickerSummary.id}`);
 			let searchAnnouncement: number | undefined;
+			let cookingFilterHidMatches = false;
 			let pickerError:
 				| {
 						key: 'ingredientPotFull' | 'ingredientNotSelected' | 'ingredientSlotEmpty';
@@ -1468,11 +1470,13 @@ import './locales/index.js';
 				const count = pickerOptions.length;
 				const message = t(
 					count === 0
-						? 'ingredientSearchEmpty'
+						? cookingFilterHidMatches
+							? 'ingredientCookingEmpty'
+							: 'ingredientSearchEmpty'
 						: count === 1
 							? 'ingredientSearchOne'
 							: 'ingredientSearchCount',
-					{ count },
+					{ count, view: t('cookingAll') },
 				);
 				pickerSummary.textContent = message;
 				updateSummaryVisibility();
@@ -1845,6 +1849,14 @@ import './locales/index.js';
 					searchSelectorControls.getSearch(),
 					allowUncookable,
 				);
+				const matchingCount = names.length;
+				names = filterCookingIngredients(names, cookingControls.getValue(), {
+					ingredients: food.filter(() => true),
+					recipes: recipes.filter(() => true),
+					modeMask,
+					charMask,
+				});
+				cookingFilterHidMatches = matchingCount > 0 && names.length === 0;
 
 				const sortType = sortControls.getValue();
 				names = sortIngredients(names, sortType, {
@@ -2211,6 +2223,36 @@ import './locales/index.js';
 				storageIndex: index,
 				onSelect: () => refreshPicker(),
 			});
+			const cookingControls = createDropdown({
+				items: [
+					{ value: 'all', key: 'cookingAll' },
+					{ value: 'practical', key: 'cookingPractical' },
+					{ value: 'everyday', key: 'cookingEveryday' },
+				],
+				initialValue: 'all',
+				buttonClass: 'cookingingredients',
+				storageKey: 'foodGuideCookingPreference',
+				storageIndex: index,
+				onSelect: () => {
+					updateCookingHelp();
+					refreshPicker();
+				},
+			});
+			const cookingHelp = document.createElement('span');
+			cookingHelp.className = 'sr-only';
+			cookingHelp.id = `ingredient-cooking-help-${index}`;
+			cookingControls.button.setAttribute('aria-describedby', cookingHelp.id);
+			const updateCookingHelp = () => {
+				const key =
+					cookingControls.getValue() === 'practical'
+						? 'cookingPracticalHelp'
+						: cookingControls.getValue() === 'everyday'
+							? 'cookingEverydayHelp'
+							: 'cookingAllHelp';
+				cookingHelp.textContent = t(key);
+				cookingControls.button.title = t(key);
+			};
+			updateCookingHelp();
 			// Search controls
 			const searchTypeKeys: (DropdownItem & { prefix: string; placeholderKey: StringKey })[] =
 				[
@@ -2424,7 +2466,9 @@ import './locales/index.js';
 			controlsLeft.appendChild(densityControls.container);
 			controlsLeft.appendChild(sortControls.container);
 			controlsLeft.appendChild(groupControls.container);
+			controlsLeft.appendChild(cookingControls.container);
 			controlsLeft.appendChild(sortHelp);
+			controlsLeft.appendChild(cookingHelp);
 
 			controlsRight.appendChild(clearSearchBtn);
 			controlsRight.appendChild(clearIngredientsBtn);
@@ -2560,6 +2604,7 @@ import './locales/index.js';
 			document.addEventListener('foodguide:localechange', () => {
 				const error = pickerError;
 				updateSortHelp();
+				updateCookingHelp();
 				updateGroupLabels();
 				updateFeedbackSizing();
 				updateSelectionIndicators();

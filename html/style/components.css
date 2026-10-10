@@ -602,6 +602,7 @@ button.makablebutton:disabled:hover {
 .ingredient-search-controls .toggleingredients,
 .ingredient-search-controls .sortingredients,
 .ingredient-search-controls .groupingredients,
+.ingredient-search-controls .cookingingredients,
 .ingredient-search-controls .displaymodeingredients,
 .ingredient-search-controls .densityingredients {
 	margin: 0;
@@ -622,6 +623,7 @@ button.makablebutton:disabled:hover {
 .ingredient-search-controls .toggleingredients:hover,
 .ingredient-search-controls .sortingredients:hover,
 .ingredient-search-controls .groupingredients:hover,
+.ingredient-search-controls .cookingingredients:hover,
 .ingredient-search-controls .displaymodeingredients:hover,
 .ingredient-search-controls .densityingredients:hover {
 	background: var(--table-hover);

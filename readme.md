@@ -45,8 +45,19 @@ cards; list and icon-only views are also available.
 Group results by ingredient type or preparation, or leave them ungrouped. Auto
 sort prioritizes exact names and search relevance, keeps related preparations
 together while browsing, and uses character-adjusted values for stat searches.
-Explicit name and stat sorts remain available. Display, density, sort, and grouping
+Explicit name and stat sorts remain available. Display, density, sort, grouping, and cooking
 preferences are saved separately for the Simulator and Discovery.
+
+Use **Cooking: Practical** to focus on crock pot inputs: it hides duplicate cooked
+and dried foods, redundant substitutes, and uncommon ingredients without a named
+recipe role. Specialties such as Butter and Royal Jelly remain, and Warly-only
+inputs appear when Warly is selected. **Cooking: Everyday** also hides those
+uncommon specialties. Both retain needed prepared ingredients, such as Roasted
+Birchnut, and use fish meat in place of most interchangeable live fish.
+These are curated browsing suggestions; availability depends on your world and
+play style. **Cooking: All**, the default, restores the full list. Cooking views
+apply to searches too, leave selected food in place, and do not change recipe
+calculations, the Food List, or analyzer filters.
 
 Ingredient searches accept display names and game identifiers, with spaces or
 underscores between words. For example, `mushroom` finds Red, Green, and Blue Caps

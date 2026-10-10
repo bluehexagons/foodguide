@@ -114,6 +114,15 @@ const dict = {
 	groupNone: '分组：不分组',
 	groupType: '分组：食材类型',
 	groupPreparation: '分组：处理方式',
+	cookingAll: '烹饪：全部',
+	cookingPractical: '烹饪：实用',
+	cookingEveryday: '烹饪：日常',
+	cookingAllHelp: '显示当前游戏和搜索条件下的全部食材。',
+	cookingPracticalHelp:
+		'专注于烹饪锅食材。隐藏重复处理方式和不常用的食材，但保留当前游戏和角色配方所需的特殊食材。选择“全部”可查找隐藏的食材。',
+	cookingEverydayHelp:
+		'适合日常烹饪的精简列表。隐藏不常用的特殊食材和重复处理方式，保留配方所需的已处理食材。选择“全部”可查找隐藏的食材。',
+	ingredientCookingEmpty: '此视图没有匹配的食材。选择“{view}”可显示隐藏的匹配项。',
 	ingredientGroupMonster: '怪物食物',
 	ingredientGroupFish: '鱼类与海鲜',
 	ingredientGroupMeat: '肉类',

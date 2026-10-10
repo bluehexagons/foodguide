@@ -2992,6 +2992,13 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 		}
 		assert.equal(splitRecipes, true, 'The fixture exercises separate runs for the same recipe');
 		const toggle = page.locator('#makable .table-group-toggle').first();
+		if (hasTouch) {
+			const target = await toggle.boundingBox();
+			assert.ok(
+				target.width >= 44 && target.height >= 44,
+				'Recipe disclosures keep touch targets',
+			);
+		}
 		await toggle.focus();
 		await toggle.press('Enter');
 		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');

@@ -985,9 +985,11 @@ import './locales/index.js';
 							combination.appendChild(icon);
 						}
 						if (data.multiple) {
+							combination.setAttribute('aria-description', t('multipleResultsNote'));
 							const marker = document.createElement('span');
 							marker.textContent = '*';
 							marker.title = t('multipleResultsNote');
+							marker.setAttribute('aria-hidden', 'true');
 							combination.appendChild(marker);
 						}
 

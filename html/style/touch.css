@@ -1,5 +1,9 @@
 /* Include touchscreens attached to computers with a mouse as well as mobile devices. */
 @media (any-pointer: coarse) {
+	.table-group-toggle {
+		min-height: 44px;
+	}
+
 	button,
 	.ingredient-feedback-header .ingredient-show-all,
 	select,

@@ -7,6 +7,9 @@ import type {
 	Recipe,
 	IngredientNames,
 	IngredientTags,
+	GuideItem,
+	ItemModifiers,
+	ModifyItem,
 } from './models.js';
 interface AnalyzerOptions extends CalculatorOptions {
 	onRecipeData?: (data: RecipeData) => void;
@@ -30,6 +33,7 @@ export const createRecipeAnalyzer = ({
 	getModeMask,
 	getCharMask,
 	getStatMultipliers,
+	getItemModifiers,
 	onRecipeData,
 	schedule = (callback, delay) => globalThis.setTimeout(callback, delay),
 	cancelSchedule = timeoutId => globalThis.clearTimeout(timeoutId),
@@ -45,6 +49,19 @@ export const createRecipeAnalyzer = ({
 		const modeMask = getModeMask();
 		const charMask = getCharMask();
 		const statMultipliers = { ...getStatMultipliers() };
+		const modifier = getItemModifiers?.();
+		const modifiers = new Map<GuideItem, ItemModifiers>();
+		// Character rules depend only on the captured configuration, not each combination.
+		const modifyItem: ModifyItem | undefined = modifier
+			? item => {
+					let result = modifiers.get(item);
+					if (!result) {
+						result = modifier(item, modeMask);
+						modifiers.set(item, result);
+					}
+					return result;
+				}
+			: undefined;
 		const availableRecipes = recipes
 			.filter(
 				item =>
@@ -78,7 +95,10 @@ export const createRecipeAnalyzer = ({
 			/** @type {Record<string, number>} */
 			const tags: IngredientTags = {};
 
-			accumulateIngredients(ingredients, names, tags, statMultipliers);
+			accumulateIngredients(ingredients, names, tags, statMultipliers, {
+				modifyItem,
+				modeMask,
+			});
 			tags.hunger = tags.bestHunger;
 			tags.health = tags.bestHealth;
 			tags.sanity = tags.bestSanity;

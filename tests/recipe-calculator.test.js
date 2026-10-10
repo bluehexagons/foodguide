@@ -1,7 +1,8 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 
-import { defaultStatMultipliers, TOGETHER } from '../html/constants.js';
+import { defaultStatMultipliers, TOGETHER, characters } from '../html/constants.js';
+import { getCharacterFoodModifiers } from '../html/mode-utils.js';
 import { food } from '../html/food.js';
 import {
 	combinationGenerator,
@@ -25,6 +26,27 @@ describe('recipe calculator', () => {
 			matches.slice(0, 5).map(item => item.name),
 			['Sum:Total', 'Sum:Potential', 'Honey Ham', 'Meatballs', 'Wet Goop'],
 		);
+	});
+
+	it('ingredient summaries reflect character rules and update when the character changes', () => {
+		let character = 'webber';
+		const { getRecipes } = createRecipeCalculator({
+			getModeMask: () => TOGETHER,
+			getCharMask: () => 0,
+			getStatMultipliers: () => defaultStatMultipliers,
+			getItemModifiers: () => getCharacterFoodModifiers(character, characters).modifyItem,
+		});
+		const [total, potential] = getRecipes([food.monstermeat]);
+		assert.strictEqual(total.health, 0);
+		assert.strictEqual(potential.health, 0);
+		assert.strictEqual(total.sanity, 0);
+		assert.strictEqual(potential.sanity, 0);
+		character = 'wigfrid';
+		for (const summary of getRecipes([food.carrot]).slice(0, 2)) {
+			assert.strictEqual(summary.health, 0);
+			assert.strictEqual(summary.hunger, 0);
+			assert.strictEqual(summary.sanity, 0);
+		}
 	});
 
 	it('supports ingredient and tag search syntax', () => {

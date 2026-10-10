@@ -415,6 +415,7 @@ import './locales/index.js';
 		getModeMask: () => modeMask,
 		getCharMask: () => charMask,
 		getStatMultipliers: () => statMultipliers,
+		getItemModifiers: () => characterFoodModifiers.modifyItem,
 	});
 
 	const foodElement = requireElement('food');
@@ -449,6 +450,7 @@ import './locales/index.js';
 		getModeMask: () => modeMask,
 		getCharMask: () => charMask,
 		getStatMultipliers: () => statMultipliers,
+		getItemModifiers: () => characterFoodModifiers.modifyItem,
 		onRecipeData: data => {
 			window.recipeCrunchData = data;
 		},
@@ -837,6 +839,9 @@ import './locales/index.js';
 			(() => {
 				clearResults();
 				const availableIngredients = (ingredients ?? Array.from(food)).filter(testmode);
+				const recipeMultiplier = statMultipliers.recipe;
+				const modifyRecipe = characterFoodModifiers.modifyItem;
+				const analysisMode = modeMask;
 				const idealIngredients: Food[] = [];
 				const makableRecipes: string[] = [];
 				const recipeControls = new Map<string, HTMLButtonElement>();
@@ -1028,9 +1033,9 @@ import './locales/index.js';
 							'td',
 							item.img ? item.img : '',
 							item.name,
-							formatSignedValue(item.health),
+							formatSignedValue(data.health),
 							formatStatGain(data.healthpls, data.healthpct),
-							formatSignedValue(item.hunger),
+							formatSignedValue(data.hunger),
 							formatStatGain(data.hungerpls, data.hungerpct),
 							combination,
 						);
@@ -1215,18 +1220,22 @@ import './locales/index.js';
 							}
 						}
 
+						const mods = modifyRecipe(data.recipe, analysisMode);
+						const health = (mods.health ?? data.recipe.health ?? 0) * recipeMultiplier;
+						const hunger = (mods.hunger ?? data.recipe.hunger ?? 0) * recipeMultiplier;
+						const sanity = mods.sanity ?? data.recipe.sanity;
 						const row: AnalysisRow = {
 							...data,
 							name: data.recipe.name,
-							health: data.recipe.health || 0,
-							hunger: data.recipe.hunger || 0,
+							health,
+							hunger,
 							ihealth: data.tags.health,
 							ihunger: data.tags.hunger,
-							healthpls: (data.recipe.health || 0) - data.tags.health,
-							hungerpls: (data.recipe.hunger || 0) - data.tags.hunger,
-							healthpct: percentageGain(data.tags.health, data.recipe.health || 0),
-							hungerpct: percentageGain(data.tags.hunger, data.recipe.hunger || 0),
-							sanity: data.recipe.sanity,
+							healthpls: health - data.tags.health,
+							hungerpls: hunger - data.tags.hunger,
+							healthpct: percentageGain(data.tags.health, health),
+							hungerpct: percentageGain(data.tags.hunger, hunger),
+							sanity: sanity === undefined ? undefined : sanity * recipeMultiplier,
 							perish: data.recipe.perish,
 						};
 						made.push(row);

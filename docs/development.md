@@ -308,7 +308,19 @@ announces the new range without announcing every calculation batch. Bottom overv
 navigation returns the viewport and focus to the top paging bar of the next page.
 The analyzer drains delivered results from its batch buffer; the UI owns the
 retained result collection. Gains from a zero ingredient baseline have no relative
-percentage and show only the signed absolute change.
+percentage and show only the signed absolute change. Recipe values use the
+character's consumption rules and recipe multiplier captured at calculation start. Both displayed
+values and gain sorting use those adjusted outcomes, matching the Simulator;
+the browser suite checks Warly in Shipwrecked and Together, Webber, Wigfrid, and
+unmodified outcomes. Simulator totals and analyzer baselines apply character
+rules to the ingredients and their best prepared form. Cooking tags and recipe
+matching remain independent of dietary restrictions. Modifier results are cached
+per ingredient during an analysis.
+
+Monster Lasagna is marked as monster food in both game variants so Webber's
+immunity applies in all result tables. Its health and sanity penalties remain
+unchanged for other characters; see the
+[game reference](https://dontstarve.wiki.gg/wiki/Monster_Lasagna/DST).
 
 The analyzer checks a 16 ms work budget between combinations and bounds batch
 growth, yielding through the scheduler so scrolling and pause actions stay

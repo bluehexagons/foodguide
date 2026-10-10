@@ -6,6 +6,7 @@ import type {
 	StatMultipliers,
 	Stat,
 	BestStat,
+	ModifyItem,
 } from './models.js';
 import { perish_preserved } from './constants.js';
 
@@ -236,6 +237,11 @@ export const isBestStat: Record<string, boolean> = {
 	bestHealth: true,
 	bestSanity: true,
 };
+const bestStatKeys: Record<BestStat, Stat> = {
+	bestHealth: 'health',
+	bestHunger: 'hunger',
+	bestSanity: 'sanity',
+};
 
 /**
  * Accumulates ingredient properties into names and tags objects.
@@ -243,6 +249,8 @@ export const isBestStat: Record<string, boolean> = {
  * For each non-null item, counts its id in `names` and sums numeric
  * properties into `tags` (applying stat multipliers based on preparation
  * type). Perish values use the minimum across all items.
+ * Optional character rules apply to both current and best prepared stats;
+ * ingredient quantities and cooking tags remain unchanged.
  *
  * @param {Array} items - Array of ingredient objects (may contain nulls)
  * @param {Record<string, number>} names - Name count accumulator (mutated)
@@ -263,21 +271,33 @@ export const accumulateIngredients = (
 	names: IngredientNames,
 	tags: IngredientTags,
 	statMultipliers: StatMultipliers,
+	{ modifyItem, modeMask = 0 }: { modifyItem?: ModifyItem; modeMask?: number } = {},
 ) => {
 	for (const item of items) {
 		if (item === null) {
 			continue;
 		}
 		names[item.id] = 1 + (names[item.id] || 0);
+		const itemMods = modifyItem?.(item, modeMask);
 		for (const [key, value] of Object.entries(numericTags(item))) {
 			if (key === 'perish') {
 				tags[key] = Math.min(tags[key] || perish_preserved, value);
 			} else {
 				let val = value;
 				if (isStat[key]) {
+					val = itemMods?.[key as Stat] ?? val;
 					val *= statMultipliers[item.preparationType] ?? 1;
 				} else if (isBestStat[key] && 'bestHealth' in item) {
-					val *= statMultipliers[item[`${key as BestStat}Type`]] ?? 1;
+					const preparation = item[`${key as BestStat}Type`];
+					const prepared =
+						preparation === 'cooked'
+							? (item.cook ?? item)
+							: preparation === 'dried'
+								? (item.dry ?? item)
+								: item;
+					const mods = prepared === item ? itemMods : modifyItem?.(prepared, modeMask);
+					val = mods?.[bestStatKeys[key as BestStat]] ?? val;
+					val *= statMultipliers[preparation] ?? 1;
 				}
 				tags[key] = val + (tags[key] || 0);
 			}

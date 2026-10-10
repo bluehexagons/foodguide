@@ -164,17 +164,20 @@ describe('recipe analyzer', () => {
 			const scheduler = createScheduler();
 			const multipliers = { ...defaultStatMultipliers };
 			let mode = TOGETHER;
+			let modifyItem = () => ({ health: 2, hunger: 3, sanity: 4 });
 			const results = [];
 			const control = createRecipeAnalyzer({
 				...analyzerOptions(scheduler),
 				getModeMask: () => mode,
 				getStatMultipliers: () => multipliers,
+				getItemModifiers: () => modifyItem,
 			}).analyze(enoughIngredientsForMultipleBatches, result => results.push(result));
 			control.pause();
 			if (changeConfiguration) {
 				mode = VANILLA;
 				multipliers.raw = 0.1;
 				multipliers.cooked = 0.1;
+				modifyItem = () => ({ health: 0, hunger: 0, sanity: 0 });
 			}
 			control.resume();
 			while (scheduler.runNext()) {}

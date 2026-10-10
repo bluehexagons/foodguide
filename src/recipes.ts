@@ -396,6 +396,7 @@ const definitions: Record<string, RecipeDefinition> = {
 	},
 	monsterlasagna: {
 		name: 'Monster Lasagna',
+		monster: true,
 		test: (cooker, names, tags) => {
 			return tags.monster && tags.monster >= 2 && !tags.inedible;
 		},
@@ -1546,6 +1547,7 @@ const definitions: Record<string, RecipeDefinition> = {
 	},
 	monsterlasagna_dst: {
 		name: 'Monster Lasagna',
+		monster: true,
 		test: (cooker, names, tags) => {
 			return tags.monster && tags.monster >= 2 && !tags.inedible;
 		},

@@ -46,6 +46,7 @@ export const createRecipeCalculator = ({
 	getModeMask,
 	getCharMask,
 	getStatMultipliers,
+	getItemModifiers,
 }: CalculatorOptions) => {
 	const matchingNames = <T extends GuideItem>(
 		collection: { filter: (predicate: (item: T) => unknown) => T[] },
@@ -168,7 +169,10 @@ export const createRecipeCalculator = ({
 		const tags: IngredientTags = {};
 
 		recipeList.length = 0;
-		accumulateIngredients(items, names, tags, getStatMultipliers());
+		accumulateIngredients(items, names, tags, getStatMultipliers(), {
+			modifyItem: getItemModifiers?.(),
+			modeMask: getModeMask(),
+		});
 
 		outer: for (let i = 0; i < recipes.length; i++) {
 			const recipe = recipes[i];
@@ -206,7 +210,10 @@ export const createRecipeCalculator = ({
 		const tags: IngredientTags = {};
 
 		recipeList.length = 0;
-		accumulateIngredients(items, names, tags, getStatMultipliers());
+		accumulateIngredients(items, names, tags, getStatMultipliers(), {
+			modifyItem: getItemModifiers?.(),
+			modeMask: getModeMask(),
+		});
 
 		for (let i = 0; i < recipes.length; i++) {
 			const recipe = recipes[i];

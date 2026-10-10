@@ -3729,6 +3729,72 @@ test('completed analysis pages the full sorted dataset and preserves detail page
 	assert.deepEqual(diagnostics, []);
 });
 
+test('character analysis outcomes and ingredient baselines agree with the Simulator', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const [version, character, ingredient, name, expected] of [
+		['dontstarve', 'warly', 'meat', 'Meaty Stew', [12 * 1.2, 180, 6]],
+		['together', 'warly', 'meat', 'Meaty Stew', [12, 150, 5]],
+		['together', 'webber', 'monstermeat', 'Monster Lasagna', [0, 37.5, 0]],
+		['together', null, 'monstermeat', 'Monster Lasagna', [-20, 37.5, -20]],
+		['together', 'wigfrid', 'carrot', 'Ratatouille', [0, 0, 0]],
+	]) {
+		const page = await createSavedPage(browser, baseUrl, {
+			activeTab: 'discovery',
+			version,
+			character,
+			dlc: { giants: true, shipwrecked: true },
+			pickers: [[], [ingredient]],
+		});
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.locator('#makable .makablebutton').click();
+		await page.waitForFunction(
+			() => !document.querySelector('#makable .makablebutton').disabled,
+		);
+		const rows = await page.evaluate(() => window.analysis.made);
+		assert.equal(rows.length, 1);
+		const [row] = rows;
+		assert.equal(row.recipe.name, name);
+		assert.deepEqual([row.health, row.hunger, row.sanity], expected);
+		assert.equal(row.healthpls, row.health - row.tags.health);
+		assert.equal(row.hungerpls, row.hunger - row.tags.hunger);
+		assert.equal(
+			row.healthpct,
+			row.tags.health ? row.healthpls / Math.abs(row.tags.health) : null,
+		);
+		assert.equal(
+			row.hungerpct,
+			row.tags.hunger ? row.hungerpls / Math.abs(row.tags.hunger) : null,
+		);
+		if (character === 'webber' || character === 'wigfrid') {
+			assert.equal(row.tags.health, 0);
+		}
+		if (character === 'wigfrid') {
+			assert.equal(row.tags.hunger, 0);
+		}
+		const result = page.locator('#makable tbody tr[data-recipe]');
+		const health = await result.locator('td').nth(2).textContent();
+		const hunger = await result.locator('td').nth(4).textContent();
+		await result.locator('.analysis-ingredients').click();
+		const simulated = page.locator('#results tbody tr').filter({
+			has: page.getByRole('link', { name, exact: true }),
+		});
+		assert.equal((await simulated.locator('td').nth(2).textContent()).split(' (')[0], health);
+		assert.equal((await simulated.locator('td').nth(3).textContent()).split(' (')[0], hunger);
+		const potential = page.locator('#results tbody tr').filter({
+			has: page.locator('td.name-cell').getByText('Potential', { exact: true }),
+		});
+		if (character === 'webber' || character === 'wigfrid') {
+			assert.equal(await potential.locator('td').nth(2).textContent(), '0');
+		}
+		if (character === 'wigfrid') {
+			assert.equal(await potential.locator('td').nth(3).textContent(), '0');
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
 test('Warly food tables show negative fractional changes without an extra whole unit', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(browser, baseUrl, {

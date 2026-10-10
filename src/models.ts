@@ -196,6 +196,7 @@ export interface CalculatorOptions {
 	getModeMask: () => number;
 	getCharMask: () => number;
 	getStatMultipliers: () => StatMultipliers;
+	getItemModifiers?: () => ModifyItem;
 }
 export interface SummaryRow {
 	name: 'Sum:Total' | 'Sum:Potential';

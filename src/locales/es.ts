@@ -10,10 +10,9 @@
  * untranslated for now: those should be sourced from the game itself.
  */
 
-import { registerLocale } from '../strings.js';
+import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
-/** @type {import('../strings.js').LocaleDict | Record<string, string>} */
-const dict = {
+export const dict = {
 	themeToggleTitle: 'Cambiar tema claro/oscuro',
 	themeSwitchToLight: 'Cambiar al tema claro',
 	themeSwitchToDark: 'Cambiar al tema oscuro',
@@ -86,7 +85,8 @@ const dict = {
 	tabRecipeList: 'Lista de recetas',
 	tabRecipeListTitle: 'Ver todas las recetas del DLC seleccionado',
 	tabStatistics: 'Analizador de estadísticas',
-	tabStatisticsTitle: 'Encuentra todas las recetas (inestable)',
+	tabStatisticsTitle:
+		'Explora combinaciones de ingredientes y compara la eficiencia de las recetas',
 	tabAbout: 'Acerca de',
 	tabAboutTitle: 'Acerca de esta herramienta y cómo usarla',
 	tabGameInfo: 'Info del juego',
@@ -109,26 +109,28 @@ const dict = {
 	searchIngredientsPlaceholder: 'Buscar ingredientes...',
 
 	clearSearchOrIngredients: 'Borrar búsqueda o quitar todos los ingredientes',
+	clearSearch: 'Borrar búsqueda',
+	clearIngredients: 'Quitar todos los ingredientes',
 	confirmClearInventory: '¿Seguro que quieres quitar todos los ingredientes de tu inventario?',
 	displayModeNames: 'Mostrar: Nombres',
 	displayModeIcons: 'Mostrar: Iconos',
 	displayModeList: 'Mostrar: Lista',
-	densityCozy: 'Cómodo',
+	densityCozy: 'Espaciada',
 	pickerDensity: 'Densidad del selector',
 	pickerSearchType: 'Buscar por',
 	densityNormal: 'Normal',
-	densityCompact: 'Compacto',
+	densityCompact: 'Compacta',
 	sortAuto: 'Orden: Auto',
 	groupNone: 'Agrupar por: Ninguno',
 	groupType: 'Agrupar por: Tipo de ingrediente',
 	groupPreparation: 'Agrupar por: Preparación',
-	cookingAll: 'Cocinar: Todos',
-	cookingPractical: 'Cocinar: Prácticos',
-	cookingEveryday: 'Cocinar: Cotidianos',
+	cookingAll: 'Cocina: Todos',
+	cookingPractical: 'Cocina: Práctica',
+	cookingEveryday: 'Cocina: Diaria',
 	cookingAllHelp:
 		'Mostrar todos los ingredientes disponibles para el juego y la búsqueda actuales.',
 	cookingPracticalHelp:
-		'Ingredientes para la olla. Oculta variantes redundantes e ingredientes poco habituales, conservando los especiales para recetas del juego y personaje seleccionados. Elige Todos para encontrar ingredientes ocultos.',
+		'Se centra en la cocina de la olla. Oculta variantes redundantes e ingredientes poco habituales, pero conserva los ingredientes especiales necesarios para las recetas del juego y del personaje seleccionados. Elige «Todos» para encontrar los ingredientes ocultos.',
 	cookingEverydayHelp:
 		'Una lista reducida para cocinar a diario. Oculta ingredientes especiales poco habituales y variantes redundantes, conservando los ingredientes preparados necesarios para recetas. Elige Todos para encontrar ingredientes ocultos.',
 	ingredientCookingEmpty:
@@ -169,7 +171,7 @@ const dict = {
 	calculating: 'Calculando...',
 	pause: 'Pausar',
 	resume: 'Reanudar',
-	computingCombinations: 'Calculando combinaciones..',
+	computingCombinations: 'Calculando combinaciones…',
 	multipleResultsNote: '* la combinación tiene varios resultados posibles',
 	analysisGroupingHelp:
 		'Las combinaciones consecutivas de la misma receta se agrupan en todos los resultados filtrados. Recorre las páginas de grupos y expande un grupo para recorrer sus combinaciones. Se conserva el orden; cada fila muestra los valores de su combinación exacta. Pulsa los ingredientes para probarla en el Simulador.',
@@ -213,8 +215,6 @@ const dict = {
 	foundValidRecipesInProgress:
 		'Se encontraron {count} combinaciones válidas… (puedes cambiar de pestaña durante este proceso)',
 	foundValidRecipesPaused: 'Se encontraron {count} combinaciones válidas (en pausa)',
-	showMoreResults: 'Mostrar más resultados',
-	showMoreResultsCount: 'Mostrar más resultados ({shown} de {total})',
 	durationNever: 'Nunca',
 	durationDays: '{count} {unit}',
 	durationSeconds: '{count} {unit}',
@@ -315,12 +315,12 @@ const dict = {
 		"Explora todas las comidas y recetas de Olla disponibles en la versión de juego seleccionada. Usa el selector de versión en la parte superior para cambiar entre Don't Starve Together, Don't Starve y Hamlet.",
 	aboutStatisticsHeading: 'Analizador de Estadísticas',
 	aboutStatisticsBody:
-		'La pestaña Analizador de Estadísticas es para quienes quieren explorar combinaciones de ingredientes. Calcula todas las combinaciones válidas posibles (con una selección "ideal", excluyendo en general la comida cruda) y permite filtrar por contenido de recetas e ingredientes. El cálculo puede tardar en computadoras lentas.',
+		'Explora combinaciones para el juego y el personaje seleccionados con una selección representativa de ingredientes aptos para la olla. Filtra por receta o ingredientes y ordena por Nombre para ver las recetas juntas, o por una estadística para comparar los resultados. Expande un grupo para recorrer sus combinaciones; las barras de paginación permiten cambiar ambos tamaños de página. El cálculo puede tardar. Actualiza los resultados para ver el progreso sin pausar; la tabla se actualiza automáticamente al terminar el cálculo.',
 	aboutAdvancedHeading: 'Uso avanzado (variables globales de JavaScript)',
 	aboutAdvancedBody1:
 		'La Guía de Comida añade a <code>window</code> algunas propiedades: <code>food</code>, <code>recipes</code> y <code>matchingNames</code>. El Analizador de Estadísticas escribe sus resultados en <code>analysis</code> y <code>recipeCrunchData</code>. El estado local se guarda en <code>localStorage.foodGuideState</code>.',
 	aboutAdvancedBody2:
-		'Para uso avanzado, abre la consola JavaScript del navegador. <code>analysis.made</code> contiene la lista de combinaciones válidas del último análisis, incluyendo las que no se ven en la interfaz.',
+		'Para uso avanzado, abre la consola JavaScript del navegador. <code>analysis.made</code> contiene la lista de combinaciones válidas del último análisis completado, incluyendo las ocultas por los filtros o la paginación.',
 	aboutLinksHeading: 'Enlaces',
 	linkChangelog: 'Registro de cambios de la Guía',
 	linkBugReports: 'Reportar errores / problemas de la Guía',
@@ -390,6 +390,6 @@ const dict = {
 		honeyed: 'con miel',
 		monstermeat: 'carne de monstruo',
 	},
-};
+} satisfies BundledLocaleDict;
 
 registerLocale('es', 'Español', dict);

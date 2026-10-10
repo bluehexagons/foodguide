@@ -1365,7 +1365,7 @@ test('analysis that finishes during resume retains its completion message', asyn
 			'es',
 			'Ninguna combinación coincide con estos filtros. Prueba a ajustar los filtros de ingredientes o recetas.',
 		],
-		['zh', '没有组合符合这些筛选条件。请尝试调整食材或食谱筛选条件。'],
+		['zh', '没有组合符合这些筛选条件。请尝试调整食材或配方筛选条件。'],
 	]) {
 		await page.locator('#language-picker').selectOption(locale);
 		assert.equal(await empty.textContent(), message);
@@ -2053,7 +2053,7 @@ test('cooking views preserve selections, support keyboard and touch, and persist
 			assert.equal(await panel.locator('.ingredientlist .icon').count(), 2);
 			for (const [locale, hint] of [
 				['en', 'Cooking: All'],
-				['es', 'Cocinar: Todos'],
+				['es', 'Cocina: Todos'],
 				['zh', '烹饪：全部'],
 			]) {
 				await page.locator('#language-picker').selectOption(locale);
@@ -3188,7 +3188,7 @@ test('analysis reports zero-baseline gains accurately and its new controls remai
 				'Restablecer filtros',
 				`Grupos de recetas 1–${groups} de ${groups}; ${total} combinaciones coincidentes.`,
 			],
-			['zh', '重置筛选', `食谱分组 1–${groups}，共 ${groups} 组；${total} 个匹配组合。`],
+			['zh', '重置筛选', `配方分组 1–${groups}，共 ${groups} 组；${total} 个匹配组合。`],
 		]) {
 			await page.locator('#language-picker').selectOption(locale);
 			const reset = page.locator('#makable .resetAnalysisFiltersButton');

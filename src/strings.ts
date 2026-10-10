@@ -65,7 +65,7 @@ const defaultStrings = {
 	tabRecipeList: 'Recipe List',
 	tabRecipeListTitle: 'View all recipes for the selected DLC',
 	tabStatistics: 'Statistics Analyzer',
-	tabStatisticsTitle: 'Find all recipes (unstable)',
+	tabStatisticsTitle: 'Explore ingredient combinations and compare recipe efficiency',
 	tabAbout: 'About',
 	tabAboutTitle: 'About this tool and how to use it',
 	tabGameInfo: 'Game Info',
@@ -186,7 +186,7 @@ const defaultStrings = {
 	calculating: 'Calculating...',
 	pause: 'Pause',
 	resume: 'Resume',
-	computingCombinations: 'Computing combinations..',
+	computingCombinations: 'Computing combinations…',
 	multipleResultsNote: '* combination has multiple possible results',
 	analysisGroupingHelp:
 		'Consecutive combinations for the same recipe are grouped across the full filtered results. Browse recipe group pages, then expand a group to page through its combinations. Sorting is preserved; each row shows the exact combination’s values. Click the ingredients to try that combination in the Simulator.',
@@ -235,8 +235,6 @@ const defaultStrings = {
 	foundValidRecipesInProgress:
 		'Found {count} valid combinations… (you can change Food Guide tabs during this process)',
 	foundValidRecipesPaused: 'Found {count} valid combinations (paused)',
-	showMoreResults: 'Show more results',
-	showMoreResultsCount: 'Show more results ({shown} of {total})',
 	durationNever: 'Never',
 	durationDays: '{count} {unit}',
 	durationSeconds: '{count} {unit}',
@@ -345,12 +343,12 @@ const defaultStrings = {
 		"Browse all foods and Crock Pot recipes available in the selected game version. Use the version selector at the top to switch between Don't Starve Together, Don't Starve, and Hamlet.",
 	aboutStatisticsHeading: 'Statistics Analyzer',
 	aboutStatisticsBody:
-		'The Statistics Analyzer tab is for those who just want to explore ingredient combinations. It will calculate every valid ingredient combination possible (using an "ideal" ingredient selection, generally excluding uncooked food) and allows filtration by recipe and ingredient contents. Computation may take some time on slower computers.',
+		'Explore combinations for the selected game and character using a representative set of ingredients that can go in the crock pot. Filter by recipe or ingredients and sort by Name to browse recipes together, or by a stat to compare outcomes. Expand a group to page through its combinations; the paging bars let you change both page sizes. Calculations can take some time. Refresh results to inspect progress without pausing; the table refreshes automatically when calculation finishes.',
 	aboutAdvancedHeading: 'Advanced Use (JavaScript Globals)',
 	aboutAdvancedBody1:
 		'The Food Guide populates <code>window</code> with a few properties: <code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The Statistics Analyzer writes its results to <code>analysis</code> and <code>recipeCrunchData</code>. The local state is stored under <code>localStorage.foodGuideState</code>.',
 	aboutAdvancedBody2:
-		"For advanced use, open your browser's JavaScript console. <code>analysis.made</code> contains the list of the working combinations from the last analysis, including beyond those visible in the interface.",
+		"For advanced use, open your browser's JavaScript console. <code>analysis.made</code> contains the list of the working combinations from the last completed analysis, including those hidden by filters or pagination.",
 	aboutLinksHeading: 'Links',
 	linkChangelog: 'Food Guide Changelog',
 	linkBugReports: 'Report Food Guide Bugs / Issues',
@@ -449,6 +447,14 @@ export type StringKey = {
 export type LocaleDict = Partial<Omit<typeof defaultStrings, 'tags' | 'notes'>> & {
 	tags?: Record<string, string>;
 	notes?: Record<string, string>;
+};
+/** Bundled locales translate every UI label and note; shared theme icons can fall back. */
+export type BundledLocaleDict = Record<
+	Exclude<StringKey, 'themeToggleToDark' | 'themeToggleToLight'>,
+	string
+> & {
+	tags: Record<keyof typeof defaultStrings.tags, string>;
+	notes: Record<keyof typeof defaultStrings.notes, string>;
 };
 interface LocaleEntry {
 	name: string;

@@ -152,7 +152,11 @@ setLocale('fr');
 ```
 
 For a bundled locale, add its module to `src/locales/index.ts`; the language picker
-uses the registered locale list automatically.
+uses the registered locale list automatically. Its exported `dict` must satisfy
+`BundledLocaleDict` from `src/strings.ts`, covering every UI string, tag, and note.
+The shared theme icons can use the English defaults. Tests check interpolation
+parameters and the HTML IDs used to populate game mechanics values. Custom locales
+registered through the public API can still provide partial dictionaries.
 
 ## Contributors
 

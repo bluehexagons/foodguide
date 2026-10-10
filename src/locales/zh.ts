@@ -10,10 +10,9 @@
  * untranslated for now: those should be sourced from the game itself.
  */
 
-import { registerLocale } from '../strings.js';
+import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
-/** @type {import('../strings.js').LocaleDict | Record<string, string>} */
-const dict = {
+export const dict = {
 	themeToggleTitle: '切换深色/浅色主题',
 	themeSwitchToLight: '切换到浅色主题',
 	themeSwitchToDark: '切换到深色主题',
@@ -48,7 +47,7 @@ const dict = {
 	tableScrollHelp: '可滚动表格。使用左、右方向键滚动。',
 	tableEmpty: '没有匹配的结果。',
 	analysisNoResultsYet: '目前尚未找到匹配的组合。',
-	analysisNoMatchingResults: '没有组合符合这些筛选条件。请尝试调整食材或食谱筛选条件。',
+	analysisNoMatchingResults: '没有组合符合这些筛选条件。请尝试调整食材或配方筛选条件。',
 	ingredientSearchHelp:
 		'用上、下方向键浏览结果，按回车添加，Shift+回车移除一个，Ctrl 或 Command+回车移除所有同类食材，按 Escape 隐藏结果。按 Tab 移至已选食材以移除。',
 	filterIngredients: '食材筛选',
@@ -72,7 +71,7 @@ const dict = {
 	abilityMeatAndGoodies: '只吃肉类和甜食',
 
 	tabSimulator: '模拟器',
-	tabSimulatorTitle: '锅炉烹饪模拟',
+	tabSimulatorTitle: '烹饪锅配方模拟',
 	tabDiscovery: '发现',
 	tabDiscoveryTitle: '添加背包物品以查找配方',
 	tabFoodList: '食物列表',
@@ -80,14 +79,14 @@ const dict = {
 	tabRecipeList: '配方列表',
 	tabRecipeListTitle: '查看所选 DLC 中的全部配方',
 	tabStatistics: '统计分析器',
-	tabStatisticsTitle: '查找所有配方(不稳定)',
+	tabStatisticsTitle: '探索食材组合并比较配方的收益',
 	tabAbout: '关于',
 	tabAboutTitle: '关于本工具及其使用方法',
 	tabGameInfo: '游戏信息',
 	tabGameInfoTitle: "Don't Starve 游戏机制参考",
 
 	noscriptMessage: '抱歉,本食物指南需要 JavaScript 和现代浏览器。',
-	simulatorHeading: '锅炉模拟器',
+	simulatorHeading: '烹饪锅模拟器',
 	simulatorBody: '点击食材添加。取消勾选可移除所有同类食材；点击 − 或锅中的格子可移除一个。',
 	discoveryHeading: '背包发现',
 	discoveryBody: '在下方添加你背包中的所有物品,查看可制作的配方。点击 + 添加更多物品。',
@@ -101,6 +100,8 @@ const dict = {
 	searchIngredientsPlaceholder: '搜索食材...',
 
 	clearSearchOrIngredients: '清除搜索或移除所有食材',
+	clearSearch: '清除搜索',
+	clearIngredients: '移除所有食材',
 	confirmClearInventory: '确定要从背包中移除所有食材吗?',
 	displayModeNames: '显示:名称',
 	displayModeIcons: '显示:图标',
@@ -162,24 +163,24 @@ const dict = {
 	computingCombinations: '正在计算组合……',
 	multipleResultsNote: '* 该组合有多个可能结果',
 	analysisGroupingHelp:
-		'全部筛选结果中，同一食谱的连续组合会归为一组。浏览食谱分组页面，展开分组后可翻页查看其中的组合。排序保持不变，每行显示该组合的准确数值。点击食材可在模拟器中尝试该组合。',
+		'全部筛选结果中，同一配方的连续组合会归为一组。浏览配方分组页面，展开分组后可翻页查看其中的组合。排序保持不变，每行显示该组合的准确数值。点击食材可在模拟器中尝试该组合。',
 	analysisShowCombinations: '显示 {name} 的 {count} 个连续组合',
 	analysisHideCombinations: '隐藏 {name} 的 {count} 个连续组合',
 	analysisTryCombination: '在模拟器中用 {ingredients} 尝试制作 {name}',
 	analysisIngredientsLoaded: '已将 {count} 个食材放入烹饪锅。',
 	analysisResetFilters: '重置筛选',
-	analysisResetFiltersHelp: '恢复本次分析原来的食材和食谱筛选条件。',
+	analysisResetFiltersHelp: '恢复本次分析原来的食材和配方筛选条件。',
 	analysisFiltersReset: '分析筛选条件已重置。',
-	analysisResultCount: '食谱分组 {first}–{last}，共 {groups} 组；{total} 个匹配组合。',
+	analysisResultCount: '配方分组 {first}–{last}，共 {groups} 组；{total} 个匹配组合。',
 	analysisRefresh: '刷新结果',
 	analysisRefreshHelp: '更新表格以显示目前找到的组合，不中断计算。',
 	analysisRefreshed: '结果已刷新。',
 	paginationGroupsPerPage: '每页分组数',
 	paginationCombinationsPerPage: '展开分组每页组合数',
 	paginationCombinationSizeChanged: '展开的分组每页最多显示 {size} 个组合。',
-	paginationGroups: '食谱分组分页',
+	paginationGroups: '配方分组分页',
 	paginationCombinations: '{name} 的组合分页',
-	paginationGroupRange: '食谱分组 {first}–{last}，共 {total} 组',
+	paginationGroupRange: '配方分组 {first}–{last}，共 {total} 组',
 	paginationCombinationRange: '组合 {first}–{last}，共 {total} 个',
 	paginationPageNumber: '页码',
 	paginationPageCount: '第 {page} 页，共 {pages} 页',
@@ -197,8 +198,6 @@ const dict = {
 	foundValidRecipes: '找到 {count} 个有效组合。',
 	foundValidRecipesInProgress: '找到 {count} 个有效组合……(此过程中可切换标签页)',
 	foundValidRecipesPaused: '找到 {count} 个有效组合(已暂停)',
-	showMoreResults: '显示更多结果',
-	showMoreResultsCount: '显示更多结果({shown} / {total})',
 	durationNever: '永不',
 	durationDays: '{count}{unit}',
 	durationSeconds: '{count}{unit}',
@@ -210,7 +209,7 @@ const dict = {
 	foodInfoFrom: '来自',
 	foodInfoCook: '烹饪',
 	foodInfoDryIn: '{duration}晒干',
-	foodInfoCannotAdd: '不能加入锅炉',
+	foodInfoCannotAdd: '不能加入烹饪锅',
 	noteProvidesHeatFor: '提供 {heat} 热量，持续 {duration}',
 	noteHeatWhenConsumed: '食用时提供 {heat} 热量',
 	noteLightSeconds: '提供{seconds}秒照明',
@@ -283,21 +282,21 @@ const dict = {
 	aboutSectionsHeading: '各部分说明',
 	aboutSimulatorHeading: '模拟器',
 	aboutSimulatorBody:
-		'模拟器的运作方式与锅炉相同:加入物品后会告诉你将做出何种食物。请注意,实际烹饪时只有最高优先级的配方才会成为候选。顶部的合计反映加入的食材,腐败时间取最短者。结果下方的建议显示在已加入食材的基础上再加入不同物品可制作的其他配方。',
+		'模拟器的运作方式与烹饪锅相同:加入物品后会告诉你将做出何种食物。请注意,实际烹饪时只有最高优先级的配方才会成为候选。顶部的合计反映加入的食材,腐败时间取最短者。结果下方的建议显示在已加入食材的基础上再加入不同物品可制作的其他配方。',
 	aboutDiscoveryHeading: '发现',
 	aboutDiscoveryBody:
-		'发现标签页根据一组食材查找可制作的配方。它不考虑物品数量,而是假设每种你都有四个。你也可以计算使用现有食材的高效配方,以便锅炉烹饪时获得最大的生命或饥饿收益。其工作方式与统计分析器相同,但仅限于你的背包。',
+		'发现标签页根据一组食材查找可制作的配方。它不考虑物品数量,而是假设每种你都有四个。你也可以计算使用现有食材的高效配方,以便在烹饪锅中烹饪时获得最大的生命或饥饿收益。其工作方式与统计分析器相同,但仅限于你的背包。',
 	aboutFoodRecipeListsHeading: '食物列表与配方列表',
 	aboutFoodRecipeListsBody:
-		"浏览所选游戏版本中可用的全部食物和锅炉配方。使用顶部的版本选择器在 Don't Starve Together、Don't Starve 和 Hamlet 之间切换。",
+		"浏览所选游戏版本中可用的全部食物和烹饪锅配方。使用顶部的版本选择器在 Don't Starve Together、Don't Starve 和 Hamlet 之间切换。",
 	aboutStatisticsHeading: '统计分析器',
 	aboutStatisticsBody:
-		'统计分析器标签页适合喜欢探索食材组合的玩家。它会计算所有有效的食材组合(使用"理想"食材选择,通常排除生食),并允许按配方和食材内容进行筛选。在较慢的电脑上计算可能需要一些时间。',
+		'使用可放入烹饪锅的代表性食材，探索当前游戏和角色的食材组合。可按配方或食材筛选，按名称排序以集中浏览同一配方，或按属性排序比较收益。展开分组可翻页查看组合；分页栏可分别调整两级分页的每页数量。计算可能需要一些时间。刷新结果即可查看最新进展，无需暂停；计算完成后，表格会自动刷新。',
 	aboutAdvancedHeading: '高级用法(JavaScript 全局变量)',
 	aboutAdvancedBody1:
 		'本食物指南会向 <code>window</code> 添加几个属性:<code>food</code>、<code>recipes</code> 和 <code>matchingNames</code>。统计分析器将其结果写入 <code>analysis</code> 和 <code>recipeCrunchData</code>。本地状态保存在 <code>localStorage.foodGuideState</code> 中。',
 	aboutAdvancedBody2:
-		'高级用法请打开浏览器的 JavaScript 控制台。<code>analysis.made</code> 包含上次分析中所有可行组合的列表,包括界面之外未显示的部分。',
+		'高级用法请打开浏览器的 JavaScript 控制台。<code>analysis.made</code> 包含上次已完成分析中所有有效组合的列表，包括被筛选条件或分页隐藏的组合。',
 	aboutLinksHeading: '链接',
 	linkChangelog: '本指南更新日志',
 	linkBugReports: '反馈本指南的错误 / 问题',
@@ -330,7 +329,7 @@ const dict = {
 	gameInfoWikiHeading: '实用 Wiki 页面',
 	wikiFood: '食物',
 	wikiCooking: '烹饪',
-	wikiCrockPot: '锅炉',
+	wikiCrockPot: '烹饪锅',
 	wikiFarming: '农作',
 
 	footerCopyrightLicense:
@@ -365,6 +364,6 @@ const dict = {
 		honeyed: '蜂蜜调味',
 		monstermeat: '怪物肉',
 	},
-};
+} satisfies BundledLocaleDict;
 
 registerLocale('zh', '简体中文', dict);

@@ -2011,10 +2011,11 @@ test('loads the guide, assets, translations, and a rendered food table', async t
 	for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
 		await search.fill(name);
 		await search.press('ArrowDown');
+		// The option's accessible name also includes its picked quantity.
 		assert.equal(
 			await page
-				.locator('#simulator [role="option"][aria-selected="true"]')
-				.getAttribute('aria-label'),
+				.locator('#simulator [role="option"][aria-selected="true"] .text')
+				.textContent(),
 			name,
 		);
 		await search.press('Enter');

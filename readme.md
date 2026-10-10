@@ -32,8 +32,21 @@ possible recipes. Food List and Recipe List provide sortable reference tables.
 The Statistics Analyzer evaluates ingredient combinations in batches and can be paused.
 
 Use Tab to reach controls and page tabs. In an ingredient search, use Up/Down to
-highlight results, Enter to select, and Escape to clear the highlight. Dropdown
-menus support Up/Down, Home/End, Enter/Space, and Escape.
+highlight results and Enter to select. Shift+Enter removes one copy; Ctrl+Enter
+(Command+Enter on macOS) removes all copies. Escape dismisses the results;
+Up/Down or refocusing the search reopens them. Dropdown menus support Up/Down,
+Home/End, Enter/Space, and Escape.
+
+Picked ingredients show a checkbox to remove all copies and a minus to remove one.
+The ingredient itself adds another copy in the Simulator and toggles membership
+in Discovery. Choose Compact for dense rows, Normal for larger rows, or Cozy for
+cards; list and icon-only views are also available.
+
+Group results by ingredient type or preparation, or leave them ungrouped. Auto
+sort prioritizes exact names and search relevance, keeps related preparations
+together while browsing, and uses character-adjusted values for stat searches.
+Explicit name and stat sorts remain available. Display, density, sort, and grouping
+preferences are saved separately for the Simulator and Discovery.
 
 Ingredient searches accept display names and game identifiers, with spaces or
 underscores between words. For example, `mushroom` finds Red, Green, and Blue Caps

@@ -95,7 +95,7 @@ const dict = {
 	noscriptMessage: 'Lo sentimos, esta Guía de Comida requiere JavaScript y un navegador moderno.',
 	simulatorHeading: 'Simulador de Olla',
 	simulatorBody:
-		'Haz clic en los ingredientes para añadirlos a la olla. Desmarca la casilla para quitar todas las unidades, usa el botón menos para quitar una o haz clic en una ranura de la olla.',
+		'Haz clic para añadir ingredientes. Desmarca para quitar todas las unidades; usa − o una ranura de la olla para quitar una.',
 	discoveryHeading: 'Descubrimiento de Inventario',
 	discoveryBody:
 		'Añade abajo todos los objetos de tu inventario para ver qué recetas puedes preparar. Haz clic en + para añadir más.',

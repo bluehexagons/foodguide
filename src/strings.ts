@@ -75,7 +75,7 @@ const defaultStrings = {
 	noscriptMessage: 'Sorry, this Food Guide requires JavaScript and a modern web browser.',
 	simulatorHeading: 'Crock Pot Simulator',
 	simulatorBody:
-		'Click ingredients to add them to the pot. Uncheck to remove all copies, use the minus to remove one, or click a pot slot.',
+		'Click ingredients to add. Uncheck to remove all copies; use − or a pot slot to remove one.',
 	discoveryHeading: 'Inventory Discovery',
 	discoveryBody:
 		'Add all items in your inventory below to see what recipes you can make. Click the + to add more items.',

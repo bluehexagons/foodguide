@@ -270,6 +270,10 @@ table tr.highlighted .name-cell::before {
 	);
 }
 
+.ingredientdropdown.hidetext .text {
+	display: none;
+}
+
 .ingredientdropdown.hidetext .item {
 	padding-bottom: calc(var(--ingredient-action-size) + 6px);
 }
@@ -290,7 +294,38 @@ table tr.highlighted .name-cell::before {
 /* Keep native system colors and restore cues that forced colors would erase. */
 @media (forced-colors: active) {
 	html[data-theme] {
+		--bg-primary: Canvas;
+		--bg-secondary: Canvas;
+		--fg-primary: CanvasText;
+		--fg-secondary: CanvasText;
+		--fg-tertiary: CanvasText;
 		--focus-color: Highlight;
+		--picked-bg: Canvas;
+		--picked-border: CanvasText;
+		--border-color: CanvasText;
+		--border-light: CanvasText;
+		--table-bg: Canvas;
+		--table-hover: Canvas;
+		--table-highlight: Highlight;
+		--darkest: CanvasText;
+		--darker: CanvasText;
+		--dark: CanvasText;
+		--medium: GrayText;
+		--light: GrayText;
+		--lighter: CanvasText;
+		--lightest: Canvas;
+		--fontColor: CanvasText;
+		--linkColor: LinkText;
+		--linkHoverColor: LinkText;
+		--header-accent: CanvasText;
+		--header-bg: Canvas;
+		--header-text: CanvasText;
+		--selected-bg: Highlight;
+		--selected-border: Highlight;
+		--excluded-bg: Canvas;
+		--excluded-border: CanvasText;
+		--highlighted-border: Highlight;
+		--strike-text: CanvasText;
 	}
 
 	.ingredientdropdown .item.faded {

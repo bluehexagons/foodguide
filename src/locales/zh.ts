@@ -88,8 +88,7 @@ const dict = {
 
 	noscriptMessage: '抱歉,本食物指南需要 JavaScript 和现代浏览器。',
 	simulatorHeading: '锅炉模拟器',
-	simulatorBody:
-		'点击食材加入锅中。取消勾选可移除所有同类食材，点击减号移除一个，或点击锅中的格子移除食材。',
+	simulatorBody: '点击食材添加。取消勾选可移除所有同类食材；点击 − 或锅中的格子可移除一个。',
 	discoveryHeading: '背包发现',
 	discoveryBody: '在下方添加你背包中的所有物品,查看可制作的配方。点击 + 添加更多物品。',
 	discoveryFoodStatsHeading: '你的食物统计:',

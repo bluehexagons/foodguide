@@ -1366,6 +1366,14 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 				colorScheme: theme,
 				forcedColors: options.forcedColors || 'none',
 			});
+			// Media-query change events are asynchronous; let the automatic theme settle
+			// before deciding whether a saved manual theme needs to be toggled.
+			await page.evaluate(
+				() =>
+					new Promise(resolve =>
+						requestAnimationFrame(() => requestAnimationFrame(resolve)),
+					),
+			);
 			if ((await page.locator('html').getAttribute('data-theme')) !== theme) {
 				await page.locator('#theme-toggle').click();
 			}
@@ -1710,6 +1718,11 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 			await page.locator('#simulator .displaymodeingredients:not(.densityingredients)').tap();
 			await checkTargets(`${width}px display menu`);
 			await page.locator(`#simulator [role="menuitemradio"][data-value="${mode}"]`).tap();
+			assert.equal(
+				await page.locator('#simulator [role=option] .text').first().isVisible(),
+				mode !== 'icons',
+				'Icon mode hides names while preserving option labels',
+			);
 			for (const density of ['compact', 'normal', 'cozy']) {
 				await page.locator('#simulator .densityingredients').tap();
 				await checkTargets(`${width}px density menu`);
@@ -2776,7 +2789,8 @@ test('table updates honor highlight scrolling and cancel restoration on disposal
 		highlighted.update(true);
 		await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 		const rect = highlighted.querySelector('.highlighted').getBoundingClientRect();
-		const highlightVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+		// Browser scroll offsets round to whole pixels; row geometry can be fractional.
+		const highlightVisible = rect.top >= -1 && rect.bottom <= window.innerHeight + 1;
 		highlighted.dispose();
 		highlighted.remove();
 		const results = [];
@@ -2811,9 +2825,13 @@ test('table updates honor highlight scrolling and cancel restoration on disposal
 			});
 		}
 		spacer.remove();
-		return { highlightVisible, disposed: results };
+		return {
+			highlightVisible,
+			rect: { top: rect.top, bottom: rect.bottom, viewport: innerHeight },
+			disposed: results,
+		};
 	});
-	assert.equal(result.highlightVisible, true);
+	assert.equal(result.highlightVisible, true, JSON.stringify(result.rect));
 	assert.deepEqual(result.disposed, [
 		{ locale: 0, responsive: 0, rows: 1, scrollY: 120 },
 		{ locale: 0, responsive: 0, rows: 1, scrollY: 120 },

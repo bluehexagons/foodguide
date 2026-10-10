@@ -204,7 +204,8 @@ state from the slots; quantities also appear in accessible names, while
 `aria-selected`. Focus rings use the theme's focus color
 and stay inside joined search inputs and scrolling menu items. These cues supplement
 color. Targeted forced-color rules retain the
-user's system palette, remove the slot texture, and preserve selection outlines
+user's system palette through explicit system-color variables, remove the slot
+texture, and preserve selection outlines
 and filter badges. Keep this stylesheet last so it can adjust the shared styles.
 
 The browser suite runs axe-core over all seven panels in both themes and all

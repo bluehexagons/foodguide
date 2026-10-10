@@ -208,8 +208,9 @@ with the optional minus immediately before it, so hiding the minus leaves no gap
 or movement of the checkbox. These inline badges overlay the text and use
 20-pixel targets; list rows follow the content width. Normal uses corner
 overlays and wider targets. Cozy names use cards with the name below the icon,
-while cozy list mode retains larger rows. Icon-only options place the controls
-at opposite corners, leaving the center free for the ordinary ingredient action.
+while cozy list mode retains larger rows. Icon-only options use square tiles with
+centered artwork and controls aligned at the top corners, leaving the center free
+for the ordinary ingredient action.
 Visibility and quantity changes add no padding, footer, or layout movement.
 Quantity badges stay opaque; minus controls brighten on hover or keyboard
 highlight, and touch/forced-color modes keep them fully visible.

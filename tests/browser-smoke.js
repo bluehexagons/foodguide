@@ -2243,6 +2243,32 @@ test('picker badges keep the checkbox anchored, larger hit areas, and an unobstr
 					`${context}: Center keeps the ingredient action`,
 				);
 				const [toggle, minus] = geometry.controls;
+				if (mode === 'icons') {
+					assert.ok(
+						Math.abs(geometry.rect.width - geometry.rect.height) < 1,
+						`${context}: Icon tiles stay square`,
+					);
+					assert.ok(
+						Math.abs(
+							geometry.icon.x +
+								geometry.icon.width / 2 -
+								geometry.rect.x -
+								geometry.rect.width / 2,
+						) < 1 &&
+							Math.abs(
+								geometry.icon.y +
+									geometry.icon.height / 2 -
+									geometry.rect.y -
+									geometry.rect.height / 2,
+							) < 1,
+						`${context}: Artwork stays centered`,
+					);
+					assert.ok(
+						Math.abs(toggle.hit.top - minus.hit.top) < 1 &&
+							Math.abs(toggle.hit.top - geometry.rect.top) <= 1.1,
+						`${context}: Both shortcuts align along the top edge`,
+					);
+				}
 				assert.ok(
 					Math.abs(toggle.hit.right - geometry.rect.right) <= 1.1,
 					`${context}: The checkbox stays at the trailing edge`,
@@ -2298,7 +2324,7 @@ test('picker badges keep the checkbox anchored, larger hit areas, and an unobstr
 				if (density === 'compact') {
 					if (mode === 'icons') {
 						assert.ok(
-							geometry.rect.width <= 50 && geometry.rect.height <= 45,
+							geometry.rect.width <= 50 && geometry.rect.height <= 50,
 							`${context}: No action footer`,
 						);
 					} else {

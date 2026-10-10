@@ -376,8 +376,9 @@ table tr.highlighted .name-cell::before {
 	display: none;
 }
 
-/* Icon and cozy-card controls occupy opposite corners, away from the center. */
+/* Square icon tiles keep the artwork centered as grid columns grow. */
 .ingredientdropdown.hidetext .item {
+	aspect-ratio: 1;
 	min-height: 44px;
 	padding: 4px;
 }
@@ -411,6 +412,12 @@ table tr.highlighted .name-cell::before {
 	inset-inline-start: 0;
 	justify-content: flex-start;
 	padding-inline: 2px 0;
+}
+
+/* Icon controls share the top edge; cozy name cards use the bottom corners. */
+.ingredientdropdown.hidetext .ingredient-subtract {
+	top: 0;
+	bottom: auto;
 }
 
 .ingredientdropdown.density-cozy:not(.hidetext):not(.listmode) .ingredient-toggle {

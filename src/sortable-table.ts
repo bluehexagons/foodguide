@@ -1,3 +1,6 @@
+import type { TextParams } from './models.js';
+import { createTablePagination, groupConsecutiveRows, pageRange } from './table-pagination.js';
+import type { ConsecutiveGroup } from './table-pagination.js';
 import type { StringKey } from './strings.js';
 import type { SortRow, TableSortKey } from './table-sort.js';
 import { sortTableRows } from './table-sort.js';
@@ -13,7 +16,7 @@ export interface SortableTable extends HTMLDivElement {
 	updateAutoHide?: (labels?: string[]) => void;
 }
 interface TableFactoryOptions {
-	translate: (key: StringKey) => string;
+	translate: (key: StringKey, params?: TextParams) => string;
 	translateTableLabel: (label: string) => string;
 	translateTableHint: (hint: string) => string;
 	translateSummaryLabel: (label: string) => string;
@@ -28,6 +31,7 @@ interface ColumnConfig {
 export interface TableRowCounts {
 	shown: number;
 	total: number;
+	groups?: { first: number; last: number; total: number };
 }
 export interface TableOptions<T extends SortRow> {
 	captionKey: StringKey;
@@ -44,7 +48,7 @@ export interface TableOptions<T extends SortRow> {
 	highlightCallback?: (item: T, items: T[]) => boolean;
 	filterCallback?: (item: T) => boolean;
 	maxRows?: number;
-	/** Collapse consecutive matching rows after sorting, filtering, and pagination. */
+	/** Group the full sorted, filtered snapshot; page groups and expanded combinations separately. */
 	groupRows?: {
 		key: (item: T) => string;
 		toggleLabel: (item: T, count: number, expanded: boolean) => string;
@@ -151,8 +155,13 @@ export const createSortableTableFactory = ({
 		const table = document.createElement('table');
 		const tableId = `sortable-table-${++tableSequence}`;
 		const expandedGroups = new Set<T>();
+		const combinationPages = new Map<T, number>();
+		let groupPage = 0;
+		let groupedSnapshot: ConsecutiveGroup<T>[] = [];
+		let matchingRows = 0;
 		const container = document.createElement('div') as SortableTable;
-		const wrapper = columnConfig?.toggleable ? document.createElement('div') : container;
+		const wrapper =
+			columnConfig?.toggleable || groupRows ? document.createElement('div') : container;
 		wrapper.className = 'table-scroll-wrapper';
 		const caption = table.createCaption();
 		caption.className = 'sr-only';
@@ -204,8 +213,6 @@ export const createSortableTableFactory = ({
 		};
 		let sorting = defaultSort;
 		let invertSort = false;
-		let firstHighlight: HTMLElement | null = null;
-		let lastHighlight: HTMLElement | null = null;
 		let rows: number;
 		const headerKeys = Object.keys(headers);
 		const nameColumn = headerKeys.findIndex(header => labelFromHeader(header) === 'Name');
@@ -249,7 +256,10 @@ export const createSortableTableFactory = ({
 				? document.activeElement?.closest<HTMLTableCellElement>('th, td')
 				: null;
 			for (const row of table.querySelectorAll('tr')) {
-				if (row.classList.contains('table-empty-row')) {
+				if (
+					row.classList.contains('table-empty-row') ||
+					row.classList.contains('table-group-pager')
+				) {
 					(row.firstElementChild as HTMLTableCellElement).colSpan = Math.max(
 						1,
 						headerKeys.length - hidden.size,
@@ -260,7 +270,11 @@ export const createSortableTableFactory = ({
 					row.children[index].classList.toggle('col-hidden', hidden.has(index));
 				}
 			}
-			if (focusedCell && hidden.has(focusedCell.cellIndex)) {
+			if (
+				focusedCell &&
+				!focusedCell.closest('.table-group-pager') &&
+				hidden.has(focusedCell.cellIndex)
+			) {
 				const target =
 					toggleButtons.find(({ index }) => index === focusedCell.cellIndex)?.button ??
 					table.querySelector<HTMLButtonElement>('th:not(.col-hidden) button.table-sort');
@@ -276,6 +290,7 @@ export const createSortableTableFactory = ({
 			invertSort = sorting === sortKey ? !invertSort : false;
 			sorting = sortKey;
 			expandedGroups.clear();
+			combinationPages.clear();
 			renderTable();
 		};
 
@@ -314,12 +329,65 @@ export const createSortableTableFactory = ({
 			return { header, label, sortKey, th, control };
 		});
 
-		const renderTable = (scrollHighlight = false) => {
+		const paginationStatus = document.createElement('span');
+		paginationStatus.className = 'sr-only';
+		paginationStatus.setAttribute('role', 'status');
+		const groupPagers = groupRows
+			? [0, 1].map(position => {
+					const pager = createTablePagination(translate, page => {
+						const action = (document.activeElement as HTMLElement | null)?.dataset
+							.tableAction;
+						groupPage = page;
+						renderTable(false, false);
+						if (position === 1) {
+							const top = groupPagers[0].element;
+							const control = Array.from(
+								top.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+									'button, input',
+								),
+							).find(control => control.dataset.tableAction === action);
+							const target =
+								control instanceof HTMLButtonElement && control.disabled
+									? top.querySelector('input')
+									: control;
+							target?.focus({ preventScroll: true });
+							top.scrollIntoView({ block: 'start' });
+						}
+						paginationStatus.textContent =
+							pager.element.querySelector('.table-page-range')!.textContent;
+					});
+					pager.element.classList.add('table-group-pagination');
+					return pager;
+				})
+			: [];
+
+		const renderTable = (scrollHighlight = false, refreshSnapshot = true) => {
 			if (disposed) {
 				return;
 			}
 			caption.textContent = translate(captionKey);
-			sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
+			if (refreshSnapshot) {
+				sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
+				if (groupRows) {
+					groupedSnapshot = groupConsecutiveRows(dataset, groupRows.key, filterCallback);
+					matchingRows = groupedSnapshot.reduce(
+						(sum, group) => sum + group.items.length,
+						0,
+					);
+					groupPage = 0;
+					const anchors = new Set(groupedSnapshot.map(group => group.item));
+					for (const item of expandedGroups) {
+						if (!anchors.has(item)) {
+							expandedGroups.delete(item);
+						}
+					}
+					for (const item of combinationPages.keys()) {
+						if (!anchors.has(item)) {
+							combinationPages.delete(item);
+						}
+					}
+				}
+			}
 			for (const { header, label, sortKey, th, control } of headerCells) {
 				const translatedLabel = translateTableLabel(label || 'Image');
 				if (control.textContent !== translatedLabel) {
@@ -343,7 +411,8 @@ export const createSortableTableFactory = ({
 				}
 			}
 			const focusedControl =
-				document.activeElement instanceof HTMLButtonElement &&
+				(document.activeElement instanceof HTMLButtonElement ||
+					document.activeElement instanceof HTMLInputElement) &&
 				body.contains(document.activeElement)
 					? document.activeElement
 					: undefined;
@@ -353,7 +422,11 @@ export const createSortableTableFactory = ({
 			const focusedItem = focusedRow ? rowItems.get(focusedRow) : undefined;
 			const focusedIndex =
 				focusedRow && focusedControl
-					? Array.from(focusedRow.querySelectorAll<HTMLButtonElement>('button'))
+					? Array.from(
+							focusedRow.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+								'button, input',
+							),
+						)
 							.filter(
 								button =>
 									button.dataset.link === focusedLink &&
@@ -361,97 +434,143 @@ export const createSortableTableFactory = ({
 							)
 							.indexOf(focusedControl)
 					: -1;
-			let restoredRow: HTMLTableRowElement | undefined;
+			const restoredRows: HTMLTableRowElement[] = [];
 			const content = document.createDocumentFragment();
-			firstHighlight = null;
-			lastHighlight = null;
+			const highlightedRows: HTMLTableRowElement[] = [];
 			rows = 0;
-			let matchingRows = 0;
-			const groups: { key: string; item: T; rows: HTMLTableRowElement[] }[] = [];
-
-			for (const item of dataset) {
-				const items = dataset;
-				// Only pagination consumers need a full matching count beyond the visible limit.
-				if (maxRows && rows >= maxRows && !onRender) {
-					continue;
-				}
-				if (filterCallback && !filterCallback(item)) {
-					continue;
-				}
-				matchingRows++;
-				if (maxRows && rows >= maxRows) {
-					continue;
-				}
+			const appendRow = (item: T, focusItem = item) => {
 				const row = rowGenerator(item);
-				if (groupRows) {
-					const key = groupRows.key(item);
-					let group = groups.at(-1);
-					if (!group || group.key !== key) {
-						group = { key, item, rows: [] };
-						groups.push(group);
-					}
-					row.id = `${tableId}-row-${rows}`;
-					group.rows.push(row);
-				}
 				row.children[nameColumn]?.classList.add('name-cell');
-				rowItems.set(row, item);
-				if (item === focusedItem) {
-					restoredRow = row;
+				rowItems.set(row, focusItem);
+				if (focusItem === focusedItem) {
+					restoredRows.push(row);
 				}
 				iconColumns.forEach(column => row.children[column]?.classList.add('icon-cell'));
 				numericColumns.forEach(column =>
 					row.children[column]?.classList.add('numeric-cell'),
 				);
-				if (highlightCallback?.(item, items)) {
-					row.className = 'highlighted';
-					firstHighlight ||= row;
-					lastHighlight = row;
+				if (highlightCallback?.(item, dataset)) {
+					row.classList.add('highlighted');
+					highlightedRows.push(row);
 				}
 				content.appendChild(row);
 				rows++;
-			}
-			for (const group of groups) {
-				const nameCell = group.rows[0].children[nameColumn];
-				if (group.rows.length < 2 || !nameCell) {
-					continue;
-				}
-				const details = group.rows.slice(1);
-				const toggle = document.createElement('button');
-				toggle.type = 'button';
-				toggle.className = 'table-group-toggle';
-				toggle.dataset.tableAction = 'expand-group';
-				toggle.dataset.count = String(group.rows.length);
-				toggle.setAttribute('aria-controls', details.map(row => row.id).join(' '));
-				if (groupRows?.description) {
-					toggle.setAttribute('aria-description', groupRows.description());
-				}
-				toggle.append(...nameCell.childNodes);
-				nameCell.appendChild(toggle);
-				group.rows[0].classList.add('table-group-start');
-				for (const row of details) {
-					row.classList.add('table-group-detail');
-				}
-				const updateGroup = () => {
+				return row;
+			};
+			const groupRange = pageRange(groupedSnapshot.length, groupPage, 25);
+			groupPage = groupRange.page;
+			if (groupRows) {
+				for (let index = groupRange.start; index < groupRange.end; index++) {
+					const group = groupedSnapshot[index];
 					const expanded = expandedGroups.has(group.item);
+					const range = pageRange(
+						group.items.length,
+						combinationPages.get(group.item) ?? 0,
+						25,
+					);
+					combinationPages.set(group.item, range.page);
+					const items = expanded
+						? group.items.slice(range.start, range.end)
+						: [group.item];
+					const first = appendRow(items[0], group.item);
+					first.classList.add('analysis-combination-row');
+					first.id = `${tableId}-group-${index}-row-${expanded ? range.start : 0}`;
+					const nameCell = first.children[nameColumn];
+					if (group.items.length < 2 || !nameCell) {
+						continue;
+					}
+					first.classList.add('table-group-start');
+					const pagerRow = document.createElement('tr');
+					pagerRow.className = 'table-group-pager';
+					pagerRow.id = `${tableId}-group-${index}-pager`;
+					pagerRow.hidden = !expanded;
+					rowItems.set(pagerRow, group.item);
+					if (group.item === focusedItem) {
+						restoredRows.push(pagerRow);
+					}
+					const pager = createTablePagination(translate, page => {
+						combinationPages.set(group.item, page);
+						renderTable(false, false);
+						const updated = pageRange(group.items.length, page, 25);
+						paginationStatus.textContent = translate('paginationCombinationRange', {
+							first: updated.start + 1,
+							last: updated.end,
+							total: group.items.length,
+						});
+					});
+					pager.element.classList.add('table-combination-pagination');
+					pager.update(
+						range.page,
+						range.pages,
+						translate('paginationCombinations', { name: group.item.name ?? group.key }),
+						translate('paginationCombinationRange', {
+							first: range.start + 1,
+							last: range.end,
+							total: group.items.length,
+						}),
+					);
+					pagerRow.insertCell().appendChild(pager.element);
+					content.appendChild(pagerRow);
+					const detailIds: string[] = [];
+					for (let offset = 1; offset < items.length; offset++) {
+						const row = appendRow(items[offset]);
+						row.id = `${tableId}-group-${index}-row-${range.start + offset}`;
+						row.classList.add('analysis-combination-row', 'table-group-detail');
+						detailIds.push(row.id);
+					}
+					const toggle = document.createElement('button');
+					toggle.type = 'button';
+					toggle.className = 'table-group-toggle';
+					toggle.dataset.tableAction = 'expand-group';
+					toggle.dataset.count = String(group.items.length);
+					toggle.setAttribute('aria-controls', [...detailIds, pagerRow.id].join(' '));
 					toggle.setAttribute('aria-expanded', String(expanded));
 					toggle.setAttribute(
 						'aria-label',
-						groupRows!.toggleLabel(group.item, group.rows.length, expanded),
+						groupRows.toggleLabel(group.item, group.items.length, expanded),
 					);
-					for (const row of details) {
-						row.hidden = !expanded;
+					if (groupRows.description) {
+						toggle.setAttribute('aria-description', groupRows.description());
 					}
-					updateScrollAccess();
-				};
-				toggle.addEventListener('click', () => {
-					if (expandedGroups.has(group.item)) {
-						expandedGroups.delete(group.item);
-					} else {
-						expandedGroups.add(group.item);
-					}
-					updateGroup();
+					toggle.append(...nameCell.childNodes);
+					nameCell.appendChild(toggle);
+					toggle.addEventListener('click', () => {
+						if (expandedGroups.has(group.item)) {
+							expandedGroups.delete(group.item);
+						} else {
+							expandedGroups.add(group.item);
+						}
+						renderTable(false, false);
+					});
+				}
+				const rangeText = translate('paginationGroupRange', {
+					first: groupedSnapshot.length ? groupRange.start + 1 : 0,
+					last: groupRange.end,
+					total: groupedSnapshot.length,
 				});
-				updateGroup();
+				for (const pager of groupPagers) {
+					pager.element.hidden = groupedSnapshot.length === 0;
+					pager.update(
+						groupRange.page,
+						groupRange.pages,
+						translate('paginationGroups'),
+						rangeText,
+					);
+				}
+			} else {
+				matchingRows = 0;
+				for (const item of dataset) {
+					if (maxRows && rows >= maxRows && !onRender) {
+						break;
+					}
+					if (filterCallback && !filterCallback(item)) {
+						continue;
+					}
+					matchingRows++;
+					if (!maxRows || rows < maxRows) {
+						appendRow(item);
+					}
+				}
 			}
 			if (!rows) {
 				const row = document.createElement('tr');
@@ -476,18 +595,49 @@ export const createSortableTableFactory = ({
 				}
 			}
 			body.replaceChildren(content);
-			onRender?.({ shown: rows, total: matchingRows });
+			onRender?.({
+				shown: rows,
+				total: matchingRows,
+				...(groupRows
+					? {
+							groups: {
+								first: groupedSnapshot.length ? groupRange.start + 1 : 0,
+								last: groupRange.end,
+								total: groupedSnapshot.length,
+							},
+						}
+					: {}),
+			});
 			applyColumnVisibility();
-			if ((focusedLink !== undefined || focusedAction !== undefined) && restoredRow) {
-				Array.from(restoredRow.querySelectorAll<HTMLButtonElement>('button'))
-					.filter(
-						button =>
-							button.dataset.link === focusedLink &&
-							button.dataset.tableAction === focusedAction,
+			if (focusedLink !== undefined || focusedAction !== undefined) {
+				const restored = restoredRows
+					.flatMap(row =>
+						Array.from(
+							row.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+								'button, input',
+							),
+						),
 					)
-					[focusedIndex]?.focus({ preventScroll: true });
+					.filter(
+						control =>
+							control.dataset.link === focusedLink &&
+							control.dataset.tableAction === focusedAction,
+					)[focusedIndex];
+				if (
+					restored instanceof HTMLInputElement &&
+					focusedControl instanceof HTMLInputElement
+				) {
+					restored.value = focusedControl.value;
+				}
+				const target =
+					restored instanceof HTMLButtonElement && restored.disabled
+						? restored.closest('form')?.querySelector('input')
+						: restored;
+				target?.focus({ preventScroll: true });
 			}
 
+			const firstHighlight = highlightedRows[0];
+			const lastHighlight = highlightedRows.at(-1);
 			if (scrollHighlight) {
 				if (
 					firstHighlight &&
@@ -502,7 +652,7 @@ export const createSortableTableFactory = ({
 
 		renderTable();
 
-		const update = (scrollHighlight = false) => {
+		const update = (scrollHighlight = false, refreshSnapshot = true) => {
 			if (disposed) {
 				return;
 			}
@@ -512,7 +662,7 @@ export const createSortableTableFactory = ({
 			}
 			const scrollX = window.scrollX;
 			const scrollY = window.scrollY;
-			renderTable(scrollHighlight);
+			renderTable(scrollHighlight, refreshSnapshot);
 			if (!scrollHighlight) {
 				scrollFrame = requestAnimationFrame(() => {
 					scrollFrame = undefined;
@@ -527,10 +677,21 @@ export const createSortableTableFactory = ({
 		wrapper.appendChild(table);
 		scrollObserver.observe(wrapper);
 		scrollObserver.observe(table);
+		const appendGroupPagers = () => {
+			if (!groupRows) {
+				return;
+			}
+			container.insertBefore(groupPagers[0].element, wrapper);
+			container.append(groupPagers[1].element, paginationStatus);
+		};
 
 		if (!columnConfig?.toggleable) {
+			if (groupRows) {
+				container.appendChild(wrapper);
+			}
+			appendGroupPagers();
 			container.update = update;
-			container.updateLocale = () => update();
+			container.updateLocale = () => update(false, false);
 			container.setMaxRows = setMaxRows;
 			localeTables.add(container);
 			return container;
@@ -604,12 +765,13 @@ export const createSortableTableFactory = ({
 
 		container.appendChild(toggleBar);
 		container.appendChild(wrapper);
+		appendGroupPagers();
 		container.update = scrollHighlight => {
 			update(scrollHighlight);
 			applyColumnVisibility();
 		};
 		container.updateLocale = () => {
-			update();
+			update(false, false);
 			updateLabels();
 		};
 		container.setMaxRows = setMaxRows;

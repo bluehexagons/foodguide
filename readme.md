@@ -65,15 +65,18 @@ When a search has hidden matches, its summary offers **Show all** to restore the
 without clearing the search or changing the other picker's view.
 
 The Statistics Analyzer and Discovery's efficiency results group consecutive
-combinations for the same recipe without changing the sort order. Expand a recipe
-to see its combinations; a collapsed row shows the first combination's values.
-Click its ingredients to fill the crock pot and open the Simulator.
-Pause a running analysis to inspect its latest results and load more combinations.
-Its progress bar reports combinations checked out of the full search, including
-combinations that produce no valid recipe.
-The table reports how many matching combinations are loaded; recipe groups can
-contain several of those combinations. **Reset filters** restores the analysis's
-original filters, including the Statistics Analyzer's default exclusions.
+combinations for the same recipe across the full filtered dataset, preserving
+sort order. The overview shows 25 groups per page with each group's full count.
+Expand a group to browse its combinations, 25 at a time. Both levels support
+first/previous/next/last navigation and direct page-number jumps. Sort by **Name**
+to browse each recipe's combinations together, or by a stat to compare outcomes.
+Each row shows the exact combination's values; click its ingredients to fill the
+crock pot and open the Simulator.
+Pause a running analysis to refresh its snapshot. Its progress bar reports
+combinations checked out of the full search, including combinations that produce
+no valid recipe. The table reports the group range and total matching combinations.
+**Reset filters** restores the analysis's original filters, including the Statistics
+Analyzer's default exclusions, and returns to the first overview page.
 Stat gains show absolute changes; percentages appear when the ingredient baseline
 is nonzero.
 

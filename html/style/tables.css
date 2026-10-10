@@ -316,3 +316,66 @@ table.links .link.strike {
 #results .highlighted td {
 	border-bottom: 4px solid #ccb !important;
 }
+
+.table-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
+	padding: 8px 0;
+	font-size: 13px;
+}
+
+.table-pagination form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+}
+
+.table-pagination button,
+.table-pagination input {
+	box-sizing: border-box;
+	min-height: 32px;
+	margin: 0;
+	border: 1px solid var(--border-color);
+	border-radius: 3px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	font: inherit;
+}
+
+.table-pagination input {
+	width: 5.5em;
+	padding: 4px 6px;
+}
+
+.table-group-pager td {
+	padding: 4px 12px;
+	white-space: normal;
+}
+
+.table-group-pager .table-pagination {
+	padding: 0;
+}
+
+.table-page-range,
+.table-page-count {
+	color: var(--fg-secondary);
+}
+
+.table-pagination button {
+	padding: 4px 8px;
+	cursor: pointer;
+}
+
+.table-pagination button:hover:not(:disabled) {
+	background: var(--table-hover);
+	border-color: var(--medium);
+}
+
+.table-pagination button:disabled {
+	opacity: 0.55;
+	cursor: default;
+}

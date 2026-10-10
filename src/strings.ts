@@ -189,7 +189,7 @@ const defaultStrings = {
 	computingCombinations: 'Computing combinations..',
 	multipleResultsNote: '* combination has multiple possible results',
 	analysisGroupingHelp:
-		'Consecutive combinations for the same recipe are grouped. Expand a recipe to see them; the collapsed row shows the first result in the current sort order. Click the ingredients to try that combination in the Simulator.',
+		'Consecutive combinations for the same recipe are grouped across the full filtered results. Browse recipe group pages, then expand a group to page through its combinations. Sorting is preserved; each row shows the exact combination’s values. Click the ingredients to try that combination in the Simulator.',
 	analysisShowCombinations: 'Show {count} consecutive combinations for {name}',
 	analysisHideCombinations: 'Hide {count} consecutive combinations for {name}',
 	analysisTryCombination: 'Try {name} in the Simulator with {ingredients}',
@@ -198,7 +198,18 @@ const defaultStrings = {
 	analysisResetFiltersHelp:
 		'Restore the original ingredient and recipe filters for this analysis.',
 	analysisFiltersReset: 'Analysis filters reset.',
-	analysisResultCount: 'Loaded {shown} of {total} matching combinations.',
+	analysisResultCount: 'Recipe groups {first}–{last} of {groups}; {total} matching combinations.',
+	paginationGroups: 'Recipe group pages',
+	paginationCombinations: 'Combination pages for {name}',
+	paginationGroupRange: 'Recipe groups {first}–{last} of {total}',
+	paginationCombinationRange: 'Combinations {first}–{last} of {total}',
+	paginationPageNumber: 'Page number',
+	paginationPageCount: 'Page {page} of {pages}',
+	paginationFirst: 'First',
+	paginationPrevious: 'Previous',
+	paginationNext: 'Next',
+	paginationLast: 'Last',
+	paginationGo: 'Go',
 	analysisProgressLabel: 'Combination checking progress',
 	analysisProgressCount: 'Checked {checked} of {total} combinations ({percent}%).',
 	analysisSnapshotNotice:

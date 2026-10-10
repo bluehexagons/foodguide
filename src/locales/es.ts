@@ -172,7 +172,7 @@ const dict = {
 	computingCombinations: 'Calculando combinaciones..',
 	multipleResultsNote: '* la combinación tiene varios resultados posibles',
 	analysisGroupingHelp:
-		'Las combinaciones consecutivas de una misma receta se agrupan. Expande una receta para verlas; la fila contraída muestra el primer resultado del orden actual. Haz clic en los ingredientes para probar esa combinación en el Simulador.',
+		'Las combinaciones consecutivas de la misma receta se agrupan en todos los resultados filtrados. Recorre las páginas de grupos y expande un grupo para recorrer sus combinaciones. Se conserva el orden; cada fila muestra los valores de su combinación exacta. Pulsa los ingredientes para probarla en el Simulador.',
 	analysisShowCombinations: 'Mostrar {count} combinaciones consecutivas de {name}',
 	analysisHideCombinations: 'Ocultar {count} combinaciones consecutivas de {name}',
 	analysisTryCombination: 'Probar {name} en el Simulador con {ingredients}',
@@ -181,7 +181,19 @@ const dict = {
 	analysisResetFiltersHelp:
 		'Restaurar los filtros originales de ingredientes y recetas de este análisis.',
 	analysisFiltersReset: 'Filtros del análisis restablecidos.',
-	analysisResultCount: 'Se cargaron {shown} de {total} combinaciones coincidentes.',
+	analysisResultCount:
+		'Grupos de recetas {first}–{last} de {groups}; {total} combinaciones coincidentes.',
+	paginationGroups: 'Páginas de grupos de recetas',
+	paginationCombinations: 'Páginas de combinaciones de {name}',
+	paginationGroupRange: 'Grupos de recetas {first}–{last} de {total}',
+	paginationCombinationRange: 'Combinaciones {first}–{last} de {total}',
+	paginationPageNumber: 'Número de página',
+	paginationPageCount: 'Página {page} de {pages}',
+	paginationFirst: 'Primera',
+	paginationPrevious: 'Anterior',
+	paginationNext: 'Siguiente',
+	paginationLast: 'Última',
+	paginationGo: 'Ir',
 	analysisProgressLabel: 'Progreso de comprobación de combinaciones',
 	analysisProgressCount: 'Se comprobaron {checked} de {total} combinaciones ({percent}%).',
 	analysisSnapshotNotice:

@@ -925,7 +925,6 @@ import './locales/index.js';
 				}
 
 				made = [];
-				let currentLimit = 25;
 				let paused = false;
 				const resultCount = document.createElement('p');
 				resultCount.className = 'analysis-result-count';
@@ -965,25 +964,16 @@ import './locales/index.js';
 					updateRecipeFilters();
 					analysisStatus.textContent = `${t('analysisFiltersReset')} ${resultCount.textContent}`;
 				});
-				const showMoreButton = document.createElement('button');
-				showMoreButton.className = 'showMoreButton';
-				showMoreButton.hidden = true;
-				showMoreButton.addEventListener('click', () => {
-					currentLimit += 500;
-					makableTable.setMaxRows(currentLimit);
-					analysisStatus.textContent = resultCount.textContent;
-				});
 
 				const makableTable = makeSortableTable({
 					captionKey: 'tableEfficientRecipes',
-					onRender: ({ shown, total }) => {
-						const hide = (isCalculating && !paused) || shown >= total;
-						if (hide && document.activeElement === showMoreButton) {
-							deleteButton.focus();
-						}
-						showMoreButton.hidden = hide;
-						showMoreButton.textContent = t('showMoreResultsCount', { shown, total });
-						resultCount.textContent = t('analysisResultCount', { shown, total });
+					onRender: ({ total, groups }) => {
+						resultCount.textContent = t('analysisResultCount', {
+							first: groups!.first,
+							last: groups!.last,
+							groups: groups!.total,
+							total,
+						});
 					},
 					emptyMessage: () =>
 						t(isCalculating ? 'analysisNoResultsYet' : 'analysisNoMatchingResults'),
@@ -1048,7 +1038,6 @@ import './locales/index.js';
 					},
 					defaultSort: 'hungerpls',
 					filterCallback: filters.matches,
-					maxRows: 25,
 					groupRows: {
 						key: data => data.recipe.id,
 						toggleLabel: (data, count, expanded) =>
@@ -1172,7 +1161,7 @@ import './locales/index.js';
 				const calculationFocused = document.activeElement === makableButton;
 				updateMakableButtonLabel();
 				makableButton.disabled = true;
-				makableSummary.append(showMoreButton, resetFiltersButton, deleteButton);
+				makableSummary.append(resetFiltersButton, deleteButton);
 				if (calculationFocused) {
 					deleteButton.focus();
 				}
@@ -1265,8 +1254,7 @@ import './locales/index.js';
 							made,
 						};
 
-						currentLimit = Math.max(500, currentLimit);
-						makableTable.setMaxRows(currentLimit);
+						makableTable.update();
 
 						const summaryText = t('foundValidRecipes', { count: made.length });
 						makableSummaryText.textContent = summaryText;

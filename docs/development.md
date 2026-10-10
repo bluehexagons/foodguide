@@ -128,12 +128,12 @@ Analyzer filter state lives in `analysis-filters.ts`; its state queries drive bo
 icon classes and result matching. Preserve structural classes such as `icon` when
 updating a filter's appearance. Analyzer controllers expose `dispose()` to cancel
 work, remove translation listeners, and release their table registrations when
-inputs or game settings change. An unfinished calculation displays up to 25
-results after its first batch and refreshes them on pause/resume. Completion
-raises the initial limit to 500, with further results available through Show more.
-That control reports matching rows, hides when all matches are visible, and updates
-with the language. Filtering preserves the expanded limit so restoring filters
-does not collapse the table.
+inputs or game settings change. An unfinished calculation displays a snapshot after
+its first batch and refreshes it on pause/resume or filter changes. Group the entire sorted, filtered snapshot before
+pagination, so one long recipe run cannot hide later recipes. The overview displays
+25 consecutive recipe groups per page; expanding a group renders at most 25 of its
+combinations at a time. Both levels offer first/previous/next/last controls and a
+page-number jump. Pagination reuses the snapshot without sorting it again.
 Avoid redrawing the growing table on every calculation batch. Resume can finish
 synchronously; its completion callback owns the final controls and announcement.
 Empty filtered results explain whether the search is still unfinished or which
@@ -266,13 +266,17 @@ A single matching group uses the full available width.
 Resizing and zooming change layout without rebuilding options or focus.
 
 Statistics and Discovery efficiency tables collapse consecutive results for the
-same recipe after sorting, filtering, and pagination. Each collapsed row shows
-the first combination's exact stats and ingredients, not an aggregate; the count
-includes only combinations in the current result limit. Separate runs of the
+same recipe after sorting and filtering, before pagination. Each collapsed row
+shows the first combination's exact stats and ingredients, not an aggregate; the
+count
+covers the full consecutive run in the filtered snapshot. Separate runs of the
 same recipe remain separate, preserving numeric sort order. Expanding keeps the
-control focused and reveals ordinary table rows with their own ingredient
-buttons. Expansion survives language changes and pagination when the first
-combination remains the same; changing the sort collapses groups. Stable sorting
+control focused and renders a combination page with ordinary rows and their own
+ingredient buttons. The expanded header shows the first combination on the current
+detail page;
+the range identifies its position within the group. Expansion survives language
+changes and pagination when the first combination remains the same; changing the
+sort collapses groups. Stable sorting
 preserves tied combinations across rerenders, with missing numeric values last.
 Clicking an ingredient cell or activating its button replaces the four Simulator
 slots, preserves duplicates, updates recipes and membership badges, switches
@@ -281,13 +285,16 @@ Discovery inventory and analysis results remain available when returning.
 
 Running analyses keep a bounded table snapshot instead of sorting and rebuilding
 it on every calculation batch. The snapshot notice explains this; pausing refreshes
-the table and enables pagination. The loaded/matching count includes hidden group
-details, while the calculation summary counts all valid combinations found so far.
+the table. The overview count reports group range and all matching combinations,
+while the calculation summary counts all valid combinations found so far.
 Filter changes, resets, pausing, and pagination announce the matching count without
 announcing every calculation batch.
-Completion raises the initial 25-combination limit to 500 without discarding a
-larger limit selected while paused. Reset filters restores the initial exclusions
-and clears user requirements without changing sorting, expansion, or pagination.
+Completion refreshes the snapshot. Filter changes and reset return to the first
+overview page; reset restores initial exclusions and clears user requirements.
+Locale changes preserve the snapshot, overview page, detail pages, expansion, and
+focused controls. Sorting collapses groups and resets both levels. Pagination
+announces the new range without announcing every calculation batch. Bottom overview
+navigation returns the viewport and focus to the top paging bar of the next page.
 The analyzer drains delivered results from its batch buffer; the UI owns the
 retained result collection. Gains from a zero ingredient baseline have no relative
 percentage and show only the signed absolute change.

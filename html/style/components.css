@@ -495,8 +495,7 @@ div.foodFilter :is(img, .icon).excluded::after {
 
 button.deleteButton,
 button.pauseButton,
-button.resetAnalysisFiltersButton,
-button.showMoreButton {
+button.resetAnalysisFiltersButton {
 	font-size: 12pt;
 	padding: 4px 12px;
 	border: 1px solid var(--medium);
@@ -509,8 +508,7 @@ button.showMoreButton {
 
 button.deleteButton:hover,
 button.pauseButton:hover,
-button.resetAnalysisFiltersButton:hover,
-button.showMoreButton:hover {
+button.resetAnalysisFiltersButton:hover {
 	background: var(--table-hover);
 	border-color: var(--light);
 }

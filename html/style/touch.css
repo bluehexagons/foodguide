@@ -83,3 +83,14 @@
 		transform: none;
 	}
 }
+
+@media (pointer: coarse) {
+	.table-pagination button,
+	.table-pagination input {
+		min-height: 44px;
+	}
+
+	.table-pagination input {
+		font-size: 16px;
+	}
+}

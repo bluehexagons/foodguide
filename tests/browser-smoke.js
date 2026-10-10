@@ -1235,25 +1235,19 @@ test('paused analysis exposes its current results and explains empty filters', a
 	);
 	assert.match(await summary.textContent(), /Found [1-9]\d* valid combinations \(paused\)/);
 	const found = Number((await summary.textContent()).match(/Found (\d+)/)[1]);
-	const rows = page.locator('#makable tbody tr:not(.table-empty-row)');
-	assert.equal(
-		await rows.count(),
-		Math.min(25, found),
-		'Pausing shows a bounded snapshot of current results',
+	const rows = page.locator('#makable tbody tr[data-recipe]');
+	const originalCount = await rows.count();
+	assert.ok(
+		originalCount > 0 && originalCount <= 25,
+		'Pausing shows a bounded overview of complete groups',
 	);
 	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), false);
 	assert.ok(found > 25, 'This fixture offers more paused results to inspect');
-	await page.locator('#makable .showMoreButton').click();
-	assert.equal(await rows.count(), Math.min(525, found));
-	assert.equal(
+	assert.match(
 		await page.locator('#makable .analysis-result-count').textContent(),
-		`Loaded ${Math.min(525, found)} of ${found} matching combinations.`,
+		new RegExp(`; ${found} matching combinations\\.`),
 	);
-	assert.equal(
-		await page.locator('#makable [role=status]').textContent(),
-		await page.locator('#makable .analysis-result-count').textContent(),
-		'Loading more announces the resulting count',
-	);
+	assert.equal(await page.locator('#makable .showMoreButton').count(), 0);
 	const filters = page.locator('#makable .foodFilter .analysis-filter');
 	assert.ok((await filters.count()) >= 5);
 	for (let index = 0; index < 5; index++) {
@@ -1267,15 +1261,18 @@ test('paused analysis exposes its current results and explains empty filters', a
 	const empty = page.locator('#makable .table-empty-row');
 	assert.equal(await empty.isVisible(), true);
 	assert.match(await empty.textContent(), /No matching combinations found so far/);
-	assert.match(await page.locator('#makable [role=status]').textContent(), /Loaded 0 of 0/);
+	assert.match(
+		await page.locator('#makable [role=status]').first().textContent(),
+		/Recipe groups 0–0 of 0; 0 matching/,
+	);
 	const visibleColumns = () => page.locator('#makable th:not(.col-hidden)').count();
 	assert.equal(await empty.locator('td').evaluate(cell => cell.colSpan), await visibleColumns());
 	await page.locator('#makable .resetAnalysisFiltersButton').click();
-	assert.equal(await rows.count(), Math.min(525, found));
+	assert.equal(await rows.count(), originalCount);
 	assert.equal(await empty.count(), 0);
 	assert.equal(await page.locator('#makable .foodFilter .selected').count(), 0);
 	assert.match(
-		await page.locator('#makable [role=status]').textContent(),
+		await page.locator('#makable [role=status]').first().textContent(),
 		/Analysis filters reset/,
 	);
 	for (let index = 0; index < 5; index++) {
@@ -1347,7 +1344,7 @@ test('analysis that finishes during resume retains its completion message', asyn
 		.locator('#makable .makableSummary')
 		.evaluate(e => e.firstChild.textContent);
 	assert.match(summary, /^Found \d+ valid combinations\.$/);
-	assert.equal(await page.locator('#makable [role=status]').textContent(), summary);
+	assert.equal(await page.locator('#makable [role=status]').first().textContent(), summary);
 	assert.equal(
 		await page.locator('#makable .deleteButton').evaluate(e => e === document.activeElement),
 		true,
@@ -2969,7 +2966,7 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 			() => !document.querySelector('#makable .makablebutton').disabled,
 		);
 		const captureRows = selector =>
-			page.locator(`${selector} tbody tr:not(.table-empty-row)`).evaluateAll(rows =>
+			page.locator(`${selector} tbody tr[data-recipe]`).evaluateAll(rows =>
 				rows.map(row => {
 					const toggle = row.querySelector('.table-group-toggle');
 					return {
@@ -2988,31 +2985,20 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 				}),
 			);
 		const assertCollapsedRuns = rows => {
-			const runs = [];
+			assert.ok(rows.length <= 25);
 			for (const row of rows) {
-				const last = runs.at(-1);
-				if (last?.[0].recipe === row.recipe) {
-					last.push(row);
-				} else {
-					runs.push([row]);
-				}
-			}
-			for (const [first, ...details] of runs) {
-				assert.equal(first.hidden, false);
-				if (details.length) {
-					assert.equal(first.toggle.count, details.length + 1);
-					assert.equal(first.toggle.expanded, 'false');
-					assert.deepEqual(
-						first.toggle.controls,
-						details.map(row => row.id),
+				assert.equal(row.hidden, false);
+				if (row.toggle) {
+					assert.ok(row.toggle.count > 1);
+					assert.equal(row.toggle.expanded, 'false');
+					assert.equal(
+						row.toggle.controls.length,
+						1,
+						'Only the collapsed pager is mounted',
 					);
-					assert.ok(details.every(row => row.hidden && !row.toggle));
-				} else {
-					assert.equal(first.toggle, null);
 				}
 			}
 			assert.equal(new Set(rows.map(row => row.id)).size, rows.length);
-			return runs;
 		};
 		assertCollapsedRuns(await captureRows('#makable'));
 		let splitRecipes = false;
@@ -3033,12 +3019,24 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 				});
 				await page.locator(`#makable th[data-sort="${key}"] button`).click();
 				const rows = await captureRows('#makable');
+				const runs = [];
+				for (const row of expected) {
+					if (runs.at(-1)?.[0].recipe === row.recipe) {
+						runs.at(-1).push(row);
+					} else {
+						runs.push([row]);
+					}
+				}
 				assert.deepEqual(
 					rows.map(({ recipe, ingredients }) => ({ recipe, ingredients })),
-					expected.map(({ recipe, ingredients }) => ({ recipe, ingredients })),
-					`${key} ${invert ? 'ascending' : 'descending'} preserves every combination's order`,
+					runs.slice(0, 25).map(([{ recipe, ingredients }]) => ({ recipe, ingredients })),
+					`${key} preserves the sorted representative of every paged run`,
 				);
-				const runs = assertCollapsedRuns(rows);
+				assert.deepEqual(
+					rows.map(row => row.toggle?.count ?? 1),
+					runs.slice(0, 25).map(run => run.length),
+				);
+				assertCollapsedRuns(rows);
 				splitRecipes ||= new Set(runs.map(run => run[0].recipe)).size < runs.length;
 			}
 		}
@@ -3092,9 +3090,9 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
 		const cell = detail.locator('.analysis-ingredients-cell');
 		if (hasTouch) {
-			await cell.tap({ position: { x: 1, y: 1 } });
+			await cell.tap({ position: { x: 3, y: 3 } });
 		} else {
-			await cell.click({ position: { x: 1, y: 1 } });
+			await cell.click({ position: { x: 3, y: 3 } });
 		}
 		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
 		assert.deepEqual(
@@ -3162,6 +3160,7 @@ test('analysis reports zero-baseline gains accurately and its new controls remai
 	await page.locator('#makable .makablebutton').click();
 	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
 	const total = await page.evaluate(() => window.analysis.made.length);
+	const groups = await page.locator('#makable tbody tr[data-recipe]').count();
 	assert.ok(total > 0);
 	assert.equal(
 		await page.evaluate(() => window.analysis.made.every(row => row.healthpct === null)),
@@ -3179,13 +3178,17 @@ test('analysis reports zero-baseline gains accurately and its new controls remai
 			theme,
 		);
 		for (const [locale, label, count] of [
-			['en', 'Reset filters', `Loaded ${total} of ${total} matching combinations.`],
+			[
+				'en',
+				'Reset filters',
+				`Recipe groups 1–${groups} of ${groups}; ${total} matching combinations.`,
+			],
 			[
 				'es',
 				'Restablecer filtros',
-				`Se cargaron ${total} de ${total} combinaciones coincidentes.`,
+				`Grupos de recetas 1–${groups} de ${groups}; ${total} combinaciones coincidentes.`,
 			],
-			['zh', '重置筛选', `已加载 ${total} 个匹配组合中的 ${total} 个。`],
+			['zh', '重置筛选', `食谱分组 1–${groups}，共 ${groups} 组；${total} 个匹配组合。`],
 		]) {
 			await page.locator('#language-picker').selectOption(locale);
 			const reset = page.locator('#makable .resetAnalysisFiltersButton');
@@ -3579,7 +3582,7 @@ test('current selections persist before unload and recover after an interrupted 
 	assert.deepEqual(diagnostics, []);
 });
 
-test('completed analysis pagination follows filters and locale without discarding its limit', async t => {
+test('completed analysis pages the full sorted dataset and preserves detail pages across locales', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(browser, baseUrl, {
 		activeTab: 'discovery',
@@ -3607,56 +3610,120 @@ test('completed analysis pagination follows filters and locale without discardin
 	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 	await page.locator('#makable .makablebutton').click();
 	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
-	const rows = page.locator('#makable tbody tr:not(.table-empty-row)');
-	const more = page.locator('#makable .showMoreButton');
+	const rows = page.locator('#makable tbody tr[data-recipe]');
 	const total = await page.evaluate(() => window.analysis.made.length);
-	assert.ok(total > 1000, `Need multiple result batches, got ${total}`);
-	assert.equal(await rows.count(), 500);
-	const firstGroup = page.locator('#makable .table-group-toggle').first();
+	assert.ok(total > 1000);
+	const readRuns = () =>
+		page.evaluate(() => {
+			const runs = [];
+			for (const row of window.analysis.made) {
+				if (runs.at(-1)?.[0].recipe === row.recipe.id) {
+					runs.at(-1).push({
+						recipe: row.recipe.id,
+						ingredients: row.ingredients.map(item => item.key),
+					});
+				} else {
+					runs.push([
+						{
+							recipe: row.recipe.id,
+							ingredients: row.ingredients.map(item => item.key),
+						},
+					]);
+				}
+			}
+			return runs;
+		});
+	let runs = await readRuns();
+	const capture = () =>
+		rows.evaluateAll(rows =>
+			rows.map(row => ({
+				recipe: row.dataset.recipe,
+				ingredients: [...row.querySelectorAll('.analysis-ingredients .icon')].map(
+					icon => icon.dataset.id,
+				),
+			})),
+		);
+	assert.deepEqual(
+		await capture(),
+		runs.slice(0, 25).map(run => run[0]),
+	);
+	const overview = page.locator('#makable .table-group-pagination').first();
+	assert.equal(
+		await overview.locator('.table-page-range').textContent(),
+		`Recipe groups 1–25 of ${runs.length}`,
+	);
+	assert.ok(runs.length > 25, 'Fixture has more than one overview page');
+	await overview.locator('[data-table-action=page-last]').click();
+	const lastStart = Math.floor((runs.length - 1) / 25) * 25;
+	assert.deepEqual(
+		await capture(),
+		runs.slice(lastStart).map(run => run[0]),
+	);
+	assert.equal(
+		await overview
+			.locator('[data-table-action=page-number]')
+			.evaluate(e => e === document.activeElement),
+		true,
+		'Disabled last-page button moves focus to page input',
+	);
+	await overview.locator('[data-table-action=page-number]').fill('2');
+	await overview.locator('[data-table-action=page-number]').press('Enter');
+	assert.deepEqual(
+		await capture(),
+		runs.slice(25, 50).map(run => run[0]),
+	);
+	await overview.locator('[data-table-action=page-first]').click();
+	await page.locator('#makable th[data-sort=name] button').click();
+	runs = await readRuns();
+	const index = runs.slice(0, 25).findIndex(run => run.length > 25);
+	assert.ok(index >= 0, 'Fixture has a multi-page combination group');
+	const firstGroup = rows.nth(index).locator('.table-group-toggle');
 	await firstGroup.click();
-	assert.equal(await firstGroup.getAttribute('aria-expanded'), 'true');
+	const details = page.locator('#makable .table-combination-pagination:visible');
+	await details.locator('[data-table-action=page-last]').click();
+	const lastDetailStart = Math.floor((runs[index].length - 1) / 25) * 25;
+	assert.deepEqual(
+		(await capture()).slice(index, index + runs[index].length - lastDetailStart),
+		runs[index].slice(lastDetailStart),
+	);
+	assert.equal(
+		await details
+			.locator('[data-table-action=page-number]')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
 	await page.locator('#language-picker').selectOption('es');
 	assert.equal(await firstGroup.getAttribute('aria-expanded'), 'true');
-	assert.equal(await more.textContent(), `Mostrar más resultados (500 de ${total})`);
-	await more.click();
-	assert.equal(await rows.count(), 1000);
-	assert.equal(await firstGroup.getAttribute('aria-expanded'), 'true');
+	assert.equal(
+		await details
+			.locator('[data-table-action=page-number]')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	assert.equal(
+		await details.locator('[data-table-action=page-number]').inputValue(),
+		String(Math.floor((runs[index].length - 1) / 25) + 1),
+	);
 	const meatballs = page
 		.locator('#makable .recipeFilter button')
 		.filter({ has: page.locator('[title="Meatballs"]') });
 	await meatballs.click();
-	assert.ok((await rows.count()) > 0 && (await rows.count()) < 500);
-	assert.deepEqual(
-		[...new Set(await page.locator('#makable tbody td:nth-child(2)').allTextContents())],
-		['Meatballs'],
+	assert.deepEqual([...new Set((await capture()).map(row => row.recipe))], ['meatballs_dst']);
+	assert.equal(await overview.locator('[data-table-action=page-number]').inputValue(), '1');
+	await meatballs.click();
+	assert.ok((await capture()).every(row => row.recipe !== 'meatballs_dst'));
+	const remaining = total - runs.flat().filter(row => row.recipe === 'meatballs_dst').length;
+	assert.match(
+		await page.locator('#makable .analysis-result-count').textContent(),
+		new RegExp(`; ${remaining} combinaciones coincidentes\\.`),
 	);
-	assert.equal(await more.isVisible(), false);
-	await meatballs.click(); // Exclude Meatballs: pagination counts only the remaining matches.
-	const remaining =
-		total -
-		(await page.evaluate(
-			() => window.analysis.made.filter(row => row.recipe.name === 'Meatballs').length,
-		));
-	assert.equal(await rows.count(), Math.min(1000, remaining));
-	assert.equal(await more.isVisible(), remaining > 1000);
-	assert.equal(
-		await more.textContent(),
-		`Mostrar más resultados (${Math.min(1000, remaining)} de ${remaining})`,
-	);
-	await meatballs.click(); // Restore the original dataset and the expanded limit.
-	assert.equal(await rows.count(), 1000);
+	await page.locator('#makable .resetAnalysisFiltersButton').click();
 	await page.locator('#language-picker').selectOption('zh');
-	assert.equal(await more.textContent(), `显示更多结果(1000 / ${total})`);
-	await more.focus();
-	for (let limit = 1000; limit < total; limit += 500) {
-		assert.equal(await more.isVisible(), true);
-		await more.press('Enter');
-	}
-	assert.equal(await rows.count(), total);
-	assert.equal(
-		await page.locator('#makable .deleteButton').evaluate(e => e === document.activeElement),
-		true,
+	assert.match(
+		await page.locator('#makable .analysis-result-count').textContent(),
+		new RegExp(`${total} 个匹配组合`),
 	);
+	assert.ok((await rows.count()) <= 625, 'Rendering stays bounded independently of dataset size');
 	await page.locator('#makable .deleteButton').click();
 	assert.equal(await page.locator('#makable .makableContainer').count(), 0);
 	assert.deepEqual(diagnostics, []);
@@ -4146,4 +4213,186 @@ test('restored DLC ingredients remain available during initial picker creation',
 			.getAttribute('aria-pressed'),
 		'true',
 	);
+});
+
+test('large recipe groups allow direct browsing without rendering the whole dataset', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{ activeTab: 'statistics', version: 'together' },
+		{ hasTouch: true, viewport: { width: 375, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(async () => {
+		const { createSortableTableFactory } = await import('./sortable-table.js');
+		const { t } = await import('./strings.js');
+		const { cells, makeSortableTable } = createSortableTableFactory({
+			translate: t,
+			translateTableLabel: label => label,
+			translateTableHint: hint => hint,
+			translateSummaryLabel: label => label,
+			localeTables: new Set(),
+			responsiveTables: new Set(),
+		});
+		const dataset = Array.from({ length: 620 }, (_, index) => ({
+			name: 'Meaty Stew',
+			recipe: 'stew',
+			hunger: 1000 - index / 1000,
+			index,
+		}));
+		for (let index = 0; index < 61; index++) {
+			dataset.push({
+				name: `Other recipe ${index}`,
+				recipe: `other-${index}`,
+				hunger: 610 - index,
+				index: 620 + index,
+			});
+		}
+		let renders = 0;
+		const table = makeSortableTable({
+			captionKey: 'tableEfficientRecipes',
+			headers: { Name: 'name', Hunger: 'hunger' },
+			dataset,
+			defaultSort: 'hunger',
+			rowGenerator: item => {
+				renders++;
+				const row = cells('td', item.name, item.hunger);
+				row.dataset.recipe = item.recipe;
+				row.dataset.index = String(item.index);
+				return row;
+			},
+			groupRows: {
+				key: item => item.recipe,
+				toggleLabel: (item, count, expanded) =>
+					t(expanded ? 'analysisHideCombinations' : 'analysisShowCombinations', {
+						name: item.name,
+						count,
+					}),
+			},
+			columnConfig: { toggleable: true, columns: ['Hunger'] },
+		});
+		table.id = 'large-group-fixture';
+		document.querySelector('#statistics').append(table);
+		document.addEventListener('foodguide:localechange', () => table.updateLocale());
+		window.paginationFixture = { table, dataset, renders: () => renders };
+	});
+	const fixture = page.locator('#large-group-fixture');
+	const rows = fixture.locator('tbody tr[data-recipe]');
+	const overview = fixture.locator('.table-group-pagination').first();
+	const toggle = fixture.locator('.table-group-toggle').first();
+	assert.equal(await rows.count(), 25);
+	assert.equal(await toggle.getAttribute('data-count'), '620');
+	assert.equal(
+		await rows.nth(1).getAttribute('data-recipe'),
+		'other-0',
+		'Later recipes are visible despite a first run longer than 500 combinations',
+	);
+	assert.equal(
+		await page.evaluate(() => window.paginationFixture.renders()),
+		25,
+		'Collapsed details are never generated',
+	);
+	await fixture
+		.locator('.table-group-pagination')
+		.last()
+		.locator('[data-table-action=page-next]')
+		.tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-24');
+	assert.ok(
+		await overview.evaluate(
+			e =>
+				e.getBoundingClientRect().top >= 0 &&
+				e.getBoundingClientRect().bottom < innerHeight,
+		),
+	);
+	assert.equal(
+		await overview
+			.locator('[data-table-action=page-next]')
+			.evaluate(e => e === document.activeElement),
+		true,
+		'Bottom paging returns focus and viewport to the start of the next page',
+	);
+	await overview.locator('[data-table-action=page-first]').tap();
+	await toggle.tap();
+	assert.equal(await rows.count(), 49);
+	const details = fixture.locator('.table-combination-pagination:visible');
+	const input = details.locator('[data-table-action=page-number]');
+	await input.fill('20');
+	await input.press('Enter');
+	assert.deepEqual(
+		await fixture
+			.locator('tr[data-recipe=stew]')
+			.evaluateAll(rows => rows.map(row => Number(row.dataset.index))),
+		Array.from({ length: 25 }, (_, index) => index + 475),
+	);
+	await details.locator('[data-table-action=page-last]').tap();
+	assert.deepEqual(
+		await fixture
+			.locator('tr[data-recipe=stew]')
+			.evaluateAll(rows => rows.map(row => Number(row.dataset.index))),
+		Array.from({ length: 20 }, (_, index) => index + 600),
+	);
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	await input.fill('0');
+	await input.press('Enter');
+	assert.equal(
+		await fixture.locator('tr[data-recipe=stew]').first().getAttribute('data-index'),
+		'600',
+		'Out-of-range page input cannot change the table',
+	);
+	await input.fill('25');
+	await page.locator('#language-picker').selectOption('zh');
+	assert.equal(await input.inputValue(), '25');
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	assert.equal(
+		await details.locator('.table-page-range').textContent(),
+		'组合 601–620，共 620 个',
+	);
+	await overview.locator('[data-table-action=page-number]').fill('3');
+	await overview.locator('[data-table-action=page-go]').tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-49');
+	assert.equal(await rows.count(), 12);
+	await overview.locator('[data-table-action=page-previous]').tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-24');
+	await overview.locator('[data-table-action=page-first]').tap();
+	assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+	assert.equal(
+		await fixture.locator('tr[data-recipe=stew]').first().getAttribute('data-index'),
+		'600',
+	);
+	await fixture
+		.locator('.column-toggle-bar button')
+		.filter({ hasText: /^Hunger/ })
+		.tap();
+	assert.equal(
+		await fixture.locator('.table-group-pager:visible td').evaluate(e => e.colSpan),
+		1,
+	);
+	assert.equal(await input.isVisible(), true, 'Column hiding keeps the group pager reachable');
+	assert.equal(
+		await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+		true,
+	);
+	assert.ok(await input.evaluate(e => e.getBoundingClientRect().height >= 44));
+	await page.evaluate(axe.source);
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ colorScheme: theme });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			const violations = await page.evaluate(async () =>
+				(await window.axe.run()).violations.map(({ id, nodes }) => ({
+					id,
+					targets: nodes.map(node => node.target),
+				})),
+			);
+			assert.deepEqual(
+				violations,
+				[],
+				`${theme}, ${locale} expanded pagination accessibility`,
+			);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
 });

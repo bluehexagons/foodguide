@@ -22,7 +22,15 @@ export function compareItemNames(a: SortRow, b: SortRow): number {
 export function sortTableRows<T extends SortRow>(
 	dataset: T[],
 	sortBy: TableSortKey<T>,
-	{ summaryRows = 0, invert = false }: { summaryRows?: number; invert?: boolean } = {},
+	{
+		summaryRows = 0,
+		invert = false,
+		numericValue,
+	}: {
+		summaryRows?: number;
+		invert?: boolean;
+		numericValue?: (item: T, key: TableSortKey<T>) => number | undefined;
+	} = {},
 ): void {
 	const summary = dataset.splice(0, summaryRows);
 	const direction = invert ? -1 : 1;
@@ -31,8 +39,8 @@ export function sortTableRows<T extends SortRow>(
 	} else {
 		dataset.sort((a, b) => {
 			// The column key is checked against T; absent union fields become NaN.
-			const left = Number(Reflect.get(a, sortBy));
-			const right = Number(Reflect.get(b, sortBy));
+			const left = Number(numericValue ? numericValue(a, sortBy) : Reflect.get(a, sortBy));
+			const right = Number(numericValue ? numericValue(b, sortBy) : Reflect.get(b, sortBy));
 			if (Number.isNaN(left)) {
 				return Number.isNaN(right) ? 0 : 1;
 			}

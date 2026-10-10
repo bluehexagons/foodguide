@@ -51,6 +51,8 @@ export interface TableOptions<T extends SortRow> {
 	dataset: T[];
 	rowGenerator: (item: T) => HTMLTableRowElement;
 	defaultSort: TableSortKey<T>;
+	/** Resolve numeric columns using their displayed values. */
+	numericValue?: (item: T, key: TableSortKey<T>) => number | undefined;
 	summaryRows?: number;
 	linkCallback?: (key: string, control: HTMLButtonElement) => void;
 	highlightCallback?: (item: T, items: T[]) => boolean;
@@ -153,6 +155,7 @@ export const createSortableTableFactory = ({
 		dataset,
 		rowGenerator,
 		defaultSort,
+		numericValue,
 		summaryRows = 0,
 		linkCallback,
 		highlightCallback,
@@ -433,7 +436,7 @@ export const createSortableTableFactory = ({
 			let aliases = new Map<T, T>();
 			caption.textContent = translate(captionKey);
 			if (refreshSnapshot) {
-				sortTableRows(dataset, sorting, { summaryRows, invert: invertSort });
+				sortTableRows(dataset, sorting, { summaryRows, invert: invertSort, numericValue });
 				if (groupRows) {
 					const previous = groupedSnapshot;
 					// Keep an untouched first page at the beginning of the final ranking.

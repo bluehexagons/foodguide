@@ -3729,6 +3729,63 @@ test('completed analysis pages the full sorted dataset and preserves detail page
 	assert.deepEqual(diagnostics, []);
 });
 
+test('food and recipe columns sort by displayed character stats in both directions', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const numberFromCell = text => {
+		const match = text.match(/^([+-]?\d+)([⅛¼⅜½⅝¾⅞])?/);
+		if (!match) {
+			return NaN;
+		}
+		const fraction = ('⅛¼⅜½⅝¾⅞'.indexOf(match[2]) + 1) / 8;
+		return Number(match[1]) + (text.startsWith('-') ? -fraction : fraction);
+	};
+	for (const [version, character] of [
+		['dontstarve', 'warly'],
+		['together', 'webber'],
+		['together', 'wigfrid'],
+	]) {
+		const page = await createSavedPage(browser, baseUrl, {
+			activeTab: 'foodlist',
+			version,
+			character,
+			dlc: { giants: true, shipwrecked: true },
+			pickers: [[], []],
+		});
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		for (const [tab, table] of [
+			['#tab-foodlist', '#food'],
+			['#tab-crockpot', '#recipes'],
+		]) {
+			await page.locator(tab).click();
+			for (const [column, index] of [
+				['health', 3],
+				['hunger', 4],
+				['sanity', 5],
+			]) {
+				for (const ascending of [false, true]) {
+					await page.locator(`${table} th[data-sort=${column}] button`).click();
+					const values = (
+						await page
+							.locator(`${table} tbody td:nth-child(${index})`)
+							.allTextContents()
+					)
+						.map(numberFromCell)
+						.filter(value => !Number.isNaN(value));
+					assert.ok(values.length > 10);
+					assert.deepEqual(
+						values,
+						[...values].sort((a, b) => (ascending ? a - b : b - a)),
+						`${version} ${character}: ${table} ${column} ${ascending ? 'ascending' : 'descending'}`,
+					);
+				}
+			}
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
 test('character analysis outcomes and ingredient baselines agree with the Simulator', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	for (const [version, character, ingredient, name, expected] of [

@@ -662,8 +662,29 @@ import './locales/index.js';
 		);
 	};
 
+	const tableNumericValue = (item: Food | CalculatorRow, key: string) => {
+		if (
+			(key === 'health' || key === 'hunger' || key === 'sanity') &&
+			'preparationType' in item
+		) {
+			const mods = characterFoodModifiers.modifyItem(item, modeMask);
+			let value = mods[key] ?? item[key];
+			if (
+				value === undefined &&
+				'cook' in item &&
+				item.cook &&
+				(item.cook[key] || 0) !== (item[key] || 0)
+			) {
+				// Food rows show a zero baseline when a cooked-stat change is available.
+				value = 0;
+			}
+			return (value ?? NaN) * (statMultipliers[item.preparationType] ?? 1);
+		}
+		return Number(Reflect.get(item, key));
+	};
+
 	const makeRecipeRow = (item: CalculatorRow, health = NaN, hunger = NaN, sanity = NaN) => {
-		const mult = 'preparationType' in item ? statMultipliers[item.preparationType] || 1 : 1;
+		const mult = 'preparationType' in item ? (statMultipliers[item.preparationType] ?? 1) : 1;
 		const itemMods =
 			'preparationType' in item ? characterFoodModifiers.modifyItem(item, modeMask) : {};
 		const ihealth = (itemMods.health ?? item.health ?? NaN) * mult;
@@ -756,6 +777,7 @@ import './locales/index.js';
 			Mode: 'modeMask',
 		},
 		dataset: Array.from(food),
+		numericValue: tableNumericValue,
 		rowGenerator: makeFoodRow,
 		defaultSort: 'name',
 		linkCallback: setFoodHighlight,
@@ -785,6 +807,7 @@ import './locales/index.js';
 			Mode: 'modeMask',
 		},
 		dataset: Array.from(recipes),
+		numericValue: tableNumericValue,
 		rowGenerator: makeRecipeRow,
 		defaultSort: 'name',
 		linkCallback: setRecipeHighlight,
@@ -2089,6 +2112,7 @@ import './locales/index.js';
 							'Mode:DLC or Game Mode required': 'modeMask',
 						},
 						dataset: cooking,
+						numericValue: tableNumericValue,
 						rowGenerator: item => {
 							return makeRecipeRow(item, health, hunger, sanity);
 						},
@@ -2146,6 +2170,7 @@ import './locales/index.js';
 									'Mode:DLC or Game Mode required': 'modeMask',
 								},
 								dataset: suggestions,
+								numericValue: tableNumericValue,
 								rowGenerator: item => {
 									return makeRecipeRow(item, health, hunger, sanity);
 								},
@@ -2211,6 +2236,7 @@ import './locales/index.js';
 								'Mode:DLC or Game Mode required': 'modeMask',
 							},
 							dataset: ingredients.filter((item): item is Food => item !== null),
+							numericValue: tableNumericValue,
 							rowGenerator: makeFoodRow,
 							defaultSort: 'name',
 							linkCallback: name => setHighlight(name),
@@ -2243,6 +2269,7 @@ import './locales/index.js';
 									'Mode:DLC or Game Mode required': 'modeMask',
 								},
 								dataset: inventoryrecipes,
+								numericValue: tableNumericValue,
 								rowGenerator: makeRecipeRow,
 								defaultSort: 'name',
 								linkCallback: name => setHighlight(name),

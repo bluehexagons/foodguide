@@ -54,6 +54,29 @@ test('name sorting groups preparation variants and orders raw food before its co
 	assert.equal(compareItemNames(raw, raw), 0);
 });
 
+test('numeric sorting uses adjusted values while preserving summaries and missing values', () => {
+	const summary = { name: 'Sum:Total', health: 900 };
+	const rows = [
+		summary,
+		{ name: 'Raw', health: 10, multiplier: 0.7 },
+		{ name: 'Prepared', health: 8, multiplier: 0.9 },
+		{ name: 'Cannot eat', health: 20, multiplier: 0 },
+		{ name: 'Missing', multiplier: 0.7 },
+	];
+	const numericValue = (item, key) => item[key] * item.multiplier;
+	sortTableRows(rows, 'health', { summaryRows: 1, numericValue });
+	assert.deepEqual(
+		rows.map(row => row.name),
+		['Sum:Total', 'Prepared', 'Raw', 'Cannot eat', 'Missing'],
+	);
+	sortTableRows(rows, 'health', { summaryRows: 1, invert: true, numericValue });
+	assert.deepEqual(
+		rows.map(row => row.name),
+		['Sum:Total', 'Cannot eat', 'Raw', 'Prepared', 'Missing'],
+	);
+	assert.equal(rows[0], summary);
+});
+
 test('empty tables and tables containing only summary rows remain sortable', () => {
 	const empty = [];
 	sortTableRows(empty, 'name');

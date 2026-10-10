@@ -317,6 +317,13 @@ rules to the ingredients and their best prepared form. Cooking tags and recipe
 matching remain independent of dietary restrictions. Modifier results are cached
 per ingredient during an analysis.
 
+Food, recipe, Simulator, and Discovery tables resolve numeric sort values using
+the same character rules and preparation multipliers as their displayed stats.
+The shared renderer accepts a typed numeric-value callback without changing the
+authored food or recipe data. Summary rows stay pinned and missing values stay
+last in both directions. Browser checks cover Health, Hunger, and Sanity sorting
+for Warly, Webber, and Wigfrid.
+
 Monster Lasagna is marked as monster food in both game variants so Webber's
 immunity applies in all result tables. Its health and sanity penalties remain
 unchanged for other characters; see the

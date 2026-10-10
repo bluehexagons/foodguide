@@ -39,6 +39,10 @@ const dict = {
 	tableRecipeSuggestions: 'Sugerencias de recetas',
 	tableEfficientRecipes: 'Recetas eficientes',
 	tableScrollHelp: 'Tabla desplazable. Usa Izquierda y Derecha para desplazarte.',
+	tableEmpty: 'No hay resultados coincidentes.',
+	analysisNoResultsYet: 'Aún no se han encontrado combinaciones coincidentes.',
+	analysisNoMatchingResults:
+		'Ninguna combinación coincide con estos filtros. Prueba a ajustar los filtros de ingredientes o recetas.',
 	ingredientSearchHelp:
 		'Usa Arriba y Abajo para explorar los resultados, Intro para añadir y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
 	filterIngredients: 'Filtros de ingredientes',
@@ -185,7 +189,7 @@ const dict = {
 	columns: 'Columnas',
 	autoColumns: 'Auto',
 	autoColumnsTitle:
-		'Ocultar automáticamente las columnas menos importantes en pantallas estrechas',
+		'Usar las columnas recomendadas para este tamaño de pantalla. Seleccionar una columna desactiva Auto.',
 	tableName: 'Nombre',
 	tableImage: 'Imagen',
 	tableInfo: 'Info',

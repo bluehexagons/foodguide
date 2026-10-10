@@ -110,6 +110,10 @@ const defaultStrings = {
 	tableRecipeSuggestions: 'Recipe suggestions',
 	tableEfficientRecipes: 'Efficient recipes',
 	tableScrollHelp: 'Scrollable table. Use Left and Right to scroll.',
+	tableEmpty: 'No matching results.',
+	analysisNoResultsYet: 'No matching combinations found so far.',
+	analysisNoMatchingResults:
+		'No combinations match these filters. Try adjusting the ingredient or recipe filters.',
 	ingredientSearchHelp:
 		'Use Up and Down to browse results, Enter to add, and Escape to hide results. Tab to the selected ingredients to remove them.',
 	confirmClearInventory: 'Are you sure you want to clear all ingredients from your inventory?',
@@ -214,7 +218,8 @@ const defaultStrings = {
 	// Table column-toggle controls
 	columns: 'Columns',
 	autoColumns: 'Auto',
-	autoColumnsTitle: 'Automatically hide less-important columns on narrow screens',
+	autoColumnsTitle:
+		'Use recommended columns for this screen size. Selecting a column turns Auto off.',
 	tableName: 'Name',
 	tableImage: 'Image',
 	tableInfo: 'Info',

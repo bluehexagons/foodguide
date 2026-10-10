@@ -85,12 +85,18 @@ with Left/Right; wrappers that fit do not add a Tab stop. A `ResizeObserver` tra
 table and wrapper sizes, including changes to visible columns, and `dispose()`
 disconnects it. Column sort keys and the default sort are checked against the row
 type; summary rows have an explicit count.
+Empty tables display localized feedback across their visible columns. Views can
+provide an `emptyMessage` callback when that explanation depends on their state.
 The shared sorter preserves the dataset's identity and leaves summary rows above
 the sorted results. Search results use the same name comparator as tables.
 
 Tables retain their header buttons and rebuild only the result rows. Sorting and
 linked actions use native buttons; `aria-sort` describes the actual row order,
-and column buttons expose their visibility with `aria-pressed`. When a linked
+and column buttons expose their visibility with `aria-pressed`. Column controls
+form a named group for their table. Auto uses the recommended columns for the
+screen size; selecting a column switches to manual control without changing the
+other visible columns. Turning Auto off restores the manual choices. If resizing
+or zooming hides a focused cell, focus moves to its column button. When a linked
 action rebuilds its own rows, focus returns to the same row and occurrence of its
 link key, even when that action appears elsewhere in the table. Temporary
 tables must call `dispose()` before their containers are removed or replaced;
@@ -110,8 +116,16 @@ Analyzer filter state lives in `analysis-filters.ts`; its state queries drive bo
 icon classes and result matching. Preserve structural classes such as `icon` when
 updating a filter's appearance. Analyzer controllers expose `dispose()` to cancel
 work, remove translation listeners, and release their table registrations when
-inputs or game settings change. Browser regressions cover nested labels, mouse
-and keyboard entry, filter cycles, and calculation cleanup.
+inputs or game settings change. An unfinished calculation displays up to 25
+results after its first batch and refreshes them on pause/resume. Completion
+raises the initial limit to 500, with further results available through Show more.
+Avoid redrawing the growing table on every calculation batch. Resume can finish
+synchronously; its completion callback owns the final controls and announcement.
+Empty filtered results explain whether the search is still unfinished or which
+filters to adjust. Locale changes update Discovery tables and analyzer controls
+in place, preserving calculations, filters, and column choices. Browser
+regressions cover nested labels, mouse and keyboard entry, filter cycles, and
+calculation cleanup.
 
 The tabs use one Tab stop with Left/Right, Home, and End navigation. Ingredient
 slots are native buttons: Enter or Space removes a selected item or focuses the
@@ -157,8 +171,8 @@ and filter badges. Keep this stylesheet last so it can adjust the shared styles.
 
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
-paused statistics results, empty searches, and full-pot feedback. English
-small-screen and forced-color scans repeat both themes. It also
+paused statistics results, empty filtered tables, empty searches, and full-pot
+feedback. English small-screen and forced-color scans repeat both themes. It also
 exercises keyboard flows, native horizontal table scrolling, search feedback,
 and focus recovery,
 trusted Chromium touch taps/canceled gestures, picker/table scrolling, and

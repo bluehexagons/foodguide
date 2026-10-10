@@ -129,6 +129,13 @@ table th.sort-desc .table-sort::after {
 	margin-left: 6px;
 }
 
+.table-empty-row td {
+	padding: 12px;
+	text-align: left;
+	white-space: normal;
+	line-height: 1.5;
+}
+
 /* Column visibility: user can toggle columns on/off */
 table .col-hidden {
 	display: none;

@@ -695,6 +695,231 @@ test('wide tables have localized names and native keyboard scrolling only while 
 	assert.deepEqual(diagnostics, []);
 });
 
+test('manual column choices override automatic hiding and retain the visible layout', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{ version: 'together' },
+		{
+			viewport: { width: 500, height: 812 },
+		},
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#tab-crockpot').click();
+	const columns = page.locator('#recipes .column-toggle-bar');
+	assert.equal(await columns.getAttribute('role'), 'group');
+	assert.equal(await columns.getAttribute('aria-label'), 'Columns: Recipe List');
+	const auto = columns.getByRole('button', { name: 'Auto', exact: true });
+	const cookTime = columns.getByRole('button', { name: 'Cook Time', exact: true });
+	const header = page.locator('#recipes th[data-sort=cooktime]');
+	const visibleColumns = () => page.locator('#recipes th:not(.col-hidden)').allTextContents();
+	const initialColumns = await visibleColumns();
+	assert.equal(await cookTime.getAttribute('aria-pressed'), 'false');
+	await cookTime.focus();
+	await cookTime.press('Enter');
+	assert.equal(
+		await header.isVisible(),
+		true,
+		'A manual choice must reveal an automatically hidden column',
+	);
+	assert.equal(await cookTime.getAttribute('aria-pressed'), 'true');
+	assert.equal(await auto.getAttribute('aria-pressed'), 'false');
+	assert.deepEqual(
+		(await visibleColumns()).filter(label => label !== 'Cook Time'),
+		initialColumns,
+	);
+	assert.equal(await cookTime.evaluate(e => e === document.activeElement), true);
+	await page.setViewportSize({ width: 1280, height: 812 });
+	assert.equal(await header.isVisible(), true);
+	await cookTime.press('Space');
+	assert.equal(await header.isVisible(), false);
+	await auto.click();
+	assert.equal(await auto.getAttribute('aria-pressed'), 'true');
+	assert.equal(
+		await header.isVisible(),
+		true,
+		'Auto uses the recommended layout for the current width',
+	);
+	await page.setViewportSize({ width: 500, height: 812 });
+	await header.waitFor({ state: 'hidden' });
+	await auto.click();
+	assert.equal(await header.isVisible(), false, 'Turning Auto off restores manual choices');
+	for (const [locale, groupName, buttonName] of [
+		['es', 'Columnas: Lista de recetas', 'Tiempo de cocción'],
+		['zh', '列: 配方列表', '烹饪时间'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await columns.getAttribute('aria-label'), groupName);
+		const localizedToggle = columns.getByRole('button', { name: buttonName, exact: true });
+		assert.equal(await localizedToggle.getAttribute('aria-pressed'), 'false');
+		await localizedToggle.press('Space');
+		assert.equal(await header.isVisible(), true);
+		await localizedToggle.press('Space');
+		assert.equal(await header.isVisible(), false);
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('responsive column hiding moves focus to a visible control without disrupting other focus', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, { version: 'together' });
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#tab-crockpot').click();
+	const header = page.locator('#recipes th[data-sort=cooktime]');
+	await header.locator('button').focus();
+	await page.setViewportSize({ width: 500, height: 812 });
+	await header.waitFor({ state: 'hidden' });
+	const toggle = page
+		.locator('#recipes .column-toggle-bar')
+		.getByRole('button', { name: 'Cook Time', exact: true });
+	assert.equal(
+		await toggle.evaluate(e => e === document.activeElement),
+		true,
+		'Resizing or zooming must not strand focus in a hidden column',
+	);
+	await toggle.press('Space');
+	assert.equal(await header.isVisible(), true);
+	await page.setViewportSize({ width: 1280, height: 812 });
+	await page
+		.locator('#recipes .column-toggle-bar')
+		.getByRole('button', { name: 'Auto', exact: true })
+		.click();
+	const name = page.locator('#recipes th[data-sort=name] button');
+	await name.focus();
+	await page.setViewportSize({ width: 500, height: 812 });
+	await header.waitFor({ state: 'hidden' });
+	assert.equal(await name.evaluate(e => e === document.activeElement), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('paused analysis exposes its current results and explains empty filters', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [[], ['meat', 'berries', 'carrot', 'honey', 'ice', 'egg', 'fish', 'monstermeat']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	await page.locator('#makable .makablebutton').click();
+	const pause = page.locator('#makable .pauseButton');
+	await pause.click();
+	const summary = page.locator('#makable .makableSummary');
+	assert.match(await summary.textContent(), /Found [1-9]\d* valid recipes \(paused\)/);
+	const found = Number((await summary.textContent()).match(/Found (\d+)/)[1]);
+	const rows = page.locator('#makable tbody tr:not(.table-empty-row)');
+	assert.equal(
+		await rows.count(),
+		Math.min(25, found),
+		'Pausing shows a bounded snapshot of current results',
+	);
+	const filters = page.locator('#makable .foodFilter .analysis-filter');
+	assert.ok((await filters.count()) >= 5);
+	for (let index = 0; index < 5; index++) {
+		await filters.nth(index).click();
+	}
+	assert.equal(
+		await rows.count(),
+		0,
+		'Five required distinct ingredients cannot fit a four-slot pot',
+	);
+	const empty = page.locator('#makable .table-empty-row');
+	assert.equal(await empty.isVisible(), true);
+	assert.match(await empty.textContent(), /No matching combinations found so far/);
+	const visibleColumns = () => page.locator('#makable th:not(.col-hidden)').count();
+	assert.equal(await empty.locator('td').evaluate(cell => cell.colSpan), await visibleColumns());
+	await page
+		.locator('#makable .column-toggle-bar')
+		.getByRole('button', { name: 'Health', exact: true })
+		.click();
+	assert.equal(await empty.locator('td').evaluate(cell => cell.colSpan), await visibleColumns());
+	for (const [locale, message] of [
+		['es', 'Aún no se han encontrado combinaciones coincidentes.'],
+		['zh', '目前尚未找到匹配的组合。'],
+		['en', 'No matching combinations found so far.'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await empty.textContent(), message);
+		assert.equal(await empty.isVisible(), true);
+	}
+	for (let index = 0; index < 5; index++) {
+		await filters.nth(index).click();
+		await filters.nth(index).click();
+	}
+	assert.ok((await rows.count()) > 0);
+	assert.equal(await empty.count(), 0);
+	assert.equal(await pause.textContent(), 'Resume');
+	await page.locator('#makable .deleteButton').click();
+	assert.equal(await page.locator('#makable .makableContainer').count(), 0);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('analysis that finishes during resume retains its completion message', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [[], ['meat', 'berries', 'carrot', 'honey', 'ice', 'egg', 'fish', 'monstermeat']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	await page.locator('#makable .makablebutton').click();
+	const filters = await page.locator('#makable .foodFilter .analysis-filter').count();
+	assert.ok(
+		filters >= 5 && filters <= 20,
+		'This fixture completes in its second calculation block',
+	);
+	const pause = page.locator('#makable .pauseButton');
+	await pause.click();
+	await pause.click();
+	assert.equal(await page.locator('#makable .makablebutton').isEnabled(), true);
+	assert.equal(await pause.count(), 0);
+	const summary = await page
+		.locator('#makable .makableSummary')
+		.evaluate(e => e.firstChild.textContent);
+	assert.match(summary, /^Found \d+ valid recipes\.$/);
+	assert.equal(await page.locator('#makable [role=status]').textContent(), summary);
+	assert.equal(
+		await page.locator('#makable .deleteButton').evaluate(e => e === document.activeElement),
+		true,
+	);
+	const ingredientFilters = page.locator('#makable .foodFilter .analysis-filter');
+	for (let index = 0; index < filters; index++) {
+		await ingredientFilters.nth(index).click();
+		await ingredientFilters.nth(index).click();
+	}
+	assert.equal(await page.locator('#makable td:nth-child(2)').count(), 0);
+	const empty = page.locator('#makable .table-empty-row');
+	for (const [locale, message] of [
+		[
+			'en',
+			'No combinations match these filters. Try adjusting the ingredient or recipe filters.',
+		],
+		[
+			'es',
+			'Ninguna combinación coincide con estos filtros. Prueba a ajustar los filtros de ingredientes o recetas.',
+		],
+		['zh', '没有组合符合这些筛选条件。请尝试调整食材或食谱筛选条件。'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await empty.textContent(), message);
+		assert.equal(await empty.isVisible(), true);
+	}
+	for (let index = 0; index < filters; index++) {
+		await ingredientFilters.nth(index).click();
+	}
+	assert.ok((await page.locator('#makable td:nth-child(2)').count()) > 0);
+	assert.equal(await empty.count(), 0);
+	assert.deepEqual(diagnostics, []);
+});
+
 test('accessibility audit covers visible panels, menus, and analyzer results', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const findings = [];
@@ -781,6 +1006,21 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 						await page.locator('#statistics .pauseButton').click();
 					}
 					await audit({ theme, locale, tab });
+					if (tab === 'discovery') {
+						const filters = page.locator('#makable .foodFilter .analysis-filter');
+						for (let index = 0; index < (await filters.count()); index++) {
+							await filters.nth(index).click();
+							await filters.nth(index).click();
+						}
+						assert.equal(
+							await page.locator('#makable .table-empty-row').isVisible(),
+							true,
+						);
+						await audit({ theme, locale, tab, filters: 'no matches' });
+						for (let index = 0; index < (await filters.count()); index++) {
+							await filters.nth(index).click();
+						}
+					}
 					if (tab === 'simulator') {
 						for (const buttonClass of [
 							'searchselector',
@@ -1789,10 +2029,10 @@ test('table controls support keyboard sorting, toggles, and linked highlights wi
 	assert.equal(await healthToggle.getAttribute('aria-pressed'), 'true');
 	assert.equal(await healthHeader.isVisible(), true);
 	const auto = toggles.getByRole('button', { name: 'Auto', exact: true });
-	assert.equal(await auto.getAttribute('aria-pressed'), 'true');
+	assert.equal(await auto.getAttribute('aria-pressed'), 'false');
 	await auto.focus();
 	await auto.press('Enter');
-	assert.equal(await auto.getAttribute('aria-pressed'), 'false');
+	assert.equal(await auto.getAttribute('aria-pressed'), 'true');
 
 	await page.locator('#navbar [data-tab="foodlist"]').click();
 	const carrot = page.locator('#food button[data-link="*Roasted Carrot"]').first();

@@ -130,7 +130,6 @@ import './locales/index.js';
 		}, 150);
 	});
 	let simulatorLocaleRefresh: (() => void) | null = null;
-	let discoveryLocaleRefresh: (() => void) | null = null;
 
 	let statMultipliers = defaultStatMultipliers;
 	let characterFoodModifiers: { modifyItem: ModifyItem } = { modifyItem: () => ({}) };
@@ -206,9 +205,6 @@ import './locales/index.js';
 		);
 		if (simulatorLocaleRefresh) {
 			simulatorLocaleRefresh();
-		}
-		if (discoveryLocaleRefresh) {
-			discoveryLocaleRefresh();
 		}
 		for (const tableContainer of Array.from(localeTables)) {
 			if (!tableContainer.isConnected) {
@@ -924,6 +920,8 @@ import './locales/index.js';
 
 				const makableTable = makeSortableTable({
 					captionKey: 'tableEfficientRecipes',
+					emptyMessage: () =>
+						t(isCalculating ? 'analysisNoResultsYet' : 'analysisNoMatchingResults'),
 					headers: {
 						'': '',
 						Name: 'name',
@@ -1187,6 +1185,9 @@ import './locales/index.js';
 						makableButton.disabled = false;
 					},
 				);
+				if (isCalculating) {
+					makableTable.update();
+				}
 				document.addEventListener('foodguide:localechange', updateMakableControls);
 				clearResults = () => {
 					const restoreFocus = makableDiv.contains(document.activeElement);
@@ -1211,17 +1212,16 @@ import './locales/index.js';
 				pauseButton.addEventListener('click', () => {
 					if (calculationControl.isPaused()) {
 						calculationControl.resume();
-						pauseButton.textContent = t('pause');
-						makableSummaryText.textContent = t('foundValidRecipesInProgress', {
-							count: made.length,
-						});
 					} else {
 						calculationControl.pause();
-						pauseButton.textContent = t('resume');
-						makableSummaryText.textContent = t('foundValidRecipesPaused', {
-							count: made.length,
-						});
 					}
+					// Resuming may complete synchronously; completion owns its final UI state.
+					if (!isCalculating) {
+						return;
+					}
+					pauseButton.textContent = t(calculationControl.isPaused() ? 'resume' : 'pause');
+					makableTable.update();
+					updateMakableTexts();
 					analysisStatus.textContent = makableSummaryText.textContent;
 				});
 			})();
@@ -1970,7 +1970,6 @@ import './locales/index.js';
 						Array.prototype.forEach.call(ul.getElementsByTagName('span'), updateFaded);
 					}
 				};
-				discoveryLocaleRefresh = updateRecipes;
 			}
 
 			if (fixedSlots.length !== 0) {

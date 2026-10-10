@@ -27,6 +27,8 @@ interface ColumnConfig {
 }
 export interface TableOptions<T extends SortRow> {
 	captionKey: StringKey;
+	/** Override the localized empty-table message for a view's current state. */
+	emptyMessage?: () => string;
 	headers: Record<string, TableSortKey<T> | ''>;
 	dataset: T[];
 	rowGenerator: (item: T) => HTMLTableRowElement;
@@ -119,6 +121,7 @@ export const createSortableTableFactory = ({
 
 	const makeSortableTable = <T extends SortRow>({
 		captionKey,
+		emptyMessage = () => translate('tableEmpty'),
 		headers,
 		dataset,
 		rowGenerator,
@@ -174,7 +177,8 @@ export const createSortableTableFactory = ({
 		const nameColumn = headerKeys.findIndex(header => labelFromHeader(header) === 'Name');
 		const iconColumns: number[] = [];
 		const numericColumns: number[] = [];
-		const hiddenColumns = new Set<number>();
+		const manualHiddenColumns = new Set<number>();
+		const toggleButtons: { button: HTMLButtonElement; index: number; label: string }[] = [];
 		let autoMode = true;
 		let autoHiddenColumns = new Set<number>();
 
@@ -198,17 +202,35 @@ export const createSortableTableFactory = ({
 		};
 		setAutoHiddenColumns(columnConfig?.autoHide || []);
 
-		const effectiveHiddenColumns = () =>
-			autoMode && window.innerWidth <= 900
-				? new Set([...hiddenColumns, ...autoHiddenColumns])
-				: hiddenColumns;
+		const effectiveHiddenColumns = () => {
+			if (!autoMode) {
+				return manualHiddenColumns;
+			}
+			return window.innerWidth <= 900 ? autoHiddenColumns : new Set<number>();
+		};
 
 		const applyColumnVisibility = () => {
 			const hidden = effectiveHiddenColumns();
+			const focusedCell = table.contains(document.activeElement)
+				? document.activeElement?.closest<HTMLTableCellElement>('th, td')
+				: null;
 			for (const row of table.querySelectorAll('tr')) {
+				if (row.classList.contains('table-empty-row')) {
+					(row.firstElementChild as HTMLTableCellElement).colSpan = Math.max(
+						1,
+						headerKeys.length - hidden.size,
+					);
+					continue;
+				}
 				for (let index = 0; index < row.children.length; index++) {
 					row.children[index].classList.toggle('col-hidden', hidden.has(index));
 				}
+			}
+			if (focusedCell && hidden.has(focusedCell.cellIndex)) {
+				const target =
+					toggleButtons.find(({ index }) => index === focusedCell.cellIndex)?.button ??
+					table.querySelector<HTMLButtonElement>('th:not(.col-hidden) button.table-sort');
+				target?.focus();
 			}
 			updateScrollAccess();
 		};
@@ -328,6 +350,13 @@ export const createSortableTableFactory = ({
 				content.appendChild(row);
 				rows++;
 			}
+			if (!rows) {
+				const row = document.createElement('tr');
+				row.className = 'table-empty-row';
+				const message = row.insertCell();
+				message.textContent = emptyMessage();
+				content.appendChild(row);
+			}
 
 			if (linkCallback) {
 				table.className = 'links';
@@ -401,13 +430,13 @@ export const createSortableTableFactory = ({
 
 		const toggleBar = document.createElement('div');
 		toggleBar.className = 'column-toggle-bar';
+		toggleBar.setAttribute('role', 'group');
 		const label = document.createElement('span');
 		label.className = 'col-toggle-label';
 		toggleBar.appendChild(label);
 		const autoButton = document.createElement('button');
 		autoButton.type = 'button';
 		toggleBar.appendChild(autoButton);
-		const toggleButtons: { button: HTMLButtonElement; index: number; label: string }[] = [];
 
 		const updateToggleButtons = () => {
 			autoButton.className = autoMode ? 'active' : '';
@@ -420,6 +449,10 @@ export const createSortableTableFactory = ({
 		};
 		const updateLabels = () => {
 			label.textContent = translate('columns');
+			toggleBar.setAttribute(
+				'aria-label',
+				`${translate('columns')}: ${translate(captionKey)}`,
+			);
 			autoButton.textContent = translate('autoColumns');
 			autoButton.title = translate('autoColumnsTitle');
 			for (const { button, label } of toggleButtons) {
@@ -440,7 +473,18 @@ export const createSortableTableFactory = ({
 			const button = document.createElement('button');
 			button.type = 'button';
 			button.addEventListener('click', () => {
-				hiddenColumns.has(index) ? hiddenColumns.delete(index) : hiddenColumns.add(index);
+				if (autoMode) {
+					// Begin manual control from the layout the user is currently seeing.
+					const currentHidden = effectiveHiddenColumns();
+					manualHiddenColumns.clear();
+					for (const column of currentHidden) {
+						manualHiddenColumns.add(column);
+					}
+					autoMode = false;
+				}
+				manualHiddenColumns.has(index)
+					? manualHiddenColumns.delete(index)
+					: manualHiddenColumns.add(index);
 				applyColumnVisibility();
 				updateToggleButtons();
 			});

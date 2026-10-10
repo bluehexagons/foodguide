@@ -36,6 +36,9 @@ const dict = {
 	tableRecipeSuggestions: '配方建议',
 	tableEfficientRecipes: '高效配方',
 	tableScrollHelp: '可滚动表格。使用左、右方向键滚动。',
+	tableEmpty: '没有匹配的结果。',
+	analysisNoResultsYet: '目前尚未找到匹配的组合。',
+	analysisNoMatchingResults: '没有组合符合这些筛选条件。请尝试调整食材或食谱筛选条件。',
 	ingredientSearchHelp:
 		'用上、下方向键浏览结果，按回车添加，按 Escape 隐藏结果。按 Tab 移至已选食材以移除。',
 	filterIngredients: '食材筛选',
@@ -171,7 +174,7 @@ const dict = {
 
 	columns: '列',
 	autoColumns: '自动',
-	autoColumnsTitle: '在窄屏幕上自动隐藏次要列',
+	autoColumnsTitle: '根据屏幕大小使用推荐列。选择某列会关闭自动模式。',
 	tableName: '名称',
 	tableImage: '图像',
 	tableInfo: '信息',

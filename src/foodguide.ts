@@ -1729,6 +1729,7 @@ import './locales/index.js';
 				toggle.appendChild(checkbox);
 				const subtract = document.createElement('span');
 				subtract.className = 'ingredient-subtract';
+				subtract.hidden = true;
 				const minus = document.createElement('span');
 				minus.className = 'ingredient-subtract-visual';
 				subtract.appendChild(minus);
@@ -1782,10 +1783,9 @@ import './locales/index.js';
 						count ? 'removeAllIngredient' : 'addNamedIngredient',
 						{ name },
 					);
-					element.querySelector<HTMLElement>('.ingredient-subtract')!.title = t(
-						'removeOneIngredient',
-						{ name },
-					);
+					const subtract = element.querySelector<HTMLElement>('.ingredient-subtract')!;
+					subtract.hidden = count <= 1;
+					subtract.title = t('removeOneIngredient', { name });
 					// The accessible name must include the quantity shown in the badge.
 					element.setAttribute('aria-label', count > 1 ? `${name} ${count}` : name);
 					if (count) {

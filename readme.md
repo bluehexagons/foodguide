@@ -37,7 +37,8 @@ highlight results and Enter to select. Shift+Enter removes one copy; Ctrl+Enter
 Up/Down or refocusing the search reopens them. Dropdown menus support Up/Down,
 Home/End, Enter/Space, and Escape.
 
-Picked ingredients show a checkbox to remove all copies and a minus to remove one.
+Picked ingredients show a checkbox to remove all copies. When there is more than
+one copy, a minus also appears to remove one.
 The ingredient itself adds another copy in the Simulator and toggles membership
 in Discovery. Choose Compact for dense rows, Normal for larger rows, or Cozy for
 cards; list and icon-only views are also available.

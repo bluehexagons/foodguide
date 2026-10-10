@@ -770,14 +770,19 @@ test('picker shortcuts remove one or all copies without changing input focus or 
 			1,
 			'An unpicked ingredient adds exactly once',
 		);
+		assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
 		if (tab === 'simulator') {
 			await meat.locator('.text').click();
+			assert.equal(await meat.locator('.ingredient-subtract').isVisible(), true);
+			await meat.locator('.ingredient-subtract').click();
+		} else {
+			await meat.locator('.ingredient-toggle').click();
 		}
-		await meat.locator('.ingredient-subtract').click();
 		assert.equal(
 			(await keys()).filter(key => key.startsWith('meat')).length,
 			tab === 'simulator' ? 1 : 0,
 		);
+		assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
 		await meat.locator('.text').click();
 		assert.equal(
 			(await keys()).filter(key => key.startsWith('meat')).length,
@@ -1600,11 +1605,13 @@ for (const { tab, slots } of [
 		const toggle = meat.locator('.ingredient-toggle');
 		const minus = meat.locator('.ingredient-subtract');
 		await meat.tap();
+		assert.equal(await minus.isVisible(), false);
 		if (tab === 'simulator') {
 			await meat.locator('.text').tap();
+			assert.equal(await minus.isVisible(), true);
 		}
 		const beforeControls = await selectedKeys();
-		for (const control of [toggle, minus]) {
+		for (const control of tab === 'simulator' ? [toggle, minus] : [toggle]) {
 			const controlPoint = await touchPoint(control);
 			await session.send('Input.dispatchTouchEvent', {
 				type: 'touchStart',
@@ -1621,10 +1628,10 @@ for (const { tab, slots } of [
 				'Canceled/long-press removal leaves membership unchanged',
 			);
 		}
-		await minus.tap();
-		assert.equal((await selectedKeys()).length, tab === 'simulator' ? 1 : 0);
-		if (tab === 'discovery') {
-			await meat.tap();
+		if (tab === 'simulator') {
+			await minus.tap();
+			assert.equal((await selectedKeys()).length, 1);
+			assert.equal(await minus.isVisible(), false);
 		}
 		await toggle.tap();
 		assert.deepEqual(
@@ -2342,9 +2349,22 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 						y: toggle.hit.top - geometry.rect.top + toggle.extraHitPoint.y,
 					},
 				});
-				for (let i = 1; i < 3; i++) {
-					await activate(meat);
-				}
+				assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
+				assert.equal(await meat.locator('.ingredient-toggle').isVisible(), true);
+				assert.deepEqual(
+					await layout(),
+					beforeLayout,
+					`${context}: A single copy keeps its layout`,
+				);
+				// A hidden minus must leave its former hit area available to add another copy.
+				await activate(meat, {
+					position: {
+						x: minus.hit.left - geometry.rect.left + minus.extraHitPoint.x,
+						y: minus.hit.top - geometry.rect.top + minus.extraHitPoint.y,
+					},
+				});
+				assert.equal(await meat.locator('.ingredient-subtract').isVisible(), true);
+				await activate(meat);
 				assert.deepEqual(
 					await layout(),
 					beforeLayout,
@@ -2426,7 +2446,7 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 			`${context}: Touch users need complete ingredient names`,
 		);
 		const actionIssues = await page
-			.locator('.ingredient-option-actions:visible > span')
+			.locator('.ingredient-option-actions:visible > span:visible')
 			.evaluateAll(elements =>
 				elements.flatMap(e => {
 					const r = e.getBoundingClientRect();

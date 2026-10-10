@@ -223,7 +223,9 @@ and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enh
 menu choices, picked ingredients, visible columns, and highlighted table rows.
 Picked ingredients also have a distinct background and repeated pot ingredients
 show a quantity badge. Clicking its checkbox-shaped target clears all copies;
-the minus removes one. These are pointer shortcuts inside an atomic
+the minus appears only with multiple copies and removes one. Its `hidden` state
+removes both the visual and pointer target when there is a single copy.
+These are pointer shortcuts inside an atomic
 listbox option, rather than nested focusable controls; the combobox documents
 and exposes equivalent keyboard commands with `aria-keyshortcuts`. Unpicked
 ingredients have no visible or hit-testable removal controls. Clearing copies

@@ -252,11 +252,14 @@ export const createDropdownFactory =
 			button,
 			dropdown,
 			getValue: () => currentValue,
-			setValue: (value: string) => {
+			setValue: (value: string, { persist = false }: { persist?: boolean } = {}) => {
 				if (items.some(item => item.value === value)) {
 					currentValue = value;
 					updateLabels();
 					updateSelectionState();
+					if (persist) {
+						saveValue();
+					}
 				}
 			},
 			getItem,

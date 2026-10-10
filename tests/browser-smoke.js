@@ -1468,6 +1468,17 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 							if (cooking !== 'all') {
 								await audit({ theme, locale, tab, cooking });
 							}
+							if (cooking === 'everyday') {
+								await page.locator('#simulator .ingredientpicker').fill('Butter');
+								await audit({
+									theme,
+									locale,
+									tab,
+									cooking,
+									search: 'hidden matches',
+								});
+								await page.locator('#simulator .clearsearchbtn').click();
+							}
 						}
 						await page.locator('#simulator .ingredientpicker').fill('zzzznomatches');
 						await audit({ theme, locale, tab, search: 'no matches' });
@@ -1843,7 +1854,7 @@ test('cooking views preserve selections, support keyboard and touch, and persist
 					'Cooking: All',
 				),
 			);
-			await selectCooking(panel, 'all');
+			await panel.locator('.ingredient-show-all').click();
 			assert.equal(await panel.locator('[role=option]').count(), 1);
 			await selectCooking(panel, preference);
 			await search.fill('zzzznomatches');
@@ -1890,6 +1901,107 @@ test('cooking views preserve selections, support keyboard and touch, and persist
 		);
 		await page.locator('#tab-discovery').click();
 		assert.equal(await page.locator('#inventory .icon').count(), 2);
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('hidden search matches offer localized keyboard and touch recovery without changing selections', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const touch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{ version: 'together', pickers: [['butter'], ['butter']] },
+			touch ? { hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } } : {},
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.locator('#tab-discovery').click();
+		await page.locator('#discovery .cookingingredients').click();
+		await page.locator('#discovery [role=menuitemradio][data-value="practical"]').click();
+		for (const tab of ['simulator', 'discovery']) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.getByRole('combobox');
+			const recovery = panel.locator('.ingredient-show-all');
+			await panel.locator('.cookingingredients').click();
+			await panel.locator('[role=menuitemradio][data-value="everyday"]').click();
+			assert.equal(
+				await recovery.isVisible(),
+				false,
+				'Browsing does not add a recovery button',
+			);
+			await search.fill('Butter');
+			assert.equal(await panel.locator('[role=option]').count(), 1);
+			assert.equal(
+				await panel.locator('[role=option][data-id="butter@together"]').count(),
+				0,
+			);
+			for (const [locale, hidden, action] of [
+				['en', '1 hidden by cooking view.', 'Show all'],
+				['es', 'Ocultos por la vista de cocina: 1.', 'Mostrar todos'],
+				['zh', '烹饪视图隐藏了 1 项。', '显示全部'],
+			]) {
+				await page.locator('#language-picker').selectOption(locale);
+				assert.ok(
+					(await panel.locator('.ingredient-search-summary').textContent()).includes(
+						hidden,
+					),
+				);
+				assert.equal(await recovery.textContent(), action);
+				assert.equal(await recovery.isVisible(), true);
+			}
+			await page.locator('#language-picker').selectOption('en');
+			assert.equal(
+				await recovery.getAttribute('aria-controls'),
+				await search.getAttribute('aria-controls'),
+			);
+			await search.press('ArrowDown');
+			await search.press('Escape');
+			assert.equal(
+				await recovery.isVisible(),
+				false,
+				'Dismissal hides recovery with the results',
+			);
+			await search.press('ArrowDown');
+			if (touch) {
+				const box = await recovery.boundingBox();
+				assert.ok(box.width >= 44 && box.height >= 44);
+				await recovery.tap();
+			} else {
+				for (
+					let i = 0;
+					i < 12 && !(await recovery.evaluate(e => e === document.activeElement));
+					i++
+				) {
+					await page.keyboard.press('Tab');
+				}
+				assert.equal(await recovery.evaluate(e => e === document.activeElement), true);
+				await page.keyboard.press('Enter');
+			}
+			assert.equal(await search.inputValue(), 'Butter');
+			assert.equal(await panel.locator('[role=option]').count(), 2);
+			assert.equal(await recovery.isVisible(), false);
+			assert.equal(await search.evaluate(e => e === document.activeElement), true);
+			assert.equal(await search.getAttribute('aria-activedescendant'), null);
+			assert.equal(await panel.locator('.ingredientlist .icon').count(), 1);
+			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
+			const otherTab = tab === 'simulator' ? 'discovery' : 'simulator';
+			assert.equal(
+				await page.locator(`#${otherTab} .cookingingredients`).textContent(),
+				tab === 'simulator' ? 'Cooking: Practical' : 'Cooking: All',
+				'Recovery only changes the current picker',
+			);
+			await page.waitForFunction(
+				id =>
+					document.querySelector(`#${id} [role=status]`).textContent ===
+					'2 matching ingredients.',
+				tab,
+			);
+			await page.reload({ waitUntil: 'networkidle' });
+			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
+		}
 		assert.deepEqual(diagnostics, []);
 		await page.close();
 	}

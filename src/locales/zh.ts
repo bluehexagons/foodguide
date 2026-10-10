@@ -123,6 +123,8 @@ const dict = {
 	cookingEverydayHelp:
 		'适合日常烹饪的精简列表。隐藏不常用的特殊食材和重复处理方式，保留配方所需的已处理食材。选择“全部”可查找隐藏的食材。',
 	ingredientCookingEmpty: '此视图没有匹配的食材。选择“{view}”可显示隐藏的匹配项。',
+	ingredientCookingHidden: '烹饪视图隐藏了 {count} 项。',
+	ingredientShowAll: '显示全部',
 	ingredientGroupMonster: '怪物食物',
 	ingredientGroupFish: '鱼类与海鲜',
 	ingredientGroupMeat: '肉类',

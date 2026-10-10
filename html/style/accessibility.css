@@ -79,6 +79,30 @@ table tr.highlighted .name-cell::before {
 	margin-bottom: 5px;
 }
 
+.ingredient-search-results {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 8px;
+	min-width: 0;
+}
+
+.ingredient-show-all {
+	min-height: 24px;
+	padding: 2px 6px;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font: inherit;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.ingredient-show-all:hover {
+	border-color: var(--focus-color);
+}
+
 .ingredient-shortcuts {
 	color: var(--fg-secondary);
 	font-size: 12px;

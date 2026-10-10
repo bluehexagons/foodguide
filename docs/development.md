@@ -148,7 +148,8 @@ explicit substitute and uncommon-input lists; keep these choices auditable and
 check their IDs when updating food data. Never infer rarity from `defaultExclude`
 or `skip`: these are analysis hints and include everyday staples. A substitute
 is hidden only when its cookable representative exists in the selected game.
-Fish Morsel's preparation link denotes butchering, so it must remain available.
+Preparation links describe cooking and drying, rather than butchering. Fish Morsel
+is a raw ingredient and represents interchangeable live fish in these views.
 Practical retains uncommon ingredients with positive named requirements in
 applicable recipes; Everyday omits those specialties. Negative requirements,
 generic tags, trash, and roughage recipes do not qualify. Requirement `operator`
@@ -156,8 +157,10 @@ metadata lets alternatives share a role while AND retains separate roles; it
 does not change predicate evaluation. Hide a duplicate prepared form only when
 its preferred base satisfies the same named role. Preserve needed prepared
 forms such as Roasted Birchnut and Roasted Coffee Beans. All preserves existing
-search behavior, including non-cookable Discovery foods. Empty searches distinguish
-hidden matches from no matches and explain how to restore All. Each picker saves
+search behavior, including non-cookable Discovery foods. Search summaries distinguish
+hidden matches from no matches, including partially filtered searches. Show all
+restores that picker's view and returns focus to the search, preserving the query
+and selection. Each picker saves
 its view under `foodGuideCookingPreference`.
 
 The tabs use one Tab stop with Left/Right, Home, and End navigation. Ingredient

@@ -1,6 +1,7 @@
 /* Include touchscreens attached to computers with a mouse as well as mobile devices. */
 @media (any-pointer: coarse) {
 	button,
+	.ingredient-feedback-header .ingredient-show-all,
 	select,
 	.ingredientdropdown .item,
 	.game-link,

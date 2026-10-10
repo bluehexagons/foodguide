@@ -132,6 +132,28 @@ describe('dropdown control', () => {
 		}
 	});
 
+	it('explicit preference updates persist only their own index without firing selection callbacks', () => {
+		const { createDropdown, values } = createHarness(JSON.stringify(['name', 'default']));
+		const dropdown = createDropdown({
+			items: [
+				{ value: 'default', key: 'default' },
+				{ value: 'name', key: 'name' },
+			],
+			initialValue: 'default',
+			storageKey: 'preference',
+			storageIndex: 0,
+			onSelect: () => assert.fail('setValue must not trigger selection callbacks'),
+		});
+		dropdown.setValue('default');
+		assert.deepEqual(JSON.parse(values.get('preference')), ['name', 'default']);
+		dropdown.setValue('default', { persist: true });
+		assert.deepEqual(JSON.parse(values.get('preference')), ['default', 'default']);
+		dropdown.setValue('missing', { persist: true });
+		assert.equal(dropdown.getValue(), 'default');
+		assert.deepEqual(JSON.parse(values.get('preference')), ['default', 'default']);
+		assert.equal(dropdown.dropdown.children[0].attributes.get('aria-checked'), 'true');
+	});
+
 	for (const stored of ['{broken', 'null', '"name"', '42', '{}']) {
 		it(`repairs invalid indexed preferences (${stored}) when a new value is selected`, () => {
 			const { createDropdown, values } = createHarness(stored);

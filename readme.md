@@ -58,6 +58,8 @@ These are curated browsing suggestions; availability depends on your world and
 play style. **Cooking: All**, the default, restores the full list. Cooking views
 apply to searches too, leave selected food in place, and do not change recipe
 calculations, the Food List, or analyzer filters.
+When a search has hidden matches, its summary offers **Show all** to restore them
+without clearing the search or changing the other picker's view.
 
 Ingredient searches accept display names and game identifiers, with spaces or
 underscores between words. For example, `mushroom` finds Red, Green, and Blue Caps

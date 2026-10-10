@@ -85,7 +85,7 @@ test('prepared recipe inputs and butchering results remain available without dup
 		const together = ids(filtered(preference));
 		assert.ok(together.includes('acorn_cooked'));
 		assert.ok(!together.includes('acorn'));
-		assert.ok(together.includes('fishmeat_small'), 'Fish Morsel is a butchering result');
+		assert.ok(together.includes('fishmeat_small'), 'Raw Fish Morsel represents live fish');
 		assert.ok(!together.includes('fishmeat_small_cooked'));
 		assert.ok(!together.includes('pondfish'));
 		assert.ok(!together.includes('eel_cooked'));

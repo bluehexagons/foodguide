@@ -116,6 +116,8 @@ const defaultStrings = {
 	ingredientSearchEmpty: 'No matching ingredients. Try another search or game selection.',
 	ingredientCookingEmpty:
 		'No matching ingredients in this view. Choose “{view}” to show hidden matches.',
+	ingredientCookingHidden: '{count} hidden by cooking view.',
+	ingredientShowAll: 'Show all',
 	ingredientSearchOne: '1 matching ingredient.',
 	ingredientSearchCount: '{count} matching ingredients.',
 	tableCookingResults: 'Crock pot results',

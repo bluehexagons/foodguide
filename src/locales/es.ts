@@ -133,6 +133,8 @@ const dict = {
 		'Una lista reducida para cocinar a diario. Oculta ingredientes especiales poco habituales y variantes redundantes, conservando los ingredientes preparados necesarios para recetas. Elige Todos para encontrar ingredientes ocultos.',
 	ingredientCookingEmpty:
 		'No hay ingredientes coincidentes en esta vista. Elige «{view}» para mostrar las coincidencias ocultas.',
+	ingredientCookingHidden: 'Ocultos por la vista de cocina: {count}.',
+	ingredientShowAll: 'Mostrar todos',
 	ingredientGroupMonster: 'Comida de monstruo',
 	ingredientGroupFish: 'Pescado y marisco',
 	ingredientGroupMeat: 'Carne',

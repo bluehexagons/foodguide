@@ -1412,6 +1412,15 @@ import './locales/index.js';
 			const pickerSummary = document.createElement('div');
 			pickerSummary.className = 'ingredient-search-summary';
 			pickerSummary.id = `ingredient-summary-${index}`;
+			const showAllIngredients = document.createElement('button');
+			showAllIngredients.type = 'button';
+			showAllIngredients.className = 'ingredient-show-all';
+			showAllIngredients.setAttribute('data-i18n', 'ingredientShowAll');
+			showAllIngredients.textContent = t('ingredientShowAll');
+			showAllIngredients.setAttribute('aria-describedby', pickerSummary.id);
+			const searchResultsSummary = document.createElement('div');
+			searchResultsSummary.className = 'ingredient-search-results';
+			searchResultsSummary.append(pickerSummary, showAllIngredients);
 			const feedbackHeader = document.createElement('div');
 			feedbackHeader.className = 'ingredient-feedback-header';
 			const shortcutHint = document.createElement('span');
@@ -1422,7 +1431,7 @@ import './locales/index.js';
 			shortcutHint.setAttribute('data-i18n', shortcutKey);
 			shortcutHint.textContent = t(shortcutKey);
 			picker.setAttribute('aria-keyshortcuts', 'Enter Shift+Enter Control+Enter Meta+Enter');
-			feedbackHeader.append(pickerSummary, shortcutHint);
+			feedbackHeader.append(searchResultsSummary, shortcutHint);
 			const pickerHelp = document.createElement('div');
 			pickerHelp.className = 'sr-only';
 			pickerHelp.id = `ingredient-help-${index}`;
@@ -1434,7 +1443,7 @@ import './locales/index.js';
 			searchRow.appendChild(pickerHelp);
 			picker.setAttribute('aria-describedby', `${pickerHelp.id} ${pickerSummary.id}`);
 			let searchAnnouncement: number | undefined;
-			let cookingFilterHidMatches = false;
+			let cookingHiddenCount = 0;
 			let pickerError:
 				| {
 						key: 'ingredientPotFull' | 'ingredientNotSelected' | 'ingredientSlotEmpty';
@@ -1443,6 +1452,8 @@ import './locales/index.js';
 				| undefined;
 			const updateSummaryVisibility = () => {
 				pickerSummary.hidden = dropdown.hidden && !pickerError;
+				showAllIngredients.hidden =
+					dropdown.hidden || cookingHiddenCount === 0 || !picker.value.trim();
 			};
 			const cancelSearchAnnouncement = () => {
 				window.clearTimeout(searchAnnouncement);
@@ -1468,9 +1479,9 @@ import './locales/index.js';
 					announcePicker('');
 				}
 				const count = pickerOptions.length;
-				const message = t(
+				let message = t(
 					count === 0
-						? cookingFilterHidMatches
+						? cookingHiddenCount > 0
 							? 'ingredientCookingEmpty'
 							: 'ingredientSearchEmpty'
 						: count === 1
@@ -1478,6 +1489,9 @@ import './locales/index.js';
 							: 'ingredientSearchCount',
 					{ count, view: t('cookingAll') },
 				);
+				if (count > 0 && cookingHiddenCount > 0 && picker.value.trim()) {
+					message += ` ${t('ingredientCookingHidden', { count: cookingHiddenCount })}`;
+				}
 				pickerSummary.textContent = message;
 				updateSummaryVisibility();
 				if (announce && searchRow.contains(document.activeElement)) {
@@ -1856,7 +1870,7 @@ import './locales/index.js';
 					modeMask,
 					charMask,
 				});
-				cookingFilterHidMatches = matchingCount > 0 && names.length === 0;
+				cookingHiddenCount = matchingCount - names.length;
 
 				const sortType = sortControls.getValue();
 				names = sortIngredients(names, sortType, {
@@ -2253,6 +2267,12 @@ import './locales/index.js';
 				cookingControls.button.title = t(key);
 			};
 			updateCookingHelp();
+			showAllIngredients.addEventListener('click', () => {
+				cookingControls.setValue('all', { persist: true });
+				updateCookingHelp();
+				picker.focus();
+				refreshPicker();
+			});
 			// Search controls
 			const searchTypeKeys: (DropdownItem & { prefix: string; placeholderKey: StringKey })[] =
 				[
@@ -2319,6 +2339,7 @@ import './locales/index.js';
 			});
 			dropdown.className = 'ingredientdropdown';
 			dropdown.id = `ingredient-results-${index}`;
+			showAllIngredients.setAttribute('aria-controls', dropdown.id);
 			dropdown.setAttribute('role', 'listbox');
 			picker.setAttribute('role', 'combobox');
 			picker.setAttribute('data-i18n-attr-aria-label', 'searchPlaceholderName');

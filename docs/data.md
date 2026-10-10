@@ -60,6 +60,12 @@ form cycles. Avoid serializing the collections directly as JSON or changing them
 globally when you only need a filtered view. In browsers, some presentation fields
 contain DOM fragments; in Node, link markup remains text.
 
+When several foods share a cooked output, author its canonical `raw` ID explicitly.
+For example, Freshwater Fish and Fish Morsel both cook into Cooked Fish Morsel,
+whose reverse link points to Fish Morsel. This keeps raw inputs in the correct
+preparation category. The [Fish Morsel data](https://dontstarve.wiki.gg/wiki/Fish_Morsel/DST)
+also lists the cooked form's six-day spoilage time.
+
 ## Filter by game and character
 
 ```js

@@ -15,15 +15,6 @@
 		align-items: center;
 	}
 
-	/* Compact visual density must not shrink the hit area of icon-only options. */
-	.ingredientdropdown.hidetext.density-compact div {
-		grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
-	}
-
-	.ingredientdropdown.hidetext:is(.density-compact, .density-normal, .density-cozy) .item {
-		padding-inline: 4px;
-	}
-
 	.ingredientdropdown .item .text {
 		white-space: normal;
 		overflow-wrap: anywhere;

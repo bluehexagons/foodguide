@@ -24,12 +24,19 @@ const dict = {
 	removeIngredient: 'Quitar {name}',
 	ingredientAdded: '{name} añadido.',
 	ingredientRemoved: '{name} quitado.',
+	ingredientAllRemoved: 'Todas las unidades de {name} quitadas.',
+	addNamedIngredient: 'Añadir {name}',
+	removeAllIngredient: 'Quitar todas las unidades de {name}',
+	removeOneIngredient: 'Quitar una unidad de {name}',
+	ingredientShortcuts: 'Intro: añadir · Mayús+Intro: −1 · Ctrl/⌘+Intro: quitar todas',
+	ingredientDiscoveryShortcuts:
+		'Intro: alternar · Mayús+Intro: quitar · Ctrl/⌘+Intro: quitar todas',
 	ingredientActionFailed:
 		'No se puede cambiar {name}. La olla puede estar llena o el ingrediente no está seleccionado.',
 	ingredientInPot: 'En la olla: {count}.',
 	ingredientInInventory: 'En tu inventario.',
 	ingredientDiscoverySearchHelp:
-		'Usa Arriba y Abajo para explorar resultados, Intro para añadir o quitar y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
+		'Usa Arriba y Abajo para explorar resultados, Intro para añadir o quitar, Mayús+Intro para quitar una unidad, Ctrl o Comando+Intro para quitar todas y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
 	ingredientPotFull: 'La olla está llena. Quita un ingrediente antes de añadir {name}.',
 	ingredientNotSelected: '{name} no está seleccionado. Añádelo antes de intentar quitarlo.',
 	ingredientSlotEmpty:
@@ -48,7 +55,7 @@ const dict = {
 	analysisNoMatchingResults:
 		'Ninguna combinación coincide con estos filtros. Prueba a ajustar los filtros de ingredientes o recetas.',
 	ingredientSearchHelp:
-		'Usa Arriba y Abajo para explorar los resultados, Intro para añadir y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
+		'Usa Arriba y Abajo para explorar los resultados, Intro para añadir, Mayús+Intro para quitar una unidad, Ctrl o Comando+Intro para quitar todas y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
 	filterIngredients: 'Filtros de ingredientes',
 	filterRecipes: 'Filtros de recetas',
 	filterNormal: 'Normal',
@@ -88,7 +95,7 @@ const dict = {
 	noscriptMessage: 'Lo sentimos, esta Guía de Comida requiere JavaScript y un navegador moderno.',
 	simulatorHeading: 'Simulador de Olla',
 	simulatorBody:
-		'Busca ingredientes abajo, luego haz clic para añadirlos a la olla. Haz clic en una ranura para quitar un ingrediente.',
+		'Haz clic en los ingredientes para añadirlos a la olla. Desmarca la casilla para quitar todas las unidades, usa el botón menos para quitar una o haz clic en una ranura de la olla.',
 	discoveryHeading: 'Descubrimiento de Inventario',
 	discoveryBody:
 		'Añade abajo todos los objetos de tu inventario para ver qué recetas puedes preparar. Haz clic en + para añadir más.',

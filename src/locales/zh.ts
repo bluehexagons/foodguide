@@ -24,11 +24,17 @@ const dict = {
 	removeIngredient: '移除 {name}',
 	ingredientAdded: '已添加 {name}。',
 	ingredientRemoved: '已移除 {name}。',
+	ingredientAllRemoved: '已移除所有 {name}。',
+	addNamedIngredient: '添加 {name}',
+	removeAllIngredient: '移除所有 {name}',
+	removeOneIngredient: '移除一个 {name}',
+	ingredientShortcuts: '回车：添加 · Shift+回车：−1 · Ctrl/⌘+回车：全部移除',
+	ingredientDiscoveryShortcuts: '回车：切换 · Shift+回车：移除 · Ctrl/⌘+回车：全部移除',
 	ingredientActionFailed: '无法更改 {name}。锅可能已满，或未选择该食材。',
 	ingredientInPot: '锅中数量：{count}。',
 	ingredientInInventory: '已在背包中。',
 	ingredientDiscoverySearchHelp:
-		'使用上下方向键浏览结果，回车添加或移除，Escape 隐藏结果。使用 Tab 移至已选食材并移除。',
+		'使用上下方向键浏览结果，回车添加或移除，Shift+回车移除一个，Ctrl 或 Command+回车移除所有同类食材，Escape 隐藏结果。使用 Tab 移至已选食材并移除。',
 	ingredientPotFull: '锅已满。请先移除一种食材，再添加 {name}。',
 	ingredientNotSelected: '尚未选择 {name}。请先添加，再尝试移除。',
 	ingredientSlotEmpty: '此格子为空。请从搜索结果中选择食材。',
@@ -44,7 +50,7 @@ const dict = {
 	analysisNoResultsYet: '目前尚未找到匹配的组合。',
 	analysisNoMatchingResults: '没有组合符合这些筛选条件。请尝试调整食材或食谱筛选条件。',
 	ingredientSearchHelp:
-		'用上、下方向键浏览结果，按回车添加，按 Escape 隐藏结果。按 Tab 移至已选食材以移除。',
+		'用上、下方向键浏览结果，按回车添加，Shift+回车移除一个，Ctrl 或 Command+回车移除所有同类食材，按 Escape 隐藏结果。按 Tab 移至已选食材以移除。',
 	filterIngredients: '食材筛选',
 	filterRecipes: '配方筛选',
 	filterNormal: '普通',
@@ -82,7 +88,8 @@ const dict = {
 
 	noscriptMessage: '抱歉,本食物指南需要 JavaScript 和现代浏览器。',
 	simulatorHeading: '锅炉模拟器',
-	simulatorBody: '在下方搜索食材,然后点击它们加入锅中。点击锅中的格子可移除该食材。',
+	simulatorBody:
+		'点击食材加入锅中。取消勾选可移除所有同类食材，点击减号移除一个，或点击锅中的格子移除食材。',
 	discoveryHeading: '背包发现',
 	discoveryBody: '在下方添加你背包中的所有物品,查看可制作的配方。点击 + 添加更多物品。',
 	discoveryFoodStatsHeading: '你的食物统计:',

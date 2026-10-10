@@ -3,10 +3,6 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const foodguideSource = readFileSync(new URL('../html/foodguide.js', import.meta.url), 'utf8');
-const componentsCss = readFileSync(
-	new URL('../html/style/components.css', import.meta.url),
-	'utf8',
-);
 const sortableTableSource = readFileSync(
 	new URL('../html/sortable-table.js', import.meta.url),
 	'utf8',
@@ -17,11 +13,6 @@ describe('foodguide UI regressions', () => {
 	it('ingredient picker refresh reads the sort dropdown through the shared dropdown API', () => {
 		assert.match(foodguideSource, /const sortType = sortControls\.getValue\(\);/);
 		assert.doesNotMatch(foodguideSource, /sortControls\.getSortType\(\)/);
-	});
-
-	it('ingredient action errors have visible feedback and an animation', () => {
-		assert.match(componentsCss, /\.ingredient-action-error/);
-		assert.match(componentsCss, /@keyframes ingredient-action-error/);
 	});
 
 	it('keeps the shared table renderer outside the page controller', () => {

@@ -75,7 +75,7 @@ const defaultStrings = {
 	noscriptMessage: 'Sorry, this Food Guide requires JavaScript and a modern web browser.',
 	simulatorHeading: 'Crock Pot Simulator',
 	simulatorBody:
-		'Search for ingredients below, then click them to add to the pot. Click a slot to remove an ingredient.',
+		'Click ingredients to add them to the pot. Uncheck to remove all copies, use the minus to remove one, or click a pot slot.',
 	discoveryHeading: 'Inventory Discovery',
 	discoveryBody:
 		'Add all items in your inventory below to see what recipes you can make. Click the + to add more items.',
@@ -97,12 +97,18 @@ const defaultStrings = {
 	removeIngredient: 'Remove {name}',
 	ingredientAdded: 'Added {name}.',
 	ingredientRemoved: 'Removed {name}.',
+	ingredientAllRemoved: 'All copies of {name} removed.',
+	addNamedIngredient: 'Add {name}',
+	removeAllIngredient: 'Remove all copies of {name}',
+	removeOneIngredient: 'Remove one {name}',
+	ingredientShortcuts: 'Enter: add · Shift+Enter: −1 · Ctrl/⌘+Enter: remove all',
+	ingredientDiscoveryShortcuts: 'Enter: toggle · Shift+Enter: remove · Ctrl/⌘+Enter: remove all',
 	ingredientActionFailed:
 		'Unable to change {name}. The pot may be full or the ingredient is not selected.',
 	ingredientInPot: 'In the pot: {count}.',
 	ingredientInInventory: 'In your inventory.',
 	ingredientDiscoverySearchHelp:
-		'Use Up and Down to browse results, Enter to add or remove, and Escape to hide results. Tab to the selected ingredients to remove them.',
+		'Use Up and Down to browse results, Enter to add or remove, Shift+Enter to remove one, Ctrl or Command+Enter to remove all copies, and Escape to hide results. Tab to the selected ingredients to remove them.',
 	ingredientPotFull: 'The pot is full. Remove an ingredient before adding {name}.',
 	ingredientNotSelected: '{name} is not selected. Add it before trying to remove it.',
 	ingredientSlotEmpty: 'This slot is empty. Select an ingredient from the search results.',
@@ -119,7 +125,7 @@ const defaultStrings = {
 	analysisNoMatchingResults:
 		'No combinations match these filters. Try adjusting the ingredient or recipe filters.',
 	ingredientSearchHelp:
-		'Use Up and Down to browse results, Enter to add, and Escape to hide results. Tab to the selected ingredients to remove them.',
+		'Use Up and Down to browse results, Enter to add, Shift+Enter to remove one, Ctrl or Command+Enter to remove all copies, and Escape to hide results. Tab to the selected ingredients to remove them.',
 	confirmClearInventory: 'Are you sure you want to clear all ingredients from your inventory?',
 	displayModeNames: 'Display: Names',
 	displayModeIcons: 'Display: Icons',

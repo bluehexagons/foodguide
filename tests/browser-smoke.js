@@ -684,6 +684,115 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 	assert.deepEqual(diagnostics, []);
 });
 
+test('picker shortcuts remove one or all copies without changing input focus or other ingredients', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [
+			['meat', 'berries', 'meat', 'berries'],
+			['meat', 'berries'],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const [tab, container] of [
+		['simulator', '#ingredients'],
+		['discovery', '#inventory'],
+	]) {
+		await page.locator(`#tab-${tab}`).click();
+		const panel = page.locator(`#${tab}`);
+		const search = panel.getByRole('combobox');
+		const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
+		const keys = () =>
+			page
+				.locator(`${container} .ingredient[data-id]`)
+				.evaluateAll(items => items.map(e => e.dataset.id));
+		await search.fill('Meat');
+		await search.press('ArrowDown');
+		await search.dispatchEvent('keydown', { key: 'Enter', shiftKey: true, isComposing: true });
+		assert.equal(
+			(await keys()).length,
+			tab === 'simulator' ? 4 : 2,
+			'IME composition cannot remove ingredients',
+		);
+		await search.press('Alt+Enter');
+		assert.equal((await keys()).length, tab === 'simulator' ? 4 : 2);
+		await search.press('Shift+Enter');
+		assert.deepEqual(
+			await keys(),
+			tab === 'simulator'
+				? ['meat@together', 'berries@together', 'berries@together']
+				: ['berries@together'],
+		);
+		assert.equal(await search.evaluate(e => e === document.activeElement), true);
+		await search.press('Enter');
+		await search.press('Control+Enter');
+		assert.deepEqual(
+			await keys(),
+			tab === 'simulator' ? ['berries@together', 'berries@together'] : ['berries@together'],
+		);
+		assert.equal(
+			await meat.getAttribute('aria-selected'),
+			'true',
+			'Removing membership preserves keyboard highlight',
+		);
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), false);
+		await search.press('Enter');
+		await search.press('Meta+Enter');
+		assert.equal(
+			(await keys()).some(key => key.startsWith('meat')),
+			false,
+		);
+		await search.press('Escape');
+		await search.press('Enter');
+		await search.press('Shift+Enter');
+		await search.press('Control+Enter');
+		assert.equal(
+			(await keys()).some(key => key.startsWith('meat')),
+			false,
+			'Dismissed results do not accept shortcuts',
+		);
+		await search.press('ArrowDown');
+		await meat.locator('.ingredient-toggle').click();
+		assert.equal(
+			(await keys()).filter(key => key.startsWith('meat')).length,
+			1,
+			'Unchecked box adds exactly once',
+		);
+		if (tab === 'simulator') {
+			await meat.locator('.text').click();
+		}
+		await meat.locator('.ingredient-subtract').click();
+		assert.equal(
+			(await keys()).filter(key => key.startsWith('meat')).length,
+			tab === 'simulator' ? 1 : 0,
+		);
+		await meat.locator('.text').click();
+		assert.equal(
+			(await keys()).filter(key => key.startsWith('meat')).length,
+			tab === 'simulator' ? 2 : 1,
+		);
+		await meat.locator('.ingredient-toggle').click();
+		const remaining = await keys();
+		assert.equal(
+			remaining.some(key => key.startsWith('meat')),
+			false,
+			'Unchecking removes every copy',
+		);
+		await meat.locator('.ingredient-subtract').click();
+		assert.deepEqual(await keys(), remaining, 'An unavailable minus target is a no-op');
+		assert.equal(
+			await panel
+				.getByRole('status')
+				.evaluate(e => e.classList.contains('ingredient-feedback')),
+			false,
+		);
+		await page.reload({ waitUntil: 'networkidle' });
+		assert.deepEqual(await keys(), remaining, 'Removal persists across reload');
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
 test('picker errors occupy reserved space above the selection without moving slots', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(
@@ -735,6 +844,20 @@ test('picker errors occupy reserved space above the selection without moving slo
 					true,
 					'Feedback must sit between the picker and selected ingredients without clipping',
 				);
+				const summary = panel.locator('.ingredient-search-summary');
+				assert.equal(await summary.isVisible(), true);
+				assert.equal(
+					await summary.evaluate(
+						e =>
+							e.getBoundingClientRect().bottom <=
+							e
+								.closest('.ingredient-feedback-space')
+								.querySelector('[role=status]')
+								.getBoundingClientRect().top,
+					),
+					true,
+					'Count and error must not overlap',
+				);
 				await panel.getByRole('option', { name, exact: true }).click({ button: 'right' });
 				assert.ok(
 					Math.abs((await position()) - before) <= 1,
@@ -745,8 +868,8 @@ test('picker errors occupy reserved space above the selection without moving slo
 				await search.press('ArrowDown');
 				assert.equal(
 					await panel.locator('.ingredient-search-summary').isVisible(),
-					false,
-					'Reopening results must not overlay their count on the error',
+					true,
+					'Result counts remain visible during errors',
 				);
 				await page.locator('#language-picker').selectOption(locale === 'es' ? 'en' : 'es');
 				assert.equal(
@@ -1420,6 +1543,41 @@ for (const { tab, slots } of [
 		assert.deepEqual(await selectedKeys(), ['meat@together'], 'Long press does not remove');
 		await slot.tap();
 		assert.deepEqual(await selectedKeys(), []);
+		const toggle = meat.locator('.ingredient-toggle');
+		const minus = meat.locator('.ingredient-subtract');
+		await toggle.tap();
+		if (tab === 'simulator') {
+			await meat.locator('.text').tap();
+		}
+		const beforeControls = await selectedKeys();
+		for (const control of [toggle, minus]) {
+			const controlPoint = await touchPoint(control);
+			await session.send('Input.dispatchTouchEvent', {
+				type: 'touchStart',
+				touchPoints: [controlPoint],
+			});
+			await session.send('Input.dispatchTouchEvent', {
+				type: 'touchCancel',
+				touchPoints: [],
+			});
+			await touchContextMenu(session, control);
+			assert.deepEqual(
+				await selectedKeys(),
+				beforeControls,
+				'Canceled/long-press removal leaves membership unchanged',
+			);
+		}
+		await minus.tap();
+		assert.equal((await selectedKeys()).length, tab === 'simulator' ? 1 : 0);
+		if (tab === 'discovery') {
+			await toggle.tap();
+		}
+		await toggle.tap();
+		assert.deepEqual(
+			await selectedKeys(),
+			[],
+			'Touch unchecking removes all without also adding',
+		);
 		await page.locator(`#${tab} .clearsearchbtn`).tap();
 		const dropdown = page.locator(`#${tab} .ingredientdropdown`);
 		await dropdown.scrollIntoViewIfNeeded();
@@ -1501,6 +1659,27 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 			clippedNames,
 			[],
 			`${context}: Touch users need complete ingredient names`,
+		);
+		const actionIssues = await page
+			.locator('.ingredient-option-actions:visible > span')
+			.evaluateAll(elements =>
+				elements.flatMap(e => {
+					const r = e.getBoundingClientRect();
+					const option = e.closest('[role=option]').getBoundingClientRect();
+					return r.width >= 31.99 &&
+						r.height >= 31.99 &&
+						r.left >= option.left &&
+						r.right <= option.right &&
+						r.top >= option.top &&
+						r.bottom <= option.bottom
+						? []
+						: [e.outerHTML];
+				}),
+			);
+		assert.deepEqual(
+			actionIssues,
+			[],
+			`${context}: Membership controls need separate, unclipped touch targets`,
 		);
 		assert.equal(
 			await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),

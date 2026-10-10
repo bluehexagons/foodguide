@@ -70,14 +70,32 @@ table tr.highlighted .name-cell::before {
 	display: grid;
 }
 
+.ingredient-feedback-header {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 4px 12px;
+	margin-bottom: 5px;
+}
+
+.ingredient-shortcuts {
+	color: var(--fg-secondary);
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.ingredient-feedback-sizing > * {
+	grid-area: 1 / 1;
+}
+
 .ingredient-feedback-space {
 	margin-top: 6px;
 	min-width: 0;
 }
 
-.ingredient-feedback-space > *,
-.ingredient-feedback-sizing > * {
-	grid-area: 1 / 1;
+.ingredient-feedback-space > :is(.ingredient-feedback-sizing, [role='status']) {
+	grid-area: 2 / 1;
 	align-self: start;
 }
 
@@ -94,14 +112,33 @@ table tr.highlighted .name-cell::before {
 
 .ingredient-feedback {
 	padding: 6px 10px;
-	border: 1px solid var(--excluded-border);
-	border-inline-start-width: 3px;
+	border: 1px solid transparent;
+	border-inline-start: 2px solid var(--excluded-border);
 	border-radius: 4px;
 	color: var(--fg-primary);
-	background: var(--excluded-bg);
+	background: color-mix(in srgb, var(--excluded-bg) 45%, transparent);
 	font-size: 14px;
 	line-height: 1.4;
 	overflow-wrap: anywhere;
+}
+
+.ingredient-feedback-space > .ingredient-feedback {
+	animation: ingredient-feedback-in 140ms ease-out;
+}
+
+@keyframes ingredient-feedback-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ingredient-feedback-space > .ingredient-feedback {
+		animation: none;
+	}
 }
 
 /* Keep the joined search field's ring inside its rounded border. */
@@ -125,13 +162,62 @@ table tr.highlighted .name-cell::before {
 	outline-color: var(--header-text);
 }
 
-/* Reserve badge space before selection so labels and touch targets stay still. */
+/* Keep membership actions still when selection or quantity changes. */
+.ingredientdropdown {
+	--ingredient-action-size: 24px;
+}
+
+@media (any-pointer: coarse) {
+	.ingredientdropdown {
+		--ingredient-action-size: 32px;
+	}
+}
+
 .ingredientdropdown .item {
 	position: relative;
+	min-height: max(32px, calc(var(--ingredient-action-size) + 12px));
+}
+
+.ingredientdropdown:not(.hidetext) div {
+	grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
 }
 
 .ingredientdropdown:not(.hidetext) .item {
-	padding-inline-end: 20px;
+	padding-inline-end: calc(var(--ingredient-action-size) * 2 + 10px);
+}
+
+.ingredient-option-actions {
+	position: absolute;
+	inset-inline-end: 3px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	gap: 2px;
+}
+
+.ingredient-toggle,
+.ingredient-subtract {
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--ingredient-action-size);
+	height: var(--ingredient-action-size);
+	border: 1px solid var(--picked-border);
+	border-radius: 4px;
+	color: var(--fg-primary);
+	background: var(--bg-primary);
+}
+
+.ingredient-subtract::before {
+	content: '';
+	width: 8px;
+	border-bottom: 2px solid currentColor;
+}
+
+.ingredientdropdown .item:not(.faded) .ingredient-subtract {
+	opacity: 0.35;
+	cursor: default;
 }
 
 .ingredientdropdown .item.faded {
@@ -151,20 +237,11 @@ table tr.highlighted .name-cell::before {
 
 .ingredient-picked-marker {
 	display: none;
-	position: absolute;
-	top: 0;
-	right: 0;
 	align-items: center;
 	gap: 2px;
-	min-height: 12px;
-	padding: 1px 3px 2px;
-	border-radius: 0 2px 0 3px;
-	background: var(--focus-color);
-	color: var(--bg-secondary);
 	font-size: 10px;
 	font-weight: 700;
 	line-height: 1;
-	pointer-events: none;
 }
 
 .ingredient-picked-marker::before {
@@ -176,8 +253,32 @@ table tr.highlighted .name-cell::before {
 	transform: rotate(-45deg);
 }
 
+.ingredientdropdown .item.faded .ingredient-toggle {
+	background: var(--focus-color);
+	border-color: var(--focus-color);
+	color: var(--bg-secondary);
+}
+
 .ingredientdropdown .item.faded .ingredient-picked-marker {
 	display: inline-flex;
+}
+
+.ingredientdropdown.hidetext:is(.density-compact, .density-normal, .density-cozy) div {
+	grid-template-columns: repeat(
+		auto-fill,
+		minmax(calc(var(--ingredient-action-size) * 2 + 10px), 1fr)
+	);
+}
+
+.ingredientdropdown.hidetext .item {
+	padding-bottom: calc(var(--ingredient-action-size) + 6px);
+}
+
+.ingredientdropdown.hidetext .ingredient-option-actions {
+	top: auto;
+	bottom: 2px;
+	inset-inline-end: 50%;
+	transform: translateX(50%);
 }
 
 /* Keyboard highlight and picked state are independent. */
@@ -201,7 +302,8 @@ table tr.highlighted .name-cell::before {
 		opacity: 1;
 	}
 
-	.ingredient-picked-marker {
+	.ingredientdropdown .item.faded .ingredient-toggle {
+		forced-color-adjust: none;
 		background: Highlight;
 		color: HighlightText;
 	}

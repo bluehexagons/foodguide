@@ -144,13 +144,19 @@ The tabs use one Tab stop with Left/Right, Home, and End navigation. Ingredient
 slots are native buttons: Enter or Space removes a selected item or focuses the
 search field from an empty slot. The picker keeps focus on its input while Up/Down
 changes `aria-activedescendant`; Escape hides the results and arrow keys reopen
-them. Visible result counts and empty-search messages are localized. Search
+them. Enter adds (or toggles Discovery membership); Shift+Enter removes one copy,
+and Ctrl/Command+Enter removes all copies of the highlighted ingredient. These
+commands stay within the combobox, ignore IME composition and Alt-modified keys,
+and do nothing while results are dismissed. Visible result counts and empty-search
+messages are localized. Search
 announcements wait for a short typing pause, skip IME composition, and are canceled
 when focus leaves the search or an ingredient action takes priority. Action
 feedback uses the same atomic status region between the picker and selection.
 An invisible grid measures the available error messages in the current language
 and game mode, reserving enough space for wrapping without moving the ingredients.
-Only the result count or visible error occupies that space at a time. Failed
+Result counts and localized keyboard hints occupy a separate row above the reserved
+error area, so counts remain visible during errors. Error messages fade in without
+movement, and reduced-motion settings disable that transition. Failed
 actions display persistent explanations and recovery steps; changing language
 translates the active error, while a new search or successful action clears it.
 Their optional flash uses one bounded timer per target, so cleanup
@@ -172,6 +178,8 @@ cancel touch events needed for native scrolling and zooming.
 
 `html/style/touch.css` uses `any-pointer: coarse` to provide at least 44-pixel
 button and picker targets on touchscreens, including computers with a mouse.
+The optional in-option membership shortcuts use separate 32-pixel targets (24 on
+mouse-only devices), backed by the larger option/slot targets and keyboard commands.
 Compact/icon-only modes retain that minimum. Picker names wrap on touchscreens;
 selected ingredients and analyzer filters also show names instead of depending
 on hover titles. Text fields use 16-pixel type,
@@ -183,7 +191,14 @@ and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enh
 `html/style/accessibility.css` provides drawn checkmarks for selected game modes,
 menu choices, picked ingredients, visible columns, and highlighted table rows.
 Picked ingredients also have a distinct background and repeated pot ingredients
-show a quantity badge. Rebuilds after search, sort, and game changes derive this
+show a quantity badge. Clicking its checkbox-shaped target clears all copies;
+the adjacent minus removes one. These are pointer shortcuts inside an atomic
+listbox option, rather than nested focusable controls; the combobox documents
+and exposes equivalent keyboard commands with `aria-keyshortcuts`. Unpicked
+checkboxes add once, and unavailable minus targets do nothing. Clearing copies
+walks fixed slots backwards to preserve the remaining order, then refreshes
+recipes and persistence once. Rebuilds after search, sort, and game changes derive
+this
 state from the slots; quantities also appear in accessible names, while
 `aria-description` describes membership independently of the keyboard highlight's
 `aria-selected`. Focus rings use the theme's focus color

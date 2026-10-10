@@ -1404,6 +1404,17 @@ import './locales/index.js';
 			const pickerSummary = document.createElement('div');
 			pickerSummary.className = 'ingredient-search-summary';
 			pickerSummary.id = `ingredient-summary-${index}`;
+			const feedbackHeader = document.createElement('div');
+			feedbackHeader.className = 'ingredient-feedback-header';
+			const shortcutHint = document.createElement('span');
+			shortcutHint.className = 'ingredient-shortcuts';
+			const shortcutKey = fixedSlots.length
+				? 'ingredientShortcuts'
+				: 'ingredientDiscoveryShortcuts';
+			shortcutHint.setAttribute('data-i18n', shortcutKey);
+			shortcutHint.textContent = t(shortcutKey);
+			picker.setAttribute('aria-keyshortcuts', 'Enter Shift+Enter Control+Enter Meta+Enter');
+			feedbackHeader.append(pickerSummary, shortcutHint);
 			const pickerHelp = document.createElement('div');
 			pickerHelp.className = 'sr-only';
 			pickerHelp.id = `ingredient-help-${index}`;
@@ -1422,7 +1433,7 @@ import './locales/index.js';
 				  }
 				| undefined;
 			const updateSummaryVisibility = () => {
-				pickerSummary.hidden = dropdown.hidden || Boolean(pickerError);
+				pickerSummary.hidden = dropdown.hidden && !pickerError;
 			};
 			const cancelSearchAnnouncement = () => {
 				window.clearTimeout(searchAnnouncement);
@@ -1505,25 +1516,28 @@ import './locales/index.js';
 				);
 			};
 
-			const removeSlotById = (id?: string) => {
+			const removeSlotById = (id?: string, all = false) => {
 				if (!id) {
 					return -1;
 				}
 
 				if (limited) {
+					let removed = -1;
+					// Work backwards: clearing a slot compacts the following ingredients.
 					for (let i = fixedSlots.length - 1; i >= 0; i--) {
 						if (getSlot(fixedSlots[i])?.key === id) {
 							setSlot(fixedSlots[i], null);
-							if (loaded) {
-								updateRecipes();
-								saveState();
+							removed = i;
+							if (!all) {
+								break;
 							}
-
-							return i;
 						}
 					}
-
-					return -1;
+					if (removed !== -1 && loaded) {
+						updateRecipes();
+						saveState();
+					}
+					return removed;
 				}
 
 				const i = slots.indexOf(id);
@@ -1569,6 +1583,14 @@ import './locales/index.js';
 					);
 				} else {
 					announceIngredient(removing ? 'ingredientRemoved' : 'ingredientAdded', id);
+				}
+			};
+			const removeAllCopies = (id: string, target: HTMLElement) => {
+				const name = getCollectionItem(from, id)?.name || id;
+				if (removeSlotById(id, true) === -1) {
+					flashIngredientActionError(target, 'ingredientNotSelected', { name });
+				} else {
+					announcePicker(t('ingredientAllRemoved', { name }));
 				}
 			};
 
@@ -1666,10 +1688,22 @@ import './locales/index.js';
 				name.appendChild(document.createTextNode(item.name));
 				li.appendChild(name);
 				li.appendChild(document.createTextNode(' '));
+				// These are pointer shortcuts within one atomic listbox option. Keyboard
+				// and assistive-technology users keep focus on the combobox and use Enter
+				// modifiers; nesting buttons/checkboxes would break listbox semantics.
+				const actions = document.createElement('span');
+				actions.className = 'ingredient-option-actions';
+				actions.setAttribute('aria-hidden', 'true');
+				const toggle = document.createElement('span');
+				toggle.className = 'ingredient-toggle';
 				const marker = document.createElement('span');
 				marker.className = 'ingredient-picked-marker';
-				marker.setAttribute('aria-hidden', 'true');
-				li.appendChild(marker);
+				toggle.appendChild(marker);
+				const subtract = document.createElement('span');
+				subtract.className = 'ingredient-subtract';
+				// Draw the minus in CSS so it doesn't alter the ingredient's name.
+				actions.append(toggle, subtract);
+				li.appendChild(actions);
 
 				li.dataset.id = item.key;
 				li.id = `ingredient-result-${index}-${pickerOptions.length}`;
@@ -1679,7 +1713,21 @@ import './locales/index.js';
 
 				bindActivation(
 					li,
-					() => pickItem(item.key, li),
+					event => {
+						const target = event.target instanceof Element ? event.target : null;
+						if (target?.closest('.ingredient-subtract')) {
+							if (li.classList.contains('faded')) {
+								pickItem(item.key, li, true);
+							}
+						} else if (
+							target?.closest('.ingredient-toggle') &&
+							li.classList.contains('faded')
+						) {
+							removeAllCopies(item.key, li);
+						} else {
+							pickItem(item.key, li);
+						}
+					},
 					() => pickItem(item.key, li, true),
 				);
 				this.appendChild(li);
@@ -1699,6 +1747,14 @@ import './locales/index.js';
 					element.classList.toggle('faded', count > 0);
 					element.querySelector('.ingredient-picked-marker')!.textContent =
 						count > 1 ? String(count) : '';
+					element.querySelector<HTMLElement>('.ingredient-toggle')!.title = t(
+						count ? 'removeAllIngredient' : 'addNamedIngredient',
+						{ name },
+					);
+					element.querySelector<HTMLElement>('.ingredient-subtract')!.title = t(
+						'removeOneIngredient',
+						{ name },
+					);
 					// The accessible name must include the quantity shown in the badge.
 					element.setAttribute('aria-label', count > 1 ? `${name} ${count}` : name);
 					if (count) {
@@ -2302,14 +2358,14 @@ import './locales/index.js';
 			searchRow.appendChild(controlsGroup);
 
 			searchRow.parentNode!.insertBefore(dropdown, parent.parentElement!);
-			feedbackSpace.append(feedbackSizing, pickerSummary, pickerStatus);
+			feedbackSpace.append(feedbackHeader, feedbackSizing, pickerStatus);
 			searchRow.parentNode!.insertBefore(feedbackSpace, parent.parentElement!);
 
 			picker.addEventListener('input', event => refreshPicker(!event.isComposing));
 			picker.addEventListener('compositionstart', cancelSearchAnnouncement);
 			picker.addEventListener('compositionend', () => updateSearchFeedback(true));
 			picker.addEventListener('keydown', event => {
-				if (event.isComposing || event.altKey || event.ctrlKey || event.metaKey) {
+				if (event.isComposing || event.altKey) {
 					return;
 				}
 				const options = pickerOptions;
@@ -2319,7 +2375,14 @@ import './locales/index.js';
 					}
 					event.preventDefault();
 					const target = options[Math.max(0, selectedResult)];
-					pickItem(target.key, target.element);
+					if (event.ctrlKey || event.metaKey) {
+						removeAllCopies(target.key, target.element);
+					} else {
+						pickItem(target.key, target.element, event.shiftKey);
+					}
+					return;
+				}
+				if (event.ctrlKey || event.metaKey) {
 					return;
 				}
 				if (event.key === 'Escape') {

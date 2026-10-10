@@ -655,6 +655,8 @@ button.makablebutton:disabled:hover {
 
 /* Ingredient result groups and their option layouts. */
 .ingredientdropdown {
+	container: ingredient-picker / inline-size;
+	--ingredient-group-width: 20rem;
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -669,6 +671,31 @@ button.makablebutton:disabled:hover {
 	margin-top: 12px;
 }
 
+.ingredient-result-group {
+	min-width: 0;
+}
+
+/* Use the picker's available width, including when browser zoom makes it narrower. */
+@container ingredient-picker (min-width: 640px) {
+	.ingredient-result-groups.is-grouped {
+		display: grid;
+		grid-template-columns: repeat(
+			auto-fit,
+			minmax(min(100%, var(--ingredient-group-width)), 1fr)
+		);
+		align-items: start;
+		gap: 12px;
+	}
+
+	.ingredient-result-groups.is-grouped > .ingredient-result-group {
+		margin: 0;
+		padding: 8px;
+		border: 1px solid var(--border-color);
+		border-radius: 6px;
+		background: var(--bg-secondary);
+	}
+}
+
 .ingredient-group-heading {
 	display: block;
 	margin-bottom: 6px;
@@ -677,6 +704,7 @@ button.makablebutton:disabled:hover {
 	color: var(--fg-secondary);
 	font-size: 12px;
 	font-weight: 600;
+	overflow-wrap: anywhere;
 }
 
 .ingredientdropdown .ingredient-options {
@@ -763,6 +791,12 @@ button.makablebutton:disabled:hover {
 	grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
 	gap: 2px;
 }
+.ingredientdropdown.density-compact {
+	--ingredient-group-width: 16rem;
+}
+.ingredientdropdown.hidetext.density-compact {
+	--ingredient-group-width: 12rem;
+}
 .ingredientdropdown.density-compact .item {
 	padding: 2px 4px;
 	background: transparent;
@@ -816,6 +850,9 @@ button.makablebutton:disabled:hover {
 	grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
 	gap: 6px;
 }
+.ingredientdropdown.hidetext.density-normal {
+	--ingredient-group-width: 14rem;
+}
 .ingredientdropdown.hidetext.density-normal .item :is(img, .icon) {
 	width: 28px;
 	height: 28px;
@@ -841,6 +878,9 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.hidetext.density-cozy .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
 	gap: 8px;
+}
+.ingredientdropdown.hidetext.density-cozy {
+	--ingredient-group-width: 16rem;
 }
 .ingredientdropdown.hidetext.density-cozy .item :is(img, .icon) {
 	width: 36px;

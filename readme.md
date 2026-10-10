@@ -42,7 +42,8 @@ The ingredient itself adds another copy in the Simulator and toggles membership
 in Discovery. Choose Compact for dense rows, Normal for larger rows, or Cozy for
 cards; list and icon-only views are also available.
 
-Group results by ingredient type or preparation, or leave them ungrouped. Auto
+Group results by ingredient type or preparation, or leave them ungrouped. Groups
+appear as cards across wider pickers and stack on narrow screens. Auto
 sort prioritizes exact names and search relevance, keeps related preparations
 together while browsing, and uses character-adjusted values for stat searches.
 Explicit name and stat sorts remain available. Display, density, sort, grouping, and cooking

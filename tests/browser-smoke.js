@@ -1776,6 +1776,124 @@ test('grouped ingredient results retain relevance, keyboard navigation, localiza
 	assert.deepEqual(diagnostics, []);
 });
 
+test('group cards use available width across displays and densities without changing keyboard order', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const hasTouch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{ version: 'together', pickers: [['meat'], ['meat']] },
+			{ hasTouch, viewport: { width: 1280, height: 800 } },
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		for (const tab of ['simulator', 'discovery']) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.getByRole('combobox');
+			const select = async (selector, value) => {
+				await panel.locator(selector).click();
+				await panel.locator(`[role=menuitemradio][data-value="${value}"]`).click();
+			};
+			await select('.groupingredients', 'type');
+			const groups = panel.locator('.ingredient-result-group[role=group]');
+			const geometry = () =>
+				panel.locator('.ingredientdropdown').evaluate(picker => ({
+					overflow: picker.scrollWidth > picker.clientWidth,
+					groups: [...picker.querySelectorAll('.ingredient-result-group')].map(group => ({
+						rect: group.getBoundingClientRect().toJSON(),
+						scrolls: ['auto', 'scroll'].includes(getComputedStyle(group).overflowY),
+						overflow: group.scrollWidth > group.clientWidth + 1,
+					})),
+				}));
+			const firstRowSizes = {};
+			for (const display of ['names', 'icons', 'list']) {
+				await select('.displaymodeingredients:not(.densityingredients)', display);
+				for (const density of ['compact', 'normal', 'cozy']) {
+					await select('.densityingredients', density);
+					const layout = await geometry();
+					const [first, second] = layout.groups;
+					assert.ok(Math.abs(first.rect.top - second.rect.top) < 1);
+					assert.ok(
+						second.rect.left >= first.rect.right,
+						`${tab} ${display} ${density}: Cards share a row`,
+					);
+					assert.equal(layout.overflow, false);
+					assert.ok(
+						layout.groups.every(group => !group.scrolls && !group.overflow),
+						'Cards use one outer scroll area and contain their contents',
+					);
+					firstRowSizes[`${display}-${density}`] = layout.groups.filter(
+						group => Math.abs(group.rect.top - first.rect.top) < 1,
+					).length;
+				}
+			}
+			assert.ok(firstRowSizes['names-compact'] > firstRowSizes['names-normal']);
+			assert.ok(firstRowSizes['icons-compact'] > firstRowSizes['names-compact']);
+			await select('.displaymodeingredients:not(.densityingredients)', 'names');
+			await select('.densityingredients', 'compact');
+			for (const width of [320, 1280]) {
+				await page.setViewportSize({ width, height: 800 });
+				for (const locale of ['en', 'es', 'zh']) {
+					await page.locator('#language-picker').selectOption(locale);
+					const layout = await geometry();
+					assert.equal(layout.overflow, false, `${tab} ${locale}: Localized groups fit`);
+					assert.ok(layout.groups.every(group => !group.overflow));
+				}
+			}
+			await page.locator('#language-picker').selectOption('en');
+			const count = await groups.first().locator('[role=option]').count();
+			const firstInNextGroup = await groups
+				.nth(1)
+				.locator('[role=option]')
+				.first()
+				.elementHandle();
+			await search.focus();
+			for (let i = 0; i <= count; i++) {
+				await search.press('ArrowDown');
+			}
+			const activeId = await search.getAttribute('aria-activedescendant');
+			assert.equal(activeId, await firstInNextGroup.getAttribute('id'));
+			for (const width of [700, 320, 768, 1280]) {
+				await page.setViewportSize({ width, height: 800 });
+				const { groups: cards, overflow } = await geometry();
+				const [first, second] = cards;
+				if (width <= 700) {
+					assert.ok(
+						second.rect.top >= first.rect.bottom,
+						'Narrow containers stack groups',
+					);
+				} else {
+					assert.ok(
+						Math.abs(first.rect.top - second.rect.top) < 1,
+						'Wide containers show groups side by side',
+					);
+				}
+				assert.equal(overflow, false);
+				assert.equal(await search.getAttribute('aria-activedescendant'), activeId);
+				assert.equal(await search.evaluate(e => e === document.activeElement), true);
+				assert.equal(
+					await firstInNextGroup.evaluate(e => e.isConnected),
+					true,
+					'Resizing keeps the active option in place',
+				);
+			}
+			await search.press('Enter');
+			assert.equal(await panel.locator('.ingredientlist .icon').count(), 2);
+			await select('.groupingredients', 'none');
+			assert.equal(await groups.count(), 0);
+			assert.equal(
+				await panel
+					.locator('.ingredient-result-groups')
+					.evaluate(e => getComputedStyle(e).display),
+				'block',
+			);
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
 test('cooking views preserve selections, support keyboard and touch, and persist independently', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	for (const touch of [false, true]) {

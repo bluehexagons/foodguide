@@ -1884,6 +1884,7 @@ import './locales/index.js';
 
 				ul = document.createElement('div');
 				ul.className = 'ingredient-result-groups';
+				ul.classList.toggle('is-grouped', groupControls.getValue() !== 'none');
 				pickerOptions = [];
 				groupLabels = [];
 				for (const group of groupIngredients(

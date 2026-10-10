@@ -624,7 +624,7 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 		await search.fill('Meat');
 		assert.equal(await meat.getAttribute('aria-selected'), 'false');
 		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
-		await panel.getByRole('button', { name: 'Sort: Default', exact: true }).click();
+		await panel.getByRole('button', { name: 'Sort: Auto', exact: true }).click();
 		await panel.getByRole('menuitemradio', { name: 'Sort: Health', exact: true }).click();
 		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
 		if (tab === 'discovery') {
@@ -764,11 +764,11 @@ test('picker shortcuts remove one or all copies without changing input focus or 
 			'Dismissed results do not accept shortcuts',
 		);
 		await search.press('ArrowDown');
-		await meat.locator('.ingredient-toggle').click();
+		await meat.click();
 		assert.equal(
 			(await keys()).filter(key => key.startsWith('meat')).length,
 			1,
-			'Unchecked box adds exactly once',
+			'An unpicked ingredient adds exactly once',
 		);
 		if (tab === 'simulator') {
 			await meat.locator('.text').click();
@@ -790,8 +790,8 @@ test('picker shortcuts remove one or all copies without changing input focus or 
 			false,
 			'Unchecking removes every copy',
 		);
-		await meat.locator('.ingredient-subtract').click();
-		assert.deepEqual(await keys(), remaining, 'An unavailable minus target is a no-op');
+		assert.equal(await meat.locator('.ingredient-toggle').isVisible(), false);
+		assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
 		assert.equal(
 			await panel
 				.getByRole('status')
@@ -1440,11 +1440,25 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 							'displaymodeingredients:not(.densityingredients)',
 							'densityingredients',
 							'sortingredients',
+							'groupingredients',
 						]) {
 							await page.locator(`#simulator button.${buttonClass}`).click();
 							await audit({ theme, locale, tab, menu: buttonClass });
 							await page.keyboard.press('Escape');
 						}
+						for (const grouping of ['type', 'preparation']) {
+							await page.locator('#simulator .groupingredients').click();
+							await page
+								.locator(
+									`#simulator [role=menuitemradio][data-value="${grouping}"]`,
+								)
+								.click();
+							await audit({ theme, locale, tab, grouping });
+						}
+						await page.locator('#simulator .groupingredients').click();
+						await page
+							.locator('#simulator [role=menuitemradio][data-value="none"]')
+							.click();
 						await page.locator('#simulator .ingredientpicker').fill('zzzznomatches');
 						await audit({ theme, locale, tab, search: 'no matches' });
 						await page.locator('#simulator .clearsearchbtn').click();
@@ -1564,7 +1578,7 @@ for (const { tab, slots } of [
 		assert.deepEqual(await selectedKeys(), []);
 		const toggle = meat.locator('.ingredient-toggle');
 		const minus = meat.locator('.ingredient-subtract');
-		await toggle.tap();
+		await meat.tap();
 		if (tab === 'simulator') {
 			await meat.locator('.text').tap();
 		}
@@ -1589,7 +1603,7 @@ for (const { tab, slots } of [
 		await minus.tap();
 		assert.equal((await selectedKeys()).length, tab === 'simulator' ? 1 : 0);
 		if (tab === 'discovery') {
-			await toggle.tap();
+			await meat.tap();
 		}
 		await toggle.tap();
 		assert.deepEqual(
@@ -1617,6 +1631,130 @@ for (const { tab, slots } of [
 	});
 }
 
+test('grouped ingredient results retain relevance, keyboard navigation, localization, and independent preferences', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [
+						{
+							name: 'foodGuideState',
+							value: JSON.stringify({
+								version: 'together',
+								pickers: [['meat', 'meat'], ['meat']],
+							}),
+						},
+						{
+							name: 'foodGuideSortPreference',
+							value: JSON.stringify(['default', 'name']),
+						},
+					],
+				},
+			],
+		},
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(await page.locator('#simulator .sortingredients').textContent(), 'Sort: Auto');
+	assert.equal(await page.locator('#discovery .sortingredients').textContent(), 'Sort: Name');
+	for (const tab of ['simulator', 'discovery']) {
+		await page.locator(`#tab-${tab}`).click();
+		const panel = page.locator(`#${tab}`);
+		const search = panel.getByRole('combobox');
+		await panel.locator('.sortingredients').click();
+		await panel.locator('[role=menuitemradio][data-value=auto]').click();
+		await search.fill('Meat');
+		const menu = panel.locator('.groupingredients');
+		await menu.focus();
+		await menu.press('ArrowDown');
+		await page.keyboard.press('ArrowDown');
+		await page.keyboard.press('Enter');
+		assert.equal(await menu.evaluate(e => e === document.activeElement), true);
+		assert.equal(
+			await panel.locator('[role=option]').first().getAttribute('data-id'),
+			'meat@together',
+		);
+		const options = await panel.locator('[role=option]').evaluateAll(items =>
+			items.map(e => ({
+				id: e.id,
+				key: e.dataset.id,
+				position: Number(e.getAttribute('aria-posinset')),
+				size: Number(e.getAttribute('aria-setsize')),
+			})),
+		);
+		assert.equal(
+			new Set(options.map(e => e.key)).size,
+			options.length,
+			'Every ingredient appears once',
+		);
+		assert.deepEqual(
+			options.map(e => e.position),
+			options.map((_, i) => i + 1),
+		);
+		assert.ok(options.every(e => e.size === options.length));
+		const groups = panel.locator('.ingredient-result-group[role=group]');
+		const firstCount = await groups.first().locator('[role=option]').count();
+		await search.focus();
+		for (let i = 0; i <= firstCount; i++) {
+			await search.press('ArrowDown');
+		}
+		assert.equal(
+			await search.getAttribute('aria-activedescendant'),
+			options[firstCount].id,
+			'Arrows skip headings and cross group boundaries',
+		);
+		assert.equal(await search.evaluate(e => e === document.activeElement), true);
+		await search.press('Escape');
+		await search.press('ArrowDown');
+		if (tab === 'simulator') {
+			await search.press('Shift+Enter');
+			assert.equal(
+				await panel
+					.locator('[data-id="meat@together"][role=option]')
+					.getAttribute('aria-label'),
+				'Meat',
+			);
+		}
+		await search.press('Control+Enter');
+		assert.equal(await panel.locator('.ingredient-option-actions:visible').count(), 0);
+		assert.equal(
+			await panel.locator('[role=option]').first().getAttribute('data-id'),
+			'meat@together',
+			'Removal does not reorder groups',
+		);
+		for (const [locale, heading] of Object.entries({ en: 'Meat', es: 'Carne', zh: '肉类' })) {
+			await page.locator('#language-picker').selectOption(locale);
+			assert.ok((await groups.first().textContent()).startsWith(`${heading} (`));
+		}
+		await page.locator('#language-picker').selectOption('en');
+		if (tab === 'discovery') {
+			await menu.press('ArrowDown');
+			await page.keyboard.press('End');
+			await page.keyboard.press('Enter');
+		}
+		await search.fill('zzzznomatches');
+		assert.equal(await groups.count(), 0, 'Empty searches omit group headers');
+		await search.fill('Meat');
+	}
+	assert.deepEqual(
+		await page.evaluate(() => JSON.parse(localStorage.getItem('foodGuideGroupPreference'))),
+		['type', 'preparation'],
+	);
+	await page.reload({ waitUntil: 'networkidle' });
+	assert.equal(
+		await page.locator('#simulator .groupingredients').textContent(),
+		'Group by: Ingredient type',
+	);
+	assert.equal(
+		await page.locator('#discovery .groupingredients').textContent(),
+		'Group by: Preparation',
+	);
+	assert.deepEqual(diagnostics, []);
+});
+
 test('compact picker badges leave larger hit areas and an unobstructed ingredient center', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	for (const hasTouch of [false, true]) {
@@ -1626,7 +1764,7 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 			{
 				activeTab: 'simulator',
 				version: 'together',
-				pickers: [['meat', 'meat', 'meat', 'berries'], []],
+				pickers: [['meat_cooked', 'meat_cooked', 'meat_cooked', 'berries'], []],
 			},
 			{ hasTouch, viewport: { width: 1280, height: 812 } },
 		);
@@ -1634,7 +1772,7 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 		const panel = page.locator('#simulator');
 		await panel.getByRole('combobox').fill('Meat');
-		const meat = panel.locator('[role=option][data-id="meat@together"]');
+		const meat = panel.locator('[role=option][data-id="meat_cooked@together"]');
 		const activate = (locator, options) =>
 			hasTouch ? locator.tap(options) : locator.click(options);
 		const selectedKeys = () =>
@@ -1650,6 +1788,8 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 				await meat.scrollIntoViewIfNeeded();
 				const geometry = await meat.evaluate(option => {
 					const rect = option.getBoundingClientRect();
+					const text = option.querySelector('.text').getBoundingClientRect();
+					const icon = option.querySelector('.icon').getBoundingClientRect();
 					const actions = [
 						...option.querySelectorAll('.ingredient-option-actions > span'),
 					];
@@ -1684,6 +1824,8 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 					});
 					return {
 						rect: rect.toJSON(),
+						text: text.toJSON(),
+						icon: icon.toJSON(),
 						controls,
 						centerHasAction: !!document
 							.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
@@ -1706,7 +1848,7 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 				);
 				for (const { hit, badge, extraHitPoint } of geometry.controls) {
 					assert.ok(
-						badge.width <= 20 && badge.height <= 14,
+						badge.width <= 22 && badge.height <= 16,
 						`${context}: Badges remain small`,
 					);
 					assert.ok(
@@ -1732,6 +1874,19 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 						`${context}: Hit area stays within its ingredient`,
 					);
 				}
+				if (mode === 'names') {
+					if (density === 'cozy') {
+						assert.ok(
+							geometry.icon.bottom <= geometry.text.top,
+							`${context}: Cozy puts names below icons`,
+						);
+					} else {
+						assert.ok(
+							geometry.icon.right <= geometry.text.left,
+							`${context}: Inline names follow icons`,
+						);
+					}
+				}
 				if (density !== 'compact') {
 					continue;
 				}
@@ -1743,26 +1898,66 @@ test('compact picker badges leave larger hit areas and an unobstructed ingredien
 				} else if (mode === 'names') {
 					assert.ok(geometry.rect.width < 160, `${context}: No wide action column`);
 				}
+				if (mode !== 'icons') {
+					assert.ok(
+						toggle.badge.right > geometry.text.left &&
+							toggle.badge.left < geometry.text.right &&
+							toggle.badge.bottom > geometry.text.top &&
+							toggle.badge.top < geometry.text.bottom,
+						`${context}: Compact badges overlay text instead of reserving space`,
+					);
+				}
+				const layout = () =>
+					panel
+						.locator('[role=option]')
+						.evaluateAll(items =>
+							items.map(item => [
+								item.dataset.id,
+								item.offsetLeft,
+								item.offsetTop,
+								item.offsetWidth,
+								item.offsetHeight,
+							]),
+						);
+				const beforeLayout = await layout();
 				const before = await selectedKeys();
 				await activate(meat.locator('.ingredient-subtract'), {
 					position: minus.extraHitPoint,
 				});
 				assert.deepEqual(
 					await selectedKeys(),
-					before.toSpliced(before.lastIndexOf('meat@together'), 1),
+					before.toSpliced(before.lastIndexOf('meat_cooked@together'), 1),
 				);
 				await activate(meat.locator('.ingredient-toggle'), {
 					position: toggle.extraHitPoint,
 				});
 				assert.deepEqual(await selectedKeys(), ['berries@together']);
-				for (let i = 0; i < 3; i++) {
+				assert.deepEqual(
+					await layout(),
+					beforeLayout,
+					`${context}: Removing leaves tile positions unchanged`,
+				);
+				assert.equal(await meat.locator('.ingredient-option-actions').isVisible(), false);
+				// The former shortcut's blank hit area now performs the ingredient action.
+				await activate(meat, {
+					position: {
+						x: toggle.hit.left - geometry.rect.left + toggle.extraHitPoint.x,
+						y: toggle.hit.top - geometry.rect.top + toggle.extraHitPoint.y,
+					},
+				});
+				for (let i = 1; i < 3; i++) {
 					await activate(meat);
 				}
+				assert.deepEqual(
+					await layout(),
+					beforeLayout,
+					`${context}: Adding leaves tile positions unchanged`,
+				);
 				assert.deepEqual(await selectedKeys(), [
 					'berries@together',
-					'meat@together',
-					'meat@together',
-					'meat@together',
+					'meat_cooked@together',
+					'meat_cooked@together',
+					'meat_cooked@together',
 				]);
 			}
 		}

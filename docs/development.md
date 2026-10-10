@@ -52,6 +52,7 @@ Go is unavailable; the application itself does not require Go.
 | `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.    |
 | `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                           |
 | `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.   |
+| `src/ingredient-sort.ts`, `src/ingredient-groups.ts`                  | Picker relevance, explicit sorting, and disjoint groups.      |
 | `src/number-format.ts`                                                | Signed value formatting with fraction glyphs.                 |
 | `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
 | `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.    |
@@ -178,12 +179,16 @@ cancel touch events needed for native scrolling and zooming.
 
 `html/style/touch.css` uses `any-pointer: coarse` to provide at least 44-pixel
 button and picker targets on touchscreens, including computers with a mouse.
-The optional in-option membership shortcuts overlay small corner badges on larger
-transparent hit areas, backed by the option/slot targets and keyboard commands.
-Named options split their right edge into two separate targets, up to 24 pixels
-wide on mouse-only devices or 28 on touchscreens. Icon-only options use 20-pixel
-targets at opposite corners; their 44-pixel minimum leaves the center free for the
-ingredient's ordinary action. These overlays add no footer or wide action column.
+The optional membership shortcuts appear only for picked ingredients. They overlay
+the existing content with larger transparent hit areas, backed by option/slot
+targets and keyboard commands. Compact uses inline badges over the text and
+20-pixel targets; its list rows follow the content width. Normal uses corner
+overlays and wider targets. Cozy names use cards with the name below the icon,
+while cozy list mode retains larger rows. Icon-only options place the controls
+at opposite corners, leaving the center free for the ordinary ingredient action.
+Visibility and quantity changes add no padding, footer, or layout movement.
+Quantity badges stay opaque; minus controls brighten on hover or keyboard
+highlight, and touch/forced-color modes keep them fully visible.
 Picker names wrap on touchscreens;
 selected ingredients and analyzer filters also show names instead of depending
 on hover titles. Text fields use 16-pixel type,
@@ -199,11 +204,10 @@ show a quantity badge. Clicking its checkbox-shaped target clears all copies;
 the minus removes one. These are pointer shortcuts inside an atomic
 listbox option, rather than nested focusable controls; the combobox documents
 and exposes equivalent keyboard commands with `aria-keyshortcuts`. Unpicked
-checkboxes add once, and unavailable minus targets do nothing. Clearing copies
+ingredients have no visible or hit-testable removal controls. Clearing copies
 walks fixed slots backwards to preserve the remaining order, then refreshes
 recipes and persistence once. Rebuilds after search, sort, and game changes derive
-this
-state from the slots; quantities also appear in accessible names, while
+this state from the slots; quantities also appear in accessible names, while
 `aria-description` describes membership independently of the keyboard highlight's
 `aria-selected`. Focus rings use the theme's focus color
 and stay inside joined search inputs and scrolling menu items. These cues supplement
@@ -211,6 +215,19 @@ color. Targeted forced-color rules retain the
 user's system palette through explicit system-color variables, remove the slot
 texture, and preserve selection outlines
 and filter badges. Keep this stylesheet last so it can adjust the shared styles.
+
+Auto sorting gives exact names priority, then search relevance, while preserving
+related preparation order when browsing. Stat-tag searches use character-adjusted
+values. It never reorders in response to membership changes; explicit sorts stay
+under the user's control. Old Default preferences restore as Auto. Group by
+ingredient type or preparation creates named listbox groups with localized counts,
+assigning mixed-tag foods once (monster before fish before meat for classification).
+Browsing uses a consistent group order, while Auto searches start with the group
+containing the strongest match. Sorting remains stable within each group. Arrow
+navigation spans the flattened option order and skips headings; global
+`aria-posinset`/`aria-setsize` describe that order. Grouping preferences persist
+independently for Simulator and Discovery. Only `.ingredient-options` gets the
+grid/list styling, so group wrappers and labels cannot accidentally become grids.
 
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and

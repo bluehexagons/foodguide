@@ -601,6 +601,7 @@ button.makablebutton:disabled:hover {
 
 .ingredient-search-controls .toggleingredients,
 .ingredient-search-controls .sortingredients,
+.ingredient-search-controls .groupingredients,
 .ingredient-search-controls .displaymodeingredients,
 .ingredient-search-controls .densityingredients {
 	margin: 0;
@@ -620,6 +621,7 @@ button.makablebutton:disabled:hover {
 
 .ingredient-search-controls .toggleingredients:hover,
 .ingredient-search-controls .sortingredients:hover,
+.ingredient-search-controls .groupingredients:hover,
 .ingredient-search-controls .displaymodeingredients:hover,
 .ingredient-search-controls .densityingredients:hover {
 	background: var(--table-hover);
@@ -649,7 +651,7 @@ button.makablebutton:disabled:hover {
 	color: var(--strike-text);
 }
 
-/* Redesign the ingredient dropdown to look much better */
+/* Ingredient result groups and their option layouts. */
 .ingredientdropdown {
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
@@ -661,14 +663,28 @@ button.makablebutton:disabled:hover {
 	overflow-y: auto;
 }
 
-.ingredientdropdown div {
+.ingredient-result-group + .ingredient-result-group {
+	margin-top: 12px;
+}
+
+.ingredient-group-heading {
+	display: block;
+	margin-bottom: 6px;
+	padding: 3px 4px;
+	border-bottom: 1px solid var(--border-color);
+	color: var(--fg-secondary);
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.ingredientdropdown .ingredient-options {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
 	gap: 4px;
 	margin: 0;
 }
 
-.ingredientdropdown.listmode div {
+.ingredientdropdown.listmode .ingredient-options {
 	display: flex;
 	flex-direction: column;
 }
@@ -680,7 +696,10 @@ button.makablebutton:disabled:hover {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	transition: all var(--transition-fast);
+	transition:
+		background-color var(--transition-fast),
+		border-color var(--transition-fast),
+		box-shadow var(--transition-fast);
 	background: var(--bg-secondary);
 	margin: 0;
 	width: 100%;
@@ -693,7 +712,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown .item:hover {
 	background: var(--table-hover);
 	border-color: var(--dark);
-	transform: translateY(-1px);
+	transform: none;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -714,7 +733,7 @@ button.makablebutton:disabled:hover {
 	justify-content: center;
 }
 
-.ingredientdropdown.hidetext div {
+.ingredientdropdown.hidetext .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
 	gap: 3px;
 }
@@ -738,7 +757,7 @@ button.makablebutton:disabled:hover {
 }
 /* Density variations for ingredient dropdown */
 /* Compact */
-.ingredientdropdown.density-compact div {
+.ingredientdropdown.density-compact .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
 	gap: 2px;
 }
@@ -766,7 +785,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.density-compact .item .text {
 	font-size: 11px;
 }
-.ingredientdropdown.hidetext.density-compact div {
+.ingredientdropdown.hidetext.density-compact .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
 	gap: 2px;
 }
@@ -777,7 +796,7 @@ button.makablebutton:disabled:hover {
 }
 
 /* Normal */
-.ingredientdropdown.density-normal div {
+.ingredientdropdown.density-normal .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 	gap: 8px;
 }
@@ -791,7 +810,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.density-normal .item .text {
 	font-size: 13px;
 }
-.ingredientdropdown.hidetext.density-normal div {
+.ingredientdropdown.hidetext.density-normal .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
 	gap: 6px;
 }
@@ -802,7 +821,7 @@ button.makablebutton:disabled:hover {
 }
 
 /* Cozy */
-.ingredientdropdown.density-cozy div {
+.ingredientdropdown.density-cozy .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 	gap: 12px;
 }
@@ -817,7 +836,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.density-cozy .item .text {
 	font-size: 14px;
 }
-.ingredientdropdown.hidetext.density-cozy div {
+.ingredientdropdown.hidetext.density-cozy .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
 	gap: 8px;
 }

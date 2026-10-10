@@ -162,28 +162,82 @@ table tr.highlighted .name-cell::before {
 	outline-color: var(--header-text);
 }
 
-/* Overlay small badges; transparent hit areas do not add a row or wide action column. */
+/* Selected-only controls overlay the content; adding never changes tile geometry. */
 .ingredientdropdown {
-	--ingredient-action-width: 24px;
+	--ingredient-hit-width: 24px;
+	--ingredient-hit-height: 20px;
+	--ingredient-action-opacity: 0.85;
 }
 
 .ingredientdropdown .item {
 	position: relative;
-	min-height: 32px;
+	min-height: 44px;
 }
 
-.ingredientdropdown:not(.hidetext) .item {
-	padding-inline-end: var(--ingredient-action-width);
+.ingredientdropdown.density-compact {
+	--ingredient-hit-width: 20px;
+	--ingredient-hit-height: 20px;
+	--ingredient-action-opacity: 0.7;
 }
 
-.ingredientdropdown:not(.hidetext).density-compact div {
-	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+.ingredientdropdown.density-compact .item {
+	min-height: 28px;
+}
+
+.ingredientdropdown.density-compact.listmode .item {
+	width: fit-content;
+	min-width: 90px;
+	max-width: 100%;
+}
+
+.ingredientdropdown.density-normal .ingredient-options {
+	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+.ingredientdropdown.density-cozy {
+	--ingredient-hit-width: 28px;
+	--ingredient-hit-height: 28px;
+	--ingredient-action-opacity: 0.9;
+}
+
+.ingredientdropdown.density-cozy .item {
+	min-height: 60px;
+}
+
+/* Cozy names use cards; normal uses rows; compact keeps a dense inline layout. */
+.ingredientdropdown.density-cozy:not(.hidetext):not(.listmode) .item {
+	flex-direction: column;
+	justify-content: center;
+	gap: 6px;
+	min-height: 88px;
+	text-align: center;
+}
+
+.ingredientdropdown.density-cozy:not(.hidetext):not(.listmode) .icon {
+	margin: 0;
+}
+
+.ingredientdropdown.density-cozy:not(.hidetext):not(.listmode) .text {
+	white-space: normal;
+	overflow-wrap: anywhere;
 }
 
 .ingredient-option-actions {
 	position: absolute;
 	inset: 0;
+	visibility: hidden;
+	opacity: 0;
 	pointer-events: none;
+	transition: opacity 120ms ease-out;
+}
+
+.ingredientdropdown .item.faded .ingredient-option-actions {
+	visibility: visible;
+	opacity: 1;
+}
+
+.ingredientdropdown .item.faded:is(:hover, .selected) {
+	--ingredient-action-opacity: 1;
 }
 
 .ingredient-toggle,
@@ -194,9 +248,8 @@ table tr.highlighted .name-cell::before {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
-	width: var(--ingredient-action-width);
-	height: 50%;
-	max-height: 24px;
+	width: var(--ingredient-hit-width);
+	height: var(--ingredient-hit-height);
 	padding-inline-end: 2px;
 	pointer-events: auto;
 }
@@ -207,6 +260,19 @@ table tr.highlighted .name-cell::before {
 
 .ingredient-subtract {
 	bottom: 0;
+	opacity: var(--ingredient-action-opacity);
+	transition: opacity 120ms ease-out;
+}
+
+/* Both badges sit over the text's trailing edge, inside the picked tile. */
+.ingredientdropdown.density-compact:not(.hidetext) :is(.ingredient-toggle, .ingredient-subtract) {
+	top: 50%;
+	bottom: auto;
+	transform: translateY(-50%);
+}
+
+.ingredientdropdown.density-compact:not(.hidetext) .ingredient-toggle {
+	inset-inline-end: var(--ingredient-hit-width);
 }
 
 .ingredient-toggle-visual,
@@ -236,11 +302,6 @@ table tr.highlighted .name-cell::before {
 	content: '';
 	width: 6px;
 	border-bottom: 2px solid currentColor;
-}
-
-.ingredientdropdown .item:not(.faded) .ingredient-subtract {
-	opacity: 0.35;
-	cursor: default;
 }
 
 .ingredientdropdown .item.faded {
@@ -290,45 +351,92 @@ table tr.highlighted .name-cell::before {
 	display: none;
 }
 
-/* Opposite corners leave the middle of even a compact icon free to add. */
+/* Icon and cozy-card controls occupy opposite corners, away from the center. */
 .ingredientdropdown.hidetext .item {
 	min-height: 44px;
 	padding: 4px;
 }
 
-.ingredientdropdown.hidetext.density-compact div {
+.ingredientdropdown.hidetext.density-compact .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
 }
 
+.ingredientdropdown.hidetext.density-normal .ingredient-options {
+	grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+}
+
+.ingredientdropdown.hidetext.density-normal .item {
+	--ingredient-hit-width: 24px;
+	--ingredient-hit-height: 24px;
+	min-height: 52px;
+}
+
+.ingredientdropdown.hidetext.density-cozy .ingredient-options {
+	grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+}
+
 .ingredientdropdown.hidetext.density-cozy .item {
+	min-height: 64px;
 	padding: 8px;
 }
 
-.ingredientdropdown.hidetext :is(.ingredient-toggle, .ingredient-subtract) {
-	width: 20px;
-	height: 20px;
-	max-height: none;
-}
-
-.ingredientdropdown.hidetext .ingredient-subtract {
+.ingredientdropdown.hidetext .ingredient-subtract,
+.ingredientdropdown.density-cozy:not(.hidetext):not(.listmode) .ingredient-subtract {
 	inset-inline-end: auto;
 	inset-inline-start: 0;
 	justify-content: flex-start;
 	padding-inline: 2px 0;
 }
 
-@media (any-pointer: coarse) {
-	.ingredientdropdown {
-		--ingredient-action-width: 28px;
-	}
+.ingredientdropdown.density-cozy:not(.hidetext):not(.listmode) .ingredient-toggle {
+	top: auto;
+	bottom: 0;
+}
 
+.ingredientdropdown.density-cozy .ingredient-toggle-visual {
+	min-width: 16px;
+	height: 16px;
+}
+
+.ingredientdropdown.density-cozy .ingredient-subtract-visual {
+	width: 14px;
+	height: 14px;
+}
+
+@media (any-pointer: coarse) {
 	.ingredientdropdown .item {
 		min-height: 44px;
+	}
+
+	.ingredientdropdown.density-compact .item {
+		min-height: 44px;
+	}
+
+	.ingredientdropdown.density-compact:not(.hidetext) .item {
+		--ingredient-hit-height: 24px;
+	}
+
+	.ingredientdropdown.density-normal:not(.hidetext) .item {
+		--ingredient-hit-width: 28px;
+		--ingredient-hit-height: 22px;
+		min-height: 48px;
+	}
+
+	.ingredientdropdown .item.faded {
+		--ingredient-action-opacity: 1;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ingredient-option-actions,
+	.ingredient-subtract {
+		transition: none;
 	}
 }
 
 /* Keyboard highlight and picked state are independent. */
 .ingredientdropdown .item.selected {
+	font-weight: inherit;
 	outline: 2px solid var(--focus-color);
 	outline-offset: -2px;
 }
@@ -373,6 +481,10 @@ table tr.highlighted .name-cell::before {
 	.ingredientdropdown .item.faded {
 		background: Canvas;
 		border-color: CanvasText;
+	}
+
+	.ingredientdropdown .item.faded {
+		--ingredient-action-opacity: 1;
 	}
 
 	.ingredientdropdown .item.faded .icon {

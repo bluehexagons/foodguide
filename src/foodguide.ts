@@ -79,6 +79,7 @@ import { createFilterControls } from './filter-controls.js';
 import { createRecipeCalculator } from './recipe-calculator.js';
 import { createRecipeAnalyzer } from './recipe-analyzer.js';
 import { sortIngredients } from './ingredient-sort.js';
+import { groupIngredients } from './ingredient-groups.js';
 import { createThemeController } from './theme-controller.js';
 import { createSortableTableFactory } from './sortable-table.js';
 import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
@@ -1349,6 +1350,12 @@ import './locales/index.js';
 			const fixedSlots = Array.from(parent.querySelectorAll<HTMLElement>('.ingredient'));
 			const slots: string[] = [];
 			let pickerOptions: { element: HTMLSpanElement; key: string; name: string }[] = [];
+			let groupLabels: { element: HTMLSpanElement; key: StringKey; count: number }[] = [];
+			const updateGroupLabels = () => {
+				for (const { element, key, count } of groupLabels) {
+					element.textContent = `${t(key)} (${count})`;
+				}
+			};
 
 			const searchRow = document.createElement('div');
 			searchRow.className = 'ingredient-search-row';
@@ -1839,21 +1846,52 @@ import './locales/index.js';
 					allowUncookable,
 				);
 
-				// Apply additional sorting based on user preference
 				const sortType = sortControls.getValue();
-				if (sortType !== 'default') {
-					names = sortIngredients(names, sortType, {
-						statMultipliers,
-						modifyItem: characterFoodModifiers.modifyItem,
-						modeMask,
-					});
-				}
+				names = sortIngredients(names, sortType, {
+					statMultipliers,
+					modifyItem: characterFoodModifiers.modifyItem,
+					modeMask,
+					search: searchSelectorControls.getSearch(),
+				});
 
 				dropdown.removeChild(ul);
 
 				ul = document.createElement('div');
+				ul.className = 'ingredient-result-groups';
 				pickerOptions = [];
-				names.forEach(liIntoPicker, ul);
+				groupLabels = [];
+				for (const group of groupIngredients(
+					names,
+					groupControls.getValue(),
+					sortType === 'auto' && Boolean(picker.value.trim()),
+				)) {
+					const section = document.createElement('div');
+					section.className = 'ingredient-result-group';
+					if (group.label) {
+						const heading = document.createElement('span');
+						heading.className = 'ingredient-group-heading';
+						heading.id = `ingredient-group-${index}-${group.key}`;
+						heading.setAttribute('role', 'presentation');
+						section.setAttribute('role', 'group');
+						section.setAttribute('aria-labelledby', heading.id);
+						section.appendChild(heading);
+						groupLabels.push({
+							element: heading,
+							key: group.label,
+							count: group.items.length,
+						});
+					}
+					const options = document.createElement('div');
+					options.className = 'ingredient-options';
+					group.items.forEach(liIntoPicker, options);
+					section.appendChild(options);
+					ul.appendChild(section);
+				}
+				updateGroupLabels();
+				pickerOptions.forEach(({ element }, optionIndex) => {
+					element.setAttribute('aria-posinset', String(optionIndex + 1));
+					element.setAttribute('aria-setsize', String(pickerOptions.length));
+				});
 
 				dropdown.appendChild(ul);
 				updateSelectionIndicators();
@@ -2130,16 +2168,46 @@ import './locales/index.js';
 			// Sort controls for ingredient picker
 			const sortControls = createDropdown({
 				items: [
-					{ value: 'default', key: 'sortDefault' },
+					{ value: 'auto', key: 'sortAuto' },
 					{ value: 'name', key: 'sortName' },
 					{ value: 'health', key: 'sortHealth' },
 					{ value: 'hunger', key: 'sortHunger' },
 					{ value: 'sanity', key: 'sortSanity' },
 					{ value: 'perish', key: 'sortPerish' },
 				],
-				initialValue: 'default',
+				initialValue: 'auto',
 				buttonClass: 'sortingredients',
 				storageKey: 'foodGuideSortPreference',
+				storageIndex: index,
+				onSelect: () => {
+					updateSortHelp();
+					refreshPicker();
+				},
+			});
+			const sortHelp = document.createElement('span');
+			sortHelp.className = 'sr-only';
+			sortHelp.id = `ingredient-sort-help-${index}`;
+			sortHelp.setAttribute('data-i18n', 'sortAutoHelp');
+			sortHelp.textContent = t('sortAutoHelp');
+			const updateSortHelp = () => {
+				if (sortControls.getValue() === 'auto') {
+					sortControls.button.setAttribute('aria-describedby', sortHelp.id);
+					sortControls.button.title = t('sortAutoHelp');
+				} else {
+					sortControls.button.removeAttribute('aria-describedby');
+					sortControls.button.title = '';
+				}
+			};
+			updateSortHelp();
+			const groupControls = createDropdown({
+				items: [
+					{ value: 'none', key: 'groupNone' },
+					{ value: 'type', key: 'groupType' },
+					{ value: 'preparation', key: 'groupPreparation' },
+				],
+				initialValue: 'none',
+				buttonClass: 'groupingredients',
+				storageKey: 'foodGuideGroupPreference',
 				storageIndex: index,
 				onSelect: () => refreshPicker(),
 			});
@@ -2355,6 +2423,8 @@ import './locales/index.js';
 			controlsLeft.appendChild(displayModeControls.container);
 			controlsLeft.appendChild(densityControls.container);
 			controlsLeft.appendChild(sortControls.container);
+			controlsLeft.appendChild(groupControls.container);
+			controlsLeft.appendChild(sortHelp);
 
 			controlsRight.appendChild(clearSearchBtn);
 			controlsRight.appendChild(clearIngredientsBtn);
@@ -2489,6 +2559,8 @@ import './locales/index.js';
 			);
 			document.addEventListener('foodguide:localechange', () => {
 				const error = pickerError;
+				updateSortHelp();
+				updateGroupLabels();
 				updateFeedbackSizing();
 				updateSelectionIndicators();
 				updateSearchFeedback();

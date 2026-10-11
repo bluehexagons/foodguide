@@ -31,7 +31,7 @@ const colorContrast = (first, second) => {
 			.slice(0, 3)
 			.map(Number)
 			.map(value => {
-				const s = value / 255;
+				const s = color.startsWith('color(srgb ') ? value : value / 255;
 				return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
 			});
 		return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
@@ -1375,6 +1375,53 @@ test('responsive column hiding moves focus to a visible control without disrupti
 	await page.setViewportSize({ width: 500, height: 812 });
 	await header.waitFor({ state: 'hidden' });
 	assert.equal(await name.evaluate(e => e === document.activeElement), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('analyzer clear controls keep readable hover and focus states in both themes', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{ activeTab: 'discovery', version: 'together', pickers: [[], ['meat', 'berries']] },
+		{ hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const clear = page.locator('#makable .deleteButton');
+	const assertContrast = async state => {
+		await page.waitForFunction(() =>
+			document.getAnimations().every(animation => animation.playState !== 'running'),
+		);
+		const colors = await clear.evaluate(element => ({
+			foreground: getComputedStyle(element).color,
+			background: getComputedStyle(element).backgroundColor,
+		}));
+		assert.ok(
+			colorContrast(colors.foreground, colors.background) >= 4.5,
+			`${state}: clear results text (${colors.foreground} on ${colors.background})`,
+		);
+	};
+	for (const theme of ['light', 'dark']) {
+		for (const forcedColors of ['none', 'active']) {
+			await page.emulateMedia({ colorScheme: theme, forcedColors });
+			await page.waitForFunction(
+				theme => document.documentElement.dataset.theme === theme,
+				theme,
+			);
+			await page.locator('#discovery .ingredientpicker').focus();
+			await page.locator('#language-picker').hover();
+			await assertContrast(`${theme}, forced colors ${forcedColors}, idle`);
+			await clear.hover();
+			await assertContrast(`${theme}, forced colors ${forcedColors}, hover`);
+			await page.locator('#language-picker').hover();
+			await page.keyboard.press('Tab');
+			await clear.focus();
+			await assertContrast(`${theme}, forced colors ${forcedColors}, keyboard focus`);
+		}
+	}
 	assert.deepEqual(diagnostics, []);
 });
 

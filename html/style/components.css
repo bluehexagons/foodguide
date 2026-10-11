@@ -519,7 +519,9 @@ button.deleteButton {
 }
 
 button.deleteButton:hover {
-	background: var(--excluded-border);
+	/* Keep the same readable foreground throughout the hover transition. */
+	background: color-mix(in srgb, var(--excluded-bg) 85%, var(--fg-primary));
+	border-color: var(--excluded-border);
 }
 
 button.makablebutton:disabled {

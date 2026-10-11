@@ -5496,3 +5496,48 @@ test('header actions fit existing bars and retain keyboard focus when changing s
 	await page.keyboard.press('Escape');
 	assert.equal(await share.evaluate(node => node === document.activeElement), true);
 });
+
+test('personal storage failures remain visible while using the cookbook and allow exporting unsaved data', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=together&ingredients=meat,meat,carrot,honey`,
+		{ waitUntil: 'networkidle' },
+	);
+	await page.locator('#cookbook-save').waitFor();
+	await page.evaluate(async () => {
+		await navigator.locks.request('foodGuidePersonalData', () => {});
+		const original = Storage.prototype.setItem;
+		Storage.prototype.setItem = function (key, value) {
+			if (key === 'foodGuidePersonalData') {
+				throw new DOMException('Storage is full', 'QuotaExceededError');
+			}
+			return original.call(this, key, value);
+		};
+	});
+	await page.locator('#cookbook-dish-name').fill('Unsaved dinner');
+	await page.locator('#cookbook-save button').click();
+	const status = page.locator('#personal-data-status');
+	await page.waitForFunction(() =>
+		document.querySelector('#personal-data-status').textContent.includes('Export'),
+	);
+	const warning = await status.textContent();
+	await page.getByRole('button', { name: 'Load Unsaved dinner into the crock pot' }).click();
+	assert.ok((await status.textContent()).includes(warning));
+	assert.equal(await status.evaluate(node => getComputedStyle(node).clipPath), 'none');
+	await page.locator('.personal-toolbar button').last().click();
+	const downloading = page.waitForEvent('download');
+	await page.getByRole('button', { name: 'Export backup', exact: true }).click();
+	const download = await downloading;
+	const stream = await download.createReadStream();
+	const chunks = [];
+	for await (const chunk of stream) {
+		chunks.push(chunk);
+	}
+	const backup = JSON.parse(Buffer.concat(chunks).toString());
+	assert.equal(backup.dishes[0].name, 'Unsaved dinner');
+	await page.keyboard.press('Escape');
+	await page.locator('#language-picker').selectOption('es');
+	assert.match(await status.textContent(), /export/i);
+	assert.equal(await status.evaluate(node => getComputedStyle(node).clipPath), 'none');
+});

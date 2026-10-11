@@ -60,13 +60,26 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	status.className = 'personal-status sr-only';
 	status.setAttribute('role', 'status');
 	let statusKey: StringKey | undefined;
-	const announce = (key: StringKey) => {
-		statusKey = key;
+	let storageUnavailable = false;
+	const renderStatus = () => {
+		if (!statusKey) {
+			return;
+		}
 		status.classList.toggle(
 			'sr-only',
-			key !== 'personalStorageError' && key !== 'personalLimitError',
+			!storageUnavailable && statusKey !== 'personalLimitError',
 		);
-		status.textContent = t(key);
+		status.textContent =
+			(storageUnavailable && statusKey !== 'personalStorageError'
+				? `${t('personalStorageError')} `
+				: '') + t(statusKey);
+	};
+	const announce = (key: StringKey) => {
+		// The store retains unsaved edits in memory for the rest of this session.
+		// Loading a dish must not hide the reminder to export them before closing.
+		storageUnavailable ||= key === 'personalStorageError';
+		statusKey = key;
+		renderStatus();
 	};
 	const store = createPersonalDataStore({
 		getStorage: () => window.localStorage,
@@ -503,9 +516,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		for (const update of labels) {
 			update();
 		}
-		if (statusKey) {
-			status.textContent = t(statusKey);
-		}
+		renderStatus();
 		cookbookSignature = '';
 		refresh();
 	});

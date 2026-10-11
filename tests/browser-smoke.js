@@ -451,6 +451,8 @@ test('matched table rows keep aligned, contrasting edges through hover, focus, a
 		.getByRole('button', { name: 'Mode', exact: true })
 		.click();
 	assert.equal(await match.locator('td').last().isVisible(), false);
+	// Clicking a column control puts the browser in pointer mode; restore keyboard modality.
+	await page.keyboard.press('Tab');
 	const edges = () =>
 		match.evaluate(row => {
 			const cells = Array.from(row.cells).filter(cell => cell.getClientRects().length);

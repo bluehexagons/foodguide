@@ -1,6 +1,5 @@
 /* Components: ingredient picker, dropdowns, buttons, filters, search */
 
-.personal-toolbar,
 .personal-controls {
 	display: flex;
 	flex-wrap: wrap;
@@ -8,23 +7,27 @@
 	gap: 8px;
 	padding: 8px 0;
 }
-.personal-toolbar {
-	padding: 8px 16px;
-	background: var(--bg-secondary);
-	color: var(--fg-primary);
-}
 .personal-status:empty {
 	display: none;
 }
 .personal-status {
-	flex-basis: 100%;
 	margin: 0;
+}
+.personal-status:not(.sr-only) {
+	padding: 8px 14px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font-size: 13px;
 }
 .personal-controls label,
 .personal-dialog label {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+}
+.personal-controls label {
+	max-width: 100%;
+	flex-wrap: wrap;
 }
 .personal-controls input,
 .personal-controls select,
@@ -39,7 +42,6 @@
 	font: inherit;
 }
 .personal-controls button,
-.personal-toolbar button,
 .personal-dialog button,
 .cookbook-list button {
 	min-height: 32px;
@@ -119,7 +121,6 @@
 }
 @media (pointer: coarse) {
 	.personal-controls :is(button, input, select),
-	.personal-toolbar button,
 	.personal-dialog :is(button, input),
 	.cookbook-list button,
 	#personal-cookbook summary {

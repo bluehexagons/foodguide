@@ -103,6 +103,10 @@ sharing dialogs, and backup import/export. The active inventory ID is a tab pref
 not part of the shared document. First use migrates the previous inventory once into
 “My inventory”; a fixed default ID and a Web Lock prevent duplicate first-run imports.
 
+`header-actions.ts` places the same Share/My data controls beside the tablist on
+wide screens and beside the title at widths up to 767 px. Reparenting preserves
+keyboard focus and keeps the visual order aligned with the Tab order.
+
 Writes use `navigator.locks` to serialize read/modify/write across tabs and Electron
 windows. User edits apply ingredient additions/removals to the latest stored inventory,
 not a stale full replacement. Other inventories, concurrent additions, and items hidden

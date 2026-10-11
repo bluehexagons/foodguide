@@ -205,7 +205,20 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	assert.equal(await page.locator('#navbar [tabindex="0"]').count(), 1);
 	await page.keyboard.press('End');
 	await page.keyboard.press('Tab');
-	// The external game link follows the tablist; then Tab reaches the visible panel.
+	assert.equal(
+		await page.locator('#personal-share-button').evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await page
+			.locator('.personal-toolbar button')
+			.last()
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	// The external game link follows the header actions; then Tab reaches the visible panel.
+	await page.keyboard.press('Tab');
 	await page.keyboard.press('Tab');
 	assert.equal(
 		await page.locator('#gameinfo').evaluate(e => e === document.activeElement),
@@ -642,7 +655,7 @@ test('full-pot errors remain readable with reduced motion and release temporary 
 	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	const panel = page.locator('#simulator');
-	const search = panel.getByRole('combobox');
+	const search = panel.locator('.ingredientpicker');
 	const status = panel.getByRole('status');
 	const readableStatus = () =>
 		status.evaluate(
@@ -714,7 +727,7 @@ test('ingredient errors explain recovery in every language and clear on a new se
 		await page.locator('#language-picker').selectOption(locale);
 		await page.locator('#tab-simulator').click();
 		const panel = page.locator('#simulator');
-		const search = panel.getByRole('combobox');
+		const search = panel.locator('.ingredientpicker');
 		const status = panel.getByRole('status');
 		await search.fill('Carrot');
 		await panel.getByRole('option', { name: 'Carrot', exact: true }).click();
@@ -736,7 +749,7 @@ test('ingredient errors explain recovery in every language and clear on a new se
 			await inventory.getByRole('status').evaluate(e => getComputedStyle(e).clipPath),
 			'none',
 		);
-		await inventory.getByRole('combobox').fill('Carrot');
+		await inventory.locator('.ingredientpicker').fill('Carrot');
 		await inventory
 			.getByRole('option', { name: 'Carrot', exact: true })
 			.click({ button: 'right' });
@@ -757,7 +770,7 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 	for (const tab of ['simulator', 'discovery']) {
 		await page.locator(`#tab-${tab}`).click();
 		const panel = page.locator(`#${tab}`);
-		const search = panel.getByRole('combobox');
+		const search = panel.locator('.ingredientpicker');
 		await search.fill('Meat');
 		const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
 		assert.equal(
@@ -885,7 +898,7 @@ test('picker shortcuts remove one or all copies without changing input focus or 
 	]) {
 		await page.locator(`#tab-${tab}`).click();
 		const panel = page.locator(`#${tab}`);
-		const search = panel.getByRole('combobox');
+		const search = panel.locator('.ingredientpicker');
 		const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
 		const keys = () =>
 			page
@@ -1001,7 +1014,7 @@ test('picker errors occupy reserved space above the selection without moving slo
 			await page.locator('#language-picker').selectOption(locale);
 			await page.locator('#tab-simulator').click();
 			const panel = page.locator('#simulator');
-			const search = panel.getByRole('combobox');
+			const search = panel.locator('.ingredientpicker');
 			const status = panel.getByRole('status');
 			for (const name of ['Carrot', 'Winter Koalefant Trunk', 'Roasted Juicy Berries']) {
 				await search.fill(name);
@@ -1111,11 +1124,11 @@ test('search feedback covers empty results, localization, composition, and actio
 		for (const tab of ['simulator', 'discovery']) {
 			await page.locator(`#tab-${tab}`).click();
 			const panel = page.locator(`#${tab}`);
-			const search = panel.getByRole('combobox');
+			const search = panel.locator('.ingredientpicker');
 			const summary = panel.locator('.ingredient-search-summary');
 			const status = panel.getByRole('status');
 			await search.fill('zzzznomatches');
-			assert.equal(await panel.getByRole('option').count(), 0);
+			assert.equal(await panel.locator('.ingredientdropdown').getByRole('option').count(), 0);
 			const emptyMessage = await summary.textContent();
 			assert.ok(emptyMessage.length > 0);
 			assert.match(emptyMessage, { en: /^No matching/, es: /^No hay/, zh: /^没有/ }[locale]);
@@ -1126,7 +1139,7 @@ test('search feedback covers empty results, localization, composition, and actio
 			assert.equal(await status.getAttribute('aria-atomic'), 'true');
 
 			await search.fill('Roasted Juicy Berries');
-			assert.equal(await panel.getByRole('option').count(), 1);
+			assert.equal(await panel.locator('.ingredientdropdown').getByRole('option').count(), 1);
 			const singleMessage = await summary.textContent();
 			assert.match(singleMessage, /^1 /);
 			assert.equal(
@@ -1143,7 +1156,9 @@ test('search feedback covers empty results, localization, composition, and actio
 			assert.equal(await status.textContent(), await summary.textContent());
 			assert.match(
 				await status.textContent(),
-				new RegExp(`^${await panel.getByRole('option').count()} `),
+				new RegExp(
+					`^${await panel.locator('.ingredientdropdown').getByRole('option').count()} `,
+				),
 			);
 			assert.notEqual(
 				await status.textContent(),
@@ -1967,7 +1982,7 @@ test('grouped ingredient results retain relevance, keyboard navigation, localiza
 	for (const tab of ['simulator', 'discovery']) {
 		await page.locator(`#tab-${tab}`).click();
 		const panel = page.locator(`#${tab}`);
-		const search = panel.getByRole('combobox');
+		const search = panel.locator('.ingredientpicker');
 		await panel.locator('.sortingredients').click();
 		await panel.locator('[role=menuitemradio][data-value=auto]').click();
 		await search.fill('Meat');
@@ -2073,7 +2088,7 @@ test('group cards use available width across displays and densities without chan
 		for (const tab of ['simulator', 'discovery']) {
 			await page.locator(`#tab-${tab}`).click();
 			const panel = page.locator(`#${tab}`);
-			const search = panel.getByRole('combobox');
+			const search = panel.locator('.ingredientpicker');
 			const select = async (selector, value) => {
 				await panel.locator(selector).click();
 				await panel.locator(`[role=menuitemradio][data-value="${value}"]`).click();
@@ -2271,7 +2286,7 @@ test('cooking views preserve selections, support keyboard and touch, and persist
 		]) {
 			await page.locator(`#tab-${tab}`).click();
 			const panel = page.locator(`#${tab}`);
-			const search = panel.getByRole('combobox');
+			const search = panel.locator('.ingredientpicker');
 			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
 			await search.fill('*Cooked Meat');
 			assert.equal(await panel.locator('[role=option]').count(), 1);
@@ -2379,7 +2394,7 @@ test('hidden search matches offer localized keyboard and touch recovery without 
 		for (const tab of ['simulator', 'discovery']) {
 			await page.locator(`#tab-${tab}`).click();
 			const panel = page.locator(`#${tab}`);
-			const search = panel.getByRole('combobox');
+			const search = panel.locator('.ingredientpicker');
 			const recovery = panel.locator('.ingredient-show-all');
 			await panel.locator('.cookingingredients').click();
 			await panel.locator('[role=menuitemradio][data-value="everyday"]').click();
@@ -2479,7 +2494,7 @@ test('picker badges keep the checkbox anchored, larger hit areas, and an unobstr
 		const diagnostics = trackDiagnostics(page);
 		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
 		const panel = page.locator('#simulator');
-		await panel.getByRole('combobox').fill('Meat');
+		await panel.locator('.ingredientpicker').fill('Meat');
 		const meat = panel.locator('[role=option][data-id="meat_cooked@together"]');
 		const activate = (locator, options) =>
 			hasTouch ? locator.tap(options) : locator.click(options);
@@ -3334,7 +3349,14 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 		}
 		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
 		assert.deepEqual(
-			await page.evaluate(() => JSON.parse(localStorage.getItem('foodGuideState')).pickers),
+			await page.evaluate(async () => {
+				await navigator.locks.request('foodGuidePersonalData', () => {});
+				return [
+					JSON.parse(localStorage.getItem('foodGuideState')).pickers[0],
+					JSON.parse(localStorage.getItem('foodGuidePersonalData')).inventories[0]
+						.ingredients,
+				];
+			}),
 			[selected, ['meat', 'carrot', 'berries', 'honey']],
 		);
 		await page.reload({ waitUntil: 'networkidle' });
@@ -5420,4 +5442,57 @@ test('personal inventory, cookbook and sharing dialogs remain accessible on touc
 			await page.locator('#tab-simulator').tap();
 		}
 	}
+});
+
+test('header actions fit existing bars and retain keyboard focus when changing screen size', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const share = page.locator('#personal-share-button');
+	await share.waitFor();
+	const placement = () =>
+		page.locator('.personal-toolbar').evaluate(node => node.parentElement.className);
+	assert.equal(await placement(), 'tab-navigation');
+	assert.equal(await page.locator('.personal-toolbar [role="tab"]').count(), 0);
+	assert.equal(await page.locator('#navbar [role="tab"]').count(), 7);
+	await share.focus();
+	await page.setViewportSize({ width: 320, height: 812 });
+	await page.waitForFunction(() =>
+		document
+			.querySelector('.personal-toolbar')
+			.parentElement.classList.contains('header-identity'),
+	);
+	assert.equal(await share.evaluate(node => node === document.activeElement), true);
+	for (const locale of ['en', 'es', 'zh']) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(
+			await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+			true,
+		);
+		const rects = await page.locator('.header-identity').evaluate(node => {
+			const parent = node.getBoundingClientRect();
+			return Array.from(node.querySelectorAll('button'), button => {
+				const rect = button.getBoundingClientRect();
+				return (
+					rect.left >= parent.left &&
+					rect.right <= parent.right &&
+					rect.top >= parent.top &&
+					rect.bottom <= parent.bottom
+				);
+			});
+		});
+		assert.deepEqual(rects, [true, true], `${locale}: action buttons stay in the title bar`);
+	}
+	await share.focus();
+	await page.setViewportSize({ width: 1000, height: 700 });
+	await page.waitForFunction(() =>
+		document
+			.querySelector('.personal-toolbar')
+			.parentElement.classList.contains('tab-navigation'),
+	);
+	assert.equal(await share.evaluate(node => node === document.activeElement), true);
+	await share.press('Enter');
+	assert.equal(await page.getByRole('dialog').count(), 1);
+	await page.keyboard.press('Escape');
+	assert.equal(await share.evaluate(node => node === document.activeElement), true);
 });

@@ -1,5 +1,6 @@
 import type { GameSelection } from './preferences.js';
 import { characters, dlcOptions, gameVersions } from './constants.js';
+import { createHeaderActions } from './header-actions.js';
 import {
 	createPersonalDataStore,
 	editInventory,
@@ -53,15 +54,18 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		node.addEventListener('click', action);
 		return node;
 	};
-	const toolbar = element('div', document.querySelector('header')!);
-	toolbar.className = 'personal-toolbar';
-	const status = element('p', toolbar);
+	const toolbar = createHeaderActions(document, window.matchMedia('(max-width: 767px)'));
+	const status = element('p', document.querySelector('header')!);
 	status.id = 'personal-data-status';
-	status.className = 'personal-status';
+	status.className = 'personal-status sr-only';
 	status.setAttribute('role', 'status');
 	let statusKey: StringKey | undefined;
 	const announce = (key: StringKey) => {
 		statusKey = key;
+		status.classList.toggle(
+			'sr-only',
+			key !== 'personalStorageError' && key !== 'personalLimitError',
+		);
 		status.textContent = t(key);
 	};
 	const store = createPersonalDataStore({

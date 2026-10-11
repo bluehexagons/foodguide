@@ -95,6 +95,9 @@ use **Share** to include a snapshot of your pot or inventory. A shared inventory
 opens as a new named copy. Ordinary addresses do not include ingredient selections.
 Back and Forward navigate between sections.
 
+**Share** and **My data** sit beside the section tabs on wider screens and beside
+the title on smaller screens.
+
 Discovery supports multiple named inventories: create, rename, duplicate, or delete
 an inventory using its controls. Inventories persist between sessions and synchronize
 across tabs on the same browser profile and site. Each tab independently chooses

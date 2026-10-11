@@ -426,13 +426,19 @@ table.links .link.strike {
 }
 
 /* A native entry link can be copied or opened independently from its wiki link. */
+.reference-name {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3em;
+}
+
 .reference-permalink {
 	display: inline-flex;
+	flex-shrink: 0;
 	align-items: center;
 	justify-content: center;
 	min-width: 24px;
 	min-height: 24px;
-	margin-left: 0.3em;
 	font-weight: 600;
 	text-decoration: none;
 }

@@ -823,7 +823,11 @@ import './locales/index.js';
 		link.textContent = '#';
 		link.setAttribute('aria-label', t('linkToItem', { name: item.name }));
 		link.title = t('linkToItem', { name: item.name });
-		row.children[1].appendChild(link);
+		const nameCell = row.children[1];
+		const name = document.createElement('span');
+		name.className = 'reference-name';
+		name.append(...nameCell.childNodes, link);
+		nameCell.appendChild(name);
 		return row;
 	};
 

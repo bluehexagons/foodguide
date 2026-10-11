@@ -13,14 +13,15 @@ export function createTabStorage(getSession: StorageAccess, getDefaults: Storage
 	return {
 		getItem(key: string) {
 			if (!values.has(key)) {
-				const value = read(getSession, key) ?? read(getDefaults, key);
+				const sessionValue = read(getSession, key);
+				// An empty marker preserves an untouched default across reloads. All guide
+				// preferences use nonempty JSON; other tabs may fill previously missing keys.
+				const value = sessionValue === '' ? null : (sessionValue ?? read(getDefaults, key));
 				values.set(key, value);
-				if (value !== null) {
-					try {
-						getSession().setItem(key, value);
-					} catch {
-						// The in-memory snapshot still isolates work when storage is blocked.
-					}
+				try {
+					getSession().setItem(key, value ?? '');
+				} catch {
+					// The in-memory snapshot still isolates work when storage is blocked.
 				}
 			}
 			return values.get(key) ?? null;

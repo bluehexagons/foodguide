@@ -5046,12 +5046,7 @@ test('shared-origin tabs isolate ingredients and picker views across reloads whi
 	await second.goto(`${baseUrl}/index.htm#discovery?game=hamlet&inventory=carrot`, {
 		waitUntil: 'networkidle',
 	});
-	await first.locator('#simulator .densityingredients').click();
-	await first
-		.locator('#simulator .densityingredients')
-		.locator('..')
-		.getByRole('menuitemradio', { name: 'Compact', exact: true })
-		.click();
+	// First keeps its untouched Compact default while Second saves Cozy.
 	await second.locator('#tab-simulator').click();
 	await second.locator('#simulator .densityingredients').click();
 	await second

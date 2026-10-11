@@ -87,3 +87,27 @@ test('blocked storage retains independent in-memory work and one failing store d
 	createTabStorage(() => session, blocked).setItem('foodGuideState', '{"version":"together"}');
 	assert.equal(session.getItem('foodGuideState'), '{"version":"together"}');
 });
+
+test('an untouched default stays independent after another tab first saves that preference', () => {
+	const defaults = storage();
+	const session = storage();
+	const tab = createTabStorage(
+		() => session,
+		() => defaults,
+	);
+	assert.equal(tab.getItem('foodGuideDensityMode'), null);
+	defaults.setItem('foodGuideDensityMode', '["cozy"]');
+	const reloaded = createTabStorage(
+		() => session,
+		() => defaults,
+	);
+	assert.equal(reloaded.getItem('foodGuideDensityMode'), null);
+	reloaded.setItem('foodGuideDensityMode', '["compact"]');
+	assert.equal(
+		createTabStorage(
+			() => session,
+			() => defaults,
+		).getItem('foodGuideDensityMode'),
+		'["compact"]',
+	);
+});

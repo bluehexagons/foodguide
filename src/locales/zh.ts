@@ -292,9 +292,13 @@ export const dict = {
 	aboutStatisticsHeading: '统计分析器',
 	aboutStatisticsBody:
 		'使用可放入烹饪锅的代表性食材，探索当前游戏和角色的食材组合。可按配方或食材筛选，按名称排序以集中浏览同一配方，或按属性排序比较收益。展开分组可翻页查看组合；分页栏可分别调整两级分页的每页数量。计算可能需要一些时间。刷新结果即可查看最新进展，无需暂停；计算完成后，表格会自动刷新。',
+	linkToItem: '链接到{name}',
+	aboutNavigationHeading: '分享与多个标签页',
+	aboutNavigationBody:
+		'复制地址可分享当前页面、游戏和烹饪锅或库存。使用后退和前进可返回各个页面。在新标签页打开页面链接，即可独立比较。每个标签页重新加载后仍会保留自己的食材和显示设置；新标签页从上次保存的设置开始。主题和语言的更改会同步到所有打开的标签页。',
 	aboutAdvancedHeading: '高级用法(JavaScript 全局变量)',
 	aboutAdvancedBody1:
-		'本食物指南会向 <code>window</code> 添加几个属性:<code>food</code>、<code>recipes</code> 和 <code>matchingNames</code>。统计分析器将其结果写入 <code>analysis</code> 和 <code>recipeCrunchData</code>。本地状态保存在 <code>localStorage.foodGuideState</code> 中。',
+		'本食物指南会向 <code>window</code> 添加几个属性:<code>food</code>、<code>recipes</code> 和 <code>matchingNames</code>。统计分析器将其结果写入 <code>analysis</code> 和 <code>recipeCrunchData</code>。每个标签页的工作状态保存在 <code>sessionStorage.foodGuideState</code> 中；<code>localStorage.foodGuideState</code> 为新标签页提供上次保存的设置。',
 	aboutAdvancedBody2:
 		'高级用法请打开浏览器的 JavaScript 控制台。<code>analysis.made</code> 包含上次已完成分析中所有有效组合的列表，包括被筛选条件或分页隐藏的组合。',
 	aboutLinksHeading: '链接',

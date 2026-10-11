@@ -89,6 +89,12 @@ underscores between words. For example, `mushroom` finds Red, Green, and Blue Ca
 and their cooked forms. Use `tag:meat` to filter by a food tag or
 `recipe:butter muffin` to find ingredients for an exact recipe name.
 
+The # links beside food and recipe names highlight an entry and can be copied or
+opened in another tab. Copy the browser address to share a section with its game and current pot or
+inventory. Back and Forward navigate between sections. Section links can open
+in a new tab for comparison; each tab keeps its own work and picker preferences
+when reloaded. Theme and language changes synchronize across open tabs.
+
 ## Development and deployment
 
 ```bash

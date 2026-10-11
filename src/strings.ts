@@ -344,9 +344,13 @@ const defaultStrings = {
 	aboutStatisticsHeading: 'Statistics Analyzer',
 	aboutStatisticsBody:
 		'Explore combinations for the selected game and character using a representative set of ingredients that can go in the crock pot. Filter by recipe or ingredients and sort by Name to browse recipes together, or by a stat to compare outcomes. Expand a group to page through its combinations; the paging bars let you change both page sizes. Calculations can take some time. Refresh results to inspect progress without pausing; the table refreshes automatically when calculation finishes.',
+	linkToItem: 'Link to {name}',
+	aboutNavigationHeading: 'Sharing and multiple tabs',
+	aboutNavigationBody:
+		'Copy the address to share the current section, game, and pot or inventory. Back and Forward revisit sections. Open a section link in another tab to compare independently. Each tab keeps its own ingredients and view settings across reloads; new tabs start with your last saved setup. Theme and language changes apply to all open tabs.',
 	aboutAdvancedHeading: 'Advanced Use (JavaScript Globals)',
 	aboutAdvancedBody1:
-		'The Food Guide populates <code>window</code> with a few properties: <code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The Statistics Analyzer writes its results to <code>analysis</code> and <code>recipeCrunchData</code>. The local state is stored under <code>localStorage.foodGuideState</code>.',
+		'The Food Guide populates <code>window</code> with a few properties: <code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The Statistics Analyzer writes its results to <code>analysis</code> and <code>recipeCrunchData</code>. Each tab keeps its working state under <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> supplies the last saved setup for new tabs.',
 	aboutAdvancedBody2:
 		"For advanced use, open your browser's JavaScript console. <code>analysis.made</code> contains the list of the working combinations from the last completed analysis, including those hidden by filters or pagination.",
 	aboutLinksHeading: 'Links',
@@ -515,7 +519,7 @@ export function getLocale() {
  * event on `document` so listeners can refresh.
  * @param {string} code
  */
-export function setLocale(code: string) {
+export function setLocale(code: string, persist = true) {
 	if (!Object.hasOwn(locales, code)) {
 		code = 'en';
 	}
@@ -524,10 +528,12 @@ export function setLocale(code: string) {
 		const html = document.documentElement;
 		html.setAttribute('lang', code);
 		html.setAttribute('dir', locales[code].dir === 'rtl' ? 'rtl' : 'ltr');
-		try {
-			localStorage.setItem(STORAGE_KEY, code);
-		} catch {
-			/* ignore quota / unavailable storage */
+		if (persist) {
+			try {
+				localStorage.setItem(STORAGE_KEY, code);
+			} catch {
+				/* ignore quota / unavailable storage */
+			}
 		}
 		document.dispatchEvent(new CustomEvent('foodguide:localechange', { detail: { code } }));
 	}

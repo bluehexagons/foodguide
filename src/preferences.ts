@@ -106,7 +106,7 @@ interface SavedStateOptions {
 }
 const storageKey = 'foodGuideState';
 
-/** Centralize recovery and merge writes from the tabs and ingredient pickers. */
+/** Centralize recovery and merge writes from controllers within one guide session. */
 export function createSavedStateStore({ getStorage, onError }: SavedStateOptions) {
 	const read = (storage: StateStorage): SavedState => {
 		const text = storage.getItem(storageKey);

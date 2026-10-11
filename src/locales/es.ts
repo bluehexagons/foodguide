@@ -316,9 +316,13 @@ export const dict = {
 	aboutStatisticsHeading: 'Analizador de Estadísticas',
 	aboutStatisticsBody:
 		'Explora combinaciones para el juego y el personaje seleccionados con una selección representativa de ingredientes aptos para la olla. Filtra por receta o ingredientes y ordena por Nombre para ver las recetas juntas, o por una estadística para comparar los resultados. Expande un grupo para recorrer sus combinaciones; las barras de paginación permiten cambiar ambos tamaños de página. El cálculo puede tardar. Actualiza los resultados para ver el progreso sin pausar; la tabla se actualiza automáticamente al terminar el cálculo.',
+	linkToItem: 'Enlace a {name}',
+	aboutNavigationHeading: 'Compartir y usar varias pestañas',
+	aboutNavigationBody:
+		'Copia la dirección para compartir la sección actual, el juego y la olla o el inventario. Atrás y Adelante permiten volver a las secciones. Abre el enlace de una sección en otra pestaña para comparar de forma independiente. Cada pestaña conserva sus ingredientes y ajustes de visualización al recargar; las pestañas nuevas comienzan con la última configuración guardada. El tema y el idioma se actualizan en todas las pestañas abiertas.',
 	aboutAdvancedHeading: 'Uso avanzado (variables globales de JavaScript)',
 	aboutAdvancedBody1:
-		'La Guía de Comida añade a <code>window</code> algunas propiedades: <code>food</code>, <code>recipes</code> y <code>matchingNames</code>. El Analizador de Estadísticas escribe sus resultados en <code>analysis</code> y <code>recipeCrunchData</code>. El estado local se guarda en <code>localStorage.foodGuideState</code>.',
+		'La Guía de Comida añade a <code>window</code> algunas propiedades: <code>food</code>, <code>recipes</code> y <code>matchingNames</code>. El Analizador de Estadísticas escribe sus resultados en <code>analysis</code> y <code>recipeCrunchData</code>. Cada pestaña guarda su estado en <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> proporciona la última configuración guardada para las pestañas nuevas.',
 	aboutAdvancedBody2:
 		'Para uso avanzado, abre la consola JavaScript del navegador. <code>analysis.made</code> contiene la lista de combinaciones válidas del último análisis completado, incluyendo las ocultas por los filtros o la paginación.',
 	aboutLinksHeading: 'Enlaces',

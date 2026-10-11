@@ -72,6 +72,8 @@ Go is unavailable; the application itself does not require Go.
 | `src/ingredient-cooking.ts`                                           | Curated cooking views and recipe specialty preservation.      |
 | `src/number-format.ts`                                                | Signed value formatting with fraction glyphs.                 |
 | `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
+| `src/navigation.ts`, `src/entry-redirect.ts`                          | Shareable fragment routes and entry-link preservation.        |
+| `src/tab-storage.ts`                                                  | Tab-local working snapshots and last-used defaults.           |
 | `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.    |
 | `src/analysis-filters.ts`                                             | Analyzer filter states and result matching without DOM state. |
 | `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                  |
@@ -88,13 +90,32 @@ live in `tools/` and compile to `scripts/`. `npm ci --ignore-scripts` requires a
 explicit build; normal installs and package creation run it automatically.
 
 The page controller reads saved preferences once at startup. `preferences.ts`
-validates that JSON, translates historical game settings, and handles unavailable
-or corrupt storage. Controllers register state writers with the page's shared
-save function. After initialization, each successful ingredient edit, tab change,
-and game/character/DLC change saves a complete snapshot immediately, including
-ingredients removed by a game change. Recovery does not depend on an unload event;
-the browser regression opens the saved snapshot while the original page remains
-open. Writes still merge into the latest stored state.
+validates JSON and translates historical game settings. `tab-storage.ts` keeps
+working state and picker display preferences in each tab's `sessionStorage`,
+seeded from `localStorage` for a new tab. A memory snapshot keeps tabs independent
+when storage is unavailable. Writes save immediately to the tab and to durable
+last-used defaults independently; reloads use the tab's snapshot, so another
+window cannot overwrite its ingredients or view settings. Theme and language
+remain shared preferences; storage events apply them without writing them back.
+
+`navigation.ts` parses and formats fragment routes, which work beneath a hosting
+subpath and with the desktop's `file:` entry point. For example,
+`#simulator?game=together&ingredients=meat%40together,carrot%40together` opens that
+pot. The seven panel IDs are section routes; `#help` still opens About. Parameters
+include `game`, optional `dlc`/`character`, `ingredients` for Simulator,
+`inventory` for Discovery, and `highlight` for Food List/Recipe List. URL state
+overrides the corresponding saved state; the other picker's work stays local.
+URLs exclude appearance preferences and analyzer calculations. Unknown sections
+and invalid game/character/item values recover safely; input lengths are bounded.
+
+Tabs are native anchors with tab semantics: modified clicks and the browser's
+link menu open independent copies. Section changes push history entries; edits
+replace the current URL without filling history with each ingredient change.
+Back, Forward, and manual fragment changes restore the matching page, game, and
+active selection. Tab-local state and durable defaults still recover work before
+an unload event, including ingredients pruned by game changes. The browser suite
+checks shared-origin tabs, independent reloads, native new-tab links, history,
+deep links, and live theme/language synchronization in Chromium and Firefox.
 
 Ingredient selections follow the active game on restoration and mode changes.
 Shared ingredients resolve to an available variant by their base ID; ingredients

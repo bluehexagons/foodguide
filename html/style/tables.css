@@ -424,3 +424,21 @@ table.links .link.strike {
 .table-group-end > td {
 	border-block-end: 2px solid var(--focus-color);
 }
+
+/* A native entry link can be copied or opened independently from its wiki link. */
+.reference-permalink {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	min-height: 24px;
+	margin-left: 0.3em;
+	font-weight: 600;
+	text-decoration: none;
+}
+@media (pointer: coarse) {
+	.reference-permalink {
+		min-width: 32px;
+		min-height: 32px;
+	}
+}

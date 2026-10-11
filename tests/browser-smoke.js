@@ -3580,15 +3580,17 @@ test('loads the guide, assets, translations, and a rendered food table', async t
 	const pageErrors = [];
 	page.on('pageerror', error => pageErrors.push(error));
 
-	// Firefox can finish the immediate meta redirect before goto returns its response.
+	// Firefox can finish the entry redirect before goto returns its response.
 	const [response] = await Promise.all([
 		page.waitForResponse(`${baseUrl}/index.html`),
 		page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' }),
 	]);
 	assert.equal(response.status(), 200);
-	await page.waitForURL(`${baseUrl}/index.htm`, { waitUntil: 'domcontentloaded' });
-	await page.locator('#language-picker').waitFor();
-	assert.equal(await page.title(), "Don't Starve Food Guide");
+	await page.waitForURL(url => url.pathname.endsWith('/index.htm'), {
+		waitUntil: 'domcontentloaded',
+	});
+	await page.locator('#navbar [role=tab]').first().waitFor();
+	assert.equal(await page.title(), "Simulator — Don't Starve Food Guide");
 	assert.equal(await page.locator('#navbar [data-tab]').count(), 7);
 	assert.equal(await page.locator('#language-picker').count(), 1);
 	assert.equal(await page.locator('#theme-toggle').count(), 1);
@@ -4980,5 +4982,158 @@ test('running analysis refreshes without pausing and reloads its final results w
 		'Completion refreshes the final snapshot automatically',
 	);
 	assert.equal(await progress.evaluate(e => e.value === e.max), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('section URLs restore game and ingredients, support history, and open native new-tab links', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext();
+	t.after(() => context.close());
+	const page = await context.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=dontstarve&dlc=giants,shipwrecked&character=warly&ingredients=meat,meat,carrot,honey`,
+		{ waitUntil: 'networkidle' },
+	);
+	const pot = target =>
+		target
+			.locator('#ingredients .ingredient')
+			.evaluateAll(slots => slots.map(slot => slot.dataset.id));
+	assert.deepEqual(await pot(page), ['meat', 'meat', 'carrot', 'honey']);
+	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
+	const originalUrl = page.url();
+	await page.locator('#tab-discovery').click();
+	assert.match(page.url(), /#discovery\?/);
+	await page.locator('#discovery .ingredientpicker').fill('Berries');
+	await page.locator('#discovery .ingredientpicker').press('Enter');
+	assert.match(page.url(), /inventory=berries/);
+	await page.goBack();
+	assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+	assert.deepEqual(await pot(page), ['meat', 'meat', 'carrot', 'honey']);
+	await page.goForward();
+	assert.equal(await page.locator('#tab-discovery').getAttribute('aria-selected'), 'true');
+	assert.equal(await page.locator('#inventory [data-id="berries"]').count(), 1);
+	const opened = context.waitForEvent('page');
+	await page.locator('#tab-simulator').click({ modifiers: ['Control'] });
+	const linked = await opened;
+	const linkedDiagnostics = trackDiagnostics(linked);
+	await linked.waitForLoadState('networkidle');
+	assert.deepEqual(await pot(linked), ['meat', 'meat', 'carrot', 'honey']);
+	assert.equal(await page.locator('#tab-discovery').getAttribute('aria-selected'), 'true');
+	const clean = await browser.newPage();
+	t.after(() => clean.close());
+	await clean.goto(originalUrl, { waitUntil: 'networkidle' });
+	assert.deepEqual(await pot(clean), ['meat', 'meat', 'carrot', 'honey']);
+	await clean.goto(`${baseUrl}/index.html#statistics?game=together`, {
+		waitUntil: 'networkidle',
+	});
+	assert.equal(await clean.locator('#tab-statistics').getAttribute('aria-selected'), 'true');
+	assert.equal(await clean.locator('#statistics .makablebutton').count(), 1);
+	assert.deepEqual(diagnostics, []);
+	assert.deepEqual(linkedDiagnostics, []);
+});
+
+test('shared-origin tabs isolate ingredients and picker views across reloads while sharing theme and language', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext();
+	t.after(() => context.close());
+	const first = await context.newPage();
+	const second = await context.newPage();
+	const diagnostics = [trackDiagnostics(first), trackDiagnostics(second)];
+	await first.goto(`${baseUrl}/index.htm#simulator?game=together&ingredients=meat%40together`, {
+		waitUntil: 'networkidle',
+	});
+	await second.goto(`${baseUrl}/index.htm#discovery?game=hamlet&inventory=carrot`, {
+		waitUntil: 'networkidle',
+	});
+	await first.locator('#simulator .densityingredients').click();
+	await first
+		.locator('#simulator .densityingredients')
+		.locator('..')
+		.getByRole('menuitemradio', { name: 'Compact', exact: true })
+		.click();
+	await second.locator('#tab-simulator').click();
+	await second.locator('#simulator .densityingredients').click();
+	await second
+		.locator('#simulator .densityingredients')
+		.locator('..')
+		.getByRole('menuitemradio', { name: 'Cozy', exact: true })
+		.click();
+	await second.locator('#simulator .ingredientpicker').fill('Berries');
+	await second.locator('#simulator .ingredientpicker').press('Enter');
+	await first.reload({ waitUntil: 'networkidle' });
+	await second.reload({ waitUntil: 'networkidle' });
+	assert.equal(
+		await first.locator('.version-btn.selected').getAttribute('data-version'),
+		'together',
+	);
+	assert.equal(
+		await second.locator('.version-btn.selected').getAttribute('data-version'),
+		'hamlet',
+	);
+	assert.equal(await first.locator('#ingredients [data-id="meat@together"]').count(), 1);
+	assert.equal(await first.locator('#ingredients [data-id="berries@together"]').count(), 0);
+	assert.equal(await second.locator('#ingredients [data-id="berries"]').count(), 1);
+	assert.match(await first.locator('#simulator .densityingredients').textContent(), /Compact/);
+	assert.match(await second.locator('#simulator .densityingredients').textContent(), /Cozy/);
+	await first.locator('#language-picker').selectOption('es');
+	await second.waitForFunction(() => document.documentElement.lang === 'es');
+	assert.match(await second.title(), /Simulador/);
+	const oldTheme = await second.locator('html').getAttribute('data-theme');
+	await first.locator('#theme-toggle').click();
+	await second.waitForFunction(
+		previous => document.documentElement.getAttribute('data-theme') !== previous,
+		oldTheme,
+	);
+	assert.equal(await first.locator('#ingredients [data-id="meat@together"]').count(), 1);
+	assert.equal(await second.locator('#ingredients [data-id="berries"]').count(), 1);
+	assert.deepEqual(diagnostics, [[], []]);
+});
+
+test('manual URL navigation validates inputs and restores food and recipe highlights', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	t.after(() => page.close());
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm#foodlist?game=together&highlight=*Carrot`, {
+		waitUntil: 'networkidle',
+	});
+	assert.equal(await page.locator('#food tr.highlighted').count(), 1);
+	assert.match(await page.locator('#food tr.highlighted').textContent(), /Carrot/);
+	await page.evaluate(() => {
+		location.hash = '#crockpot?game=together&highlight=*Meaty%20Stew';
+	});
+	await page.waitForFunction(
+		() => document.querySelector('#tab-crockpot')?.getAttribute('aria-selected') === 'true',
+	);
+	assert.equal(await page.locator('#recipes tr.highlighted').count(), 1);
+	assert.match(await page.locator('#recipes tr.highlighted').textContent(), /Meaty Stew/);
+	const permalink = page.getByRole('link', { name: 'Link to Ratatouille', exact: true });
+	await permalink.click();
+	await page.waitForFunction(() => location.hash.includes('Ratatouille'));
+	assert.match(await page.locator('#recipes tr.highlighted').textContent(), /Ratatouille/);
+	assert.equal(
+		await page
+			.getByRole('link', { name: 'Link to Ratatouille', exact: true })
+			.evaluate(link => link === document.activeElement),
+		true,
+	);
+
+	await page.evaluate(() => {
+		location.hash = '#foodlist?game=together';
+	});
+	await page.waitForFunction(
+		() => document.querySelector('#tab-foodlist')?.getAttribute('aria-selected') === 'true',
+	);
+	assert.equal(await page.locator('#food tr.highlighted').count(), 0);
+	await page.evaluate(() => {
+		location.hash =
+			'#simulator?game=constructor&character=__proto__&ingredients=constructor,__proto__,rot,carrot%40together';
+	});
+	await page.waitForFunction(
+		() => document.querySelector('#tab-simulator')?.getAttribute('aria-selected') === 'true',
+	);
+	assert.equal(await page.locator('#ingredients [data-id="carrot@together"]').count(), 1);
+	assert.equal(await page.locator('#ingredients .icon').count(), 1);
 	assert.deepEqual(diagnostics, []);
 });

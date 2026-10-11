@@ -493,7 +493,8 @@ export const createSortableTableFactory = ({
 				}
 			}
 			const focusedControl =
-				(document.activeElement instanceof HTMLButtonElement ||
+				(document.activeElement instanceof HTMLAnchorElement ||
+					document.activeElement instanceof HTMLButtonElement ||
 					document.activeElement instanceof HTMLInputElement) &&
 				body.contains(document.activeElement)
 					? document.activeElement
@@ -510,9 +511,9 @@ export const createSortableTableFactory = ({
 			const focusedIndex =
 				focusedRow && focusedControl
 					? Array.from(
-							focusedRow.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
-								'button, input',
-							),
+							focusedRow.querySelectorAll<
+								HTMLButtonElement | HTMLInputElement | HTMLAnchorElement
+							>('button, input, a'),
 						)
 							.filter(
 								button =>
@@ -722,9 +723,9 @@ export const createSortableTableFactory = ({
 				const restored = restoredRows
 					.flatMap(row =>
 						Array.from(
-							row.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
-								'button, input',
-							),
+							row.querySelectorAll<
+								HTMLButtonElement | HTMLInputElement | HTMLAnchorElement
+							>('button, input, a'),
 						),
 					)
 					.filter(

@@ -75,6 +75,10 @@ export const createThemeController = ({
 	apply();
 
 	return {
+		refresh: () => {
+			currentTheme = readTheme(getStorage);
+			apply();
+		},
 		apply,
 		updateLabel,
 		toggle,

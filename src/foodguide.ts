@@ -14,6 +14,14 @@ import type { SortableTable } from './sortable-table.js';
 import type { StringKey } from './strings.js';
 import type { DropdownItem } from './dropdown.js';
 import { createSavedStateStore, restoreGameSelection, type SavedState } from './preferences.js';
+import { createTabStorage } from './tab-storage.js';
+import {
+	applyGuideRoute,
+	formatGuideRoute,
+	guideTab,
+	parseGuideRoute,
+	type GuideTab,
+} from './navigation.js';
 import { createFoodSelectionResolver } from './food-selection.js';
 import { createAnalysisFilters } from './analysis-filters.js';
 import { formatSignedValue, formatStatGain, percentageGain } from './number-format.js';
@@ -109,10 +117,14 @@ import {
 import './locales/index.js';
 
 (() => {
+	const tabStorage = createTabStorage(
+		() => window.sessionStorage,
+		() => window.localStorage,
+	);
 	const createDropdown = createDropdownFactory({
 		documentRef: document,
 		translate: t,
-		getStorage: () => window.localStorage,
+		getStorage: () => tabStorage,
 	});
 
 	const modeRefreshers: (() => void)[] = [];
@@ -139,22 +151,32 @@ import './locales/index.js';
 
 	// Mode state: game version + DLC toggles + optional character
 	const preferences = createSavedStateStore({
-		getStorage: () => window.localStorage,
+		getStorage: () => tabStorage,
 		onError: error => console.warn('Unable to access saved preferences', error),
 	});
 	const stateWriters: ((state: SavedState) => void)[] = [];
 	let initialized = false;
+	let applyingRoute = false;
+	let writeNavigation = () => {};
+	let pushNavigation = (_tab: GuideTab) => {};
+	const pickerRestorers: ((ids: (string | null)[]) => void)[] = [];
 	// Capture all controllers together, including selections pruned by a game change.
 	const saveState = () => {
-		if (initialized) {
+		if (initialized && !applyingRoute) {
 			preferences.update(state => {
 				for (const write of stateWriters) {
 					write(state);
 				}
 			});
+			writeNavigation();
 		}
 	};
 	const savedState = preferences.load();
+	const initialRoute = parseGuideRoute(window.location.hash);
+	if (initialRoute) {
+		applyGuideRoute(savedState, initialRoute);
+	}
+	let activeTabId = guideTab(savedState.activeTab);
 	const selection = restoreGameSelection(savedState);
 	let currentVersion = selection.version;
 	const activeDlc = selection.dlc;
@@ -188,6 +210,20 @@ import './locales/index.js';
 	// Initialise the i18n layer: pick a locale (storage > navigator > en),
 	// populate the language picker, and apply translations to the static HTML.
 	initLocale();
+	window.addEventListener('storage', event => {
+		if (event.storageArea !== window.localStorage) {
+			return;
+		}
+		if (event.key === 'foodGuideTheme' || event.key === null) {
+			themeController.refresh();
+		}
+		if (event.key === 'foodGuideLocale' || event.key === null) {
+			const locale = event.newValue ?? 'en';
+			if (locale !== getLocale()) {
+				setLocale(locale, false);
+			}
+		}
+	});
 	updateRecipeText();
 	updateFoodRecipes(recipes.filter(r => matchesMode(r.modeMask, modeMask, r.charMask, charMask)));
 
@@ -468,6 +504,13 @@ import './locales/index.js';
 		let activeTab: HTMLElement;
 
 		const showTab = (e: Event) => {
+			if (
+				e instanceof MouseEvent &&
+				(e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)
+			) {
+				return;
+			}
+			e.preventDefault();
 			setTab(e.currentTarget instanceof HTMLElement ? e.currentTarget.dataset.tab || '' : '');
 		};
 
@@ -475,6 +518,10 @@ import './locales/index.js';
 			if (!Object.hasOwn(tabs, tabID)) {
 				return;
 			}
+			if (initialized && !applyingRoute && tabID !== activeTabId) {
+				pushNavigation(guideTab(tabID));
+			}
+			activeTabId = guideTab(tabID);
 			const moveFocus =
 				activePage !== elements[tabID] && activePage.contains(document.activeElement);
 			activeTab.className = '';
@@ -527,6 +574,11 @@ import './locales/index.js';
 					if (event.altKey || event.ctrlKey || event.metaKey) {
 						return;
 					}
+					if (event.key === ' ') {
+						event.preventDefault();
+						setTab(navtab.dataset.tab!);
+						return;
+					}
 					let next;
 					if (event.key === 'ArrowRight') {
 						next = (i + 1) % navtabs.length;
@@ -547,17 +599,8 @@ import './locales/index.js';
 			}
 		}
 
-		activeTab = tabs['simulator'];
-		activePage = elements['simulator'];
-
-		if (savedState.activeTab && Object.hasOwn(tabs, savedState.activeTab)) {
-			activeTab = tabs[savedState.activeTab];
-			activePage = elements[savedState.activeTab];
-		} else if (savedState.activeTab === 'help') {
-			// The old help tab was split into About and Game Info.
-			activeTab = tabs['about'];
-			activePage = elements['about'];
-		}
+		activeTab = tabs[activeTabId];
+		activePage = elements[activeTabId];
 
 		activeTab.className = 'selected';
 		activeTab.setAttribute('aria-selected', 'true');
@@ -709,6 +752,7 @@ import './locales/index.js';
 
 	// food list, recipe list
 	let foodHighlight: string | undefined;
+	let recipeHighlight: string | undefined;
 	let foodHighlighted: Food[] = [];
 	let recipeHighlighted: Recipe[] = [];
 
@@ -718,14 +762,17 @@ import './locales/index.js';
 			foodHighlighted = [];
 		} else {
 			foodHighlight = name;
-			foodHighlighted = matchingNames(food, name);
+			foodHighlighted = name ? matchingNames(food, name, true) : [];
 		}
 		foodTable.update(true);
+		saveState();
 	};
 
 	const highlightRecipes = (name: string) => {
-		recipeHighlighted = matchingNames(recipes, name);
+		recipeHighlight = name;
+		recipeHighlighted = name ? matchingNames(recipes, name) : [];
 		recipeTable.update(true);
+		saveState();
 	};
 
 	const setHighlight = (name: string, { navigateToFood = true } = {}) => {
@@ -764,6 +811,22 @@ import './locales/index.js';
 		return matchesMode(item.modeMask, modeMask, item.charMask, charMask);
 	};
 
+	const addReferencePermalink = (row: HTMLTableRowElement, item: GuideItem, tab: GuideTab) => {
+		const link = document.createElement('a');
+		link.className = 'reference-permalink';
+		link.dataset.tableAction = 'permalink';
+		link.href = formatGuideRoute({
+			tab,
+			selection: { version: currentVersion, dlc: activeDlc, character: currentCharacter },
+			highlight: `*${item.name}`,
+		});
+		link.textContent = '#';
+		link.setAttribute('aria-label', t('linkToItem', { name: item.name }));
+		link.title = t('linkToItem', { name: item.name });
+		row.children[1].appendChild(link);
+		return row;
+	};
+
 	const foodTable = makeSortableTable({
 		captionKey: 'tabFoodList',
 		headers: {
@@ -778,7 +841,7 @@ import './locales/index.js';
 		},
 		dataset: Array.from(food),
 		numericValue: tableNumericValue,
-		rowGenerator: makeFoodRow,
+		rowGenerator: item => addReferencePermalink(makeFoodRow(item), item, 'foodlist'),
 		defaultSort: 'name',
 		linkCallback: setFoodHighlight,
 		highlightCallback: testFoodHighlight,
@@ -808,7 +871,7 @@ import './locales/index.js';
 		},
 		dataset: Array.from(recipes),
 		numericValue: tableNumericValue,
-		rowGenerator: makeRecipeRow,
+		rowGenerator: item => addReferencePermalink(makeRecipeRow(item), item, 'crockpot'),
 		defaultSort: 'name',
 		linkCallback: setRecipeHighlight,
 		highlightCallback: testRecipeHighlight,
@@ -1360,7 +1423,7 @@ import './locales/index.js';
 
 	// Initialize statistics content after the grinder factory is available.
 	const statisticsEl = document.getElementById('statistics');
-	if (savedState.activeTab === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
+	if (activeTabId === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
 		statisticsGrinder = makeRecipeGrinder(null, true);
 		statisticsEl.appendChild(statisticsGrinder.button);
 	}
@@ -2314,12 +2377,35 @@ import './locales/index.js';
 				limited = false;
 			}
 
-			for (const id of savedState.pickers?.[index] ?? []) {
-				const item = id ? resolveIngredient(id, modeMask, charMask) : undefined;
-				if (item) {
-					appendSlot(item.key);
+			pickerRestorers[index] = ids => {
+				const wasLoaded = loaded;
+				// Restore as one edit: rebuilding analysis tables for each item is expensive.
+				loaded = false;
+				try {
+					if (limited) {
+						for (const slot of [...fixedSlots].reverse()) {
+							setSlot(slot, null);
+						}
+					} else {
+						parent.replaceChildren();
+						slots.length = 0;
+					}
+					for (const id of ids) {
+						const item = id ? resolveIngredient(id, modeMask, charMask) : undefined;
+						if (item && (allowUncookable || !item.uncookable)) {
+							appendSlot(item.key);
+						}
+					}
+				} finally {
+					loaded = wasLoaded;
 				}
-			}
+				ensureEmptySlot();
+				if (loaded) {
+					refreshPicker(false);
+					updateRecipes();
+				}
+			};
+			pickerRestorers[index](savedState.pickers?.[index] ?? []);
 
 			loaded = true;
 
@@ -2952,6 +3038,102 @@ import './locales/index.js';
 	headerTop.appendChild(charSection);
 
 	setMode();
+	const captureState = () => {
+		const state: SavedState = {};
+		for (const write of stateWriters) {
+			write(state);
+		}
+		return state;
+	};
+	const routeFor = (tab: GuideTab) => {
+		const state = captureState();
+		return formatGuideRoute({
+			tab,
+			selection: restoreGameSelection(state),
+			...(tab === 'simulator' ? { ingredients: state.pickers?.[0] ?? [] } : {}),
+			...(tab === 'discovery'
+				? {
+						inventory: (state.pickers?.[1] ?? []).filter(
+							(id): id is string => id !== null,
+						),
+					}
+				: {}),
+			highlight:
+				tab === 'foodlist'
+					? foodHighlight
+					: tab === 'crockpot'
+						? recipeHighlight
+						: undefined,
+		});
+	};
+	let lastRouteHash = window.location.hash;
+	const writeUrl = (tab: GuideTab, push = false) => {
+		const hash = routeFor(tab);
+		if (window.location.hash !== hash) {
+			try {
+				window.history[push ? 'pushState' : 'replaceState'](null, '', hash);
+			} catch {
+				// Restricted storage/history must not prevent ordinary use of the guide.
+			}
+		}
+		lastRouteHash = window.location.hash;
+	};
+	pushNavigation = tab => writeUrl(tab, true);
+	writeNavigation = () => {
+		writeUrl(activeTabId);
+		for (const link of navbar.querySelectorAll<HTMLAnchorElement>('a[data-tab]')) {
+			link.href = routeFor(guideTab(link.dataset.tab));
+		}
+		document.title = `${requireElement(`tab-${activeTabId}`).textContent!.trim()} — Don't Starve Food Guide`;
+	};
+	const restoreLocation = () => {
+		if (window.location.hash === lastRouteHash) {
+			return;
+		}
+		const route = parseGuideRoute(window.location.hash) ?? { tab: 'simulator' as const };
+		applyingRoute = true;
+		try {
+			if (
+				route.selection &&
+				JSON.stringify(route.selection) !==
+					JSON.stringify(restoreGameSelection(captureState()))
+			) {
+				currentVersion = route.selection.version;
+				Object.assign(activeDlc, route.selection.dlc);
+				currentCharacter = route.selection.character;
+				setMode();
+			}
+			if (route.ingredients) {
+				pickerRestorers[0](route.ingredients);
+			}
+			if (route.inventory) {
+				pickerRestorers[1](route.inventory);
+			}
+			setTab(route.tab);
+			if (route.tab === 'foodlist') {
+				highlightFoods(route.highlight ?? '');
+			}
+			if (route.tab === 'crockpot') {
+				highlightRecipes(route.highlight ?? '');
+			}
+		} finally {
+			applyingRoute = false;
+		}
+		saveState();
+	};
+	window.addEventListener('popstate', restoreLocation);
+	window.addEventListener('hashchange', restoreLocation);
+	document.addEventListener('foodguide:localechange', () => {
+		if (initialized) {
+			writeNavigation();
+		}
+	});
+	if (initialRoute?.tab === 'foodlist' && initialRoute.highlight) {
+		highlightFoods(initialRoute.highlight);
+	}
+	if (initialRoute?.tab === 'crockpot' && initialRoute.highlight) {
+		highlightRecipes(initialRoute.highlight);
+	}
 	initialized = true;
 	saveState();
 })();

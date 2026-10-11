@@ -1,6 +1,8 @@
 import type { GameSelection } from './preferences.js';
 import { characters, dlcOptions, gameVersions } from './constants.js';
 import { createHeaderActions } from './header-actions.js';
+import type { CookbookPreview } from './cookbook-preview.js';
+import { makeImage } from './utils.js';
 import {
 	createPersonalDataStore,
 	editInventory,
@@ -23,7 +25,7 @@ interface PersonalUIOptions {
 	getSelection: () => GameSelection;
 	getDishName: () => string;
 	loadDish: (dish: CookbookDish) => void;
-	ingredientName: (id: string) => string;
+	previewDish: (dish: CookbookDish) => CookbookPreview;
 	shareUrl: (snapshot: boolean) => string;
 	canShareSnapshot: () => boolean;
 }
@@ -46,7 +48,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	const button = (parent: HTMLElement, key: StringKey, action: () => void) => {
 		const node = element('button', parent);
 		node.type = 'button';
-		if (parent.tagName === 'LI') {
+		if (parent.closest('li')) {
 			node.textContent = t(key);
 		} else {
 			text(node, key);
@@ -258,7 +260,12 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	const cookbook = element('details', potPanel);
 	cookbook.id = 'personal-cookbook';
 	const summary = element('summary', cookbook);
-	text(summary, 'cookbookTitle');
+	text(element('span', summary), 'cookbookTitle');
+	const dishCount = element('span', summary);
+	dishCount.className = 'cookbook-count';
+	const cookbookHelp = element('p', cookbook);
+	cookbookHelp.className = 'personal-help';
+	text(cookbookHelp, 'cookbookHelp');
 	const dishList = element('ul', cookbook);
 	dishList.className = 'cookbook-list';
 	let cookbookSignature = '';
@@ -324,23 +331,79 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		}
 		const signature = JSON.stringify(data.dishes);
 		if (signature !== cookbookSignature) {
+			const focused = document.activeElement;
+			const focusedCard =
+				focused instanceof HTMLElement && dishList.contains(focused)
+					? focused.closest<HTMLElement>('.cookbook-card')
+					: null;
+			let nextFocus: HTMLElement = summary;
 			cookbookSignature = signature;
 			dishList.replaceChildren();
+			dishCount.textContent = `(${data.dishes.length})`;
 			if (!data.dishes.length) {
 				const empty = element('li', dishList);
+				empty.className = 'cookbook-empty';
 				empty.textContent = t('cookbookEmpty');
 			}
-			for (const dish of data.dishes) {
+			for (const [index, dish] of data.dishes.entries()) {
+				const preview = options.previewDish(dish);
 				const row = element('li', dishList);
-				const load = button(row, 'cookbookLoad', () => {
+				row.className = 'cookbook-card';
+				row.dataset.dishId = dish.id;
+				const load = element('button', row);
+				load.type = 'button';
+				load.className = 'cookbook-load';
+				load.addEventListener('click', () => {
 					options.loadDish(dish);
 					announce('cookbookLoaded');
 				});
-				load.textContent = dish.name;
-				load.setAttribute('aria-label', t('cookbookLoadNamed', { name: dish.name }));
-				const ingredients = element('span', row);
-				ingredients.textContent = `${dish.ingredients.map(options.ingredientName).join(' + ')} · ${gameName(dish.selection)}`;
-				const remove = button(row, 'personalDelete', () =>
+				const titleRow = element('span', load);
+				titleRow.className = 'cookbook-title-row';
+				const title = element('span', titleRow);
+				title.className = 'cookbook-dish-name';
+				title.textContent = dish.name;
+				const loadHint = element('span', titleRow);
+				loadHint.className = 'cookbook-load-hint';
+				loadHint.textContent = ` ${t('cookbookLoad')}`;
+				const outcomes = element('span', load);
+				outcomes.className = 'cookbook-outcomes';
+				const label = element('span', outcomes);
+				label.className = 'cookbook-outcome-label';
+				label.textContent = `${t(preview.recipes.length > 1 ? 'cookbookPossibleResults' : 'cookbookMakes')}: `;
+				for (const recipe of preview.recipes) {
+					const result = element('span', outcomes);
+					result.className = 'cookbook-recipe';
+					const icon = makeImage(recipe.img);
+					icon.setAttribute('aria-hidden', 'true');
+					result.append(icon, document.createTextNode(recipe.name));
+				}
+				if (!preview.recipes.length) {
+					element('span', outcomes).textContent = t('cookbookUnavailable');
+				}
+				const ingredients = element('span', load);
+				ingredients.className = 'cookbook-ingredients';
+				for (const item of preview.ingredients) {
+					const icon = makeImage(item.img);
+					icon.title = item.name;
+					icon.setAttribute('aria-hidden', 'true');
+					ingredients.append(icon);
+				}
+				const description = element('span', row);
+				description.className = 'sr-only';
+				description.id = `cookbook-description-${index}`;
+				description.textContent = t('cookbookDishDescription', {
+					recipes:
+						preview.recipes.map(recipe => recipe.name).join(' / ') ||
+						t('cookbookUnavailable'),
+					ingredients: preview.ingredients.map(item => item.name).join(', '),
+				});
+				const footer = element('div', row);
+				footer.className = 'cookbook-card-footer';
+				const context = element('span', footer);
+				context.id = `cookbook-context-${index}`;
+				context.textContent = gameName(dish.selection);
+				load.setAttribute('aria-describedby', `${description.id} ${context.id}`);
+				const remove = button(footer, 'personalDelete', () =>
 					confirmDelete(
 						dish.name,
 						() => {
@@ -352,6 +415,13 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 					),
 				);
 				remove.setAttribute('aria-label', t('personalDeleteNamed', { name: dish.name }));
+				if (dish.id === focusedCard?.dataset.dishId) {
+					nextFocus = focused?.classList.contains('cookbook-load') ? load : remove;
+				}
+			}
+			// Synchronized edits can replace the focused card without a local action.
+			if (focusedCard && document.activeElement === document.body) {
+				nextFocus.focus({ preventScroll: true });
 			}
 		}
 		updatePot();

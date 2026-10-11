@@ -24,6 +24,12 @@ export const dict = {
 	inventoryShared: 'Inventario compartido',
 	inventorySyncHelp:
 		'Los inventarios se guardan y sincronizan entre pestañas. Cada pestaña puede ver un inventario diferente. Los ingredientes no disponibles en este juego siguen guardados.',
+	cookbookHelp:
+		'Las recetas se recalculan con los ajustes guardados de cada plato. Selecciona un plato para cargar sus ingredientes en la olla.',
+	cookbookMakes: 'Prepara',
+	cookbookPossibleResults: 'Resultados posibles',
+	cookbookUnavailable: 'No hay ninguna receta disponible con estos ajustes',
+	cookbookDishDescription: 'Resultados: {recipes}. Ingredientes: {ingredients}.',
 	cookbookTitle: 'Mi recetario',
 	cookbookDishName: 'Nombre del plato (opcional)',
 	cookbookSave: 'Guardar plato',
@@ -34,7 +40,6 @@ export const dict = {
 	cookbookSaved: 'Plato guardado en tu recetario.',
 	cookbookLoaded: 'Plato guardado cargado en la olla.',
 	cookbookLoad: 'Cargar plato',
-	cookbookLoadNamed: 'Cargar {name} en la olla',
 	personalCopy: 'copia',
 	personalClose: 'Cerrar',
 	personalDelete: 'Eliminar',
@@ -150,11 +155,26 @@ export const dict = {
 	discoveryHeading: 'Descubrimiento de Inventario',
 	discoveryBody:
 		'Añade abajo todos los objetos de tu inventario para ver qué recetas puedes preparar. Haz clic en + para añadir más.',
-	discoveryFoodStatsHeading: 'Estadísticas de tu comida:',
-	discoveryRecipesHeading: 'Con esto, puedes preparar:',
-	discoveryEfficientHeading: 'Encuentra qué recetas son más eficientes:',
-	discoveryHighlightsNote: 'La(s) fila(s) resaltada(s) se seleccionarán al cocinar.',
-	discoveryMoreSuggestions: 'Añade más ingredientes para preparar:',
+	discoveryFoodStatsHeading: 'Estadísticas de los ingredientes',
+	discoveryRecipesHeading: 'Recetas disponibles',
+	discoveryEfficientHeading: 'Eficiencia de las recetas',
+	discoveryHighlightsNote:
+		'Cuando las cuatro ranuras estén llenas, la olla elegirá una de las recetas resaltadas con la prioridad más alta.',
+	discoveryMoreSuggestions:
+		'Explora recetas que usan tus ingredientes seleccionados. Selecciona un requisito para buscar ingredientes que lo cumplan.',
+	discoveryEmpty:
+		'Añade ingredientes a tu inventario para comparar sus estadísticas y encontrar recetas.',
+	discoveryNoRecipes:
+		'Aún no hay recetas para este inventario. Prueba a añadir otros tipos de ingredientes.',
+	discoveryRecipesHelp:
+		'Recetas que puedes preparar con estos tipos de ingredientes, si tienes suficientes unidades de cada uno.',
+	discoveryEfficiencyHelp:
+		'Compara las mejoras al cocinar con las estadísticas de los ingredientes utilizados.',
+	statisticsHeading: 'Analizador de estadísticas',
+	statisticsIntro:
+		'Explora combinaciones de cuatro ingredientes y compara la salud y el hambre obtenidas al cocinar. Filtra por receta o ingrediente y selecciona una combinación para probarla en el Simulador.',
+	statisticsCostHelp:
+		'Los conjuntos grandes de ingredientes pueden tardar. Puedes pausar el cálculo o actualizar los resultados mientras se ejecuta.',
 	simulatorSelectedIngredients: 'Ingredientes seleccionados para la Olla',
 	discoverySelectedIngredients: 'Comida disponible',
 	searchIngredientsPlaceholder: 'Buscar ingredientes...',

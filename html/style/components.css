@@ -95,9 +95,6 @@
 .personal-dialog-close {
 	flex-shrink: 0;
 }
-#personal-cookbook {
-	margin-top: 8px;
-}
 #personal-cookbook summary {
 	cursor: pointer;
 	min-height: 32px;
@@ -105,19 +102,6 @@
 .cookbook-list {
 	list-style: none;
 	padding: 0;
-	margin: 8px 0;
-}
-.cookbook-list li {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 0;
-	border-top: 1px solid var(--border-color);
-}
-.cookbook-list li > span {
-	flex: 1 1 240px;
-	font-size: 0.9rem;
 }
 @media (pointer: coarse) {
 	.personal-controls :is(button, input, select),
@@ -405,20 +389,7 @@ table.links .link.ingredient-action-error::after {
 
 /* Dropdown styles for sort and display mode */
 
-/* Makable / statistics buttons */
-button.makablebutton {
-	font-size: 12pt;
-	margin: 4px;
-	padding: 4px 12px;
-	display: inline-block;
-	border: 1px solid var(--medium);
-	background: var(--bg-primary);
-	color: var(--fg-primary);
-	border-radius: 3px;
-	cursor: pointer;
-	transition: all var(--transition-fast);
-}
-
+/* Makable / statistics button states */
 button.makablebutton:hover {
 	background: var(--table-hover);
 	border-color: var(--light);
@@ -579,48 +550,6 @@ div.foodFilter :is(img, .icon).excluded::after {
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Grinder/Statistics container */
-.makableContainer {
-	margin: 8px 0;
-	padding: 12px;
-	background: var(--bg-primary);
-	border: 1px solid var(--medium);
-	border-radius: 5px;
-}
-
-.makableSummary {
-	font-size: 14pt;
-	margin-bottom: 12px;
-	padding: 8px;
-	background: var(--table-bg);
-	border-radius: 3px;
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	flex-wrap: wrap;
-	color: var(--fg-primary);
-}
-
-.makableFootnote {
-	font-size: 11pt;
-	color: var(--fg-secondary);
-	margin-bottom: 8px;
-	padding: 4px 8px;
-	font-style: italic;
-}
-
-.makableFilterHelp,
-.makableGroupingHelp {
-	font-size: 10pt;
-	color: var(--fg-secondary);
-	margin-bottom: 12px;
-	padding: 6px 12px;
-	background: var(--table-bg);
-	border-left: 3px solid var(--medium);
-	border-radius: 3px;
-	opacity: 0.9;
-}
-
 button.deleteButton,
 button.pauseButton,
 button.resetAnalysisFiltersButton {
@@ -658,8 +587,8 @@ button.makablebutton:disabled {
 }
 
 button.makablebutton:disabled:hover {
-	background: var(--bg-primary);
-	border-color: var(--medium);
+	background: var(--picked-bg);
+	border-color: var(--focus-color);
 }
 
 /* Responsive: small screens */

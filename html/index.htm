@@ -184,14 +184,23 @@
 						aria-label="Search ingredients..."
 					/>
 					<div id="inventory" class="ingredientlist"></div>
-					<h2 data-i18n="discoveryFoodStatsHeading">Stats about your food:</h2>
-					<div id="discoverfood"></div>
-					<h2 data-i18n="discoveryRecipesHeading">With these, you can make:</h2>
-					<div id="discover"></div>
-					<h2 data-i18n="discoveryEfficientHeading">
-						Find what recipes are most efficient:
-					</h2>
-					<div id="makable"></div>
+					<p id="discovery-empty" class="section-empty" data-i18n="discoveryEmpty">
+						Add ingredients to your inventory to compare their stats and find recipes.
+					</p>
+					<section class="tool-section">
+						<h2 data-i18n="discoveryFoodStatsHeading">Ingredient stats</h2>
+						<div id="discoverfood"></div>
+					</section>
+					<section class="tool-section">
+						<h2 data-i18n="discoveryRecipesHeading">Available recipes</h2>
+						<p class="section-note" data-i18n="discoveryRecipesHelp"></p>
+						<div id="discover"></div>
+					</section>
+					<section class="tool-section">
+						<h2 data-i18n="discoveryEfficientHeading">Recipe efficiency</h2>
+						<p class="section-note" data-i18n="discoveryEfficiencyHelp"></p>
+						<div id="makable"></div>
+					</section>
 				</div>
 
 				<div id="foodlist">

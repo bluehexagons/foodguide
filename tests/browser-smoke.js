@@ -5286,22 +5286,15 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 	assert.doesNotMatch(page.url(), /ingredients=/, JSON.stringify(diagnostics));
 	await page.locator('#cookbook-dish-name').fill('Camp dinner');
 	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
-	assert.equal(
-		await page
-			.getByRole('button', { name: 'Load Camp dinner into the crock pot', exact: true })
-			.count(),
-		1,
-	);
+	assert.equal(await page.getByRole('button', { name: /^Camp dinner Load dish/ }).count(), 1);
 	assert.match(
-		await page.locator('.cookbook-list li > span').textContent(),
+		await page.locator('.cookbook-card-footer > span').textContent(),
 		/Don't Starve Together \/ Warly/,
 	);
 	await page.locator('#simulator .clearingredientsbtn').click();
 	assert.equal(await page.locator('#cookbook-save button').isDisabled(), true);
 	await page.locator('.version-btn[data-version="hamlet"]').click();
-	await page
-		.getByRole('button', { name: 'Load Camp dinner into the crock pot', exact: true })
-		.click();
+	await page.getByRole('button', { name: /^Camp dinner Load dish/ }).click();
 	assert.equal(
 		await page.locator('.version-btn.selected').getAttribute('data-version'),
 		'together',
@@ -5368,24 +5361,193 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 	await page.locator('#language-picker').selectOption('es');
 	assert.equal(await page.locator('#inventory-select').count(), 1);
 	assert.equal(await page.locator('#cookbook-dish-name').count(), 1);
-	assert.equal(
-		await page
-			.getByRole('button', { name: 'Cargar Camp dinner en la olla', exact: true })
-			.count(),
-		2,
-	);
+	assert.equal(await page.getByRole('button', { name: /^Camp dinner Cargar plato/ }).count(), 2);
 	await page.reload({ waitUntil: 'networkidle' });
 	await page.locator('#personal-cookbook').evaluate(node => (node.open = true));
-	assert.equal(
-		await page
-			.getByRole('button', { name: 'Cargar Camp dinner en la olla', exact: true })
-			.count(),
-		2,
-	);
+	assert.equal(await page.getByRole('button', { name: /^Camp dinner Cargar plato/ }).count(), 2);
 	await page.locator('#tab-crockpot').click();
 	await page.locator('#personal-share-button').click();
 	assert.equal(await page.getByRole('dialog').getByRole('checkbox').count(), 0);
 	await page.keyboard.press('Escape');
+	assert.deepEqual(diagnostics, []);
+});
+
+test('cookbook cards predict saved recipes independently and supporting sections explain empty states', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const selection = {
+		version: 'together',
+		dlc: { giants: false, shipwrecked: false },
+		character: null,
+	};
+	const renamed = 'Camp dinner <b>with friends</b>';
+	const data = {
+		format: 'foodguide-personal-data',
+		version: 1,
+		inventories: [{ id: 'pack', name: 'Pack', ingredients: [] }],
+		dishes: [
+			{
+				id: 'fig',
+				name: renamed,
+				ingredients: ['fig', 'asparagus', 'asparagus', 'asparagus'],
+				selection,
+			},
+			{
+				id: 'breakfast',
+				name: 'Surprise breakfast',
+				ingredients: ['butterflywings', 'bird_egg', 'carrot', 'honey'],
+				selection,
+			},
+			{
+				id: 'chef',
+				name: 'Chef’s special',
+				ingredients: ['butter', 'honey', 'dragonfruit', 'dragonfruit'],
+				selection: { ...selection, character: 'warly' },
+			},
+		],
+	};
+	const context = await browser.newContext({
+		viewport: { width: 1280, height: 900 },
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [{ name: 'foodGuidePersonalData', value: JSON.stringify(data) }],
+				},
+			],
+		},
+	});
+	const page = await context.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm#simulator?game=hamlet`, { waitUntil: 'networkidle' });
+	await page.locator('#personal-cookbook summary').click();
+	const cards = page.locator('.cookbook-card');
+	assert.equal(await cards.count(), 3);
+	assert.equal(await cards.first().locator('.cookbook-dish-name').textContent(), renamed);
+	assert.equal(await cards.first().locator('b').count(), 0, 'Saved names stay plain text');
+	assert.match(
+		await cards.first().locator('.cookbook-outcomes').textContent(),
+		/Makes: Figatoni/,
+	);
+	assert.match(
+		await cards.nth(1).locator('.cookbook-outcomes').textContent(),
+		/Possible results: Butter MuffinBreakfast Skillet/,
+	);
+	assert.match(
+		await cards.nth(2).locator('.cookbook-outcomes').textContent(),
+		/Fresh Fruit Crepes/,
+	);
+	for (const card of await cards.all()) {
+		assert.equal(await card.locator('.cookbook-ingredients .icon').count(), 4);
+		assert.equal(
+			await card.locator('.cookbook-ingredients').innerText(),
+			'',
+			'Ingredients are displayed as icons',
+		);
+		const description = await card.locator('.cookbook-load').getAttribute('aria-describedby');
+		assert.ok(description.includes('cookbook-description-'));
+	}
+	assert.deepEqual(
+		await page.evaluate(() => JSON.parse(localStorage.foodGuidePersonalData).dishes),
+		data.dishes,
+		'Rendering does not store predicted recipes or replace saved variants',
+	);
+	await cards.first().locator('.cookbook-load').focus();
+	const otherWindow = await page.context().newPage();
+	await otherWindow.goto(
+		`${baseUrl}/index.htm#simulator?game=together&ingredients=fig,asparagus,asparagus,asparagus`,
+		{ waitUntil: 'networkidle' },
+	);
+	await otherWindow.locator('#cookbook-dish-name').fill('Other window supper');
+	await otherWindow.getByRole('button', { name: 'Save dish', exact: true }).click();
+	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 4);
+	assert.equal(
+		await cards
+			.first()
+			.locator('.cookbook-load')
+			.evaluate(node => node === document.activeElement),
+		true,
+		'A synchronized cookbook update preserves the focused dish',
+	);
+	await cards.last().locator('.cookbook-load').focus();
+	await otherWindow
+		.getByRole('button', { name: 'Delete Other window supper', exact: true })
+		.click();
+	await otherWindow
+		.getByRole('dialog')
+		.getByRole('button', { name: 'Delete', exact: true })
+		.click();
+	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 3);
+	assert.equal(
+		await page
+			.locator('#personal-cookbook summary')
+			.evaluate(node => node === document.activeElement),
+		true,
+		'Removing the focused dish in another window returns focus to the cookbook',
+	);
+	await otherWindow.close();
+	for (const width of [1280, 320]) {
+		await page.setViewportSize({ width, height: 900 });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			assert.equal(await page.locator('.cookbook-card').count(), 3);
+			assert.equal(
+				await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+				true,
+				`${width}/${locale}: cookbook overflow`,
+			);
+		}
+	}
+	await page.locator('#language-picker').selectOption('en');
+	await page.getByRole('button', { name: /^Chef’s special Load dish/ }).click();
+	assert.equal(
+		await page.locator('.version-btn.selected').getAttribute('data-version'),
+		'together',
+	);
+	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
+	assert.equal(await page.locator('#ingredients [data-id]').count(), 4);
+	assert.deepEqual(await page.locator('#results .tool-section h2').allTextContents(), [
+		'Crock pot results',
+		'Recipe suggestions',
+	]);
+	await page.locator('#tab-discovery').click();
+	await page.locator('#discovery-empty').waitFor({ state: 'visible' });
+	assert.equal(await page.locator('#discovery .tool-section:visible').count(), 0);
+	const search = page.locator('#discovery .ingredientpicker');
+	await search.fill('*petals');
+	await page.locator('#discovery').getByRole('option', { name: 'Petals', exact: true }).click();
+	await page.locator('#discovery-empty').waitFor({ state: 'hidden' });
+	assert.equal(await page.locator('#discovery .tool-section:visible').count(), 2);
+	assert.match(await page.locator('#discover').innerText(), /No recipes match/);
+	await search.fill('*meat');
+	await page.locator('#discovery').getByRole('option', { name: 'Meat', exact: true }).click();
+	assert.equal(await page.locator('#discovery .tool-section:visible').count(), 3);
+	await page.locator('#tab-statistics').click();
+	assert.equal(await page.locator('#statistics h2').textContent(), 'Statistics Analyzer');
+	assert.match(
+		await page.locator('#statistics .instructions').innerText(),
+		/four-ingredient combinations/,
+	);
+	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await page.locator('#statistics h2').textContent(), 'Analizador de estadísticas');
+	await page.locator('#language-picker').selectOption('en');
+	await page.locator('#tab-simulator').click();
+	const remove = page.getByRole('button', { name: /^Delete Camp dinner/ });
+	await remove.focus();
+	await page.keyboard.press('Enter');
+	await page.getByRole('dialog').waitFor();
+	await page.keyboard.press('Escape');
+	assert.equal(await remove.evaluate(node => node === document.activeElement), true);
+	await page.keyboard.press('Enter');
+	await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 2);
+	assert.equal(
+		await page
+			.locator('#personal-cookbook summary')
+			.evaluate(node => node === document.activeElement),
+		true,
+		'Deleting a focused dish returns focus to the cookbook',
+	);
 	assert.deepEqual(diagnostics, []);
 });
 
@@ -5522,7 +5684,7 @@ test('personal storage failures remain visible while using the cookbook and allo
 		document.querySelector('#personal-data-status').textContent.includes('Export'),
 	);
 	const warning = await status.textContent();
-	await page.getByRole('button', { name: 'Load Unsaved dinner into the crock pot' }).click();
+	await page.getByRole('button', { name: /^Unsaved dinner Load dish/ }).click();
 	assert.ok((await status.textContent()).includes(warning));
 	assert.equal(await status.evaluate(node => getComputedStyle(node).clipPath), 'none');
 	await page.locator('.personal-toolbar button').last().click();

@@ -40,6 +40,12 @@ const defaultStrings = {
 	inventoryShared: 'Shared inventory',
 	inventorySyncHelp:
 		'Inventories are saved and synchronized across tabs. Each tab can view a different inventory. Items unavailable in this game stay saved.',
+	cookbookHelp:
+		'Recipes are recalculated using each dish’s saved settings. Select a dish to load its ingredients into the crock pot.',
+	cookbookMakes: 'Makes',
+	cookbookPossibleResults: 'Possible results',
+	cookbookUnavailable: 'No recipe available with these settings',
+	cookbookDishDescription: 'Results: {recipes}. Ingredients: {ingredients}.',
 	cookbookTitle: 'My cookbook',
 	cookbookDishName: 'Dish name (optional)',
 	cookbookSave: 'Save dish',
@@ -50,7 +56,6 @@ const defaultStrings = {
 	cookbookSaved: 'Dish saved to your cookbook.',
 	cookbookLoaded: 'Saved dish loaded into the crock pot.',
 	cookbookLoad: 'Load dish',
-	cookbookLoadNamed: 'Load {name} into the crock pot',
 	personalCopy: 'copy',
 	personalClose: 'Close',
 	personalDelete: 'Delete',
@@ -129,11 +134,24 @@ const defaultStrings = {
 	discoveryHeading: 'Inventory Discovery',
 	discoveryBody:
 		'Add all items in your inventory below to see what recipes you can make. Click the + to add more items.',
-	discoveryFoodStatsHeading: 'Stats about your food:',
-	discoveryRecipesHeading: 'With these, you can make:',
-	discoveryEfficientHeading: 'Find what recipes are most efficient:',
-	discoveryHighlightsNote: 'The highlighted row(s) will be selected from when cooking.',
-	discoveryMoreSuggestions: 'Add more ingredients to make:',
+	discoveryFoodStatsHeading: 'Ingredient stats',
+	discoveryRecipesHeading: 'Available recipes',
+	discoveryEfficientHeading: 'Recipe efficiency',
+	discoveryHighlightsNote:
+		'When all four slots are filled, cooking chooses one of the highlighted recipes with the highest priority.',
+	discoveryMoreSuggestions:
+		'Explore recipes that use your selected ingredients. Select a requirement to find ingredients for it.',
+	discoveryEmpty: 'Add ingredients to your inventory to compare their stats and find recipes.',
+	discoveryNoRecipes: 'No recipes match this inventory yet. Try adding other ingredient types.',
+	discoveryRecipesHelp:
+		'Recipes you can make from these ingredient types, assuming you have enough of each.',
+	discoveryEfficiencyHelp:
+		'Compare the gains from cooking with the stats of the ingredients used.',
+	statisticsHeading: 'Statistics Analyzer',
+	statisticsIntro:
+		'Explore four-ingredient combinations and compare the health and hunger gained from cooking. Filter by recipe or ingredient, then select a combination to try it in the Simulator.',
+	statisticsCostHelp:
+		'Large ingredient sets can take time. You can pause the calculation or refresh the results while it runs.',
 	simulatorSelectedIngredients: 'Selected crock pot ingredients',
 	discoverySelectedIngredients: 'Food on hand',
 	searchIngredientsPlaceholder: 'Search ingredients...',

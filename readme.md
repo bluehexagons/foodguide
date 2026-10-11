@@ -107,7 +107,9 @@ with the last saved defaults. Theme and language synchronize across tabs.
 
 Choose four pot ingredients and select **Save dish** to keep the combination in
 **My cookbook**, with its game and character settings. Loading a dish restores those
-settings and its ingredients. **My data** exports all inventories and dishes as a
+settings and its ingredients. Cookbook cards show ingredient icons and recalculate
+the possible recipes using the saved settings, even when a dish has a custom name.
+**My data** exports all inventories and dishes as a
 JSON backup or imports additional copies without replacing existing entries.
 Backups support transferring data to another browser or the desktop app. Personal
 data stays on your device and is not sent to a server.

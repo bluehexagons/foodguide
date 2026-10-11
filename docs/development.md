@@ -99,7 +99,10 @@ remain shared preferences.
 named inventories and cookbook dishes, each with a stable ID. Inventory ingredients
 are a set; dishes contain exactly four ingredients, including repeated ones, and
 capture their game/DLC/character context. `personal-data-ui.ts` owns their controls,
-sharing dialogs, and backup import/export. The active inventory ID is a tab preference,
+sharing dialogs, and backup import/export. `cookbook-preview.ts` resolves each dish's
+ingredients for its saved context and re-simulates all highest-priority outcomes.
+Predictions are derived from current recipe data; they are not stored in backups
+or calculated by changing the active Simulator. The active inventory ID is a tab preference,
 not part of the shared document. First use migrates the previous inventory once into
 “My inventory”; a fixed default ID and a Web Lock prevent duplicate first-run imports.
 

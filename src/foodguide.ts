@@ -87,6 +87,7 @@ import { food } from './food.js';
 import { createDropdownFactory } from './dropdown.js';
 import { createFilterControls } from './filter-controls.js';
 import { createRecipeCalculator } from './recipe-calculator.js';
+import { previewCookbookDish } from './cookbook-preview.js';
 import { createRecipeAnalyzer } from './recipe-analyzer.js';
 import { sortIngredients } from './ingredient-sort.js';
 import { groupIngredients } from './ingredient-groups.js';
@@ -390,7 +391,7 @@ import './locales/index.js';
 		if (document.getElementById('statistics')?.hasChildNodes()) {
 			statisticsGrinder?.dispose();
 			statisticsGrinder = makeRecipeGrinder(null, true);
-			requireElement('statistics').replaceChildren(statisticsGrinder.button);
+			requireElement('statistics').replaceChildren(statisticsGrinder.element);
 		}
 
 		// Update version button states
@@ -544,7 +545,7 @@ import './locales/index.js';
 			// Initialize statistics tab content on first visit
 			if (tabID === 'statistics' && !activePage.hasChildNodes()) {
 				statisticsGrinder = makeRecipeGrinder(null, true);
-				activePage.appendChild(statisticsGrinder.button);
+				activePage.appendChild(statisticsGrinder.element);
 			}
 			if (moveFocus) {
 				activePage.focus();
@@ -922,11 +923,27 @@ import './locales/index.js';
 
 	const makeRecipeGrinder = (ingredients: Food[] | null, excludeDefault = false) => {
 		const makableButton = document.createElement('button');
+		const workspace = document.createElement('div');
+		workspace.className = 'analyzer-workspace';
+		const introduction = document.createElement('div');
+		introduction.className = 'instructions analysis-introduction';
+		const heading = makeElement('h2');
+		const intro = makeElement('p');
+		const costHelp = makeElement('p');
+		costHelp.className = 'section-note';
+		if (excludeDefault) {
+			introduction.append(heading, intro, costHelp);
+			workspace.append(introduction);
+		}
+		workspace.append(makableButton);
 		let isCalculating = false;
 		let clearResults = () => {};
 
 		const updateMakableButtonLabel = () => {
 			makableButton.textContent = isCalculating ? t('calculating') : t('calculateRecipes');
+			heading.textContent = t('statisticsHeading');
+			intro.textContent = t('statisticsIntro');
+			costHelp.textContent = t('statisticsCostHelp');
 		};
 		updateMakableButtonLabel();
 		makableButton.className = 'makablebutton';
@@ -1170,6 +1187,8 @@ import './locales/index.js';
 					recipeFilterControls.updateLocale();
 					makableFilter.setAttribute('aria-label', t('filterIngredients'));
 					makableRecipe.setAttribute('aria-label', t('filterRecipes'));
+					ingredientHeading.textContent = t('filterIngredients');
+					recipeHeading.textContent = t('filterRecipes');
 					pauseButton.textContent =
 						calculationControl && calculationControl.isPaused()
 							? t('resume')
@@ -1214,9 +1233,7 @@ import './locales/index.js';
 				document.addEventListener('foodguide:localechange', updateMakableTexts);
 
 				makableDiv.append(makableSummary, progressContainer);
-				makableDiv.appendChild(makableFootnote);
 				makableDiv.appendChild(filterHelp);
-				makableDiv.appendChild(groupingHelp);
 				const analysisStatus = document.createElement('div');
 				analysisStatus.className = 'sr-only';
 				analysisStatus.setAttribute('role', 'status');
@@ -1226,7 +1243,9 @@ import './locales/index.js';
 				makableRecipe.className = 'recipeFilter';
 				makableRecipe.setAttribute('aria-label', t('filterRecipes'));
 				const recipeFilterControls = createFilterControls(makableRecipe, filterHelp.id);
-				makableDiv.appendChild(makableRecipe);
+				const recipeHeading = makeElement('h3', t('filterRecipes'));
+				recipeHeading.className = 'section-subheading';
+				makableDiv.append(recipeHeading, makableRecipe);
 
 				const makableFilter = document.createElement('div');
 				makableFilter.className = 'foodFilter';
@@ -1248,9 +1267,11 @@ import './locales/index.js';
 					makableFilter.appendChild(button);
 				});
 
-				makableDiv.appendChild(makableFilter);
+				const ingredientHeading = makeElement('h3', t('filterIngredients'));
+				ingredientHeading.className = 'section-subheading';
+				makableDiv.append(ingredientHeading, makableFilter);
 
-				makableDiv.append(snapshotNotice, resultCount, makableTable);
+				makableDiv.append(snapshotNotice, resultCount, groupingHelp, makableTable);
 				makableButton.after(makableDiv);
 				makableDiv.appendChild(makableFootnote);
 
@@ -1422,7 +1443,7 @@ import './locales/index.js';
 		makableButton.addEventListener('click', initializeGrinder, false);
 
 		return {
-			button: makableButton,
+			element: workspace,
 			clearResults: () => clearResults(),
 			dispose: () => {
 				clearResults();
@@ -1435,7 +1456,7 @@ import './locales/index.js';
 	const statisticsEl = document.getElementById('statistics');
 	if (activeTabId === 'statistics' && statisticsEl && !statisticsEl.hasChildNodes()) {
 		statisticsGrinder = makeRecipeGrinder(null, true);
-		statisticsEl.appendChild(statisticsGrinder.button);
+		statisticsEl.appendChild(statisticsGrinder.element);
 	}
 
 	const highestPriority = (array: CalculatorRow[]) => {
@@ -2215,17 +2236,28 @@ import './locales/index.js';
 						results.removeChild(results.firstChild);
 					}
 
-					results.appendChild(table);
+					const outcomeSection = makeElement('section');
+					outcomeSection.className = 'tool-section';
+					outcomeSection.append(makeElement('h2', t('tableCookingResults')));
+					const outcomeNote = makeElement('p', t('discoveryHighlightsNote'));
+					outcomeNote.className = 'section-note outcome-note';
+					outcomeSection.append(outcomeNote, table);
+					results.append(outcomeSection);
 					pickerTables.push(table);
 					simulatorLocaleRefresh = updateRecipes;
-
-					results.appendChild(makeElement('p', t('discoveryHighlightsNote')));
 
 					if (ingredients[0] !== null) {
 						getSuggestions(suggestions, ingredients, cooking);
 
 						if (suggestions.length > 0) {
-							results.appendChild(makeElement('p', t('discoveryMoreSuggestions')));
+							const suggestionSection = makeElement('section');
+							suggestionSection.className = 'tool-section';
+							suggestionSection.append(
+								makeElement('h2', t('tableRecipeSuggestions')),
+							);
+							const suggestionNote = makeElement('p', t('discoveryMoreSuggestions'));
+							suggestionNote.className = 'section-note';
+							suggestionSection.append(suggestionNote);
 							table = makeSortableTable({
 								captionKey: 'tableRecipeSuggestions',
 								headers: {
@@ -2264,7 +2296,8 @@ import './locales/index.js';
 									autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 								},
 							});
-							results.appendChild(table);
+							suggestionSection.append(table);
+							results.append(suggestionSection);
 							pickerTables.push(table);
 						}
 					}
@@ -2285,14 +2318,13 @@ import './locales/index.js';
 						})
 						.filter((item): item is Food => item !== null); // Filter out empty slots
 
-					if (discoverfood.firstChild) {
-						discoverfood.removeChild(discoverfood.firstChild);
-					}
-					if (discover.firstChild) {
-						discover.removeChild(discover.firstChild);
-					}
-					while (makable.firstChild) {
-						makable.removeChild(makable.firstChild);
+					discoverfood.replaceChildren();
+					discover.replaceChildren();
+					makable.replaceChildren();
+					const hasIngredients = ingredients.length > 0;
+					requireElement('discovery-empty').hidden = hasIngredients;
+					for (const container of [discoverfood, discover, makable]) {
+						container.closest<HTMLElement>('.tool-section')!.hidden = !hasIngredients;
 					}
 
 					if (ingredients.length > 0) {
@@ -2368,7 +2400,12 @@ import './locales/index.js';
 							discoveryGrinder = makeRecipeGrinder(
 								ingredients.filter((item): item is Food => item !== null),
 							);
-							makable.appendChild(discoveryGrinder.button);
+							makable.appendChild(discoveryGrinder.element);
+						} else {
+							const empty = makeElement('p', t('discoveryNoRecipes'));
+							empty.className = 'section-empty';
+							discover.append(empty);
+							makable.closest<HTMLElement>('.tool-section')!.hidden = true;
 						}
 					}
 
@@ -3233,7 +3270,7 @@ import './locales/index.js';
 			requireElement('ingredients').querySelector<HTMLButtonElement>('button')?.focus();
 			saveState();
 		},
-		ingredientName: id => getCollectionItem(food, id)?.name ?? id,
+		previewDish: previewCookbookDish,
 		shareUrl: snapshot => {
 			const url = new URL(
 				window.location.protocol === 'file:'

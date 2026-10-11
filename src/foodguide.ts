@@ -3083,6 +3083,12 @@ import './locales/index.js';
 		lastRouteHash = window.location.hash;
 	};
 	pushNavigation = tab => writeUrl(tab, true);
+	document.querySelector('.skip-link')?.addEventListener('click', event => {
+		event.preventDefault();
+		const main = requireElement('main');
+		main.focus();
+		main.scrollIntoView({ block: 'start' });
+	});
 	writeNavigation = () => {
 		writeUrl(activeTabId);
 		for (const link of navbar.querySelectorAll<HTMLAnchorElement>('a[data-tab]')) {
@@ -3094,7 +3100,12 @@ import './locales/index.js';
 		if (window.location.hash === lastRouteHash) {
 			return;
 		}
-		const route = parseGuideRoute(window.location.hash) ?? { tab: 'simulator' as const };
+		const route = parseGuideRoute(window.location.hash);
+		if (!route) {
+			// Content anchors and unknown fragments must not switch the active section.
+			writeNavigation();
+			return;
+		}
 		applyingRoute = true;
 		try {
 			if (

@@ -5095,6 +5095,16 @@ test('manual URL navigation validates inputs and restores food and recipe highli
 	});
 	assert.equal(await page.locator('#food tr.highlighted').count(), 1);
 	assert.match(await page.locator('#food tr.highlighted').textContent(), /Carrot/);
+	const sectionUrl = page.url();
+	await page.locator('.skip-link').focus();
+	await page.locator('.skip-link').press('Enter');
+	assert.equal(
+		await page.locator('#main').evaluate(main => main === document.activeElement),
+		true,
+	);
+	assert.equal(await page.locator('#tab-foodlist').getAttribute('aria-selected'), 'true');
+	assert.equal(page.url(), sectionUrl);
+
 	await page.evaluate(() => {
 		location.hash = '#crockpot?game=together&highlight=*Meaty%20Stew';
 	});

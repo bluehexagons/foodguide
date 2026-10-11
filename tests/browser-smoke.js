@@ -3533,10 +3533,13 @@ test('loads the guide, assets, translations, and a rendered food table', async t
 	const pageErrors = [];
 	page.on('pageerror', error => pageErrors.push(error));
 
-	const response = await page.goto(`${baseUrl}/index.html`, {
-		waitUntil: 'domcontentloaded',
-	});
-	assert.equal(response?.status(), 200);
+	// Firefox can finish the immediate meta redirect before goto returns its response.
+	const [response] = await Promise.all([
+		page.waitForResponse(`${baseUrl}/index.html`),
+		page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' }),
+	]);
+	assert.equal(response.status(), 200);
+	await page.waitForURL(`${baseUrl}/index.htm`, { waitUntil: 'domcontentloaded' });
 	await page.locator('#language-picker').waitFor();
 	assert.equal(await page.title(), "Don't Starve Food Guide");
 	assert.equal(await page.locator('#navbar [data-tab]').count(), 7);

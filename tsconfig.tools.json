@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM"],
+		"types": ["node"],
+		"rootDir": "tools",
+		"outDir": "scripts",
+		"noEmitOnError": true,
+		"verbatimModuleSyntax": true
+	},
+	"include": ["tools/**/*.ts"]
+}

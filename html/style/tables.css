@@ -1,10 +1,14 @@
-/* Table styling: data tables, sorting, highlighting, link spans */
+/* Table styling: data tables, sorting, highlighting, linked controls */
 
 /* Sticky-scroll wrapper: keeps a horizontal scrollbar visible at the viewport bottom */
 .table-scroll-wrapper {
 	overflow-x: auto;
 	overflow-y: visible;
 	max-width: 100%;
+}
+
+.table-scroll-wrapper:focus-visible {
+	outline-offset: -2px;
 }
 
 table {
@@ -17,6 +21,8 @@ table {
 }
 
 table td {
+	/* Reserve the highlight edges so matching a row does not change its size. */
+	border-top: 1px solid transparent;
 	border-bottom: 1px solid var(--border-color);
 	border-right: 1px solid var(--border-light);
 	background: var(--table-bg);
@@ -27,7 +33,7 @@ table td {
 }
 
 table td:first-child {
-	border-left: 1px solid var(--border-light);
+	border-inline-start: 4px solid transparent;
 }
 
 table .numeric-cell {
@@ -60,7 +66,19 @@ table tr:hover td {
 
 table tr.highlighted td {
 	background: var(--table-highlight);
-	border-bottom-color: var(--highlighted-border);
+	border-block-color: var(--highlighted-border);
+}
+
+table tr.highlighted td:first-child {
+	border-inline-start-color: var(--highlighted-border);
+}
+
+table tr.highlighted td:nth-last-child(1 of :not(.col-hidden)) {
+	border-inline-end-color: var(--highlighted-border);
+}
+
+table tr.highlighted a:is(:hover, :focus-visible) {
+	color: var(--fg-primary);
 }
 
 table th {
@@ -78,8 +96,26 @@ table th {
 	white-space: nowrap;
 }
 
-table th[style*='cursor'] {
+table th[data-sort] {
+	padding: 0;
 	user-select: none;
+}
+
+table .table-sort {
+	display: block;
+	width: 100%;
+	padding: 8px 12px;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: inherit;
+	cursor: pointer;
+}
+
+table :is(.table-sort, button.link):focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: -2px;
 }
 
 table th:hover {
@@ -93,18 +129,105 @@ table th.sort-desc {
 	color: var(--header-text, #fff);
 }
 
-table th.sort-asc::after {
+table th.sort-asc .table-sort::after {
 	content: ' \25B2';
 	font-size: 0.8em;
 	opacity: 0.8;
 	margin-left: 6px;
 }
 
-table th.sort-desc::after {
+table th.sort-desc .table-sort::after {
 	content: ' \25BC';
 	font-size: 0.8em;
 	opacity: 0.8;
 	margin-left: 6px;
+}
+
+.table-empty-row td {
+	padding: 12px;
+	text-align: left;
+	white-space: normal;
+	line-height: 1.5;
+}
+
+.analysis-progress,
+.analysis-result-count,
+.analysis-snapshot-notice {
+	margin: 8px 0;
+	color: var(--fg-secondary);
+	font-size: 13px;
+}
+
+.analysis-progress {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.analysis-progress progress {
+	width: 200px;
+	max-width: 100%;
+	height: 12px;
+	accent-color: var(--focus-color);
+}
+
+/* Collapsed runs retain the first sorted combination's values and ingredients. */
+.table-group-toggle {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	min-height: 32px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+}
+
+.table-group-toggle::before {
+	content: '▸';
+}
+
+.table-group-toggle[aria-expanded='true']::before {
+	content: '▾';
+}
+
+.table-group-toggle::after {
+	content: '(' attr(data-count) ')';
+	color: var(--fg-secondary);
+	font-size: 12px;
+}
+
+.table-group-detail .name-cell {
+	padding-inline-start: 30px;
+}
+
+.analysis-ingredients-cell {
+	padding: 0;
+	cursor: pointer;
+}
+
+.analysis-ingredients {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	width: 100%;
+	min-height: 44px;
+	padding: 6px 12px;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+
+.analysis-ingredients-cell:hover {
+	background: var(--selected-bg);
 }
 
 /* Column visibility: user can toggle columns on/off */
@@ -153,8 +276,8 @@ table .col-hidden {
 	color: var(--header-text, #fff);
 }
 
-/* Linkable spans in table cells */
-table.links span.link {
+/* Linked actions in table cells */
+table.links .link {
 	padding: 1px 4px;
 	display: inline-block;
 	border: 1px solid var(--border-light);
@@ -163,45 +286,165 @@ table.links span.link {
 	border-radius: 3px;
 	cursor: pointer;
 	font-size: 13px;
+	font-family: inherit;
+	line-height: inherit;
 	color: var(--fg-primary);
 	transition: background var(--transition-fast);
 }
 
-table.links span.link:hover {
+table.links .link:hover {
 	background: var(--table-hover);
 }
 
-table.links span.link.left {
+table.links .link.left {
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
 	border-left: none;
 }
 
-table.links span.link.right {
+table.links .link.right {
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
 
-table span.link.strike {
+table .link.strike {
 	text-decoration: line-through;
 	color: var(--strike-text);
 }
 
-table.links span.link.strike {
+table.links .link.strike {
 	border-color: var(--border-light);
 }
 
-span.link :is(img, .icon) {
+.link :is(img, .icon) {
 	width: 20px;
 	height: 20px;
 	margin-bottom: -2px;
 	vertical-align: text-bottom;
 }
 
-.highlighted {
-	outline: 1px solid #ccb;
+.table-pagination {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 16px;
+	padding: 8px 0;
+	font-size: 13px;
 }
 
-#results .highlighted td {
-	border-bottom: 4px solid #ccb !important;
+.table-pagination form {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+}
+
+.table-pagination button,
+.table-pagination input,
+.table-pagination select {
+	box-sizing: border-box;
+	min-height: 32px;
+	margin: 0;
+	border: 1px solid var(--border-color);
+	border-radius: 3px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	font: inherit;
+}
+
+.table-pagination input {
+	width: 5.5em;
+	padding: 4px 6px;
+}
+
+.table-group-pager td {
+	padding: 4px 12px;
+	white-space: normal;
+}
+
+.table-group-pager .table-pagination {
+	padding: 0;
+}
+
+.table-page-range,
+.table-page-count {
+	color: var(--fg-secondary);
+}
+
+.table-pagination button {
+	padding: 4px 8px;
+	cursor: pointer;
+}
+
+.table-pagination button:hover:not(:disabled) {
+	background: var(--table-hover);
+	border-color: var(--medium);
+}
+
+.table-pagination button:disabled {
+	opacity: 0.55;
+	cursor: default;
+}
+
+.table-page-settings,
+.table-page-settings label {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+}
+
+.table-page-settings {
+	gap: 8px 16px;
+	flex-basis: 100%;
+}
+
+.table-pagination select {
+	padding: 4px 6px;
+}
+
+/* Borders show the entire expanded run even in forced colors or when columns hide. */
+.table-group-expanded > td {
+	background: color-mix(in srgb, var(--table-bg) 92%, var(--focus-color));
+}
+
+.table-group-expanded > td:nth-child(1 of :not(.col-hidden)) {
+	border-inline-start: 3px solid var(--focus-color);
+}
+
+.table-group-expanded > td:nth-last-child(1 of :not(.col-hidden)) {
+	border-inline-end: 3px solid var(--focus-color);
+}
+
+.table-group-start.table-group-expanded > td {
+	border-block-start: 2px solid var(--focus-color);
+}
+
+.table-group-end > td {
+	border-block-end: 2px solid var(--focus-color);
+}
+
+/* A native entry link can be copied or opened independently from its wiki link. */
+.reference-name {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3em;
+}
+
+.reference-permalink {
+	display: inline-flex;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	min-height: 24px;
+	font-weight: 600;
+	text-decoration: none;
+}
+@media (pointer: coarse) {
+	.reference-permalink {
+		min-width: 32px;
+		min-height: 32px;
+	}
 }

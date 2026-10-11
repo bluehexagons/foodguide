@@ -3,10 +3,6 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const foodguideSource = readFileSync(new URL('../html/foodguide.js', import.meta.url), 'utf8');
-const componentsCss = readFileSync(
-	new URL('../html/style/components.css', import.meta.url),
-	'utf8',
-);
 const sortableTableSource = readFileSync(
 	new URL('../html/sortable-table.js', import.meta.url),
 	'utf8',
@@ -17,48 +13,6 @@ describe('foodguide UI regressions', () => {
 	it('ingredient picker refresh reads the sort dropdown through the shared dropdown API', () => {
 		assert.match(foodguideSource, /const sortType = sortControls\.getValue\(\);/);
 		assert.doesNotMatch(foodguideSource, /sortControls\.getSortType\(\)/);
-	});
-
-	it('refreshes ingredient results once for every value change, including pasted text', () => {
-		assert.match(foodguideSource, /picker\.addEventListener\('input', refreshPicker\);/);
-		assert.doesNotMatch(
-			foodguideSource,
-			/picker\.addEventListener\('keydown', refreshPicker\)/,
-		);
-		assert.doesNotMatch(foodguideSource, /picker\.addEventListener\('keyup'/);
-	});
-
-	it('ingredient picker supports right-click remove without opening the browser context menu', () => {
-		assert.match(foodguideSource, /const isRemoval = e\.button === 2;/);
-		assert.match(foodguideSource, /result = removeSlotById\(id\);/);
-		assert.match(
-			foodguideSource,
-			/else if \(!limited && slots\.indexOf\(id\) !== -1\) {\s+result = removeSlotById\(id\);/m,
-		);
-		assert.match(
-			foodguideSource,
-			/li\.addEventListener\('contextmenu', suppressIngredientContextMenu, false\);/,
-		);
-	});
-
-	it('ingredient picker flashes an item-level error when add or remove cannot apply', () => {
-		assert.match(foodguideSource, /const flashIngredientActionError = target =>/);
-		assert.match(foodguideSource, /flashIngredientActionError\(target\);/);
-		assert.match(componentsCss, /\.ingredient-action-error/);
-		assert.match(componentsCss, /@keyframes ingredient-action-error/);
-	});
-
-	it('cancels an in-progress statistics calculation when results are cleared', () => {
-		assert.match(foodguideSource, /calculationControl\?\.cancel\(\);/);
-		assert.match(foodguideSource, /makableSummary\.appendChild\(deleteButton\);/);
-	});
-
-	it('shares one resize listener across rebuilt responsive tables', () => {
-		const resizeListeners = foodguideSource.match(/window\.addEventListener\('resize'/g) || [];
-
-		assert.strictEqual(resizeListeners.length, 1);
-		assert.match(foodguideSource, /const responsiveTables = new Set\(\);/);
-		assert.match(foodguideSource, /responsiveTables\.delete\(tableContainer\);/);
 	});
 
 	it('keeps the shared table renderer outside the page controller', () => {

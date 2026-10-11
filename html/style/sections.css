@@ -1,0 +1,387 @@
+/* Supporting tool sections share the picker and selected-ingredient visual language. */
+.tool-section {
+	min-width: 0;
+	margin-top: 20px;
+	padding: 14px;
+	border: 1px solid var(--border-color);
+	border-radius: 10px;
+	background: var(--table-bg);
+}
+
+.tool-section > h2 {
+	margin: 0 0 8px;
+	padding: 0;
+	font-size: 1rem;
+	color: var(--fg-primary);
+}
+
+.section-note,
+.section-empty {
+	font-size: 0.85rem;
+	line-height: 1.5;
+	color: var(--fg-secondary);
+}
+
+.section-note {
+	margin: 0 0 12px;
+}
+
+.outcome-note {
+	padding: 8px 12px;
+	border-inline-start: 3px solid var(--highlighted-border);
+	border-radius: 3px;
+	background: var(--table-highlight);
+	color: var(--fg-primary);
+}
+
+.section-empty {
+	margin: 16px 0 0;
+	padding: 16px;
+	border: 1px dashed var(--border-color);
+	border-radius: 8px;
+}
+
+.tool-section .section-empty {
+	margin: 0;
+}
+
+#inventory-controls {
+	margin-bottom: 14px;
+	padding: 12px 14px;
+	border: 1px solid var(--border-color);
+	border-radius: 10px;
+	background: var(--table-bg);
+	font-size: 0.85rem;
+}
+
+#inventory-controls label {
+	flex: 1 1 200px;
+	align-items: start;
+	flex-direction: column;
+	gap: 4px;
+	font-weight: 600;
+}
+
+#inventory-controls :is(input, select) {
+	width: 100%;
+	font-weight: 400;
+}
+
+#inventory-controls button {
+	align-self: end;
+}
+
+#inventory-controls .personal-help {
+	margin-top: 4px;
+	font-weight: 400;
+}
+
+#cookbook-save {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px solid var(--border-color);
+	font-size: 0.85rem;
+}
+
+#personal-cookbook {
+	margin-top: 12px;
+	border-top: 1px solid var(--border-color);
+}
+
+#personal-cookbook summary {
+	padding: 12px 0;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--fg-primary);
+}
+
+.cookbook-count {
+	margin-inline-start: 6px;
+	font-size: 0.85rem;
+	color: var(--fg-secondary);
+	font-weight: 400;
+}
+
+.cookbook-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+	gap: 12px;
+	margin: 12px 0 0;
+}
+
+.cookbook-list .cookbook-card {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0;
+	padding: 0;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--bg-secondary);
+}
+
+.cookbook-list .cookbook-load {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: start;
+	gap: 8px;
+	padding: 12px;
+	border: 0;
+	border-radius: 7px 7px 0 0;
+	background: transparent;
+	text-align: start;
+}
+
+.cookbook-list .cookbook-load:hover {
+	background: var(--table-hover);
+}
+
+.cookbook-load:focus-visible {
+	outline-offset: -3px;
+}
+
+.cookbook-dish-name {
+	max-width: 100%;
+	font-size: 1rem;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.cookbook-title-row {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+}
+
+.cookbook-load-hint {
+	flex-shrink: 0;
+	font-size: 0.75rem;
+	color: var(--fg-secondary);
+	text-decoration: underline;
+}
+
+.cookbook-outcomes {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	font-size: 0.85rem;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}
+
+.cookbook-outcome-label {
+	color: var(--fg-secondary);
+}
+
+.cookbook-recipe {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.cookbook-recipe .icon {
+	width: 28px;
+	height: 28px;
+}
+
+.cookbook-ingredients {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.cookbook-ingredients .icon {
+	width: 40px;
+	height: 40px;
+}
+
+.cookbook-card-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 12px;
+	border-top: 1px solid var(--border-light);
+	font-size: 0.75rem;
+	line-height: 1.4;
+	color: var(--fg-secondary);
+}
+
+.cookbook-card-footer > span {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.cookbook-card-footer button {
+	flex-shrink: 0;
+	font-size: 0.75rem;
+}
+
+.cookbook-list .cookbook-empty {
+	grid-column: 1 / -1;
+	padding: 12px;
+	border: 1px dashed var(--border-color);
+	border-radius: 6px;
+	font-size: 0.85rem;
+	color: var(--fg-secondary);
+}
+
+.personal-dialog p {
+	font-size: 0.9rem;
+	line-height: 1.5;
+}
+
+.personal-dialog :is(button, label) {
+	font-size: 0.85rem;
+}
+
+.personal-dialog input[type='file']::file-selector-button {
+	margin-inline-end: 10px;
+	padding: 6px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	background: var(--table-bg);
+	color: var(--fg-primary);
+	font: inherit;
+	cursor: pointer;
+}
+
+.personal-dialog-heading h2 {
+	padding: 0;
+	font-size: 1.15rem;
+}
+
+:is(.personal-controls, .personal-dialog, .cookbook-card-footer) button:enabled:hover {
+	background: var(--table-hover);
+	border-color: var(--focus-color);
+}
+
+.analysis-introduction {
+	max-width: 760px;
+	margin-bottom: 16px;
+}
+
+.analysis-introduction h2 {
+	font-size: 1.15rem;
+	margin-bottom: 8px;
+}
+
+.analysis-introduction p {
+	font-size: 0.9rem;
+}
+
+.analysis-introduction .section-note {
+	font-size: 0.85rem;
+}
+
+button.makablebutton {
+	display: inline-block;
+	margin: 0;
+	min-height: 36px;
+	padding: 8px 12px;
+	border-radius: 6px;
+	border: 1px solid var(--focus-color);
+	background: var(--picked-bg);
+	color: var(--fg-primary);
+	cursor: pointer;
+	transition:
+		background-color var(--transition-fast),
+		border-color var(--transition-fast);
+	font: inherit;
+	font-size: 0.85rem;
+	text-align: start;
+}
+
+.makableContainer {
+	margin: 12px 0 0;
+	padding: 14px;
+	border: 1px solid var(--border-color);
+	border-radius: 10px;
+	background: var(--table-bg);
+}
+
+.makableSummary {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 12px;
+	padding: 0 0 12px;
+	border-bottom: 1px solid var(--border-color);
+	border-radius: 0;
+	font-size: 0.95rem;
+	font-weight: 600;
+}
+
+.makableGroupingHelp,
+.makableFilterHelp {
+	padding: 0;
+	border: 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--fg-secondary);
+	margin-bottom: 12px;
+	opacity: 1;
+}
+
+.recipeFilter,
+.foodFilter {
+	padding: 8px;
+	margin-bottom: 12px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--bg-secondary);
+}
+
+.section-subheading {
+	margin: 16px 0 6px;
+	padding: 0;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+.makableFootnote {
+	padding: 8px 0 0;
+	margin-bottom: 0;
+	font-size: 0.8rem;
+	line-height: 1.5;
+	color: var(--fg-secondary);
+	font-style: italic;
+}
+
+@media (any-pointer: coarse) {
+	button.makablebutton {
+		min-height: 44px;
+	}
+	.personal-dialog input[type='file']::file-selector-button {
+		min-height: 44px;
+	}
+}
+
+@media (max-width: 767px) {
+	.tool-section,
+	.makableContainer {
+		padding: 10px;
+	}
+	#inventory-controls label {
+		flex-basis: 100%;
+	}
+	.cookbook-list {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (forced-colors: active) {
+	.outcome-note {
+		border-inline-start-color: Highlight;
+	}
+	.cookbook-list .cookbook-card,
+	.recipeFilter,
+	.foodFilter {
+		border-color: CanvasText;
+	}
+}

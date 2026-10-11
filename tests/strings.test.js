@@ -8,7 +8,9 @@ const setupDom = () => {
 	class FakeElement {}
 	class FakeDocumentFragment {}
 	const getNodeText = node => {
-		if (!node) return '';
+		if (!node) {
+			return '';
+		}
 		if (
 			typeof node.textContent === 'string' &&
 			(!node.childNodes || node.childNodes.length === 0)
@@ -74,7 +76,9 @@ const setupDom = () => {
 	const document = {
 		documentElement: html,
 		addEventListener(type, handler) {
-			if (!listeners.has(type)) listeners.set(type, []);
+			if (!listeners.has(type)) {
+				listeners.set(type, []);
+			}
 			listeners.get(type).push(handler);
 		},
 		dispatchEvent(event) {
@@ -130,6 +134,41 @@ describe('strings locale behavior', () => {
 		delete globalThis.Element;
 		delete globalThis.CustomEvent;
 		delete globalThis.localStorage;
+	});
+
+	it('bundled locales preserve interpolation parameters and dynamic HTML hooks', async () => {
+		const { strings } = await import('../html/strings.js');
+		const locales = await Promise.all([
+			import('../html/locales/es.js'),
+			import('../html/locales/zh.js'),
+		]);
+		const placeholders = text => [...text.matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort();
+		const htmlIds = text =>
+			[...text.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]).sort();
+		for (const [index, { dict }] of locales.entries()) {
+			const compare = (key, english, translated) => {
+				const context = `${['es', 'zh'][index]}: ${key}`;
+				assert.ok(translated?.trim(), `Empty translation: ${context}`);
+				assert.deepEqual(
+					placeholders(translated),
+					placeholders(english),
+					`Parameters: ${context}`,
+				);
+				assert.deepEqual(htmlIds(translated), htmlIds(english), `HTML hooks: ${context}`);
+			};
+			for (const [key, english] of Object.entries(strings)) {
+				if (key === 'themeToggleToDark' || key === 'themeToggleToLight') {
+					continue;
+				}
+				if (typeof english === 'string') {
+					compare(key, english, dict[key]);
+				} else {
+					for (const [nestedKey, value] of Object.entries(english)) {
+						compare(`${key}.${nestedKey}`, value, dict[key][nestedKey]);
+					}
+				}
+			}
+		}
 	});
 
 	it('applies translations to the root element itself', async () => {
@@ -188,11 +227,13 @@ describe('strings locale behavior', () => {
 		strings.setLocale('x-test-fallback');
 		assert.equal(strings.t('tableName'), 'TEST NAME');
 
-		strings.setLocale('missing-code');
-
-		assert.equal(strings.getLocale(), 'en');
-		assert.equal(strings.t('tableName'), 'Name');
-		assert.equal(html.getAttribute('lang'), 'en');
+		for (const code of ['missing-code', 'constructor', 'toString', '__proto__']) {
+			strings.setLocale(code);
+			assert.equal(strings.getLocale(), 'en');
+			assert.equal(strings.t('tableName'), 'Name');
+			assert.equal(html.getAttribute('lang'), 'en');
+			assert.equal(strings.localeName(code), code);
+		}
 	});
 
 	it('package entrypoint registers bundled locales', async () => {

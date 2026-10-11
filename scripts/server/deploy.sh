@@ -33,6 +33,7 @@ git -C "$REPO_DIR" reset --hard origin/main
 # Generated assets are ignored by Git and must be built before publishing.
 log "Installing dependencies and generating sprites..."
 npm --prefix "$REPO_DIR" ci --ignore-scripts
+npm --prefix "$REPO_DIR" run build
 npm --prefix "$REPO_DIR" run generate-sprites
 
 # Sync html/ to serving directory

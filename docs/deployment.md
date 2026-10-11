@@ -1,22 +1,23 @@
 # Deployment
 
-Deploy the complete `html/` directory after generating sprites. There is no
-bundler build, but `html/img/sprites/` is ignored by Git and must be created for
+Deploy the complete `html/` directory after compiling the modules and generating sprites.
+The compiler output and `html/img/sprites/` are ignored by Git and must be created for
 each checkout.
 
 ```bash
 npm ci --ignore-scripts
+npm run build
 npm run generate-sprites
 ```
 
-Use Node.js 24 and include development dependencies; Sharp is required to generate
+Use Node.js 24 or newer and include development dependencies; Sharp is required to generate
 the sprite assets. Both `index.html` and `index.htm` must be served. Relative URLs
 allow the site to work under the GitHub Pages repository path.
 
 ## GitHub Pages
 
 `.github/workflows/deploy.yml` runs on pushes to `main` and manual dispatch. It
-runs the shared checks, generates sprites in a fresh checkout, uploads `html/`,
+runs the shared checks, compiles modules, generates sprites in a fresh checkout, uploads `html/`,
 and deploys to the `github-pages` environment. Configure the repository's Pages
 source as **GitHub Actions**. Deployment jobs receive only their required token
 permissions, and the Pages concurrency group serializes publication.
@@ -63,7 +64,7 @@ changes.
 
 Each invocation locks the deployment checkout, fetches `origin/main`, resets the
 checkout to that revision, installs the lockfile with lifecycle scripts disabled,
-generates sprites, and copies `html/` with `rsync --delete`. Local changes in the
+compiles modules, generates sprites, and copies `html/` with `rsync --delete`. Local changes in the
 deployment checkout are discarded. A dependency installation or sprite build
 failure stops before copying files to the serving directory. The final rsync
 updates files in place and does not provide an atomic directory swap.

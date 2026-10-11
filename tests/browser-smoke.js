@@ -2,20 +2,49 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
+import { parseArgs } from 'node:util';
+import { chromium, firefox } from 'playwright';
+import axe from 'axe-core';
 
 const ROOT_DIR = join(import.meta.dirname, '..');
-const HTTP_SERVER = join(
-	ROOT_DIR,
-	'node_modules',
-	'.bin',
-	process.platform === 'win32' ? 'http-server.cmd' : 'http-server',
-);
+const HTTP_SERVER = join(ROOT_DIR, 'node_modules/http-server/bin/http-server');
+const { values: browserOptions } = parseArgs({
+	options: {
+		browser: { type: 'string', default: process.env.PLAYWRIGHT_BROWSER || 'chromium' },
+		headed: { type: 'boolean', default: false },
+	},
+});
+const browserType = new Map([
+	['chromium', chromium],
+	['firefox', firefox],
+]).get(browserOptions.browser);
+if (!browserType) {
+	throw new Error(`Unsupported browser: ${browserOptions.browser}. Choose chromium or firefox.`);
+}
+const chromiumOnly =
+	browserType === chromium ? false : 'Trusted gesture injection requires Chromium CDP';
+
+const colorContrast = (first, second) => {
+	const luminance = color => {
+		const channels = color
+			.match(/[\d.]+/g)
+			.slice(0, 3)
+			.map(Number)
+			.map(value => {
+				const s = color.startsWith('color(srgb ') ? value : value / 255;
+				return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+			});
+		return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+	};
+	const a = luminance(first);
+	const b = luminance(second);
+	return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+};
 
 const startServer = () => {
 	const server = spawn(
-		HTTP_SERVER,
-		['html', '-p', '0', '-a', '127.0.0.1', '-i', 'false', '-c', '-1'],
+		process.execPath,
+		[HTTP_SERVER, 'html', '-p', '0', '-a', '127.0.0.1', '-i', 'false', '-c', '-1'],
 		{
 			cwd: ROOT_DIR,
 			stdio: ['ignore', 'pipe', 'pipe'],
@@ -31,11 +60,21 @@ const startServer = () => {
 		rejectReady = reject;
 	});
 
+	const timeout = setTimeout(() => {
+		if (!settled) {
+			settled = true;
+			server.kill();
+			rejectReady(new Error(`http-server did not become ready: ${output.join('')}`));
+		}
+	}, 20_000);
+	timeout.unref();
+
 	const handleOutput = chunk => {
 		output.push(chunk.toString());
 		const match = output.join('').match(/http:\/\/127\.0\.0\.1:(\d+)/);
 		if (!settled && match) {
 			settled = true;
+			clearTimeout(timeout);
 			resolveReady(`http://127.0.0.1:${match[1]}`);
 		}
 	};
@@ -45,12 +84,14 @@ const startServer = () => {
 	server.once('error', error => {
 		if (!settled) {
 			settled = true;
+			clearTimeout(timeout);
 			rejectReady(error);
 		}
 	});
 	server.once('exit', code => {
 		if (!settled) {
 			settled = true;
+			clearTimeout(timeout);
 			rejectReady(new Error(`http-server exited before becoming ready (code ${code})`));
 		}
 	});
@@ -58,121 +99,5614 @@ const startServer = () => {
 	return { server, ready };
 };
 
-const stopServer = server => {
-	if (!server.killed) {
-		server.kill();
+const stopServer = async server => {
+	if (!server.pid || server.exitCode !== null || server.signalCode !== null) {
+		return;
 	}
+	const closed = new Promise(resolve => server.once('close', resolve));
+	server.kill();
+	await closed;
 };
 
-test('loads the guide, assets, translations, and a rendered food table', async () => {
+const createBrowserFixture = async t => {
 	const { server, ready } = startServer();
-	let browser;
+	t.after(() => stopServer(server));
+	const baseUrl = await ready;
+	const browser = await browserType.launch({
+		headless: !browserOptions.headed,
+		...(browserType === chromium && process.env.PLAYWRIGHT_EXECUTABLE_PATH
+			? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+			: {}),
+	});
+	t.after(() => browser.close());
+	return { baseUrl, browser };
+};
 
-	try {
-		const baseUrl = await ready;
-		const browserOptions = { headless: true };
+const createSavedPage = (browser, baseUrl, state, options = {}) =>
+	browser.newPage({
+		...options,
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [{ name: 'foodGuideState', value: JSON.stringify(state) }],
+				},
+			],
+		},
+	});
 
-		if (process.env.PLAYWRIGHT_EXECUTABLE_PATH) {
-			browserOptions.executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
+const trackDiagnostics = page => {
+	const diagnostics = [];
+	page.on('pageerror', error => diagnostics.push(error.message));
+	page.on('console', message => {
+		// Juggler can query layout before navigation finishes; retain application warnings.
+		if (
+			browserType === firefox &&
+			message.type() === 'warning' &&
+			message
+				.text()
+				.startsWith(
+					'[JavaScript Warning: "Layout was forced before the page was fully loaded.',
+				) &&
+			message.text().includes('file: "chrome://juggler/content/content/main.js"')
+		) {
+			console.info('Firefox automation emitted an internal pre-load layout warning.');
+			return;
 		}
+		if (['warning', 'error'].includes(message.type())) {
+			diagnostics.push(message.text());
+		}
+	});
+	return diagnostics;
+};
 
-		browser = await chromium.launch(browserOptions);
-		const page = await browser.newPage();
-		const pageErrors = [];
-		page.on('pageerror', error => pageErrors.push(error));
+test('keyboard navigation covers tabs, picker dismissal, removal, and filter groups', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'simulator',
+		version: 'together',
+		pickers: [
+			['meat', 'berries', 'berries', 'berries'],
+			['meat', 'berries'],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	page.setDefaultTimeout(10_000);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await page
+			.getByRole('link', { name: 'Skip to content', exact: true })
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Enter');
+	assert.equal(await page.locator('main').evaluate(e => e === document.activeElement), true);
+	const active = () => page.evaluate(() => document.activeElement?.outerHTML);
+	const simulator = page.getByRole('tab', { name: 'Simulator', exact: true });
+	await simulator.focus();
+	await simulator.press('ArrowLeft');
+	assert.equal(
+		await page
+			.getByRole('tab', { name: 'Game Info', exact: true })
+			.getAttribute('aria-selected'),
+		'true',
+	);
+	await page.keyboard.press('Home');
+	assert.equal(await simulator.evaluate(e => e === document.activeElement), true);
+	await page.keyboard.press('ArrowRight');
+	assert.equal(
+		await page
+			.getByRole('tab', { name: 'Discovery', exact: true })
+			.getAttribute('aria-selected'),
+		'true',
+	);
+	assert.equal(await page.locator('#navbar [tabindex="0"]').count(), 1);
+	await page.keyboard.press('End');
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await page.locator('#personal-share-button').evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await page
+			.locator('.personal-toolbar button')
+			.last()
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	// The external game link follows the header actions; then Tab reaches the visible panel.
+	await page.keyboard.press('Tab');
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await page.locator('#gameinfo').evaluate(e => e === document.activeElement),
+		true,
+		await active(),
+	);
+	await simulator.click();
+	const input = page.locator('#simulator .ingredientpicker');
+	await input.fill('Meat');
+	await input.press('ArrowDown');
+	const descendant = await input.getAttribute('aria-activedescendant');
+	assert.equal(await page.locator(`#${descendant}`).getAttribute('aria-selected'), 'true');
+	await input.press('Enter');
+	assert.match(
+		await page.locator('#simulator [role="status"]').textContent(),
+		/The pot is full\. Remove an ingredient before adding Meat\./,
+	);
+	await input.press('Escape');
+	assert.equal(await input.getAttribute('aria-expanded'), 'false');
+	assert.equal(await page.locator('#simulator .ingredientdropdown').isVisible(), false);
+	assert.equal(await input.getAttribute('aria-activedescendant'), null);
+	await input.press('Enter');
+	assert.equal(await page.locator('#ingredients [data-id]').count(), 4);
+	await input.press('ArrowDown');
+	assert.equal(await input.getAttribute('aria-expanded'), 'true');
+	const slot = page.locator('#ingredients .ingredient').first();
+	await slot.focus();
+	await slot.press('Space');
+	assert.equal(await slot.evaluate(e => e === document.activeElement), true);
+	assert.equal(await slot.getAttribute('aria-label'), 'Remove Berries');
+	assert.match(await page.locator('#simulator [role="status"]').textContent(), /Removed Meat/);
+	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
+	const meat = page.locator('#inventory [data-id="meat@together"]');
+	await meat.focus();
+	await meat.press('Enter');
+	const berries = page.locator('#inventory [data-id="berries@together"]');
+	assert.equal(await berries.evaluate(e => e === document.activeElement), true, await active());
+	await berries.press('Space');
+	assert.equal(
+		await page.locator('#inventory .ingredient').evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Enter');
+	assert.equal(
+		await page
+			.locator('#discovery .ingredientpicker')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	// Rebuild an inventory for the analyzer using keyboard input only.
+	for (const name of ['Meat', 'Berries']) {
+		const search = page.locator('#discovery .ingredientpicker');
+		await search.fill(name);
+		await search.press('ArrowDown');
+		await search.press('Enter');
+	}
+	const calculate = page.locator('#makable .makablebutton');
+	await calculate.focus();
+	await calculate.press('Enter');
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const group = page.getByRole('toolbar', { name: 'Ingredient filters', exact: true });
+	assert.equal(await group.getAttribute('aria-describedby'), 'discovery-filter-help');
+	assert.equal(await group.locator('[tabindex="0"]').count(), 1);
+	const filter = group.locator('button:has(.icon[data-id="meat@together"])');
+	await filter.focus();
+	await filter.press('Enter');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Required');
+	await filter.press('Space');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Excluded');
+	await filter.press('Shift+Space');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Required');
+	await filter.press('Shift+Enter');
+	assert.equal(await filter.getAttribute('aria-label'), 'Meat: Normal');
+	await filter.press('ArrowRight');
+	assert.equal(
+		await group
+			.getByRole('button', { name: 'Berries: Normal', exact: true })
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('Home');
+	assert.equal(
+		await group
+			.locator('button')
+			.first()
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.keyboard.press('End');
+	assert.equal(
+		await group
+			.locator('button')
+			.last()
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	assert.equal(await group.locator('[tabindex="0"]').count(), 1);
+	const recipe = page.locator('#makable .recipeFilter button').first();
+	await recipe.focus();
+	await recipe.press('Shift+Enter');
+	assert.match(await recipe.getAttribute('aria-label'), /: Excluded$/);
+	await recipe.press('Shift+Enter');
+	assert.match(await recipe.getAttribute('aria-label'), /: Normal$/);
+	await page.locator('#makable .deleteButton').focus();
+	await page.keyboard.press('Enter');
+	assert.equal(await calculate.evaluate(e => e === document.activeElement), true, await active());
+	const inventoryControl = page.locator('#inventory .ingredient').first();
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
+		await page.waitForFunction(
+			theme => document.documentElement.dataset.theme === theme,
+			theme,
+		);
+		await inventoryControl.focus();
+		const colors = await inventoryControl.evaluate(e => ({
+			outline: getComputedStyle(e).outlineColor,
+			background: getComputedStyle(e.closest('.selectionpanel')).backgroundColor,
+			style: getComputedStyle(e).outlineStyle,
+			width: getComputedStyle(e).outlineWidth,
+		}));
+		assert.equal(colors.style, 'solid');
+		assert.equal(colors.width, '2px');
+		assert.ok(colorContrast(colors.outline, colors.background) >= 3, `${theme} focus contrast`);
+	}
+	await calculate.focus();
+	await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
+	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineWidth), '2px');
+	const forcedFocus = await calculate.evaluate(element => ({
+		outline: getComputedStyle(element).outlineColor,
+		background: getComputedStyle(document.body).backgroundColor,
+	}));
+	assert.ok(
+		colorContrast(forcedFocus.outline, forcedFocus.background) >= 3,
+		'Forced-color keyboard focus must contrast against the canvas',
+	);
+	assert.deepEqual(diagnostics, []);
+});
 
-		const response = await page.goto(`${baseUrl}/index.html`, {
-			waitUntil: 'domcontentloaded',
+test('selection indicators survive forced colors and track modes, menus, columns, and matches', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['meat', 'berries', 'berries', 'berries'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
+	const indicatorVisible = (locator, pseudo = '::after') =>
+		locator.evaluate((element, pseudo) => {
+			const style = getComputedStyle(element, pseudo);
+			return (
+				style.content !== 'none' &&
+				style.display !== 'none' &&
+				parseFloat(style.width) > 0 &&
+				parseFloat(style.height) > 0
+			);
+		}, pseudo);
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ forcedColors: 'active', colorScheme: theme });
+		if ((await page.locator('html').getAttribute('data-theme')) !== theme) {
+			await page.locator('#theme-toggle').click();
+		}
+		const together = page.getByRole('button', { name: "Don't Starve Together", exact: true });
+		const solo = page.getByRole('button', { name: "Don't Starve", exact: true });
+		assert.equal(
+			await indicatorVisible(together),
+			true,
+			'A selected game must have a visible non-color indicator',
+		);
+		assert.equal(await indicatorVisible(solo), false);
+		assert.equal(await together.evaluate(e => getComputedStyle(e).opacity), '1');
+		const selectedColors = await together.evaluate(element => ({
+			border: getComputedStyle(element).borderTopColor,
+			background: getComputedStyle(element).backgroundColor,
+		}));
+		assert.ok(
+			colorContrast(selectedColors.border, selectedColors.background) >= 3,
+			`${theme}: selected game border contrast`,
+		);
+		await solo.click();
+		assert.equal(await indicatorVisible(solo), true);
+		assert.equal(await indicatorVisible(together), false);
+		const dlc = page.locator('.dlc-btn[data-dlc="giants"]');
+		await dlc.click();
+		assert.equal(
+			await indicatorVisible(dlc),
+			(await dlc.getAttribute('aria-pressed')) === 'true',
+		);
+		await together.click();
+		const warly = page.locator('.char-btn[data-character="warly"]');
+		await warly.click();
+		assert.equal(await indicatorVisible(warly), true);
+		await warly.click();
+		assert.equal(await indicatorVisible(warly), false);
+		await page.locator('#simulator .clearingredientsbtn').click();
+		for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
+			await page.locator('#simulator .ingredientpicker').fill(name);
+			await page.getByRole('option', { name: new RegExp(`^${name}(?: \\d)?$`) }).click();
+		}
+		await page.locator('#simulator .clearsearchbtn').click();
+		const pickedColors = await page
+			.locator('#simulator .item.faded .ingredient-toggle-visual')
+			.first()
+			.evaluate(element => ({
+				color: getComputedStyle(element).color,
+				background: getComputedStyle(element).backgroundColor,
+			}));
+		assert.ok(
+			colorContrast(pickedColors.color, pickedColors.background) >= 4.5,
+			`${theme}: picked checkbox contrast`,
+		);
+
+		const menuButton = page.locator('#simulator .densityingredients');
+		await menuButton.click();
+		const cozy = page.getByRole('menuitemradio', { name: 'Cozy', exact: true });
+		const compact = page.getByRole('menuitemradio', { name: 'Compact', exact: true });
+		assert.equal(await indicatorVisible(compact), true);
+		assert.equal(await indicatorVisible(cozy), false);
+		const systemColors = await page.evaluate(() => {
+			const probe = document.createElement('span');
+			probe.style.background = 'Canvas';
+			probe.style.color = 'CanvasText';
+			document.body.appendChild(probe);
+			const style = getComputedStyle(probe);
+			const palette = { background: style.backgroundColor, color: style.color };
+			probe.remove();
+			return palette;
 		});
-		assert.equal(response?.status(), 200);
-		await page.locator('#language-picker').waitFor();
-		assert.equal(await page.title(), "Don't Starve Food Guide");
-		assert.equal(await page.locator('#navbar li[data-tab]').count(), 7);
-		assert.equal(await page.locator('#language-picker').count(), 1);
-		assert.equal(await page.locator('#theme-toggle').count(), 1);
+		await compact.hover();
+		await compact.focus();
+		assert.deepEqual(
+			await compact.evaluate(element => {
+				const style = getComputedStyle(element);
+				return { background: style.backgroundColor, color: style.color };
+			}),
+			systemColors,
+			'Selected menu text must retain its system color pair during hover and focus',
+		);
+		await cozy.click();
+		await menuButton.click();
+		assert.equal(await indicatorVisible(cozy), true);
+		assert.equal(await indicatorVisible(compact), false);
+		await compact.click();
 
-		const manifestResponse = await page.request.get(`${baseUrl}/img/sprites/sprites.json`);
-		assert.equal(manifestResponse.status(), 200);
-		assert.equal((await manifestResponse.json()).cellSize, 64);
-
-		const sortButton = page.locator('#simulator button.sortingredients');
-		await sortButton.focus();
-		await sortButton.press('ArrowDown');
-		assert.equal(await sortButton.getAttribute('aria-expanded'), 'true');
-		await page.keyboard.press('End');
-		assert.equal(await page.locator(':focus').getAttribute('data-value'), 'perish');
-		await page.keyboard.press('Enter');
-		assert.equal(await sortButton.getAttribute('aria-expanded'), 'false');
+		const columns = page.locator('#results .column-toggle-bar').first();
+		const health = columns.getByRole('button', { name: 'Health', exact: true });
+		assert.equal(await indicatorVisible(health), true);
+		await health.click();
+		assert.equal(await indicatorVisible(health), false);
+		await health.click();
+		assert.equal(await indicatorVisible(health), true);
+		const match = page.locator('#results tr.highlighted').first().locator('td').nth(1);
+		assert.equal(await match.textContent(), 'Meatballs');
+		assert.equal(
+			await indicatorVisible(match, '::before'),
+			true,
+			'Cooking matches must remain identifiable without their background color',
+		);
 		assert.equal(
 			await page
-				.locator(':focus')
-				.evaluate(
-					element =>
-						element === document.querySelector('#simulator button.sortingredients'),
+				.locator('#ingredients .ingredient')
+				.first()
+				.evaluate(e => getComputedStyle(e).backgroundImage),
+			'none',
+		);
+		await page.locator('#simulator .ingredientpicker').fill('Meat');
+		await page.keyboard.press('ArrowDown');
+		const selected = page.locator('#simulator [role=option][aria-selected=true]');
+		assert.equal(await selected.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+		const activeColors = await selected.evaluate(element => ({
+			outline: getComputedStyle(element).outlineColor,
+			background: getComputedStyle(element).backgroundColor,
+		}));
+		assert.ok(
+			colorContrast(activeColors.outline, activeColors.background) >= 3,
+			`${theme}: active picker option outline contrast (${activeColors.outline} on ${activeColors.background})`,
+		);
+		const violations = await page.evaluate(async () =>
+			(
+				await window.axe.run({ runOnly: { type: 'rule', values: ['color-contrast'] } })
+			).violations.map(({ id, nodes }) => ({ id, targets: nodes.map(n => n.target) })),
+		);
+		assert.deepEqual(
+			violations,
+			[],
+			`${theme} forced-color selection contrast: ${JSON.stringify(violations)}`,
+		);
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('matched table rows keep aligned, contrasting edges through hover, focus, and forced colors', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['fig', 'carrot', 'carrot', 'ice'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
+	const match = page.locator('#results tr.highlighted').first();
+	const name = match.locator('.name-cell a').first();
+	assert.equal(await name.textContent(), 'Figatoni');
+	await page
+		.locator('#results .column-toggle-bar')
+		.first()
+		.getByRole('button', { name: 'Mode', exact: true })
+		.click();
+	assert.equal(await match.locator('td').last().isVisible(), false);
+	// Clicking a column control puts the browser in pointer mode; restore keyboard modality.
+	await page.keyboard.press('Tab');
+	const edges = () =>
+		match.evaluate(row => {
+			const cells = Array.from(row.cells).filter(cell => cell.getClientRects().length);
+			const marker = getComputedStyle(row.querySelector('.name-cell'), '::before');
+			const rowTop = row.getBoundingClientRect().top;
+			return {
+				cells: cells.map(cell => {
+					const style = getComputedStyle(cell);
+					const rect = cell.getBoundingClientRect();
+					return {
+						top: rect.top - rowTop,
+						bottom: rect.bottom - rowTop,
+						background: style.backgroundColor,
+						color: style.color,
+						borderTop: style.borderTopColor,
+						borderBottom: style.borderBottomColor,
+						borderStart: style.borderInlineStartColor,
+						borderEnd: style.borderInlineEndColor,
+						borderStartWidth: parseFloat(style.borderInlineStartWidth),
+					};
+				}),
+				marker: { color: marker.borderBottomColor, content: marker.content },
+				neighborBackground: getComputedStyle(row.previousElementSibling.cells[0])
+					.backgroundColor,
+			};
+		});
+	for (const theme of ['light', 'dark']) {
+		for (const forcedColors of ['none', 'active']) {
+			await page.emulateMedia({ colorScheme: theme, forcedColors });
+			await page.waitForFunction(
+				theme => document.documentElement.dataset.theme === theme,
+				theme,
+			);
+			const label = `${theme}, forced colors ${forcedColors}`;
+			const before = await edges();
+			const first = before.cells[0];
+			for (const cell of before.cells) {
+				assert.equal(cell.top, first.top, `${label}: aligned top edge`);
+				assert.equal(cell.bottom, first.bottom, `${label}: aligned bottom edge`);
+				assert.equal(cell.borderTop, first.borderTop, `${label}: continuous top border`);
+				assert.equal(
+					cell.borderBottom,
+					first.borderTop,
+					`${label}: continuous bottom border`,
+				);
+				assert.ok(
+					colorContrast(cell.color, cell.background) >= 4.5,
+					`${label}: readable text`,
+				);
+			}
+			assert.ok(first.borderStartWidth >= 3, `${label}: prominent edge marker`);
+			assert.equal(first.borderStart, first.borderTop);
+			assert.equal(
+				before.cells.at(-1).borderEnd,
+				first.borderTop,
+				`${label}: visible end edge`,
+			);
+			assert.ok(
+				colorContrast(first.borderTop, first.background) >= 3,
+				`${label}: inner edge contrast (${first.borderTop} on ${first.background})`,
+			);
+			assert.ok(
+				colorContrast(first.borderTop, before.neighborBackground) >= 3,
+				`${label}: outer edge contrast`,
+			);
+			assert.notEqual(before.marker.content, 'none', `${label}: non-color match indicator`);
+			assert.ok(
+				colorContrast(before.marker.color, first.background) >= 3,
+				`${label}: checkmark contrast`,
+			);
+			await name.hover();
+			await name.focus();
+			assert.deepEqual(await edges(), before, `${label}: hover and focus preserve the row`);
+			assert.equal(await name.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+			const violations = await page.evaluate(async () =>
+				(await window.axe.run(document.querySelector('#results'))).violations.map(
+					({ id, nodes }) => ({
+						id,
+						targets: nodes.map(n => n.target),
+					}),
 				),
+			);
+			assert.deepEqual(violations, [], `${label}: accessible results`);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('full-pot errors remain readable with reduced motion and release temporary feedback', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			version: 'together',
+			pickers: [['meat', 'berries', 'berries', 'berries'], []],
+		},
+		{ reducedMotion: 'reduce' },
+	);
+	await page.addInitScript(() => {
+		const listeners = new WeakMap();
+		const add = EventTarget.prototype.addEventListener;
+		const remove = EventTarget.prototype.removeEventListener;
+		EventTarget.prototype.addEventListener = function (type, listener, options) {
+			if (type === 'animationend') {
+				if (!listeners.has(this)) {
+					listeners.set(this, new Set());
+				}
+				listeners.get(this).add(listener);
+			}
+			return add.call(this, type, listener, options);
+		};
+		EventTarget.prototype.removeEventListener = function (type, listener, options) {
+			if (type === 'animationend') {
+				listeners.get(this)?.delete(listener);
+			}
+			return remove.call(this, type, listener, options);
+		};
+		window.animationListenerCount = element => listeners.get(element)?.size || 0;
+	});
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	const panel = page.locator('#simulator');
+	const search = panel.locator('.ingredientpicker');
+	const status = panel.getByRole('status');
+	const readableStatus = () =>
+		status.evaluate(
+			e =>
+				getComputedStyle(e).clipPath === 'none' &&
+				e.clientWidth > 10 &&
+				e.clientHeight > 10,
+		);
+	await search.fill('Carrot');
+	const carrot = panel.getByRole('option', { name: 'Carrot', exact: true });
+	for (let attempt = 0; attempt < 4; attempt++) {
+		await carrot.click();
+		await page.clock.runFor(500);
+		assert.equal(
+			await carrot.evaluate(e => window.animationListenerCount(e)),
+			0,
+			'A missing animationend event must not retain listeners',
+		);
+		assert.equal(
+			await carrot.evaluate(e => e.classList.contains('ingredient-action-error')),
+			false,
+		);
+		assert.equal(
+			await readableStatus(),
+			true,
+			'A brief flash must not be the only visible error feedback',
+		);
+		assert.equal(
+			await status.textContent(),
+			'The pot is full. Remove an ingredient before adding Carrot.',
+		);
+	}
+	await page.clock.runFor(2000);
+	assert.equal(await readableStatus(), true);
+	assert.equal(await panel.locator('.ingredient[data-id]').count(), 4);
+	await panel.getByRole('button', { name: 'Remove Berries', exact: true }).first().click();
+	assert.equal(await readableStatus(), false, 'A successful action clears the visible error');
+	await carrot.click();
+	assert.equal(await panel.locator('.ingredient[data-id]').count(), 4);
+	assert.equal(await status.textContent(), 'Added Carrot.');
+});
+
+test('ingredient errors explain recovery in every language and clear on a new search', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['meat', 'berries', 'berries', 'berries'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const messages = {
+		en: [
+			'The pot is full. Remove an ingredient before adding Carrot.',
+			'Carrot is not selected. Add it before trying to remove it.',
+			'This slot is empty. Select an ingredient from the search results.',
+		],
+		es: [
+			'La olla está llena. Quita un ingrediente antes de añadir Carrot.',
+			'Carrot no está seleccionado. Añádelo antes de intentar quitarlo.',
+			'Esta ranura está vacía. Selecciona un ingrediente de los resultados de búsqueda.',
+		],
+		zh: [
+			'锅已满。请先移除一种食材，再添加 Carrot。',
+			'尚未选择 Carrot。请先添加，再尝试移除。',
+			'此格子为空。请从搜索结果中选择食材。',
+		],
+	};
+	for (const [locale, [full, missing, empty]] of Object.entries(messages)) {
+		await page.locator('#language-picker').selectOption(locale);
+		await page.locator('#tab-simulator').click();
+		const panel = page.locator('#simulator');
+		const search = panel.locator('.ingredientpicker');
+		const status = panel.getByRole('status');
+		await search.fill('Carrot');
+		await panel.getByRole('option', { name: 'Carrot', exact: true }).click();
+		assert.equal(await status.textContent(), full);
+		assert.equal(await status.evaluate(e => getComputedStyle(e).clipPath), 'none');
+		await search.fill('Berries');
+		assert.equal(
+			await status.evaluate(e => e.classList.contains('ingredient-feedback')),
+			false,
+		);
+		await search.fill('Carrot');
+		await panel.getByRole('option', { name: 'Carrot', exact: true }).click({ button: 'right' });
+		assert.equal(await status.textContent(), missing);
+		await page.locator('#tab-discovery').click();
+		const inventory = page.locator('#discovery');
+		await inventory.locator('.ingredient:not([data-id])').click({ button: 'right' });
+		assert.equal(await inventory.getByRole('status').textContent(), empty);
+		assert.equal(
+			await inventory.getByRole('status').evaluate(e => getComputedStyle(e).clipPath),
+			'none',
+		);
+		await inventory.locator('.ingredientpicker').fill('Carrot');
+		await inventory
+			.getByRole('option', { name: 'Carrot', exact: true })
+			.click({ button: 'right' });
+		assert.equal(await inventory.getByRole('status').textContent(), missing);
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('picked markers and quantities survive picker rebuilds and remain distinct from keyboard highlight', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['meat', 'meat'], ['meat']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
+	for (const tab of ['simulator', 'discovery']) {
+		await page.locator(`#tab-${tab}`).click();
+		const panel = page.locator(`#${tab}`);
+		const search = panel.locator('.ingredientpicker');
+		await search.fill('Meat');
+		const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
+		assert.equal(
+			await meat.getAttribute('aria-label'),
+			tab === 'simulator' ? 'Meat 2' : 'Meat',
+		);
+		assert.match(await meat.getAttribute('class'), /faded/);
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		assert.equal(
+			await meat.locator('.ingredient-picked-marker').textContent(),
+			tab === 'simulator' ? '2' : '',
+		);
+		const pickedColors = await meat.evaluate(e => ({
+			bg: getComputedStyle(e).backgroundColor,
+			border: getComputedStyle(e).borderColor,
+		}));
+		const normalColors = await panel
+			.getByRole('option', { name: 'Cooked Meat', exact: true })
+			.evaluate(e => ({
+				bg: getComputedStyle(e).backgroundColor,
+				border: getComputedStyle(e).borderColor,
+			}));
+		assert.notEqual(
+			pickedColors.bg,
+			normalColors.bg,
+			'Compact mode must preserve the picked background',
+		);
+		assert.notEqual(
+			pickedColors.border,
+			normalColors.border,
+			'Compact mode must preserve the picked border',
+		);
+		await search.press('ArrowDown');
+		assert.equal(await meat.getAttribute('aria-selected'), 'true');
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		await search.fill('Berries');
+		await search.fill('Meat');
+		assert.equal(await meat.getAttribute('aria-selected'), 'false');
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		await panel.getByRole('button', { name: 'Sort: Auto', exact: true }).click();
+		await panel.getByRole('menuitemradio', { name: 'Sort: Health', exact: true }).click();
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+		if (tab === 'discovery') {
+			for (const [locale, description] of Object.entries({
+				en: 'In your inventory.',
+				es: 'En tu inventario.',
+				zh: '已在背包中。',
+			})) {
+				await page.locator('#language-picker').selectOption(locale);
+				assert.equal(await meat.getAttribute('aria-description'), description);
+			}
+			await page.locator('#language-picker').selectOption('en');
+		}
+		await meat.click();
+		assert.equal(
+			await meat.locator('.ingredient-picked-marker').isVisible(),
+			tab === 'simulator',
+		);
+		assert.equal(
+			await meat.locator('.ingredient-picked-marker').textContent(),
+			tab === 'simulator' ? '3' : '',
+		);
+		assert.equal(
+			await meat.getAttribute('aria-label'),
+			tab === 'simulator' ? 'Meat 3' : 'Meat',
+		);
+		for (const colorScheme of ['light', 'dark']) {
+			await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
+			const violations = await page.evaluate(async () => {
+				const { violations } = await window.axe.run({
+					runOnly: {
+						type: 'rule',
+						values: ['label-content-name-mismatch', 'color-contrast'],
+					},
+				});
+				return violations.map(({ id, nodes }) => ({
+					id,
+					targets: nodes.map(n => n.target),
+				}));
+			});
+			assert.deepEqual(
+				violations,
+				[],
+				`${tab} ${colorScheme}: ${JSON.stringify(violations)}`,
+			);
+		}
+		for (const [locale, description] of Object.entries(
+			tab === 'simulator'
+				? { en: 'In the pot: 3.', es: 'En la olla: 3.', zh: '锅中数量：3。' }
+				: { en: null, es: null, zh: null },
+		)) {
+			await page.locator('#language-picker').selectOption(locale);
+			assert.equal(await meat.getAttribute('aria-description'), description);
+		}
+		await page.locator('#language-picker').selectOption('en');
+		if (tab === 'simulator') {
+			for (let i = 0; i < 2; i++) {
+				await panel
+					.getByRole('button', { name: 'Remove Meat', exact: true })
+					.first()
+					.click();
+			}
+			assert.equal(await meat.getAttribute('aria-label'), 'Meat');
+			assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), true);
+			assert.equal(await meat.locator('.ingredient-picked-marker').textContent(), '');
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('picker shortcuts remove one or all copies without changing input focus or other ingredients', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [
+			['meat', 'berries', 'meat', 'berries'],
+			['meat', 'berries'],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const [tab, container] of [
+		['simulator', '#ingredients'],
+		['discovery', '#inventory'],
+	]) {
+		await page.locator(`#tab-${tab}`).click();
+		const panel = page.locator(`#${tab}`);
+		const search = panel.locator('.ingredientpicker');
+		const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
+		const keys = () =>
+			page
+				.locator(`${container} .ingredient[data-id]`)
+				.evaluateAll(items => items.map(e => e.dataset.id));
+		await search.fill('Meat');
+		await search.press('ArrowDown');
+		await search.dispatchEvent('keydown', { key: 'Enter', shiftKey: true, isComposing: true });
+		assert.equal(
+			(await keys()).length,
+			tab === 'simulator' ? 4 : 2,
+			'IME composition cannot remove ingredients',
+		);
+		await search.press('Alt+Enter');
+		assert.equal((await keys()).length, tab === 'simulator' ? 4 : 2);
+		await search.press('Shift+Enter');
+		assert.deepEqual(
+			await keys(),
+			tab === 'simulator'
+				? ['meat@together', 'berries@together', 'berries@together']
+				: ['berries@together'],
+		);
+		assert.equal(await search.evaluate(e => e === document.activeElement), true);
+		await search.press('Enter');
+		await search.press('Control+Enter');
+		assert.deepEqual(
+			await keys(),
+			tab === 'simulator' ? ['berries@together', 'berries@together'] : ['berries@together'],
+		);
+		assert.equal(
+			await meat.getAttribute('aria-selected'),
+			'true',
+			'Removing membership preserves keyboard highlight',
+		);
+		assert.equal(await meat.locator('.ingredient-picked-marker').isVisible(), false);
+		await search.press('Enter');
+		await search.press('Meta+Enter');
+		assert.equal(
+			(await keys()).some(key => key.startsWith('meat')),
+			false,
+		);
+		await search.press('Escape');
+		await search.press('Enter');
+		await search.press('Shift+Enter');
+		await search.press('Control+Enter');
+		assert.equal(
+			(await keys()).some(key => key.startsWith('meat')),
+			false,
+			'Dismissed results do not accept shortcuts',
+		);
+		await search.press('ArrowDown');
+		await meat.click();
+		assert.equal(
+			(await keys()).filter(key => key.startsWith('meat')).length,
+			1,
+			'An unpicked ingredient adds exactly once',
+		);
+		assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
+		if (tab === 'simulator') {
+			await meat.locator('.text').click();
+			assert.equal(await meat.locator('.ingredient-subtract').isVisible(), true);
+			await meat.locator('.ingredient-subtract').click();
+		} else {
+			await meat.locator('.ingredient-toggle').click();
+		}
+		assert.equal(
+			(await keys()).filter(key => key.startsWith('meat')).length,
+			tab === 'simulator' ? 1 : 0,
+		);
+		assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
+		await meat.locator('.text').click();
+		assert.equal(
+			(await keys()).filter(key => key.startsWith('meat')).length,
+			tab === 'simulator' ? 2 : 1,
+		);
+		await meat.locator('.ingredient-toggle').click();
+		const remaining = await keys();
+		assert.equal(
+			remaining.some(key => key.startsWith('meat')),
+			false,
+			'Unchecking removes every copy',
+		);
+		assert.equal(await meat.locator('.ingredient-toggle').isVisible(), false);
+		assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
+		assert.equal(
+			await panel
+				.getByRole('status')
+				.evaluate(e => e.classList.contains('ingredient-feedback')),
+			false,
+		);
+		await page.reload({ waitUntil: 'networkidle' });
+		assert.deepEqual(await keys(), remaining, 'Removal persists across reload');
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('picker errors occupy reserved space above the selection without moving slots', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			version: 'together',
+			pickers: [['meat', 'berries', 'berries', 'berries'], []],
+		},
+		{ reducedMotion: 'reduce' },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const width of [320, 768, 1280]) {
+		await page.setViewportSize({ width, height: 900 });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			await page.locator('#tab-simulator').click();
+			const panel = page.locator('#simulator');
+			const search = panel.locator('.ingredientpicker');
+			const status = panel.getByRole('status');
+			for (const name of ['Carrot', 'Winter Koalefant Trunk', 'Roasted Juicy Berries']) {
+				await search.fill(name);
+				const position = () =>
+					page
+						.locator('#ingredients')
+						.evaluate(e => e.getBoundingClientRect().top + scrollY);
+				const before = await position();
+				await panel.getByRole('option', { name, exact: true }).click();
+				assert.ok(
+					Math.abs((await position()) - before) <= 1,
+					`${locale} at ${width}: full-pot error moved the slots`,
+				);
+				assert.equal(
+					await status.evaluate(e => {
+						const picker = e
+							.closest('[role=tabpanel]')
+							.querySelector('.ingredientdropdown');
+						const selected = e
+							.closest('[role=tabpanel]')
+							.querySelector('.selectionpanel');
+						const rect = e.getBoundingClientRect();
+						return (
+							rect.top >= picker.getBoundingClientRect().bottom &&
+							rect.bottom <= selected.getBoundingClientRect().top &&
+							e.scrollHeight <= e.clientHeight + 1
+						);
+					}),
+					true,
+					'Feedback must sit between the picker and selected ingredients without clipping',
+				);
+				const summary = panel.locator('.ingredient-search-summary');
+				assert.equal(await summary.isVisible(), true);
+				assert.equal(
+					await summary.evaluate(
+						e =>
+							e.getBoundingClientRect().bottom <=
+							e
+								.closest('.ingredient-feedback-space')
+								.querySelector('[role=status]')
+								.getBoundingClientRect().top,
+					),
+					true,
+					'Count and error must not overlap',
+				);
+				await panel.getByRole('option', { name, exact: true }).click({ button: 'right' });
+				assert.ok(
+					Math.abs((await position()) - before) <= 1,
+					'Switching error types must preserve position',
+				);
+				await search.focus();
+				await search.press('Escape');
+				await search.press('ArrowDown');
+				assert.equal(
+					await panel.locator('.ingredient-search-summary').isVisible(),
+					true,
+					'Result counts remain visible during errors',
+				);
+				await page.locator('#language-picker').selectOption(locale === 'es' ? 'en' : 'es');
+				assert.equal(
+					await status.evaluate(e => e.classList.contains('ingredient-feedback')),
+					true,
+					'Changing language preserves the active error',
+				);
+				assert.match(
+					await status.textContent(),
+					locale === 'es' ? /not selected/ : /no está seleccionado/,
+				);
+				await page.locator('#language-picker').selectOption(locale);
+				await panel.locator('.clearsearchbtn').click();
+				// Clear changes the result list height; compare the cleared state before a new error.
+				await search.fill(name);
+				assert.equal(
+					await status.evaluate(e => e.classList.contains('ingredient-feedback')),
+					false,
+				);
+			}
+			await page.locator('#tab-discovery').click();
+			const emptySlot = page.locator('#inventory .ingredient:not([data-id])');
+			const inventory = page.locator('#inventory');
+			const before = await inventory.evaluate(e => e.getBoundingClientRect().top + scrollY);
+			await emptySlot.click({ button: 'right' });
+			assert.ok(
+				Math.abs(
+					(await inventory.evaluate(e => e.getBoundingClientRect().top + scrollY)) -
+						before,
+				) <= 1,
+				`${locale} at ${width}: empty-slot error moved the selection`,
+			);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('search feedback covers empty results, localization, composition, and action priority', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [[], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	for (const locale of ['en', 'es', 'zh']) {
+		await page.locator('#language-picker').selectOption(locale);
+		for (const tab of ['simulator', 'discovery']) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.locator('.ingredientpicker');
+			const summary = panel.locator('.ingredient-search-summary');
+			const status = panel.getByRole('status');
+			await search.fill('zzzznomatches');
+			assert.equal(await panel.locator('.ingredientdropdown').getByRole('option').count(), 0);
+			const emptyMessage = await summary.textContent();
+			assert.ok(emptyMessage.length > 0);
+			assert.match(emptyMessage, { en: /^No matching/, es: /^No hay/, zh: /^没有/ }[locale]);
+			assert.equal(await summary.isVisible(), true);
+			assert.equal(await search.evaluate(e => e === document.activeElement), true);
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), emptyMessage);
+			assert.equal(await status.getAttribute('aria-atomic'), 'true');
+
+			await search.fill('Roasted Juicy Berries');
+			assert.equal(await panel.locator('.ingredientdropdown').getByRole('option').count(), 1);
+			const singleMessage = await summary.textContent();
+			assert.match(singleMessage, /^1 /);
+			assert.equal(
+				await status.textContent(),
+				emptyMessage,
+				'Typing must not announce immediately',
+			);
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), singleMessage);
+
+			await search.fill('zzzznomatches');
+			await search.fill('Meat');
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), await summary.textContent());
+			assert.match(
+				await status.textContent(),
+				new RegExp(
+					`^${await panel.locator('.ingredientdropdown').getByRole('option').count()} `,
+				),
+			);
+			assert.notEqual(
+				await status.textContent(),
+				emptyMessage,
+				'A newer search cancels the older announcement',
+			);
+
+			await search.fill('Roasted Juicy Berries');
+			await search.press('Enter');
+			const actionMessage = await status.textContent();
+			assert.match(actionMessage, /Roasted Juicy Berries/);
+			await page.clock.runFor(350);
+			assert.equal(
+				await status.textContent(),
+				actionMessage,
+				'A result count must not overwrite an ingredient action',
+			);
+
+			await search.dispatchEvent('compositionstart');
+			await search.evaluate(element => {
+				element.value = 'zzzznomatches';
+				element.dispatchEvent(
+					new InputEvent('input', { bubbles: true, isComposing: true }),
+				);
+			});
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), actionMessage);
+			await search.dispatchEvent('compositionend');
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), emptyMessage);
+
+			await search.fill('Meat');
+			await search.press('Escape');
+			await page.clock.runFor(350);
+			assert.equal(await status.textContent(), emptyMessage);
+			assert.equal(await summary.isVisible(), false);
+			await search.press('ArrowDown');
+			assert.equal(await summary.isVisible(), true);
+			await search.fill('Carrot');
+			await page.locator('#theme-toggle').focus();
+			await page.clock.runFor(350);
+			assert.equal(
+				await status.textContent(),
+				emptyMessage,
+				'Leaving the search cancels pending feedback',
+			);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('wide tables have localized names and keyboard scrolling only while overflowing', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			version: 'together',
+			pickers: [
+				['meat', 'berries', 'berries', 'berries'],
+				['meat', 'berries'],
+			],
+		},
+		{ viewport: { width: 320, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#tab-crockpot').click();
+	const table = page.getByRole('table', { name: 'Recipe List', exact: true });
+	const wrapper = page.getByRole('region', { name: 'Recipe List', exact: true });
+	await wrapper.waitFor({ state: 'visible' });
+	assert.match(await wrapper.getAttribute('aria-description'), /Left and Right/);
+	const sortBefore = await table.locator('th[aria-sort]').getAttribute('aria-sort');
+	await page.locator('#recipes .column-toggle-bar button').last().focus();
+	await page.keyboard.press('Tab');
+	assert.equal(await wrapper.evaluate(e => e === document.activeElement), true);
+	assert.equal(await wrapper.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+	await page.keyboard.press('ArrowRight');
+	await page.waitForFunction(
+		() => document.querySelector('#recipes .table-scroll-wrapper').scrollLeft > 0,
+	);
+	assert.equal(await table.locator('th[aria-sort]').getAttribute('aria-sort'), sortBefore);
+	await wrapper.evaluate(element => {
+		element.scrollLeft = 0;
+		const selection = getSelection();
+		selection.selectAllChildren(document.querySelector('#recipes .column-toggle-bar'));
+		element.focus();
+	});
+	await page.keyboard.press('ArrowRight');
+	assert.ok(await wrapper.evaluate(element => element.scrollLeft > 0));
+	await page.keyboard.press('ArrowLeft');
+	assert.equal(await wrapper.evaluate(element => element.scrollLeft), 0);
+	const preventsArrow = (locator, modifiers = {}) =>
+		locator.evaluate((element, modifiers) => {
+			const event = new KeyboardEvent('keydown', {
+				key: 'ArrowRight',
+				bubbles: true,
+				cancelable: true,
+				...modifiers,
+			});
+			element.dispatchEvent(event);
+			return event.defaultPrevented;
+		}, modifiers);
+	for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey']) {
+		assert.equal(await preventsArrow(wrapper, { [modifier]: true }), false);
+	}
+	await page.keyboard.press('Tab');
+	assert.equal(
+		await table
+			.locator('th[data-sort="name"] button')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	assert.equal(await preventsArrow(table.locator('th[data-sort="name"] button')), false);
+	for (const [locale, name] of [
+		['es', 'Lista de recetas'],
+		['zh', '配方列表'],
+		['en', 'Recipe List'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await page.getByRole('table', { name, exact: true }).count(), 1);
+		assert.equal(await page.getByRole('region', { name, exact: true }).count(), 1);
+	}
+	await page.setViewportSize({ width: 3200, height: 812 });
+	await page.waitForFunction(
+		() => document.querySelector('#recipes .table-scroll-wrapper').tabIndex === -1,
+	);
+	assert.equal(await page.getByRole('region', { name: 'Recipe List', exact: true }).count(), 0);
+	assert.equal(await preventsArrow(page.locator('#recipes .table-scroll-wrapper')), false);
+	assert.equal(await table.getAttribute('aria-label'), null);
+	assert.equal(await table.locator('caption').textContent(), 'Recipe List');
+	assert.deepEqual(diagnostics, []);
+});
+
+test('manual column choices override automatic hiding and retain the visible layout', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{ version: 'together' },
+		{
+			viewport: { width: 500, height: 812 },
+		},
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#tab-crockpot').click();
+	const columns = page.locator('#recipes .column-toggle-bar');
+	assert.equal(await columns.getAttribute('role'), 'group');
+	assert.equal(await columns.getAttribute('aria-label'), 'Columns: Recipe List');
+	const auto = columns.getByRole('button', { name: 'Auto', exact: true });
+	const cookTime = columns.getByRole('button', { name: 'Cook Time', exact: true });
+	const header = page.locator('#recipes th[data-sort=cooktime]');
+	const visibleColumns = () => page.locator('#recipes th:not(.col-hidden)').allTextContents();
+	const initialColumns = await visibleColumns();
+	assert.equal(await cookTime.getAttribute('aria-pressed'), 'false');
+	await cookTime.focus();
+	await cookTime.press('Enter');
+	assert.equal(
+		await header.isVisible(),
+		true,
+		'A manual choice must reveal an automatically hidden column',
+	);
+	assert.equal(await cookTime.getAttribute('aria-pressed'), 'true');
+	assert.equal(await auto.getAttribute('aria-pressed'), 'false');
+	assert.deepEqual(
+		(await visibleColumns()).filter(label => label !== 'Cook Time'),
+		initialColumns,
+	);
+	assert.equal(await cookTime.evaluate(e => e === document.activeElement), true);
+	await page.setViewportSize({ width: 1280, height: 812 });
+	assert.equal(await header.isVisible(), true);
+	await cookTime.press('Space');
+	assert.equal(await header.isVisible(), false);
+	await auto.click();
+	assert.equal(await auto.getAttribute('aria-pressed'), 'true');
+	assert.equal(
+		await header.isVisible(),
+		true,
+		'Auto uses the recommended layout for the current width',
+	);
+	await page.setViewportSize({ width: 500, height: 812 });
+	await header.waitFor({ state: 'hidden' });
+	await auto.click();
+	assert.equal(await header.isVisible(), false, 'Turning Auto off restores manual choices');
+	for (const [locale, groupName, buttonName] of [
+		['es', 'Columnas: Lista de recetas', 'Tiempo de cocción'],
+		['zh', '列: 配方列表', '烹饪时间'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await columns.getAttribute('aria-label'), groupName);
+		const localizedToggle = columns.getByRole('button', { name: buttonName, exact: true });
+		assert.equal(await localizedToggle.getAttribute('aria-pressed'), 'false');
+		await localizedToggle.press('Space');
+		assert.equal(await header.isVisible(), true);
+		await localizedToggle.press('Space');
+		assert.equal(await header.isVisible(), false);
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('responsive column hiding moves focus to a visible control without disrupting other focus', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, { version: 'together' });
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#tab-crockpot').click();
+	const header = page.locator('#recipes th[data-sort=cooktime]');
+	await header.locator('button').focus();
+	await page.setViewportSize({ width: 500, height: 812 });
+	await header.waitFor({ state: 'hidden' });
+	const toggle = page
+		.locator('#recipes .column-toggle-bar')
+		.getByRole('button', { name: 'Cook Time', exact: true });
+	assert.equal(
+		await toggle.evaluate(e => e === document.activeElement),
+		true,
+		'Resizing or zooming must not strand focus in a hidden column',
+	);
+	await toggle.press('Space');
+	assert.equal(await header.isVisible(), true);
+	await page.setViewportSize({ width: 1280, height: 812 });
+	await page
+		.locator('#recipes .column-toggle-bar')
+		.getByRole('button', { name: 'Auto', exact: true })
+		.click();
+	const name = page.locator('#recipes th[data-sort=name] button');
+	await name.focus();
+	await page.setViewportSize({ width: 500, height: 812 });
+	await header.waitFor({ state: 'hidden' });
+	assert.equal(await name.evaluate(e => e === document.activeElement), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('analyzer clear controls keep readable hover and focus states in both themes', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{ activeTab: 'discovery', version: 'together', pickers: [[], ['meat', 'berries']] },
+		{ hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const clear = page.locator('#makable .deleteButton');
+	const assertContrast = async state => {
+		await page.waitForFunction(() =>
+			document.getAnimations().every(animation => animation.playState !== 'running'),
+		);
+		const colors = await clear.evaluate(element => ({
+			foreground: getComputedStyle(element).color,
+			background: getComputedStyle(element).backgroundColor,
+		}));
+		assert.ok(
+			colorContrast(colors.foreground, colors.background) >= 4.5,
+			`${state}: clear results text (${colors.foreground} on ${colors.background})`,
+		);
+	};
+	for (const theme of ['light', 'dark']) {
+		for (const forcedColors of ['none', 'active']) {
+			await page.emulateMedia({ colorScheme: theme, forcedColors });
+			await page.waitForFunction(
+				theme => document.documentElement.dataset.theme === theme,
+				theme,
+			);
+			await page.locator('#discovery .ingredientpicker').focus();
+			await page.locator('#language-picker').hover();
+			await assertContrast(`${theme}, forced colors ${forcedColors}, idle`);
+			await clear.hover();
+			await assertContrast(`${theme}, forced colors ${forcedColors}, hover`);
+			await page.locator('#language-picker').hover();
+			await page.keyboard.press('Tab');
+			await clear.focus();
+			await assertContrast(`${theme}, forced colors ${forcedColors}, keyboard focus`);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('paused analysis exposes its current results and explains empty filters', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [[], ['meat', 'berries', 'carrot', 'honey', 'ice', 'egg', 'fish', 'monstermeat']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	await page.locator('#makable .makablebutton').click();
+	const pause = page.locator('#makable .pauseButton');
+	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), true);
+	await pause.click();
+	const summary = page.locator('#makable .makableSummary');
+	const progress = page.locator('#makable progress');
+	const checked = await progress.evaluate(e => ({ value: e.value, max: e.max }));
+	const ingredientCount = await page.locator('#makable .foodFilter button').count();
+	const expectedTotal =
+		(ingredientCount * (ingredientCount + 1) * (ingredientCount + 2) * (ingredientCount + 3)) /
+		24;
+	assert.equal(checked.max, expectedTotal);
+	assert.ok(checked.value > 0 && checked.value < checked.max);
+	assert.match(
+		await progress.getAttribute('aria-valuetext'),
+		/^Checked \d+ of \d+ combinations \(\d+%\)\.$/,
+	);
+	assert.match(await summary.textContent(), /Found [1-9]\d* valid combinations \(paused\)/);
+	const found = Number((await summary.textContent()).match(/Found (\d+)/)[1]);
+	const rows = page.locator('#makable tbody tr[data-recipe]');
+	const originalCount = await rows.count();
+	assert.ok(
+		originalCount > 0 && originalCount <= 25,
+		'Pausing shows a bounded overview of complete groups',
+	);
+	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), false);
+	assert.ok(found > 25, 'This fixture offers more paused results to inspect');
+	assert.match(
+		await page.locator('#makable .analysis-result-count').textContent(),
+		new RegExp(`; ${found} matching combinations\\.`),
+	);
+	assert.equal(await page.locator('#makable .showMoreButton').count(), 0);
+	const filters = page.locator('#makable .foodFilter .analysis-filter');
+	assert.ok((await filters.count()) >= 5);
+	for (let index = 0; index < 5; index++) {
+		await filters.nth(index).click();
+	}
+	assert.equal(
+		await rows.count(),
+		0,
+		'Five required distinct ingredients cannot fit a four-slot pot',
+	);
+	const empty = page.locator('#makable .table-empty-row');
+	assert.equal(await empty.isVisible(), true);
+	assert.match(await empty.textContent(), /No matching combinations found so far/);
+	assert.match(
+		await page.locator('#makable [role=status]').first().textContent(),
+		/Recipe groups 0–0 of 0; 0 matching/,
+	);
+	const visibleColumns = () => page.locator('#makable th:not(.col-hidden)').count();
+	assert.equal(await empty.locator('td').evaluate(cell => cell.colSpan), await visibleColumns());
+	await page.locator('#makable .resetAnalysisFiltersButton').click();
+	assert.equal(await rows.count(), originalCount);
+	assert.equal(await empty.count(), 0);
+	assert.equal(await page.locator('#makable .foodFilter .selected').count(), 0);
+	assert.match(
+		await page.locator('#makable [role=status]').first().textContent(),
+		/Analysis filters reset/,
+	);
+	for (let index = 0; index < 5; index++) {
+		await filters.nth(index).click();
+	}
+	await page
+		.locator('#makable .column-toggle-bar')
+		.getByRole('button', { name: 'Health', exact: true })
+		.click();
+	assert.equal(await empty.locator('td').evaluate(cell => cell.colSpan), await visibleColumns());
+	for (const [locale, message] of [
+		['es', 'Aún no se han encontrado combinaciones coincidentes.'],
+		['zh', '目前尚未找到匹配的组合。'],
+		['en', 'No matching combinations found so far.'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await empty.textContent(), message);
+		assert.equal(await empty.isVisible(), true);
+		assert.deepEqual(await progress.evaluate(e => ({ value: e.value, max: e.max })), checked);
+		assert.equal(
+			await progress.getAttribute('aria-label'),
+			locale === 'es'
+				? 'Progreso de comprobación de combinaciones'
+				: locale === 'zh'
+					? '组合检查进度'
+					: 'Combination checking progress',
+		);
+	}
+	for (let index = 0; index < 5; index++) {
+		await filters.nth(index).click();
+		await filters.nth(index).click();
+	}
+	assert.ok((await rows.count()) > 0);
+	assert.equal(await empty.count(), 0);
+	assert.equal(await pause.textContent(), 'Resume');
+	await page.locator('#makable .deleteButton').click();
+	assert.equal(await page.locator('#makable .makableContainer').count(), 0);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('analysis that finishes during resume retains its completion message', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [[], ['meat', 'berries', 'carrot', 'honey', 'ice', 'egg', 'fish', 'monstermeat']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	await page.locator('#makable .makablebutton').click();
+	const filters = await page.locator('#makable .foodFilter .analysis-filter').count();
+	assert.ok(
+		filters >= 5 && filters <= 20,
+		'This fixture completes in its second calculation block',
+	);
+	const pause = page.locator('#makable .pauseButton');
+	await pause.click();
+	await pause.click();
+	assert.equal(await page.locator('#makable .makablebutton').isEnabled(), true);
+	assert.equal(await pause.count(), 0);
+	assert.equal(await page.locator('#makable progress').evaluate(e => e.value === e.max), true);
+	assert.match(
+		await page.locator('#makable progress').getAttribute('aria-valuetext'),
+		/\(100%\)/,
+	);
+	const summary = await page
+		.locator('#makable .makableSummary')
+		.evaluate(e => e.firstChild.textContent);
+	assert.match(summary, /^Found \d+ valid combinations\.$/);
+	assert.equal(await page.locator('#makable [role=status]').first().textContent(), summary);
+	assert.equal(
+		await page.locator('#makable .deleteButton').evaluate(e => e === document.activeElement),
+		true,
+	);
+	const ingredientFilters = page.locator('#makable .foodFilter .analysis-filter');
+	for (let index = 0; index < filters; index++) {
+		await ingredientFilters.nth(index).click();
+		await ingredientFilters.nth(index).click();
+	}
+	assert.equal(await page.locator('#makable td:nth-child(2)').count(), 0);
+	const empty = page.locator('#makable .table-empty-row');
+	for (const [locale, message] of [
+		[
+			'en',
+			'No combinations match these filters. Try adjusting the ingredient or recipe filters.',
+		],
+		[
+			'es',
+			'Ninguna combinación coincide con estos filtros. Prueba a ajustar los filtros de ingredientes o recetas.',
+		],
+		['zh', '没有组合符合这些筛选条件。请尝试调整食材或配方筛选条件。'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await empty.textContent(), message);
+		assert.equal(await empty.isVisible(), true);
+	}
+	for (let index = 0; index < filters; index++) {
+		await ingredientFilters.nth(index).click();
+	}
+	assert.ok((await page.locator('#makable td:nth-child(2)').count()) > 0);
+	assert.equal(await empty.count(), 0);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('accessibility audit covers visible panels, menus, and analyzer results', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const findings = [];
+	let scans = 0;
+	for (const options of [
+		{},
+		{ hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } },
+		{ forcedColors: 'active' },
+	]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{
+				version: 'together',
+				pickers: [
+					['meat', 'berries', 'berries', 'berries'],
+					['meat', 'berries'],
+				],
+			},
+			options,
+		);
+		page.setDefaultTimeout(15_000);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.evaluate(axe.source);
+		const audit = async context => {
+			await page.waitForFunction(() =>
+				document.getAnimations().every(animation => animation.playState !== 'running'),
+			);
+			const violations = await page.evaluate(async () => {
+				const { violations } = await window.axe.run();
+				return violations.map(({ id, nodes }) => ({
+					id,
+					nodes: nodes
+						.slice(0, 3)
+						.map(({ target, failureSummary }) => ({ target, failureSummary })),
+				}));
+			});
+			scans++;
+			if (violations.length) {
+				findings.push({
+					touch: !!options.hasTouch,
+					forcedColors: !!options.forcedColors,
+					...context,
+					violations,
+				});
+			}
+		};
+		for (const theme of ['light', 'dark']) {
+			await page.emulateMedia({
+				colorScheme: theme,
+				forcedColors: options.forcedColors || 'none',
+			});
+			// Media-query change events are asynchronous; let the automatic theme settle
+			// before deciding whether a saved manual theme needs to be toggled.
+			await page.evaluate(
+				() =>
+					new Promise(resolve =>
+						requestAnimationFrame(() => requestAnimationFrame(resolve)),
+					),
+			);
+			if ((await page.locator('html').getAttribute('data-theme')) !== theme) {
+				await page.locator('#theme-toggle').click();
+			}
+			for (const locale of options.hasTouch || options.forcedColors
+				? ['en']
+				: ['en', 'es', 'zh']) {
+				await page.locator('#language-picker').selectOption(locale);
+				for (const tab of [
+					'simulator',
+					'discovery',
+					'foodlist',
+					'crockpot',
+					'statistics',
+					'about',
+					'gameinfo',
+				]) {
+					await page.locator(`#navbar [data-tab="${tab}"]`).click();
+					if (tab === 'discovery') {
+						await page.locator('#makable .makablebutton').click();
+						await page.waitForFunction(
+							() => !document.querySelector('#makable .makablebutton').disabled,
+						);
+						assert.equal(
+							await page
+								.locator('#makable .deleteButton')
+								.evaluate(e => e === document.activeElement),
+							true,
+						);
+					}
+					if (tab === 'statistics') {
+						await page.locator('#statistics .makablebutton').click();
+						await page.locator('#statistics .pauseButton').click();
+					}
+					await audit({ theme, locale, tab });
+					if (tab === 'discovery') {
+						const filters = page.locator('#makable .foodFilter .analysis-filter');
+						for (let index = 0; index < (await filters.count()); index++) {
+							await filters.nth(index).click();
+							await filters.nth(index).click();
+						}
+						assert.equal(
+							await page.locator('#makable .table-empty-row').isVisible(),
+							true,
+						);
+						await audit({ theme, locale, tab, filters: 'no matches' });
+						for (let index = 0; index < (await filters.count()); index++) {
+							await filters.nth(index).click();
+						}
+					}
+					if (tab === 'simulator') {
+						for (const buttonClass of [
+							'searchselector',
+							'displaymodeingredients:not(.densityingredients)',
+							'densityingredients',
+							'sortingredients',
+							'groupingredients',
+							'cookingingredients',
+						]) {
+							await page.locator(`#simulator button.${buttonClass}`).click();
+							await audit({ theme, locale, tab, menu: buttonClass });
+							await page.keyboard.press('Escape');
+						}
+						for (const grouping of ['type', 'preparation']) {
+							await page.locator('#simulator .groupingredients').click();
+							await page
+								.locator(
+									`#simulator [role=menuitemradio][data-value="${grouping}"]`,
+								)
+								.click();
+							await audit({ theme, locale, tab, grouping });
+						}
+						await page.locator('#simulator .groupingredients').click();
+						await page
+							.locator('#simulator [role=menuitemradio][data-value="none"]')
+							.click();
+						for (const cooking of ['practical', 'everyday', 'all']) {
+							await page.locator('#simulator .cookingingredients').click();
+							await page
+								.locator(`#simulator [role=menuitemradio][data-value="${cooking}"]`)
+								.click();
+							if (cooking !== 'all') {
+								await audit({ theme, locale, tab, cooking });
+							}
+							if (cooking === 'everyday') {
+								await page.locator('#simulator .ingredientpicker').fill('Butter');
+								await audit({
+									theme,
+									locale,
+									tab,
+									cooking,
+									search: 'hidden matches',
+								});
+								await page.locator('#simulator .clearsearchbtn').click();
+							}
+						}
+						await page.locator('#simulator .ingredientpicker').fill('zzzznomatches');
+						await audit({ theme, locale, tab, search: 'no matches' });
+						await page.locator('#simulator .clearsearchbtn').click();
+						await page.locator('#simulator .ingredientpicker').fill('Carrot');
+						await page.locator('#simulator [role=option][aria-label="Carrot"]').click();
+						await audit({ theme, locale, tab, action: 'full pot' });
+						await page.locator('#simulator .clearsearchbtn').click();
+					}
+					if (tab === 'statistics') {
+						await page.locator('#statistics .deleteButton').click();
+					}
+				}
+			}
+		}
+		await page.close();
+	}
+	t.diagnostic(`Completed ${scans} accessibility scans`);
+	assert.deepEqual(findings, [], JSON.stringify(findings, null, 2));
+});
+
+// Vary the markup without changing the control's identity or registered listeners.
+const nestControlContents = locator =>
+	locator.evaluate(element => {
+		const content = document.createElement('span');
+		content.className = 'test-control-content';
+		content.append(...element.childNodes);
+		if (!content.hasChildNodes()) {
+			content.style.display = 'block';
+			content.style.width = '100%';
+			content.style.height = '100%';
+		}
+		element.appendChild(content);
+	});
+
+// CDP sends trusted input through Chromium's gesture recognizer, including scroll cancellation.
+const touchPoint = async locator => {
+	await locator.scrollIntoViewIfNeeded();
+	const bounds = await locator.boundingBox();
+	assert.ok(bounds);
+	return { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
+};
+
+const touchContextMenu = async (session, locator) => {
+	const point = await touchPoint(locator);
+	await session.send('Input.dispatchTouchEvent', {
+		type: 'touchStart',
+		touchPoints: [point],
+	});
+	// Cover browsers whose long-press contextmenu carries no pointerType of its own.
+	await locator.dispatchEvent('contextmenu', { button: 2 });
+	await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+};
+
+const swipe = async (page, session, point, dx, dy) => {
+	await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
+	for (let step = 1; step <= 8; step++) {
+		await session.send('Input.dispatchTouchEvent', {
+			type: 'touchMove',
+			touchPoints: [{ x: point.x + (dx * step) / 8, y: point.y + (dy * step) / 8 }],
+		});
+		await page.evaluate(() => new Promise(requestAnimationFrame));
+	}
+	await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+};
+
+for (const { tab, slots } of [
+	{ tab: 'simulator', slots: '#ingredients' },
+	{ tab: 'discovery', slots: '#inventory' },
+]) {
+	test(`${tab} touch input supports taps, cancellation, and scrolling without accidental changes`, async t => {
+		if (chromiumOnly) {
+			t.skip(chromiumOnly);
+			return;
+		}
+		const { baseUrl, browser } = await createBrowserFixture(t);
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{ activeTab: tab, version: 'together', pickers: [[], []] },
+			{ hasTouch: true, isMobile: true, viewport: { width: 375, height: 812 } },
+		);
+		page.setDefaultTimeout(10_000);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		const session = await page.context().newCDPSession(page);
+		const search = page.locator(`#${tab} .ingredientpicker`);
+		const meat = page.locator(`#${tab}`).getByRole('option', { name: /^Meat(?: \d)?$/ });
+		const selectedKeys = () =>
+			page
+				.locator(`${slots} .ingredient[data-id]`)
+				.evaluateAll(items => items.map(item => item.dataset.id));
+		await search.fill('Meat');
+		const point = await touchPoint(meat);
+		await session.send('Input.dispatchTouchEvent', {
+			type: 'touchStart',
+			touchPoints: [point],
+		});
+		assert.deepEqual(await selectedKeys(), [], 'Pressing does not select');
+		await session.send('Input.dispatchTouchEvent', {
+			type: 'touchCancel',
+			touchPoints: [],
+		});
+		assert.deepEqual(await selectedKeys(), []);
+		await touchContextMenu(session, meat);
+		assert.deepEqual(
+			await selectedKeys(),
+			[],
+			'Long press and its trailing click do not select',
+		);
+		await meat.dispatchEvent('click');
+		assert.deepEqual(
+			await selectedKeys(),
+			['meat@together'],
+			'Assistive clicks still work after touch input',
+		);
+		const slot = page.locator(`${slots} .ingredient[data-id]`).first();
+		await slot.tap();
+		assert.deepEqual(await selectedKeys(), []);
+		await meat.tap();
+		assert.deepEqual(await selectedKeys(), ['meat@together'], 'A tap selects exactly once');
+		await touchContextMenu(session, slot);
+		assert.deepEqual(await selectedKeys(), ['meat@together'], 'Long press does not remove');
+		await slot.tap();
+		assert.deepEqual(await selectedKeys(), []);
+		const toggle = meat.locator('.ingredient-toggle');
+		const minus = meat.locator('.ingredient-subtract');
+		await meat.tap();
+		assert.equal(await minus.isVisible(), false);
+		if (tab === 'simulator') {
+			await meat.locator('.text').tap();
+			assert.equal(await minus.isVisible(), true);
+		}
+		const beforeControls = await selectedKeys();
+		for (const control of tab === 'simulator' ? [toggle, minus] : [toggle]) {
+			const controlPoint = await touchPoint(control);
+			await session.send('Input.dispatchTouchEvent', {
+				type: 'touchStart',
+				touchPoints: [controlPoint],
+			});
+			await session.send('Input.dispatchTouchEvent', {
+				type: 'touchCancel',
+				touchPoints: [],
+			});
+			await touchContextMenu(session, control);
+			assert.deepEqual(
+				await selectedKeys(),
+				beforeControls,
+				'Canceled/long-press removal leaves membership unchanged',
+			);
+		}
+		if (tab === 'simulator') {
+			await minus.tap();
+			assert.equal((await selectedKeys()).length, 1);
+			assert.equal(await minus.isVisible(), false);
+		}
+		await toggle.tap();
+		assert.deepEqual(
+			await selectedKeys(),
+			[],
+			'Touch unchecking removes all without also adding',
+		);
+		await page.locator(`#${tab} .clearsearchbtn`).tap();
+		const dropdown = page.locator(`#${tab} .ingredientdropdown`);
+		await dropdown.scrollIntoViewIfNeeded();
+		const bounds = await dropdown.boundingBox();
+		await swipe(
+			page,
+			session,
+			{ x: bounds.x + bounds.width / 3, y: bounds.y + bounds.height * 0.75 },
+			0,
+			-160,
+		);
+		await page.waitForFunction(
+			selector => document.querySelector(selector).scrollTop > 0,
+			`#${tab} .ingredientdropdown`,
+		);
+		assert.deepEqual(await selectedKeys(), [], 'Swiping options scrolls without selecting');
+		assert.deepEqual(diagnostics, []);
+	});
+}
+
+test('grouped ingredient results retain relevance, keyboard navigation, localization, and independent preferences', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [
+						{
+							name: 'foodGuideState',
+							value: JSON.stringify({
+								version: 'together',
+								pickers: [['meat', 'meat'], ['meat']],
+							}),
+						},
+						{
+							name: 'foodGuideSortPreference',
+							value: JSON.stringify(['default', 'name']),
+						},
+					],
+				},
+			],
+		},
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(await page.locator('#simulator .sortingredients').textContent(), 'Sort: Auto');
+	assert.equal(await page.locator('#discovery .sortingredients').textContent(), 'Sort: Name');
+	for (const tab of ['simulator', 'discovery']) {
+		await page.locator(`#tab-${tab}`).click();
+		const panel = page.locator(`#${tab}`);
+		const search = panel.locator('.ingredientpicker');
+		await panel.locator('.sortingredients').click();
+		await panel.locator('[role=menuitemradio][data-value=auto]').click();
+		await search.fill('Meat');
+		const menu = panel.locator('.groupingredients');
+		await menu.focus();
+		await menu.press('ArrowDown');
+		await page.keyboard.press('ArrowDown');
+		await page.keyboard.press('Enter');
+		assert.equal(await menu.evaluate(e => e === document.activeElement), true);
+		assert.equal(
+			await panel.locator('[role=option]').first().getAttribute('data-id'),
+			'meat@together',
+		);
+		const options = await panel.locator('[role=option]').evaluateAll(items =>
+			items.map(e => ({
+				id: e.id,
+				key: e.dataset.id,
+				position: Number(e.getAttribute('aria-posinset')),
+				size: Number(e.getAttribute('aria-setsize')),
+			})),
+		);
+		assert.equal(
+			new Set(options.map(e => e.key)).size,
+			options.length,
+			'Every ingredient appears once',
+		);
+		assert.deepEqual(
+			options.map(e => e.position),
+			options.map((_, i) => i + 1),
+		);
+		assert.ok(options.every(e => e.size === options.length));
+		const groups = panel.locator('.ingredient-result-group[role=group]');
+		const firstCount = await groups.first().locator('[role=option]').count();
+		await search.focus();
+		for (let i = 0; i <= firstCount; i++) {
+			await search.press('ArrowDown');
+		}
+		assert.equal(
+			await search.getAttribute('aria-activedescendant'),
+			options[firstCount].id,
+			'Arrows skip headings and cross group boundaries',
+		);
+		assert.equal(await search.evaluate(e => e === document.activeElement), true);
+		await search.press('Escape');
+		await search.press('ArrowDown');
+		if (tab === 'simulator') {
+			await search.press('Shift+Enter');
+			assert.equal(
+				await panel
+					.locator('[data-id="meat@together"][role=option]')
+					.getAttribute('aria-label'),
+				'Meat',
+			);
+		}
+		await search.press('Control+Enter');
+		assert.equal(await panel.locator('.ingredient-option-actions:visible').count(), 0);
+		assert.equal(
+			await panel.locator('[role=option]').first().getAttribute('data-id'),
+			'meat@together',
+			'Removal does not reorder groups',
+		);
+		for (const [locale, heading] of Object.entries({ en: 'Meat', es: 'Carne', zh: '肉类' })) {
+			await page.locator('#language-picker').selectOption(locale);
+			assert.ok((await groups.first().textContent()).startsWith(`${heading} (`));
+		}
+		await page.locator('#language-picker').selectOption('en');
+		if (tab === 'discovery') {
+			await menu.press('ArrowDown');
+			await page.keyboard.press('End');
+			await page.keyboard.press('Enter');
+		}
+		await search.fill('zzzznomatches');
+		assert.equal(await groups.count(), 0, 'Empty searches omit group headers');
+		await search.fill('Meat');
+	}
+	assert.deepEqual(
+		await page.evaluate(() => JSON.parse(localStorage.getItem('foodGuideGroupPreference'))),
+		['type', 'preparation'],
+	);
+	await page.reload({ waitUntil: 'networkidle' });
+	assert.equal(
+		await page.locator('#simulator .groupingredients').textContent(),
+		'Group by: Ingredient type',
+	);
+	assert.equal(
+		await page.locator('#discovery .groupingredients').textContent(),
+		'Group by: Preparation',
+	);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('group cards use available width across displays and densities without changing keyboard order', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const hasTouch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{ version: 'together', pickers: [['meat'], ['meat']] },
+			{ hasTouch, viewport: { width: 1280, height: 800 } },
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		for (const tab of ['simulator', 'discovery']) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.locator('.ingredientpicker');
+			const select = async (selector, value) => {
+				await panel.locator(selector).click();
+				await panel.locator(`[role=menuitemradio][data-value="${value}"]`).click();
+			};
+			await select('.groupingredients', 'type');
+			const groups = panel.locator('.ingredient-result-group[role=group]');
+			const geometry = () =>
+				panel.locator('.ingredientdropdown').evaluate(picker => ({
+					overflow: picker.scrollWidth > picker.clientWidth,
+					groups: [...picker.querySelectorAll('.ingredient-result-group')].map(group => ({
+						rect: group.getBoundingClientRect().toJSON(),
+						tile: group.querySelector('[role=option]').getBoundingClientRect().toJSON(),
+						spacing: parseFloat(getComputedStyle(group).marginBottom),
+						fragments: group.getClientRects().length,
+						scrolls: ['auto', 'scroll'].includes(getComputedStyle(group).overflowY),
+						overflow: group.scrollWidth > group.clientWidth + 1,
+					})),
+				}));
+			const assertPackedColumns = cards => {
+				const columns = [];
+				for (const card of cards) {
+					const previous = columns.at(-1);
+					assert.equal(card.fragments, 1, 'A card stays together in one column');
+					if (previous && Math.abs(card.rect.left - previous.rect.left) < 1) {
+						assert.ok(
+							Math.abs(card.rect.top - previous.rect.bottom - previous.spacing) < 1,
+							'Cards stack without gaps beyond their spacing',
+						);
+						columns[columns.length - 1] = card;
+					} else {
+						if (previous) {
+							assert.ok(
+								card.rect.left >= previous.rect.right,
+								'DOM order follows columns',
+							);
+						}
+						assert.ok(Math.abs(card.rect.top - cards[0].rect.top) < 1);
+						columns.push(card);
+					}
+				}
+				assert.ok(columns.length > 1, 'Wide pickers use multiple columns');
+				return columns.length;
+			};
+			const columnCounts = {};
+			for (const display of ['names', 'icons', 'list']) {
+				await select('.displaymodeingredients:not(.densityingredients)', display);
+				for (const density of ['compact', 'normal', 'cozy']) {
+					await select('.densityingredients', density);
+					const layout = await geometry();
+					columnCounts[`${display}-${density}`] = assertPackedColumns(layout.groups);
+					assert.equal(layout.overflow, false);
+					assert.ok(
+						layout.groups.every(group => !group.scrolls && !group.overflow),
+						'Cards use one outer scroll area and contain their contents',
+					);
+				}
+			}
+			assert.ok(columnCounts['names-compact'] > columnCounts['names-normal']);
+			assert.ok(columnCounts['icons-compact'] > columnCounts['names-compact']);
+			await select('.displaymodeingredients:not(.densityingredients)', 'icons');
+			for (const width of [1280, 2048]) {
+				await page.setViewportSize({ width, height: 800 });
+				const layouts = {};
+				for (const density of ['compact', 'normal']) {
+					await select('.densityingredients', density);
+					layouts[density] = await geometry();
+					assertPackedColumns(layouts[density].groups);
+					assert.equal(layouts[density].overflow, false);
+				}
+				const compact = layouts.compact.groups[0];
+				const normal = layouts.normal.groups[0];
+				const context = `${tab} ${hasTouch ? 'touch' : 'mouse'} ${width}px`;
+				assert.ok(
+					compact.tile.width <= normal.tile.width * (hasTouch ? 0.9 : 0.75),
+					`${context}: Compact icons are distinctly smaller than normal`,
+				);
+				assert.ok(
+					compact.rect.height < normal.rect.height * 0.8,
+					`${context}: Compact groups fit more ingredients in less height`,
+				);
+				if (hasTouch) {
+					assert.ok(compact.tile.width >= 44 && compact.tile.height >= 44);
+				}
+			}
+			await page.setViewportSize({ width: 1280, height: 800 });
+			await select('.displaymodeingredients:not(.densityingredients)', 'names');
+			await select('.densityingredients', 'compact');
+			for (const width of [320, 1280]) {
+				await page.setViewportSize({ width, height: 800 });
+				for (const locale of ['en', 'es', 'zh']) {
+					await page.locator('#language-picker').selectOption(locale);
+					const layout = await geometry();
+					assert.equal(layout.overflow, false, `${tab} ${locale}: Localized groups fit`);
+					assert.ok(layout.groups.every(group => !group.overflow));
+					if (width === 1280) {
+						assertPackedColumns(layout.groups);
+					}
+				}
+			}
+			await page.locator('#language-picker').selectOption('en');
+			const count = await groups.first().locator('[role=option]').count();
+			const firstInNextGroup = await groups
+				.nth(1)
+				.locator('[role=option]')
+				.first()
+				.elementHandle();
+			await search.focus();
+			for (let i = 0; i <= count; i++) {
+				await search.press('ArrowDown');
+			}
+			const activeId = await search.getAttribute('aria-activedescendant');
+			assert.equal(activeId, await firstInNextGroup.getAttribute('id'));
+			for (const width of [700, 320, 768, 1280]) {
+				await page.setViewportSize({ width, height: 800 });
+				const { groups: cards, overflow } = await geometry();
+				const [first, second] = cards;
+				if (width <= 700) {
+					assert.ok(
+						second.rect.top >= first.rect.bottom,
+						'Narrow containers stack groups',
+					);
+				} else {
+					assertPackedColumns(cards);
+				}
+				assert.equal(overflow, false);
+				assert.equal(await search.getAttribute('aria-activedescendant'), activeId);
+				assert.equal(await search.evaluate(e => e === document.activeElement), true);
+				assert.equal(
+					await firstInNextGroup.evaluate(e => e.isConnected),
+					true,
+					'Resizing keeps the active option in place',
+				);
+			}
+			await search.press('Enter');
+			assert.equal(await panel.locator('.ingredientlist .icon').count(), 2);
+			await search.fill('*Meat');
+			assert.equal(await groups.count(), 1);
+			assert.equal(
+				await panel
+					.locator('.ingredient-result-groups')
+					.evaluate(e => getComputedStyle(e).columnWidth),
+				'auto',
+				'A single matching group uses the available width',
+			);
+			await select('.groupingredients', 'none');
+			assert.equal(await groups.count(), 0);
+			assert.equal(
+				await panel
+					.locator('.ingredient-result-groups')
+					.evaluate(e => getComputedStyle(e).columnWidth),
+				'auto',
+			);
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('cooking views preserve selections, support keyboard and touch, and persist independently', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const touch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{
+				version: 'together',
+				pickers: [
+					['meat_cooked', 'butter'],
+					['meat_cooked', 'butter'],
+				],
+			},
+			touch ? { hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } } : {},
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		const selectCooking = async (panel, value) => {
+			const button = panel.locator('.cookingingredients');
+			if (touch) {
+				await button.tap();
+				await panel.locator(`[role=menuitemradio][data-value="${value}"]`).tap();
+			} else {
+				await button.focus();
+				await button.press('ArrowDown');
+				await page.keyboard.press('Home');
+				for (let i = 0; i < ['all', 'practical', 'everyday'].indexOf(value); i++) {
+					await page.keyboard.press('ArrowDown');
+				}
+				await page.keyboard.press('Enter');
+				assert.equal(await button.evaluate(e => e === document.activeElement), true);
+			}
+		};
+		for (const [tab, preference] of [
+			['simulator', 'practical'],
+			['discovery', 'everyday'],
+		]) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.locator('.ingredientpicker');
+			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
+			await search.fill('*Cooked Meat');
+			assert.equal(await panel.locator('[role=option]').count(), 1);
+			await selectCooking(panel, preference);
+			assert.equal(await panel.locator('[role=option]').count(), 0);
+			assert.equal(await panel.locator('.ingredientlist .icon').count(), 2);
+			for (const [locale, hint] of [
+				['en', 'Cooking: All'],
+				['es', 'Cocina: Todos'],
+				['zh', '烹饪：全部'],
+			]) {
+				await page.locator('#language-picker').selectOption(locale);
+				assert.ok(
+					(await panel.locator('.ingredient-search-summary').textContent()).includes(
+						hint,
+					),
+				);
+				const help = await panel
+					.locator('.cookingingredients')
+					.getAttribute('aria-describedby');
+				assert.equal(
+					await page.locator(`#${help}`).textContent(),
+					await panel.locator('.cookingingredients').getAttribute('title'),
+				);
+			}
+			await page.locator('#language-picker').selectOption('en');
+			await search.fill('*Butter');
+			assert.equal(await panel.locator('[role=option]').count(), tab === 'simulator' ? 1 : 0);
+			assert.equal(
+				await panel.locator('[role=option][data-id="butter@together"]').count(),
+				tab === 'simulator' ? 1 : 0,
+			);
+			await search.fill('goatmilk');
+			assert.ok(
+				(await panel.locator('.ingredient-search-summary').textContent()).includes(
+					'Cooking: All',
+				),
+			);
+			await panel.locator('.ingredient-show-all').click();
+			assert.equal(await panel.locator('[role=option]').count(), 1);
+			await selectCooking(panel, preference);
+			await search.fill('zzzznomatches');
+			assert.equal(
+				await panel.locator('.ingredient-search-summary').textContent(),
+				'No matching ingredients. Try another search or game selection.',
+			);
+		}
+		await page.locator('#tab-simulator').click();
+		const search = page.locator('#simulator .ingredientpicker');
+		await search.fill('lightninggoathorn');
+		assert.equal(await page.locator('#simulator [role=option]').count(), 0);
+		await page.locator('.char-btn[data-character=warly]').click();
+		assert.equal(await page.locator('#simulator [role=option]').count(), 1);
+		await page.locator('.char-btn[data-character=warly]').click();
+		assert.equal(await page.locator('#simulator [role=option]').count(), 0);
+		await page.locator('.version-btn[data-version=dontstarve]').click();
+		assert.equal(
+			await page.locator('#simulator .ingredient-search-summary').textContent(),
+			'No matching ingredients. Try another search or game selection.',
+		);
+		await page.locator('.version-btn[data-version=together]').click();
+		await page.reload({ waitUntil: 'networkidle' });
+		assert.equal(
+			await page.locator('#simulator .cookingingredients').textContent(),
+			'Cooking: Practical',
+		);
+		assert.equal(
+			await page.locator('#discovery .cookingingredients').textContent(),
+			'Cooking: Everyday',
+		);
+		assert.deepEqual(
+			await page.evaluate(() =>
+				JSON.parse(localStorage.getItem('foodGuideCookingPreference')),
+			),
+			['practical', 'everyday'],
+		);
+		assert.equal(await page.locator('#ingredients .icon').count(), 2);
+		await page.locator('#ingredients .ingredient[data-id="meat_cooked@together"]').click();
+		assert.equal(
+			await page.locator('#ingredients .icon').count(),
+			1,
+			'A hidden selection remains removable',
+		);
+		await page.locator('#tab-discovery').click();
+		assert.equal(await page.locator('#inventory .icon').count(), 2);
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('hidden search matches offer localized keyboard and touch recovery without changing selections', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const touch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{ version: 'together', pickers: [['butter'], ['butter']] },
+			touch ? { hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } } : {},
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.locator('#tab-discovery').click();
+		await page.locator('#discovery .cookingingredients').click();
+		await page.locator('#discovery [role=menuitemradio][data-value="practical"]').click();
+		for (const tab of ['simulator', 'discovery']) {
+			await page.locator(`#tab-${tab}`).click();
+			const panel = page.locator(`#${tab}`);
+			const search = panel.locator('.ingredientpicker');
+			const recovery = panel.locator('.ingredient-show-all');
+			await panel.locator('.cookingingredients').click();
+			await panel.locator('[role=menuitemradio][data-value="everyday"]').click();
+			assert.equal(
+				await recovery.isVisible(),
+				false,
+				'Browsing does not add a recovery button',
+			);
+			await search.fill('Butter');
+			assert.equal(await panel.locator('[role=option]').count(), 1);
+			assert.equal(
+				await panel.locator('[role=option][data-id="butter@together"]').count(),
+				0,
+			);
+			for (const [locale, hidden, action] of [
+				['en', '1 hidden by cooking view.', 'Show all'],
+				['es', 'Ocultos por la vista de cocina: 1.', 'Mostrar todos'],
+				['zh', '烹饪视图隐藏了 1 项。', '显示全部'],
+			]) {
+				await page.locator('#language-picker').selectOption(locale);
+				assert.ok(
+					(await panel.locator('.ingredient-search-summary').textContent()).includes(
+						hidden,
+					),
+				);
+				assert.equal(await recovery.textContent(), action);
+				assert.equal(await recovery.isVisible(), true);
+			}
+			await page.locator('#language-picker').selectOption('en');
+			assert.equal(
+				await recovery.getAttribute('aria-controls'),
+				await search.getAttribute('aria-controls'),
+			);
+			await search.press('ArrowDown');
+			await search.press('Escape');
+			assert.equal(
+				await recovery.isVisible(),
+				false,
+				'Dismissal hides recovery with the results',
+			);
+			await search.press('ArrowDown');
+			if (touch) {
+				const box = await recovery.boundingBox();
+				assert.ok(box.width >= 44 && box.height >= 44);
+				await recovery.tap();
+			} else {
+				for (
+					let i = 0;
+					i < 12 && !(await recovery.evaluate(e => e === document.activeElement));
+					i++
+				) {
+					await page.keyboard.press('Tab');
+				}
+				assert.equal(await recovery.evaluate(e => e === document.activeElement), true);
+				await page.keyboard.press('Enter');
+			}
+			assert.equal(await search.inputValue(), 'Butter');
+			assert.equal(await panel.locator('[role=option]').count(), 2);
+			assert.equal(await recovery.isVisible(), false);
+			assert.equal(await search.evaluate(e => e === document.activeElement), true);
+			assert.equal(await search.getAttribute('aria-activedescendant'), null);
+			assert.equal(await panel.locator('.ingredientlist .icon').count(), 1);
+			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
+			const otherTab = tab === 'simulator' ? 'discovery' : 'simulator';
+			assert.equal(
+				await page.locator(`#${otherTab} .cookingingredients`).textContent(),
+				tab === 'simulator' ? 'Cooking: Practical' : 'Cooking: All',
+				'Recovery only changes the current picker',
+			);
+			await page.waitForFunction(
+				id =>
+					document.querySelector(`#${id} [role=status]`).textContent ===
+					'2 matching ingredients.',
+				tab,
+			);
+			await page.reload({ waitUntil: 'networkidle' });
+			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('picker badges keep the checkbox anchored, larger hit areas, and an unobstructed ingredient center', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const hasTouch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{
+				activeTab: 'simulator',
+				version: 'together',
+				pickers: [['meat_cooked', 'meat_cooked', 'meat_cooked', 'berries'], []],
+			},
+			{ hasTouch, viewport: { width: 1280, height: 812 } },
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		const panel = page.locator('#simulator');
+		await panel.locator('.ingredientpicker').fill('Meat');
+		const meat = panel.locator('[role=option][data-id="meat_cooked@together"]');
+		const activate = (locator, options) =>
+			hasTouch ? locator.tap(options) : locator.click(options);
+		const selectedKeys = () =>
+			page
+				.locator('#ingredients .ingredient[data-id]')
+				.evaluateAll(items => items.map(item => item.dataset.id));
+		for (const mode of ['names', 'list', 'icons']) {
+			await activate(panel.locator('.displaymodeingredients:not(.densityingredients)'));
+			await activate(panel.locator(`[role=menuitemradio][data-value="${mode}"]`));
+			for (const density of ['compact', 'normal', 'cozy']) {
+				await activate(panel.locator('.densityingredients'));
+				await activate(panel.locator(`[role=menuitemradio][data-value="${density}"]`));
+				await meat.scrollIntoViewIfNeeded();
+				const geometry = await meat.evaluate(option => {
+					const rect = option.getBoundingClientRect();
+					const text = option.querySelector('.text').getBoundingClientRect();
+					const icon = option.querySelector('.icon').getBoundingClientRect();
+					const actions = [
+						...option.querySelectorAll('.ingredient-option-actions > span'),
+					];
+					const controls = actions.map(action => {
+						const hit = action.getBoundingClientRect();
+						const badge = action.firstElementChild.getBoundingClientRect();
+						const points = [
+							{ x: hit.left + 1, y: hit.top + 1 },
+							{ x: hit.right - 1, y: hit.bottom - 1 },
+						];
+						const extraHitPoint = points.find(
+							({ x, y }) =>
+								!(
+									x >= badge.left &&
+									x <= badge.right &&
+									y >= badge.top &&
+									y <= badge.bottom
+								) &&
+								document
+									.elementFromPoint(x, y)
+									?.closest('.ingredient-toggle, .ingredient-subtract') ===
+									action,
+						);
+						return {
+							hit: hit.toJSON(),
+							badge: badge.toJSON(),
+							extraHitPoint: extraHitPoint && {
+								x: extraHitPoint.x - hit.left,
+								y: extraHitPoint.y - hit.top,
+							},
+						};
+					});
+					return {
+						rect: rect.toJSON(),
+						text: text.toJSON(),
+						icon: icon.toJSON(),
+						controls,
+						centerHasAction: !!document
+							.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+							?.closest('.ingredient-toggle, .ingredient-subtract'),
+					};
+				});
+				const context = `${hasTouch ? 'touch' : 'mouse'} ${mode} ${density}`;
+				assert.equal(
+					geometry.centerHasAction,
+					false,
+					`${context}: Center keeps the ingredient action`,
+				);
+				const [toggle, minus] = geometry.controls;
+				if (mode === 'icons') {
+					assert.ok(
+						Math.abs(geometry.rect.width - geometry.rect.height) < 1,
+						`${context}: Icon tiles stay square`,
+					);
+					assert.ok(
+						Math.abs(
+							geometry.icon.x +
+								geometry.icon.width / 2 -
+								geometry.rect.x -
+								geometry.rect.width / 2,
+						) < 1 &&
+							Math.abs(
+								geometry.icon.y +
+									geometry.icon.height / 2 -
+									geometry.rect.y -
+									geometry.rect.height / 2,
+							) < 1,
+						`${context}: Artwork stays centered`,
+					);
+					assert.ok(
+						Math.abs(toggle.hit.top - minus.hit.top) < 1 &&
+							Math.abs(toggle.hit.top - geometry.rect.top) <= 1.1,
+						`${context}: Both shortcuts align along the top edge`,
+					);
+				}
+				assert.ok(
+					Math.abs(toggle.hit.right - geometry.rect.right) <= 1.1,
+					`${context}: The checkbox stays at the trailing edge`,
+				);
+				assert.ok(
+					toggle.hit.right <= minus.hit.left ||
+						minus.hit.right <= toggle.hit.left ||
+						toggle.hit.bottom <= minus.hit.top ||
+						minus.hit.bottom <= toggle.hit.top,
+					`${context}: Shortcut hit areas must not overlap`,
+				);
+				for (const { hit, badge, extraHitPoint } of geometry.controls) {
+					assert.ok(
+						badge.width <= 22 && badge.height <= 16,
+						`${context}: Badges remain small`,
+					);
+					assert.ok(
+						hit.width * hit.height > badge.width * badge.height * 1.2,
+						`${context}: Hit area exceeds visual`,
+					);
+					assert.ok(
+						extraHitPoint,
+						`${context}: Transparent area receives the shortcut action`,
+					);
+					assert.ok(
+						badge.left >= hit.left &&
+							badge.right <= hit.right &&
+							badge.top >= hit.top &&
+							badge.bottom <= hit.bottom,
+						`${context}: Badge fits its hit area`,
+					);
+					assert.ok(
+						hit.left >= geometry.rect.left &&
+							hit.right <= geometry.rect.right &&
+							hit.top >= geometry.rect.top &&
+							hit.bottom <= geometry.rect.bottom,
+						`${context}: Hit area stays within its ingredient`,
+					);
+				}
+				if (mode === 'names') {
+					if (density === 'cozy') {
+						assert.ok(
+							geometry.icon.bottom <= geometry.text.top,
+							`${context}: Cozy puts names below icons`,
+						);
+					} else {
+						assert.ok(
+							geometry.icon.right <= geometry.text.left,
+							`${context}: Inline names follow icons`,
+						);
+					}
+				}
+				if (density === 'compact') {
+					if (mode === 'icons') {
+						assert.ok(
+							geometry.rect.width <= 50 && geometry.rect.height <= 50,
+							`${context}: No action footer`,
+						);
+					} else {
+						if (mode === 'names') {
+							assert.ok(
+								geometry.rect.width < 160,
+								`${context}: No wide action column`,
+							);
+						}
+						assert.ok(
+							toggle.badge.right > geometry.text.left &&
+								toggle.badge.left < geometry.text.right &&
+								toggle.badge.bottom > geometry.text.top &&
+								toggle.badge.top < geometry.text.bottom,
+							`${context}: Compact badges overlay text instead of reserving space`,
+						);
+						assert.ok(
+							Math.abs(minus.hit.right - toggle.hit.left) < 1,
+							`${context}: The minus sits immediately before the checkbox`,
+						);
+					}
+				}
+				const layout = () =>
+					panel
+						.locator('[role=option]')
+						.evaluateAll(items =>
+							items.map(item => [
+								item.dataset.id,
+								item.offsetLeft,
+								item.offsetTop,
+								item.offsetWidth,
+								item.offsetHeight,
+							]),
+						);
+				const beforeLayout = await layout();
+				const before = await selectedKeys();
+				await activate(meat.locator('.ingredient-subtract'), {
+					position: minus.extraHitPoint,
+				});
+				const afterOneRemoval = before.toSpliced(
+					before.lastIndexOf('meat_cooked@together'),
+					1,
+				);
+				assert.deepEqual(await selectedKeys(), afterOneRemoval);
+				await activate(meat.locator('.ingredient-subtract'), {
+					position: minus.extraHitPoint,
+				});
+				assert.deepEqual(
+					await selectedKeys(),
+					afterOneRemoval.toSpliced(
+						afterOneRemoval.lastIndexOf('meat_cooked@together'),
+						1,
+					),
+				);
+				assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
+				assert.deepEqual(
+					await meat.locator('.ingredient-toggle').evaluate(e => {
+						const rect = e.getBoundingClientRect();
+						return [rect.x, rect.y, rect.width, rect.height];
+					}),
+					[toggle.hit.x, toggle.hit.y, toggle.hit.width, toggle.hit.height],
+					`${context}: Hiding the minus leaves the checkbox in place`,
+				);
+				await activate(meat.locator('.ingredient-toggle'), {
+					position: toggle.extraHitPoint,
+				});
+				assert.deepEqual(await selectedKeys(), ['berries@together']);
+				assert.deepEqual(
+					await layout(),
+					beforeLayout,
+					`${context}: Removing leaves tile positions unchanged`,
+				);
+				assert.equal(await meat.locator('.ingredient-option-actions').isVisible(), false);
+				// The former shortcut's blank hit area now performs the ingredient action.
+				await activate(meat, {
+					position: {
+						x: toggle.hit.left - geometry.rect.left + toggle.extraHitPoint.x,
+						y: toggle.hit.top - geometry.rect.top + toggle.extraHitPoint.y,
+					},
+				});
+				assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
+				assert.equal(await meat.locator('.ingredient-toggle').isVisible(), true);
+				assert.deepEqual(
+					await layout(),
+					beforeLayout,
+					`${context}: A single copy keeps its layout`,
+				);
+				// A hidden minus must leave its former hit area available to add another copy.
+				await activate(meat, {
+					position: {
+						x: minus.hit.left - geometry.rect.left + minus.extraHitPoint.x,
+						y: minus.hit.top - geometry.rect.top + minus.extraHitPoint.y,
+					},
+				});
+				assert.equal(await meat.locator('.ingredient-subtract').isVisible(), true);
+				await activate(meat);
+				assert.deepEqual(
+					await layout(),
+					beforeLayout,
+					`${context}: Adding leaves tile positions unchanged`,
+				);
+				assert.deepEqual(await selectedKeys(), [
+					'berries@together',
+					'meat_cooked@together',
+					'meat_cooked@together',
+					'meat_cooked@together',
+				]);
+			}
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('touch layouts keep controls reachable across widths, languages, and picker densities', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			activeTab: 'simulator',
+			version: 'together',
+			pickers: [
+				['meat', 'berries', 'berries', 'berries'],
+				['meat', 'berries'],
+			],
+		},
+		{ hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } },
+	);
+	page.setDefaultTimeout(10_000);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(await page.evaluate(() => matchMedia('(any-pointer: coarse)').matches), true);
+	const checkTargets = async context => {
+		const issues = await page
+			.locator(
+				'button:visible, select:visible, [role="option"]:visible, .game-link, .wiki-links-list a:visible',
+			)
+			.evaluateAll(elements =>
+				elements.flatMap(element => {
+					const { x, width, height } = element.getBoundingClientRect();
+					const size = width < 43.99 || height < 43.99;
+					const clipped =
+						!element.closest('.table-scroll-wrapper') &&
+						(x < -0.1 || x + width > innerWidth + 0.1);
+					return size || clipped
+						? [
+								{
+									label:
+										element.getAttribute('aria-label') || element.textContent,
+									x,
+									width,
+									height,
+									clipped,
+								},
+							]
+						: [];
+				}),
+			);
+		assert.deepEqual(issues, [], `${context}: ${JSON.stringify(issues)}`);
+		const clippedNames = await page
+			.locator('.ingredientdropdown:not(.hidetext) .text:visible')
+			.evaluateAll(elements =>
+				elements
+					.filter(
+						element =>
+							element.scrollWidth > element.clientWidth + 1 ||
+							element.scrollHeight > element.clientHeight + 1,
+					)
+					.map(element => element.textContent),
+			);
+		assert.deepEqual(
+			clippedNames,
+			[],
+			`${context}: Touch users need complete ingredient names`,
+		);
+		const actionIssues = await page
+			.locator('.ingredient-option-actions:visible > span:visible')
+			.evaluateAll(elements =>
+				elements.flatMap(e => {
+					const r = e.getBoundingClientRect();
+					const option = e.closest('[role=option]').getBoundingClientRect();
+					return r.width >= 19.99 &&
+						r.height >= 19.99 &&
+						r.left >= option.left &&
+						r.right <= option.right &&
+						r.top >= option.top &&
+						r.bottom <= option.bottom
+						? []
+						: [e.outerHTML];
+				}),
+			);
+		assert.deepEqual(
+			actionIssues,
+			[],
+			`${context}: Membership controls need separate, unclipped touch targets`,
+		);
+		assert.equal(
+			await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+			true,
+			`${context}: Page content must fit without horizontal scrolling`,
+		);
+	};
+	for (const width of [320, 375, 768, 1280]) {
+		await page.setViewportSize({ width, height: 812 });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			for (const tab of [
+				'simulator',
+				'discovery',
+				'foodlist',
+				'crockpot',
+				'statistics',
+				'about',
+				'gameinfo',
+			]) {
+				await page.locator(`#navbar [data-tab="${tab}"]`).tap();
+				await checkTargets(`${width}px ${locale} ${tab}`);
+			}
+		}
+		await page.locator('#language-picker').selectOption('en');
+		await page.locator('#navbar [data-tab="simulator"]').tap();
+		for (const mode of ['icons', 'names', 'list']) {
+			await page.locator('#simulator .displaymodeingredients:not(.densityingredients)').tap();
+			await checkTargets(`${width}px display menu`);
+			await page.locator(`#simulator [role="menuitemradio"][data-value="${mode}"]`).tap();
+			assert.equal(
+				await page.locator('#simulator [role=option] .text').first().isVisible(),
+				mode !== 'icons',
+				'Icon mode hides names while preserving option labels',
+			);
+			for (const density of ['compact', 'normal', 'cozy']) {
+				await page.locator('#simulator .densityingredients').tap();
+				await checkTargets(`${width}px density menu`);
+				await page
+					.locator(`#simulator [role="menuitemradio"][data-value="${density}"]`)
+					.tap();
+				await checkTargets(`${width}px ${mode} ${density}`);
+			}
+		}
+		assert.equal(
+			await page
+				.locator('#simulator .ingredientpicker')
+				.evaluate(e => getComputedStyle(e).fontSize),
+			'16px',
+		);
+	}
+	await page.setViewportSize({ width: 320, height: 812 });
+	await page.addStyleTag({
+		content: `
+		* { line-height: 1.5 !important; letter-spacing: .12em !important; word-spacing: .16em !important; }
+		p { margin-bottom: 2em !important; }
+	`,
+	});
+	for (const locale of ['en', 'es', 'zh']) {
+		await page.locator('#language-picker').selectOption(locale);
+		for (const tab of [
+			'simulator',
+			'discovery',
+			'foodlist',
+			'crockpot',
+			'statistics',
+			'about',
+			'gameinfo',
+		]) {
+			await page.locator(`#tab-${tab}`).tap();
+			await checkTargets(`320px ${locale} ${tab} with increased text spacing`);
+			if (tab === 'simulator' || tab === 'discovery') {
+				const slots = page.locator(`#${tab} .ingredient[data-id]`);
+				assert.ok((await slots.count()) > 0);
+				const issues = await slots.evaluateAll(elements =>
+					elements.flatMap(element => {
+						const name = element.querySelector('.ingredient-name');
+						const visible = name && getComputedStyle(name).display !== 'none';
+						const fits =
+							element.scrollHeight <= element.clientHeight + 1 &&
+							element.scrollWidth <= element.clientWidth + 1;
+						return visible &&
+							fits &&
+							element.getAttribute('aria-label').includes(name.textContent)
+							? []
+							: [element.outerHTML];
+					}),
+				);
+				assert.deepEqual(
+					issues,
+					[],
+					'Selected ingredient names must remain visible and unclipped',
+				);
+			}
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('touch scrolling of recipe tables and analyzer filters does not activate their controls', async t => {
+	if (chromiumOnly) {
+		t.skip(chromiumOnly);
+		return;
+	}
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{ activeTab: 'foodlist', version: 'together', pickers: [[], ['meat', 'berries']] },
+		{ hasTouch: true, isMobile: true, viewport: { width: 375, height: 812 } },
+	);
+	page.setDefaultTimeout(10_000);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const session = await page.context().newCDPSession(page);
+	const wrapper = page.locator('#foodlist .table-scroll-wrapper');
+	assert.equal(await wrapper.evaluate(e => e.scrollWidth > e.clientWidth), true);
+	const sort = page.locator('#foodlist .table-sort').first();
+	const point = await touchPoint(sort);
+	const before = await page.locator('#foodlist th[aria-sort]').getAttribute('aria-sort');
+	await swipe(page, session, point, -100, 0);
+	await page.waitForFunction(
+		() => document.querySelector('#foodlist .table-scroll-wrapper').scrollLeft > 0,
+	);
+	assert.equal(await page.locator('#foodlist th[aria-sort]').getAttribute('aria-sort'), before);
+	await page.locator('#navbar [data-tab="discovery"]').tap();
+	await page.locator('#makable .makablebutton').tap();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	for (const group of ['foodFilter', 'recipeFilter']) {
+		const filter = page.locator(`#makable .${group} .analysis-filter`).first();
+		const label = await filter.getAttribute('aria-label');
+		assert.equal(await filter.locator('.analysis-filter-name').isVisible(), true);
+		assert.ok(label.startsWith(await filter.locator('.analysis-filter-name').textContent()));
+		await touchContextMenu(session, filter);
+		assert.equal(await filter.getAttribute('aria-label'), label);
+		for (const state of ['Required', 'Excluded', 'Normal']) {
+			await filter.tap();
+			assert.match(await filter.getAttribute('aria-label'), new RegExp(`${state}$`));
+		}
+	}
+	const filter = page.locator('#makable .foodFilter .analysis-filter').first();
+	const filterPoint = await touchPoint(filter);
+	const label = await filter.getAttribute('aria-label');
+	const scroll = await page.evaluate(() => scrollY);
+	await swipe(page, session, filterPoint, 0, -120);
+	await page.waitForFunction(previous => scrollY > previous, scroll);
+	assert.equal(await filter.getAttribute('aria-label'), label);
+	assert.deepEqual(diagnostics, []);
+});
+
+for (const { tab, slots, limited } of [
+	{ tab: 'simulator', slots: '#ingredients', limited: true },
+	{ tab: 'discovery', slots: '#inventory', limited: false },
+]) {
+	test(`${tab} picker handles mouse clicks on ingredient names, icons, and padding`, async t => {
+		const { baseUrl, browser } = await createBrowserFixture(t);
+		const page = await createSavedPage(browser, baseUrl, {
+			activeTab: tab,
+			version: 'together',
+			pickers: [[], []],
+		});
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		const search = page.locator(`#${tab} .ingredientpicker`);
+		const meat = page.locator(`#${tab}`).getByRole('option', { name: /^Meat(?: \d)?$/ });
+		const selectedKeys = () =>
+			page
+				.locator(`${slots} .ingredient[data-id]`)
+				.evaluateAll(items => items.map(item => item.dataset.id));
+		await search.fill('Meat');
+		const bounds = await meat.boundingBox();
+		await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+		await page.mouse.down();
+		assert.deepEqual(await selectedKeys(), []);
+		await page.mouse.move(bounds.x + bounds.width / 2, bounds.y - 10);
+		await page.mouse.up();
+		assert.deepEqual(await selectedKeys(), [], 'Dragging away cancels the selection');
+		// Assistive technology may dispatch a click without preceding pointer/mouse events.
+		await meat.dispatchEvent('click');
+		assert.deepEqual(await selectedKeys(), ['meat@together']);
+		await meat.click({ button: 'right' });
+		assert.deepEqual(await selectedKeys(), []);
+		await meat.locator('.text').click();
+		assert.deepEqual(await selectedKeys(), ['meat@together']);
+		assert.equal(await search.evaluate(e => e === document.activeElement), true);
+		await meat.locator('.icon').click();
+		assert.deepEqual(await selectedKeys(), limited ? ['meat@together', 'meat@together'] : []);
+		await meat.click({ position: { x: 2, y: 10 } });
+		assert.deepEqual(
+			await selectedKeys(),
+			limited ? ['meat@together', 'meat@together', 'meat@together'] : ['meat@together'],
+		);
+		await meat.locator('.text').click({ button: 'right' });
+		assert.deepEqual(await selectedKeys(), limited ? ['meat@together', 'meat@together'] : []);
+		await meat.locator('.text').click();
+		await search.fill('Berries');
+		const berries = page
+			.locator(`#${tab}`)
+			.getByRole('option', { name: 'Berries', exact: true });
+		await berries.locator('.text').click();
+		const fullSelection = await selectedKeys();
+		assert.deepEqual(
+			fullSelection,
+			limited
+				? ['meat@together', 'meat@together', 'meat@together', 'berries@together']
+				: ['meat@together', 'berries@together'],
+		);
+		if (limited) {
+			await berries.locator('.text').click();
+			assert.match(await berries.getAttribute('class'), /ingredient-action-error/);
+			assert.deepEqual(await selectedKeys(), fullSelection);
+		} else {
+			await berries.locator('.text').click();
+			assert.deepEqual(await selectedKeys(), ['meat@together']);
+		}
+		await berries.locator('.text').click({ button: 'right' });
+		if (limited) {
+			assert.deepEqual(await selectedKeys(), fullSelection.slice(0, -1));
+		} else {
+			assert.match(await berries.getAttribute('class'), /ingredient-action-error/);
+			assert.deepEqual(await selectedKeys(), ['meat@together']);
+		}
+		assert.deepEqual(diagnostics, []);
+	});
+}
+
+test('nested control contents preserve mode changes, slot removal, table sorting, and links', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [
+			['honey', 'meat', 'meat', 'carrot'],
+			['meat', 'carrot'],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	page.setDefaultTimeout(5000);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const name of ["Don't Starve", 'Reign of Giants', 'Webber', "Don't Starve Together"]) {
+		const button = page.getByRole('button', { name, exact: true });
+		await nestControlContents(button);
+		await button.locator('.test-control-content').click();
+		assert.equal(await button.getAttribute('aria-pressed'), 'true');
+	}
+	const slot = page.locator('#ingredients [data-id="meat@together"]').first();
+	await nestControlContents(slot);
+	await slot.locator('.icon').click();
+	assert.deepEqual(
+		await page
+			.locator('#ingredients .icon')
+			.evaluateAll(icons => icons.map(icon => icon.title)),
+		['Honey', 'Meat', 'Carrot'],
+	);
+	const search = page.locator('#simulator .ingredientpicker');
+	await search.fill('Meat');
+	await search.press('ArrowDown');
+	await search.press('Enter');
+	const requirement = page.locator('#results [data-link="tag:meat"]').first();
+	await nestControlContents(requirement);
+	await requirement.locator('.test-control-content').click();
+	assert.equal(await search.inputValue(), 'meat');
+	assert.equal(
+		await page
+			.locator('#simulator [role="menuitemradio"][data-value="tag"]')
+			.getAttribute('aria-checked'),
+		'true',
+	);
+
+	await page.locator('#navbar [data-tab="foodlist"]').click();
+	const health = page.locator('#food th[data-sort="health"]');
+	await nestControlContents(health.locator('button'));
+	for (const direction of ['sort-desc', 'sort-asc']) {
+		await health.locator('.test-control-content').click();
+		assert.match(await health.getAttribute('class'), new RegExp(direction));
+	}
+	const cookedCarrot = page.locator('#food [data-link="*Roasted Carrot"]').first();
+	await nestControlContents(cookedCarrot);
+	await cookedCarrot.locator('.icon').click();
+	assert.deepEqual(
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
+		['Roasted Carrot'],
+	);
+	const meatballs = page.locator('#food [data-link="recipe:Meatballs"]').first();
+	await nestControlContents(meatballs);
+	await meatballs.locator('.icon').click();
+	assert.equal(
+		await page.locator('#navbar [data-tab="crockpot"]').getAttribute('aria-selected'),
+		'true',
+	);
+	assert.deepEqual(
+		await page
+			.locator('#recipes .highlighted .reference-name > a:first-child')
+			.allTextContents(),
+		['Meatballs'],
+	);
+	await page.locator('#navbar [data-tab="discovery"]').click();
+	const inventorySlot = page.locator('#inventory [data-id="meat@together"]');
+	await nestControlContents(inventorySlot);
+	await inventorySlot.locator('.icon').click({ button: 'right' });
+	assert.equal(await page.locator('#inventory .ingredient[data-id]').count(), 1);
+	assert.equal(
+		await page.locator('#inventory .ingredient[data-id]').getAttribute('title'),
+		'Carrot',
+	);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('analyzer filter clicks preserve other exclusions and match the displayed results', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'dontstarve',
+		pickers: [[], ['meat', 'carrot', 'berries', 'honey']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const names = () => page.locator('#makable td:nth-child(2)').allTextContents();
+	assert.ok((await names()).includes('Meatballs'));
+	assert.ok((await names()).includes('Ratatouille'));
+	const meatballs = page.locator('#makable .recipeFilter [title="Meatballs"]');
+	const ratatouille = page.locator('#makable .recipeFilter [title="Ratatouille"]');
+	for (const icon of [meatballs, ratatouille]) {
+		await icon.click({ button: 'right' });
+		assert.match(await icon.getAttribute('class'), /excluded/);
+	}
+	await meatballs.click();
+	assert.doesNotMatch(await meatballs.getAttribute('class'), /excluded|selected/);
+	assert.match(await ratatouille.getAttribute('class'), /excluded/);
+	assert.ok((await names()).includes('Meatballs'));
+	assert.ok(!(await names()).includes('Ratatouille'));
+	await nestControlContents(ratatouille);
+	await ratatouille.locator('.test-control-content').click({ button: 'right' });
+	assert.ok((await names()).includes('Ratatouille'));
+	await ratatouille.locator('.test-control-content').click();
+	assert.deepEqual([...new Set(await names())], ['Ratatouille']);
+	await meatballs.click({ button: 'right' });
+	assert.doesNotMatch(await ratatouille.getAttribute('class'), /selected/);
+	assert.ok((await names()).includes('Ratatouille'));
+	assert.ok(!(await names()).includes('Meatballs'));
+	const meat = page.locator('#makable .foodFilter [data-id="meat"]');
+	await nestControlContents(meat);
+	await meat.locator('.test-control-content').click();
+	assert.match(await meat.getAttribute('class'), /selected/);
+	assert.ok(!(await names()).includes('Ratatouille'));
+	await meat.locator('.test-control-content').click({ button: 'right' });
+	assert.doesNotMatch(await meat.getAttribute('class'), /selected|excluded/);
+	assert.ok((await names()).includes('Ratatouille'));
+	assert.deepEqual(diagnostics, []);
+});
+
+test('analysis groups consecutive sorted recipes and loads combinations into the Simulator', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const hasTouch of [false, true]) {
+		const page = await createSavedPage(
+			browser,
+			baseUrl,
+			{
+				activeTab: 'discovery',
+				version: 'dontstarve',
+				pickers: [
+					['meat', 'meat', 'meat', 'meat'],
+					['meat', 'carrot', 'berries', 'honey'],
+				],
+			},
+			{ hasTouch, viewport: { width: 1280, height: 800 } },
+		);
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.locator('#makable .makablebutton').click();
+		await page.waitForFunction(
+			() => !document.querySelector('#makable .makablebutton').disabled,
+		);
+		const captureRows = selector =>
+			page.locator(`${selector} tbody tr[data-recipe]`).evaluateAll(rows =>
+				rows.map(row => {
+					const toggle = row.querySelector('.table-group-toggle');
+					return {
+						id: row.id,
+						recipe: row.dataset.recipe,
+						hidden: row.hidden,
+						ingredients: [...row.querySelectorAll('.analysis-ingredients .icon')].map(
+							icon => icon.dataset.id,
+						),
+						toggle: toggle && {
+							count: Number(toggle.dataset.count),
+							expanded: toggle.getAttribute('aria-expanded'),
+							controls: toggle.getAttribute('aria-controls').split(' '),
+						},
+					};
+				}),
+			);
+		const assertCollapsedRuns = rows => {
+			assert.ok(rows.length <= 25);
+			for (const row of rows) {
+				assert.equal(row.hidden, false);
+				if (row.toggle) {
+					assert.ok(row.toggle.count > 1);
+					assert.equal(row.toggle.expanded, 'false');
+					assert.equal(
+						row.toggle.controls.length,
+						1,
+						'Only the collapsed pager is mounted',
+					);
+				}
+			}
+			assert.equal(new Set(rows.map(row => row.id)).size, rows.length);
+		};
+		assertCollapsedRuns(await captureRows('#makable'));
+		let splitRecipes = false;
+		for (const key of ['healthpls', 'hungerpls', 'health', 'hunger', 'name']) {
+			for (const invert of [false, true]) {
+				const expected = await page.evaluate(() =>
+					window.analysis.made.map(row => ({
+						...row,
+						name: row.recipe.basename || row.name,
+						recipe: row.recipe.id,
+						ingredients: row.ingredients.map(item => item.key),
+					})),
+				);
+				expected.sort((a, b) => {
+					const comparison =
+						key === 'name' ? a.name.localeCompare(b.name, 'en') : b[key] - a[key];
+					return invert ? -comparison : comparison;
+				});
+				await page.locator(`#makable th[data-sort="${key}"] button`).click();
+				const rows = await captureRows('#makable');
+				const runs = [];
+				for (const row of expected) {
+					if (runs.at(-1)?.[0].recipe === row.recipe) {
+						runs.at(-1).push(row);
+					} else {
+						runs.push([row]);
+					}
+				}
+				assert.deepEqual(
+					rows.map(({ recipe, ingredients }) => ({ recipe, ingredients })),
+					runs.slice(0, 25).map(([{ recipe, ingredients }]) => ({ recipe, ingredients })),
+					`${key} preserves the sorted representative of every paged run`,
+				);
+				assert.deepEqual(
+					rows.map(row => row.toggle?.count ?? 1),
+					runs.slice(0, 25).map(run => run.length),
+				);
+				assertCollapsedRuns(rows);
+				splitRecipes ||= new Set(runs.map(run => run[0].recipe)).size < runs.length;
+			}
+		}
+		assert.equal(splitRecipes, true, 'The fixture exercises separate runs for the same recipe');
+		const toggle = page.locator('#makable .table-group-toggle').first();
+		if (hasTouch) {
+			const target = await toggle.boundingBox();
+			assert.ok(
+				target.width >= 44 && target.height >= 44,
+				'Recipe disclosures keep touch targets',
+			);
+		}
+		await toggle.focus();
+		await toggle.press('Enter');
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+		await toggle.press('Space');
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+		await toggle.press('Enter');
+		await page.locator('#language-picker').selectOption('es');
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+		assert.equal(await toggle.evaluate(e => e === document.activeElement), true);
+		assert.match(await toggle.getAttribute('aria-label'), /Ocultar \d+ combinaciones/);
+		const detailId = (await toggle.getAttribute('aria-controls')).split(' ')[0];
+		const detail = page.locator(`[id="${detailId}"]`);
+		assert.equal(await detail.isVisible(), true);
+		const selected = await detail
+			.locator('.analysis-ingredients .icon')
+			.evaluateAll(icons => icons.map(icon => icon.dataset.id));
+		const combination = detail.locator('.analysis-ingredients');
+		await combination.focus();
+		await combination.press('Space');
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page
+				.locator('#ingredients .ingredient')
+				.evaluateAll(slots => slots.map(s => s.dataset.id)),
+			selected,
+		);
+		assert.equal(
+			await page
+				.locator('#ingredients .ingredient')
+				.first()
+				.evaluate(e => e === document.activeElement),
 			true,
 		);
+		assert.match(
+			await page.locator('#simulator [role=status]').textContent(),
+			/4 ingredientes/,
+		);
+		await page.goBack();
+		await page.waitForFunction(
+			() =>
+				document.querySelector('#tab-discovery')?.getAttribute('aria-selected') === 'true',
+		);
+		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+		const cell = detail.locator('.analysis-ingredients-cell');
+		if (hasTouch) {
+			await cell.tap({ position: { x: 3, y: 3 } });
+		} else {
+			await cell.click({ position: { x: 3, y: 3 } });
+		}
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page.evaluate(async () => {
+				await navigator.locks.request('foodGuidePersonalData', () => {});
+				return [
+					JSON.parse(localStorage.getItem('foodGuideState')).pickers[0],
+					JSON.parse(localStorage.getItem('foodGuidePersonalData')).inventories[0]
+						.ingredients,
+				];
+			}),
+			[selected, ['meat', 'carrot', 'berries', 'honey']],
+		);
+		await page.reload({ waitUntil: 'networkidle' });
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page
+				.locator('#ingredients .ingredient')
+				.evaluateAll(slots => slots.map(s => s.dataset.id)),
+			selected,
+		);
+		await page.locator('#language-picker').selectOption('en');
+		await page.locator('#tab-statistics').click();
+		await page.locator('#statistics .makablebutton').click();
+		await page.locator('#statistics .pauseButton').click();
+		assertCollapsedRuns(await captureRows('#statistics'));
+		const statsToggle = page.locator('#statistics .table-group-toggle').first();
+		assert.ok((await statsToggle.count()) > 0);
+		if (hasTouch) {
+			await statsToggle.tap();
+		} else {
+			await statsToggle.click();
+		}
+		assert.equal(await statsToggle.getAttribute('aria-expanded'), 'true');
+		const statsCombination = page
+			.locator('#statistics tbody tr:not([hidden]) .analysis-ingredients')
+			.last();
+		const statsKeys = await statsCombination
+			.locator('.icon')
+			.evaluateAll(icons => icons.map(i => i.dataset.id));
+		await statsCombination.click();
+		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.deepEqual(
+			await page
+				.locator('#ingredients .ingredient')
+				.evaluateAll(slots => slots.map(s => s.dataset.id)),
+			statsKeys,
+		);
+		await page.locator('#tab-statistics').click();
+		await page.locator('#statistics .deleteButton').click();
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('analysis reports zero-baseline gains accurately and its new controls remain accessible', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{
+			activeTab: 'discovery',
+			version: 'together',
+			pickers: [[], ['bird_egg', 'green_mushroom', 'twigs']],
+		},
+		{ hasTouch: true, viewport: { width: 375, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	page.setDefaultTimeout(15_000);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const total = await page.evaluate(() => window.analysis.made.length);
+	const groups = await page.locator('#makable tbody tr[data-recipe]').count();
+	assert.ok(total > 0);
+	assert.equal(
+		await page.evaluate(() => window.analysis.made.every(row => row.healthpct === null)),
+		true,
+		'Zero-health ingredients must not produce a relative percentage',
+	);
+	const ratatouille = page.locator('#makable tbody tr[data-recipe=ratatouille_dst]').first();
+	assert.equal(await ratatouille.locator('td:nth-child(4)').textContent(), '+3');
+	assert.equal(await page.locator('#makable .analysis-snapshot-notice').isVisible(), false);
+	await page.evaluate(axe.source);
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ colorScheme: theme });
+		await page.waitForFunction(
+			theme => document.documentElement.dataset.theme === theme,
+			theme,
+		);
+		for (const [locale, label, count] of [
+			[
+				'en',
+				'Reset filters',
+				`Recipe groups 1–${groups} of ${groups}; ${total} matching combinations.`,
+			],
+			[
+				'es',
+				'Restablecer filtros',
+				`Grupos de recetas 1–${groups} de ${groups}; ${total} combinaciones coincidentes.`,
+			],
+			['zh', '重置筛选', `配方分组 1–${groups}，共 ${groups} 组；${total} 个匹配组合。`],
+		]) {
+			await page.locator('#language-picker').selectOption(locale);
+			const reset = page.locator('#makable .resetAnalysisFiltersButton');
+			const progress = page.locator('#makable progress');
+			assert.equal(await progress.evaluate(e => e.value === e.max), true);
+			assert.match(await progress.getAttribute('aria-valuetext'), /\(100%\)/);
+			assert.equal(await reset.textContent(), label);
+			await page.locator('#makable .foodFilter button').first().tap();
+			await reset.tap();
+			assert.equal(await reset.evaluate(e => e === document.activeElement), true);
+			assert.equal(await page.locator('#makable .foodFilter .selected').count(), 0);
+			assert.equal(
+				await page.locator('#makable .analysis-result-count').textContent(),
+				count,
+			);
+			assert.ok(await reset.evaluate(e => e.getBoundingClientRect().height >= 44));
+			const violations = await page.evaluate(async () => {
+				const { violations } = await window.axe.run();
+				return violations.map(({ id, nodes }) => ({
+					id,
+					targets: nodes.map(node => node.target),
+				}));
+			});
+			assert.deepEqual(violations, [], `${theme}, ${locale} analyzer accessibility`);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('statistics default exclusions keep visible sprites and recalculation follows the game', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'statistics',
+		version: 'dontstarve',
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const [version, meatKey] of [
+		['dontstarve', 'meat'],
+		['together', 'meat@together'],
+	]) {
+		await page.locator(`.version-btn[data-version="${version}"]`).click();
+		await page.locator('#statistics .makablebutton').click();
+		await page.locator('#statistics .pauseButton').click();
+		assert.equal(
+			await page.locator(`#statistics .foodFilter [data-id="${meatKey}"]`).count(),
+			1,
+		);
+		const excluded = page.locator('#statistics .foodFilter .excluded');
+		assert.ok((await excluded.count()) > 0);
+		assert.equal(
+			await excluded.evaluateAll(icons =>
+				icons.every(
+					icon =>
+						icon.classList.contains('icon') && icon.getBoundingClientRect().width > 0,
+				),
+			),
+			true,
+		);
+		const filterStates = () =>
+			page.locator('#statistics .analysis-filter .icon').evaluateAll(icons =>
+				icons.map(icon => ({
+					id: icon.dataset.id || icon.dataset.recipe,
+					required: icon.classList.contains('selected'),
+					excluded: icon.classList.contains('excluded'),
+				})),
+			);
+		const original = await filterStates();
+		await page.locator('#statistics .foodFilter button').first().click();
+		await page.locator('#statistics .recipeFilter button').first().click();
+		assert.notDeepEqual(await filterStates(), original);
+		await page.locator('#statistics .resetAnalysisFiltersButton').click();
+		assert.deepEqual(
+			await filterStates(),
+			original,
+			'Reset restores the Statistics default exclusions',
+		);
+		await page.locator('#statistics .deleteButton').click();
+		assert.equal(await page.locator('#statistics .makableContainer').count(), 0);
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('changing analyzer inputs cancels pending work and releases translation listeners', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'statistics',
+		version: 'together',
+		pickers: [[], ['meat', 'carrot']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.addInitScript(() => {
+		// Observe the real scheduler and listener lifecycle without replacing calculation logic.
+		const pending = new Set();
+		const schedule = window.setTimeout.bind(window);
+		const cancel = window.clearTimeout.bind(window);
+		window.setTimeout = (callback, delay, ...args) => {
+			if (delay !== 0 || typeof callback !== 'function') {
+				return schedule(callback, delay, ...args);
+			}
+			const id = schedule(() => {
+				pending.delete(id);
+				callback.apply(window, args);
+			}, delay);
+			pending.add(id);
+			return id;
+		};
+		window.clearTimeout = id => {
+			pending.delete(id);
+			cancel(id);
+		};
+		const listeners = new Set();
+		const subscribe = document.addEventListener.bind(document);
+		const unsubscribe = document.removeEventListener.bind(document);
+		document.addEventListener = (type, listener, options) => {
+			if (type === 'foodguide:localechange') {
+				listeners.add(listener);
+			}
+			subscribe(type, listener, options);
+		};
+		document.removeEventListener = (type, listener, options) => {
+			if (type === 'foodguide:localechange') {
+				listeners.delete(listener);
+			}
+			unsubscribe(type, listener, options);
+		};
+		window.controlAudit = () => ({ pending: pending.size, listeners: listeners.size });
+	});
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const baseline = await page.evaluate(() => window.controlAudit());
+	assert.equal(baseline.pending, 0);
+	await page.locator('#statistics .makablebutton').click();
+	assert.ok((await page.evaluate(() => window.controlAudit())).pending > 0);
+	await page.locator('.version-btn[data-version="dontstarve"]').click();
+	assert.deepEqual(await page.evaluate(() => window.controlAudit()), baseline);
+	assert.equal(await page.locator('#statistics .makableContainer').count(), 0);
+	await page.locator('#statistics .makablebutton').click();
+	await page.locator('#statistics .deleteButton').click();
+	assert.deepEqual(await page.evaluate(() => window.controlAudit()), baseline);
+
+	await page.locator('#navbar [data-tab="discovery"]').click();
+	await page.locator('#makable .makablebutton').click();
+	assert.equal(
+		(await page.evaluate(() => window.controlAudit())).listeners,
+		baseline.listeners + 2,
+	);
+	await page.locator('#discovery .ingredientpicker').fill('Berries');
+	await page.locator('#discovery [role="option"][aria-label="Berries"] .text').click();
+	assert.deepEqual(await page.evaluate(() => window.controlAudit()), baseline);
+	assert.equal(await page.locator('#makable .makableContainer').count(), 0);
+	assert.equal(await page.locator('#makable .makablebutton').isEnabled(), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('loads the guide, assets, translations, and a rendered food table', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const pageErrors = [];
+	page.on('pageerror', error => pageErrors.push(error));
+
+	// Firefox can finish the entry redirect before goto returns its response.
+	const [response] = await Promise.all([
+		page.waitForResponse(`${baseUrl}/index.html`),
+		page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' }),
+	]);
+	assert.equal(response.status(), 200);
+	await page.waitForURL(url => url.pathname.endsWith('/index.htm'), {
+		waitUntil: 'domcontentloaded',
+	});
+	await page.locator('#navbar [role=tab]').first().waitFor();
+	assert.equal(await page.title(), "Simulator — Don't Starve Food Guide");
+	assert.equal(await page.locator('#navbar [data-tab]').count(), 7);
+	assert.equal(await page.locator('#language-picker').count(), 1);
+	assert.equal(await page.locator('#theme-toggle').count(), 1);
+
+	const manifestResponse = await page.request.get(`${baseUrl}/img/sprites/sprites.json`);
+	assert.equal(manifestResponse.status(), 200);
+	assert.equal((await manifestResponse.json()).cellSize, 64);
+
+	const sortButton = page.locator('#simulator button.sortingredients');
+	await sortButton.focus();
+	await sortButton.press('ArrowDown');
+	assert.equal(await sortButton.getAttribute('aria-expanded'), 'true');
+	await page.keyboard.press('End');
+	assert.equal(await page.locator(':focus').getAttribute('data-value'), 'perish');
+	await page.keyboard.press('Enter');
+	assert.equal(await sortButton.getAttribute('aria-expanded'), 'false');
+	assert.equal(
+		await page
+			.locator(':focus')
+			.evaluate(
+				element => element === document.querySelector('#simulator button.sortingredients'),
+			),
+		true,
+	);
+	assert.equal(
+		await page
+			.locator('#simulator [role="menuitemradio"][data-value="perish"]')
+			.getAttribute('aria-checked'),
+		'true',
+	);
+	assert.equal(
+		JSON.parse(await page.evaluate(() => localStorage.getItem('foodGuideSortPreference')))[0],
+		'perish',
+	);
+	await sortButton.press('ArrowUp');
+	await page.keyboard.press('Escape');
+	assert.equal(await sortButton.getAttribute('aria-expanded'), 'false');
+	await sortButton.press('ArrowDown');
+	await page.keyboard.press('Enter');
+
+	const search = page.locator('#simulator .ingredientpicker');
+	await search.fill('mushroom');
+	for (const name of ['Red Cap', 'Green Cap', 'Blue Cap']) {
+		assert.equal(
+			await page.locator(`#simulator [role="option"][aria-label="${name}"]`).count(),
+			1,
+		);
+	}
+	for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
+		await search.fill(name);
+		await search.press('ArrowDown');
+		// The option's accessible name also includes its picked quantity.
 		assert.equal(
 			await page
-				.locator('#simulator [role="menuitemradio"][data-value="perish"]')
-				.getAttribute('aria-checked'),
+				.locator('#simulator [role="option"][aria-selected="true"] .text')
+				.textContent(),
+			name,
+		);
+		await search.press('Enter');
+	}
+	assert.equal(await page.locator('#ingredients .icon').count(), 4);
+	await page.locator('#results a').getByText('Meatballs', { exact: true }).first().waitFor();
+
+	await page.locator('#navbar [data-tab="foodlist"]').focus();
+	await page.locator('#navbar [data-tab="foodlist"]').press('Enter');
+	await page.locator('#food table tr:nth-child(2)').waitFor();
+	assert.ok((await page.locator('#food table tr').count()) > 1);
+	assert.match(
+		await page
+			.locator('#food .icon')
+			.first()
+			.evaluate(element => element.style.backgroundImage),
+		/sprites\/sheet-0\.png/,
+	);
+
+	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await page.locator('html').getAttribute('lang'), 'es');
+	assert.equal(await page.locator('[data-i18n="tabSimulator"]').textContent(), 'Simulador');
+
+	assert.deepEqual(pageErrors, []);
+});
+
+test('recovers from stale or reserved names in saved preferences', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const settings of [
+		{ activeTab: '__proto__', version: 'constructor', baseMode: 'toString' },
+		{ activeTab: 'simulator', version: 'together', character: 'constructor' },
+	]) {
+		const page = await browser.newPage();
+		const errors = [];
+		page.on('pageerror', error => errors.push(error.message));
+		await page.addInitScript(
+			state => {
+				localStorage.setItem('foodGuideState', JSON.stringify(state));
+				localStorage.setItem('foodGuideLocale', 'constructor');
+			},
+			{
+				...settings,
+				pickers: [
+					['filter', '__proto__', 'carrot', '0'],
+					['byName', 'constructor', 'meat'],
+				],
+			},
+		);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		assert.deepEqual(errors, []);
+		assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+		assert.equal(
+			await page.locator('#navbar [data-tab="simulator"]').getAttribute('aria-selected'),
 			'true',
 		);
-		assert.equal(
-			JSON.parse(
-				await page.evaluate(() => localStorage.getItem('foodGuideSortPreference')),
-			)[0],
-			'perish',
-		);
-		await sortButton.press('ArrowUp');
-		await page.keyboard.press('Escape');
-		assert.equal(await sortButton.getAttribute('aria-expanded'), 'false');
-		await sortButton.press('ArrowDown');
-		await page.keyboard.press('Enter');
-
-		const search = page.locator('#simulator .ingredientpicker');
-		await search.fill('mushroom');
-		for (const name of ['Red Cap', 'Green Cap', 'Blue Cap']) {
-			assert.equal(
-				await page.locator(`#simulator [role="option"][aria-label="${name}"]`).count(),
-				1,
-			);
-		}
-		for (const name of ['Meat', 'Berries', 'Berries', 'Berries']) {
-			await search.fill(name);
-			await search.press('ArrowDown');
-			assert.equal(
-				await page
-					.locator('#simulator [role="option"][aria-selected="true"]')
-					.getAttribute('aria-label'),
-				name,
-			);
-			await search.press('Enter');
-		}
-		assert.equal(await page.locator('#ingredients .icon').count(), 4);
-		await page.locator('#results a').getByText('Meatballs', { exact: true }).first().waitFor();
-
-		await page.locator('#navbar li[data-tab="foodlist"]').focus();
-		await page.locator('#navbar li[data-tab="foodlist"]').press('Enter');
-		await page.locator('#food table tr:nth-child(2)').waitFor();
-		assert.ok((await page.locator('#food table tr').count()) > 1);
-		assert.match(
-			await page
-				.locator('#food .icon')
-				.first()
-				.evaluate(element => element.style.backgroundImage),
-			/sprites\/sheet-0\.png/,
-		);
-
-		await page.locator('#language-picker').selectOption('es');
-		assert.equal(await page.locator('html').getAttribute('lang'), 'es');
-		assert.equal(await page.locator('[data-i18n="tabSimulator"]').textContent(), 'Simulador');
-
-		assert.deepEqual(pageErrors, []);
-	} finally {
-		if (browser) {
-			await browser.close();
-		}
-		stopServer(server);
+		assert.equal(await page.locator('#ingredients .icon').count(), 1);
+		assert.equal(await page.locator('#ingredients .icon').getAttribute('title'), 'Carrot');
+		assert.equal(await page.locator('#discovery .ingredient .icon').count(), 1);
+		await page.close();
 	}
+});
+
+test('legacy settings and both ingredient pickers survive migration and reload', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [
+						{
+							name: 'foodGuideState',
+							value: JSON.stringify({
+								activeTab: 'help',
+								modeMask: 23,
+								pickers: [['carrot'], ['meat', 'berries']],
+							}),
+						},
+					],
+				},
+			],
+		},
+	});
+	const errors = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(
+		await page.locator('#navbar [data-tab="about"]').getAttribute('aria-selected'),
+		'true',
+	);
+	assert.equal(
+		await page.locator('.version-btn.selected').getAttribute('data-version'),
+		'dontstarve',
+	);
+	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
+	assert.equal(await page.locator('.dlc-btn.selected').count(), 2);
+	assert.equal(await page.locator('#ingredients .icon').count(), 1);
+	assert.equal(await page.locator('#discovery .ingredient .icon').count(), 2);
+	await page.reload({ waitUntil: 'networkidle' });
+	const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('foodGuideState')));
+	assert.equal(saved.activeTab, 'about');
+	assert.equal(saved.version, 'dontstarve');
+	assert.equal(saved.character, 'warly');
+	assert.deepEqual(saved.dlc, { giants: true, shipwrecked: true });
+	assert.equal(saved.pickers[0].filter(Boolean).length, 1);
+	assert.equal(
+		await page.evaluate(
+			() =>
+				JSON.parse(localStorage.getItem('foodGuidePersonalData')).inventories[0].ingredients
+					.length,
+		),
+		2,
+	);
+	assert.equal(await page.locator('#ingredients .icon').count(), 1);
+	assert.equal(await page.locator('#discovery .ingredient .icon').count(), 2);
+	assert.deepEqual(errors, []);
+});
+
+test('current selections persist before unload and recover after an interrupted session', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const stored = async () => {
+		await page.evaluate(() => navigator.locks.request('foodGuidePersonalData', () => {}));
+		return page.evaluate(() => {
+			const state = JSON.parse(localStorage.getItem('foodGuideState'));
+			state.pickers[1] = JSON.parse(
+				localStorage.getItem('foodGuidePersonalData'),
+			).inventories[0].ingredients;
+			return state;
+		});
+	};
+	const pick = async (panel, name) => {
+		const search = page.locator(`${panel} .ingredientpicker`);
+		await search.fill(name);
+		await search.press('Enter');
+	};
+	await pick('#simulator', 'Meat');
+	assert.deepEqual((await stored()).pickers[0], ['meat@together', null, null, null]);
+	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
+	assert.equal((await stored()).activeTab, 'discovery');
+	await pick('#discovery', 'Berries');
+	await pick('#discovery', 'Carrot');
+	assert.deepEqual((await stored()).pickers[1], ['berries@together', 'carrot@together']);
+	await page.locator('#inventory [data-id="berries@together"]').click();
+	assert.deepEqual((await stored()).pickers[1], ['carrot@together']);
+	await page.locator('.version-btn[data-version="dontstarve"]').click();
+	assert.equal((await stored()).version, 'dontstarve');
+	assert.deepEqual((await stored()).pickers, [['meat', null, null, null], ['carrot@together']]);
+	await page.locator('.dlc-btn[data-dlc="giants"]').click();
+	assert.equal((await stored()).dlc.giants, true);
+	await page.locator('.char-btn[data-character="wigfrid"]').click();
+	assert.equal((await stored()).character, 'wigfrid');
+	await page.locator('.char-btn[data-character="wigfrid"]').click();
+	assert.equal((await stored()).character, null);
+	await pick('#discovery', 'Cactus Flesh');
+	await page.locator('.dlc-btn[data-dlc="giants"]').click();
+	assert.deepEqual((await stored()).pickers[1], ['carrot@together', 'cactusmeat']);
+	await page.getByRole('tab', { name: 'Simulator', exact: true }).click();
+	await page.locator('#ingredients [data-id="meat"]').click();
+	assert.deepEqual((await stored()).pickers[0], [null, null, null, null]);
+	await pick('#simulator', 'Berries');
+	await page.locator('#simulator .clearingredientsbtn').click();
+	assert.deepEqual((await stored()).pickers[0], [null, null, null, null]);
+	await pick('#simulator', 'Meat');
+	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
+	// Capture storage while the original page is still open; no unload handler can save it.
+	const recovery = await browser.newContext({
+		storageState: await page.context().storageState(),
+	});
+	t.after(() => recovery.close());
+	const restored = await recovery.newPage();
+	await restored.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(await restored.locator('#tab-discovery').getAttribute('aria-selected'), 'true');
+	assert.equal(await restored.locator('#ingredients [data-id="meat"]').count(), 1);
+	assert.equal(await restored.locator('#inventory [data-id="carrot"]').count(), 1);
+	page.once('dialog', dialog => dialog.dismiss());
+	await page.locator('#discovery .clearingredientsbtn').click();
+	assert.deepEqual((await stored()).pickers[1], ['carrot@together', 'cactusmeat']);
+	page.once('dialog', dialog => dialog.accept());
+	await page.locator('#discovery .clearingredientsbtn').click();
+	assert.deepEqual((await stored()).pickers[1], []);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('completed analysis pages the full sorted dataset and preserves detail pages across locales', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [
+			[],
+			[
+				'meat',
+				'berries',
+				'carrot',
+				'honey',
+				'twigs',
+				'ice',
+				'bird_egg',
+				'monstermeat',
+				'cave_banana',
+				'pumpkin',
+				'tomato',
+				'potato',
+				'eggplant',
+			],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	const rows = page.locator('#makable tbody tr[data-recipe]');
+	const total = await page.evaluate(() => window.analysis.made.length);
+	assert.ok(total > 1000);
+	const readRuns = () =>
+		page.evaluate(() => {
+			const runs = [];
+			for (const row of window.analysis.made) {
+				if (runs.at(-1)?.[0].recipe === row.recipe.id) {
+					runs.at(-1).push({
+						recipe: row.recipe.id,
+						ingredients: row.ingredients.map(item => item.key),
+					});
+				} else {
+					runs.push([
+						{
+							recipe: row.recipe.id,
+							ingredients: row.ingredients.map(item => item.key),
+						},
+					]);
+				}
+			}
+			return runs;
+		});
+	let runs = await readRuns();
+	const capture = () =>
+		rows.evaluateAll(rows =>
+			rows.map(row => ({
+				recipe: row.dataset.recipe,
+				ingredients: [...row.querySelectorAll('.analysis-ingredients .icon')].map(
+					icon => icon.dataset.id,
+				),
+			})),
+		);
+	assert.deepEqual(
+		await capture(),
+		runs.slice(0, 25).map(run => run[0]),
+	);
+	const overview = page.locator('#makable .table-group-pagination').first();
+	assert.equal(
+		await overview.locator('.table-page-range').textContent(),
+		`Recipe groups 1–25 of ${runs.length}`,
+	);
+	assert.ok(runs.length > 25, 'Fixture has more than one overview page');
+	await overview.locator('[data-table-action=page-last]').click();
+	const lastStart = Math.floor((runs.length - 1) / 25) * 25;
+	assert.deepEqual(
+		await capture(),
+		runs.slice(lastStart).map(run => run[0]),
+	);
+	assert.equal(
+		await overview
+			.locator('[data-table-action=page-number]')
+			.evaluate(e => e === document.activeElement),
+		true,
+		'Disabled last-page button moves focus to page input',
+	);
+	await overview.locator('[data-table-action=page-number]').fill('2');
+	await overview.locator('[data-table-action=page-number]').press('Enter');
+	assert.deepEqual(
+		await capture(),
+		runs.slice(25, 50).map(run => run[0]),
+	);
+	await overview.locator('[data-table-action=page-first]').click();
+	await page.locator('#makable th[data-sort=name] button').click();
+	runs = await readRuns();
+	const index = runs.slice(0, 25).findIndex(run => run.length > 25);
+	assert.ok(index >= 0, 'Fixture has a multi-page combination group');
+	const firstGroup = rows.nth(index).locator('.table-group-toggle');
+	await firstGroup.click();
+	const details = page.locator('#makable .table-combination-pagination:visible');
+	await details.locator('[data-table-action=page-last]').click();
+	const lastDetailStart = Math.floor((runs[index].length - 1) / 25) * 25;
+	assert.deepEqual(
+		(await capture()).slice(index, index + runs[index].length - lastDetailStart),
+		runs[index].slice(lastDetailStart),
+	);
+	assert.equal(
+		await details
+			.locator('[data-table-action=page-number]')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await firstGroup.getAttribute('aria-expanded'), 'true');
+	assert.equal(
+		await details
+			.locator('[data-table-action=page-number]')
+			.evaluate(e => e === document.activeElement),
+		true,
+	);
+	assert.equal(
+		await details.locator('[data-table-action=page-number]').inputValue(),
+		String(Math.floor((runs[index].length - 1) / 25) + 1),
+	);
+	const meatballs = page
+		.locator('#makable .recipeFilter button')
+		.filter({ has: page.locator('[title="Meatballs"]') });
+	await meatballs.click();
+	assert.deepEqual([...new Set((await capture()).map(row => row.recipe))], ['meatballs_dst']);
+	assert.equal(await overview.locator('[data-table-action=page-number]').inputValue(), '1');
+	await meatballs.click();
+	assert.ok((await capture()).every(row => row.recipe !== 'meatballs_dst'));
+	const remaining = total - runs.flat().filter(row => row.recipe === 'meatballs_dst').length;
+	assert.match(
+		await page.locator('#makable .analysis-result-count').textContent(),
+		new RegExp(`; ${remaining} combinaciones coincidentes\\.`),
+	);
+	await page.locator('#makable .resetAnalysisFiltersButton').click();
+	await page.locator('#language-picker').selectOption('zh');
+	assert.match(
+		await page.locator('#makable .analysis-result-count').textContent(),
+		new RegExp(`${total} 个匹配组合`),
+	);
+	assert.ok((await rows.count()) <= 625, 'Rendering stays bounded independently of dataset size');
+	await page.locator('#makable .deleteButton').click();
+	assert.equal(await page.locator('#makable .makableContainer').count(), 0);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('food and recipe columns sort by displayed character stats in both directions', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const numberFromCell = text => {
+		const match = text.match(/^([+-]?\d+)([⅛¼⅜½⅝¾⅞])?/);
+		if (!match) {
+			return NaN;
+		}
+		const fraction = ('⅛¼⅜½⅝¾⅞'.indexOf(match[2]) + 1) / 8;
+		return Number(match[1]) + (text.startsWith('-') ? -fraction : fraction);
+	};
+	for (const [version, character] of [
+		['dontstarve', 'warly'],
+		['together', 'webber'],
+		['together', 'wigfrid'],
+	]) {
+		const page = await createSavedPage(browser, baseUrl, {
+			activeTab: 'foodlist',
+			version,
+			character,
+			dlc: { giants: true, shipwrecked: true },
+			pickers: [[], []],
+		});
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		for (const [tab, table] of [
+			['#tab-foodlist', '#food'],
+			['#tab-crockpot', '#recipes'],
+		]) {
+			await page.locator(tab).click();
+			for (const [column, index] of [
+				['health', 3],
+				['hunger', 4],
+				['sanity', 5],
+			]) {
+				for (const ascending of [false, true]) {
+					await page.locator(`${table} th[data-sort=${column}] button`).click();
+					const values = (
+						await page
+							.locator(`${table} tbody td:nth-child(${index})`)
+							.allTextContents()
+					)
+						.map(numberFromCell)
+						.filter(value => !Number.isNaN(value));
+					assert.ok(values.length > 10);
+					assert.deepEqual(
+						values,
+						[...values].sort((a, b) => (ascending ? a - b : b - a)),
+						`${version} ${character}: ${table} ${column} ${ascending ? 'ascending' : 'descending'}`,
+					);
+				}
+			}
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('character analysis outcomes and ingredient baselines agree with the Simulator', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const [version, character, ingredient, name, expected] of [
+		['dontstarve', 'warly', 'meat', 'Meaty Stew', [12 * 1.2, 180, 6]],
+		['together', 'warly', 'meat', 'Meaty Stew', [12, 150, 5]],
+		['together', 'webber', 'monstermeat', 'Monster Lasagna', [0, 37.5, 0]],
+		['together', null, 'monstermeat', 'Monster Lasagna', [-20, 37.5, -20]],
+		['together', 'wigfrid', 'carrot', 'Ratatouille', [0, 0, 0]],
+	]) {
+		const page = await createSavedPage(browser, baseUrl, {
+			activeTab: 'discovery',
+			version,
+			character,
+			dlc: { giants: true, shipwrecked: true },
+			pickers: [[], [ingredient]],
+		});
+		const diagnostics = trackDiagnostics(page);
+		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.locator('#makable .makablebutton').click();
+		await page.waitForFunction(
+			() => !document.querySelector('#makable .makablebutton').disabled,
+		);
+		const rows = await page.evaluate(() => window.analysis.made);
+		assert.equal(rows.length, 1);
+		const [row] = rows;
+		assert.equal(row.recipe.name, name);
+		assert.deepEqual([row.health, row.hunger, row.sanity], expected);
+		assert.equal(row.healthpls, row.health - row.tags.health);
+		assert.equal(row.hungerpls, row.hunger - row.tags.hunger);
+		assert.equal(
+			row.healthpct,
+			row.tags.health ? row.healthpls / Math.abs(row.tags.health) : null,
+		);
+		assert.equal(
+			row.hungerpct,
+			row.tags.hunger ? row.hungerpls / Math.abs(row.tags.hunger) : null,
+		);
+		if (character === 'webber' || character === 'wigfrid') {
+			assert.equal(row.tags.health, 0);
+		}
+		if (character === 'wigfrid') {
+			assert.equal(row.tags.hunger, 0);
+		}
+		const result = page.locator('#makable tbody tr[data-recipe]');
+		const health = await result.locator('td').nth(2).textContent();
+		const hunger = await result.locator('td').nth(4).textContent();
+		await result.locator('.analysis-ingredients').click();
+		const simulated = page.locator('#results tbody tr').filter({
+			has: page.getByRole('link', { name, exact: true }),
+		});
+		assert.equal((await simulated.locator('td').nth(2).textContent()).split(' (')[0], health);
+		assert.equal((await simulated.locator('td').nth(3).textContent()).split(' (')[0], hunger);
+		const potential = page.locator('#results tbody tr').filter({
+			has: page.locator('td.name-cell').getByText('Potential', { exact: true }),
+		});
+		if (character === 'webber' || character === 'wigfrid') {
+			assert.equal(await potential.locator('td').nth(2).textContent(), '0');
+		}
+		if (character === 'wigfrid') {
+			assert.equal(await potential.locator('td').nth(3).textContent(), '0');
+		}
+		assert.deepEqual(diagnostics, []);
+		await page.close();
+	}
+});
+
+test('Warly food tables show negative fractional changes without an extra whole unit', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'foodlist',
+		version: 'dontstarve',
+		character: 'warly',
+		dlc: { giants: true, shipwrecked: true },
+		pickers: [[], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const greenCap = page.locator('#food tbody tr').filter({
+		has: page.getByRole('link', { name: 'Green Cap', exact: true }),
+	});
+	assert.equal(await greenCap.locator('td:nth-child(3)').textContent(), '0 (-0⅞)');
+	assert.deepEqual(diagnostics, []);
+});
+
+test('tables retain sorting, pinned summaries, column visibility, and linked highlights', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [
+						{
+							name: 'foodGuideState',
+							value: JSON.stringify({
+								version: 'together',
+								pickers: [
+									[
+										'honey@together',
+										'meat@together',
+										'meat@together',
+										'ice@together',
+									],
+									['carrot@together', 'meat@together', 'berries@together'],
+								],
+							}),
+						},
+					],
+				},
+			],
+		},
+	});
+	const errors = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const cooking = page.locator('#results table').first();
+	const names = () => cooking.locator('td:nth-child(2)').allTextContents();
+	await cooking.locator('th[data-sort="health"]').click();
+	assert.deepEqual(await names(), ['Total', 'Potential', 'Honey Ham', 'Meatballs', 'Wet Goop']);
+	await cooking.locator('th[data-sort="health"]').click();
+	assert.deepEqual(await names(), ['Total', 'Potential', 'Wet Goop', 'Meatballs', 'Honey Ham']);
+
+	const healthToggle = page
+		.locator('#results .column-toggle-bar')
+		.first()
+		.getByRole('button', { name: 'Health', exact: true });
+	await healthToggle.click();
+	assert.equal(await cooking.locator('th[data-sort="health"]').isVisible(), false);
+	assert.equal(await cooking.locator('td:nth-child(3).col-hidden').count(), 5);
+	await cooking.locator('th[data-sort="name"]').click();
+	assert.equal(await cooking.locator('td:nth-child(3).col-hidden').count(), 5);
+	await healthToggle.click();
+	assert.equal(await cooking.locator('th[data-sort="health"]').isVisible(), true);
+
+	await page.locator('#navbar [data-tab="foodlist"]').click();
+	const cookedCarrot = page.locator('#food [data-link="*Roasted Carrot"] .icon').first();
+	await cookedCarrot.click();
+	assert.deepEqual(
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
+		['Roasted Carrot'],
+	);
+	await cookedCarrot.click();
+	assert.equal(await page.locator('#food .highlighted').count(), 0);
+
+	await page.locator('#food [data-link="recipe:Meatballs"] .icon').first().click();
+	assert.equal(
+		await page.locator('#navbar [data-tab="crockpot"]').getAttribute('aria-selected'),
+		'true',
+	);
+	assert.deepEqual(
+		await page
+			.locator('#recipes .highlighted .reference-name > a:first-child')
+			.allTextContents(),
+		['Meatballs'],
+	);
+	await page.locator('#recipes th[data-sort="health"]').click();
+	assert.equal(await page.locator('#recipes .highlighted').count(), 1);
+
+	const meatLink = page.locator('#recipes [data-link="tag:meat"]').first();
+	await meatLink.click();
+	const meatHighlights = await page
+		.locator('#food .highlighted .reference-name > a:first-child')
+		.allTextContents();
+	assert.ok(meatHighlights.includes('Meat'));
+	assert.ok(meatHighlights.length > 1);
+	await page.locator('#navbar [data-tab="crockpot"]').click();
+	await meatLink.click();
+	assert.deepEqual(
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
+		meatHighlights,
+	);
+
+	await page.locator('#navbar [data-tab="discovery"]').click();
+	assert.equal(await page.locator('#discoverfood td:nth-child(2)').count(), 3);
+	await page.locator('#discoverfood th[data-sort="health"]').click();
+	await page.locator('#discover th[data-sort="health"]').click();
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => {
+		const button = document.querySelector('#makable .makablebutton');
+		return button && !button.disabled;
+	});
+	assert.ok((await page.locator('#makable td:nth-child(2)').count()) > 0);
+	await page.locator('#makable th[data-sort="name"]').click();
+	const analyzedNames = await page.locator('#makable td:nth-child(2)').allTextContents();
+	assert.deepEqual(analyzedNames, [...analyzedNames].sort());
+	assert.deepEqual(errors, []);
+});
+
+test('table controls support keyboard sorting, toggles, and linked highlights without losing focus', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['honey@together', 'meat@together', 'meat@together', 'ice@together'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const cooking = page.locator('#results table').first();
+	const healthHeader = cooking.locator('th[data-sort="health"]');
+	const health = healthHeader.getByRole('button', { name: 'Health', exact: true });
+	await health.focus();
+	await health.press('Enter');
+	assert.equal(await healthHeader.getAttribute('aria-sort'), 'descending');
+	assert.deepEqual(await cooking.locator('td:nth-child(2)').allTextContents(), [
+		'Total',
+		'Potential',
+		'Honey Ham',
+		'Meatballs',
+		'Wet Goop',
+	]);
+	assert.equal(await health.evaluate(button => button === document.activeElement), true);
+	await health.press('Space');
+	assert.equal(await healthHeader.getAttribute('aria-sort'), 'ascending');
+	assert.deepEqual(await cooking.locator('td:nth-child(2)').allTextContents(), [
+		'Total',
+		'Potential',
+		'Wet Goop',
+		'Meatballs',
+		'Honey Ham',
+	]);
+	assert.equal(await health.evaluate(button => button === document.activeElement), true);
+	const name = cooking.locator('th[data-sort="name"] button');
+	await name.focus();
+	await name.press('Enter');
+	assert.equal(await healthHeader.getAttribute('aria-sort'), null);
+	assert.equal(
+		await cooking.locator('th[data-sort="name"]').getAttribute('aria-sort'),
+		'ascending',
+	);
+	assert.equal(await cooking.locator('th[aria-sort]').count(), 1);
+
+	const toggles = page.locator('#results .column-toggle-bar').first();
+	const healthToggle = toggles.getByRole('button', { name: 'Health', exact: true });
+	assert.equal(await healthToggle.getAttribute('aria-pressed'), 'true');
+	await healthToggle.focus();
+	await healthToggle.press('Space');
+	assert.equal(await healthToggle.getAttribute('aria-pressed'), 'false');
+	assert.equal(await healthHeader.isVisible(), false);
+	await healthToggle.press('Enter');
+	assert.equal(await healthToggle.getAttribute('aria-pressed'), 'true');
+	assert.equal(await healthHeader.isVisible(), true);
+	const auto = toggles.getByRole('button', { name: 'Auto', exact: true });
+	assert.equal(await auto.getAttribute('aria-pressed'), 'false');
+	await auto.focus();
+	await auto.press('Enter');
+	assert.equal(await auto.getAttribute('aria-pressed'), 'true');
+
+	await page.locator('#navbar [data-tab="foodlist"]').click();
+	const carrot = page.locator('#food button[data-link="*Roasted Carrot"]').first();
+	assert.equal(await carrot.getAttribute('type'), 'button');
+	await carrot.focus();
+	await carrot.press('Enter');
+	assert.deepEqual(
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
+		['Roasted Carrot'],
+	);
+	assert.equal(await carrot.evaluate(button => button === document.activeElement), true);
+	await carrot.press('Space');
+	assert.equal(await page.locator('#food .highlighted').count(), 0);
+	assert.equal(await carrot.evaluate(button => button === document.activeElement), true);
+	const meat = page.locator('#food button[data-link="tag:meat"]').nth(1);
+	const originalRow = await meat.evaluate(button => button.closest('tr').children[1].textContent);
+	await meat.focus();
+	await meat.press('Enter');
+	assert.ok((await page.locator('#food .highlighted').count()) > 1);
+	assert.equal(
+		await page.evaluate(() => document.activeElement.closest('tr')?.children[1].textContent),
+		originalRow,
+	);
+	await meat.press('Space');
+	assert.equal(await page.locator('#food .highlighted').count(), 0);
+	assert.equal(await meat.evaluate(button => button === document.activeElement), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('repeated picker edits release replaced tables immediately', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [[], []],
+	});
+	await page.addInitScript(() => {
+		const registrations = new Map();
+		const observers = new Map();
+		const NativeResizeObserver = window.ResizeObserver;
+		window.ResizeObserver = class extends NativeResizeObserver {
+			observe(target) {
+				if (!observers.has(this)) {
+					observers.set(this, new Set());
+				}
+				observers.get(this).add(target);
+				super.observe(target);
+			}
+			disconnect() {
+				observers.delete(this);
+				super.disconnect();
+			}
+		};
+		const add = Set.prototype.add;
+		const remove = Set.prototype.delete;
+		Set.prototype.add = function (value) {
+			if (value instanceof HTMLDivElement && typeof value.updateLocale === 'function') {
+				if (!registrations.has(this)) {
+					registrations.set(this, new Set());
+				}
+				add.call(registrations.get(this), value);
+			}
+			return add.call(this, value);
+		};
+		Set.prototype.delete = function (value) {
+			if (registrations.has(this)) {
+				remove.call(registrations.get(this), value);
+			}
+			return remove.call(this, value);
+		};
+		window.tableAudit = () => ({
+			observers: {
+				count: observers.size,
+				detached: [...observers.values()]
+					.flatMap(targets => [...targets])
+					.filter(target => !target.isConnected).length,
+			},
+			live: [...document.querySelectorAll('div')].filter(
+				element => typeof element.updateLocale === 'function',
+			).length,
+			registries: [...registrations.values()].map(tables => ({
+				count: tables.size,
+				detached: [...tables].filter(table => !table.isConnected).length,
+			})),
+		});
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const assertReleased = async () => {
+		const audit = await page.evaluate(() => window.tableAudit());
+		assert.equal(audit.observers.count, audit.live, JSON.stringify(audit));
+		assert.equal(audit.observers.detached, 0, JSON.stringify(audit));
+		assert.equal(audit.registries.length, 2);
+		for (const registry of audit.registries) {
+			assert.equal(registry.detached, 0, JSON.stringify(audit));
+			assert.equal(registry.count, audit.live, JSON.stringify(audit));
+		}
+	};
+	await assertReleased();
+	for (const { tab, slots } of [
+		{ tab: 'simulator', slots: '#ingredients' },
+		{ tab: 'discovery', slots: '#inventory' },
+	]) {
+		await page.locator(`#navbar [data-tab="${tab}"]`).click();
+		const search = page.locator(`#${tab} .ingredientpicker`);
+		for (let attempt = 0; attempt < 4; attempt++) {
+			for (const ingredient of ['Meat', 'Carrot']) {
+				await search.fill(ingredient);
+				await page
+					.locator(`#${tab}`)
+					.getByRole('option', { name: ingredient, exact: true })
+					.click();
+				await assertReleased();
+			}
+			while (await page.locator(`${slots} .ingredient[data-id]`).count()) {
+				await page.locator(`${slots} .ingredient[data-id]`).first().click();
+				await assertReleased();
+			}
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
+test('table updates honor highlight scrolling and cancel restoration on disposal', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const result = await page.evaluate(async () => {
+		const { createSortableTableFactory } = await import('./sortable-table.js');
+		const localeTables = new Set();
+		const responsiveTables = new Set();
+		const { makeSortableTable, cells } = createSortableTableFactory({
+			translate: key => key,
+			translateTableLabel: label => label,
+			translateTableHint: hint => hint,
+			translateSummaryLabel: label => label,
+			localeTables,
+			responsiveTables,
+		});
+		const spacer = document.createElement('div');
+		spacer.style.height = '3000px';
+		document.body.appendChild(spacer);
+		let highlight = false;
+		const highlighted = makeSortableTable({
+			captionKey: 'tableCookingResults',
+			headers: { Name: 'name' },
+			dataset: [{ name: 'Carrot' }],
+			defaultSort: 'name',
+			rowGenerator: item => cells('td', item.name),
+			highlightCallback: () => highlight,
+		});
+		document.body.appendChild(highlighted);
+		window.scrollTo(0, 0);
+		highlight = true;
+		highlighted.update(true);
+		await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+		const rect = highlighted.querySelector('.highlighted').getBoundingClientRect();
+		// Browser scroll offsets round to whole pixels; row geometry can be fractional.
+		const highlightVisible = rect.top >= -1 && rect.bottom <= window.innerHeight + 1;
+		highlighted.dispose();
+		highlighted.remove();
+		const results = [];
+		for (const toggleable of [false, true]) {
+			const dataset = [{ name: 'Carrot' }];
+			const table = makeSortableTable({
+				captionKey: 'tableCookingResults',
+				headers: { Name: 'name' },
+				dataset,
+				defaultSort: 'name',
+				rowGenerator: item => cells('td', item.name),
+				columnConfig: { toggleable },
+			});
+			document.body.appendChild(table);
+			window.scrollTo(0, 0);
+			table.update();
+			table.dispose();
+			table.dispose();
+			table.remove();
+			dataset.push({ name: 'Meat' });
+			table.update();
+			table.setMaxRows(10);
+			window.scrollTo(0, 120);
+			await new Promise(resolve =>
+				requestAnimationFrame(() => requestAnimationFrame(resolve)),
+			);
+			results.push({
+				locale: localeTables.size,
+				responsive: responsiveTables.size,
+				rows: table.querySelectorAll('td').length,
+				scrollY: window.scrollY,
+			});
+		}
+		spacer.remove();
+		return {
+			highlightVisible,
+			rect: { top: rect.top, bottom: rect.bottom, viewport: innerHeight },
+			disposed: results,
+		};
+	});
+	assert.equal(result.highlightVisible, true, JSON.stringify(result.rect));
+	assert.deepEqual(result.disposed, [
+		{ locale: 0, responsive: 0, rows: 1, scrollY: 120 },
+		{ locale: 0, responsive: 0, rows: 1, scrollY: 120 },
+	]);
+});
+
+test('picker controls and tables fit narrow screens in every locale and game', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({ viewport: { width: 320, height: 720 } });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	for (const width of [320, 375]) {
+		await page.setViewportSize({ width, height: 720 });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			for (const version of ['together', 'dontstarve', 'hamlet']) {
+				await page.locator(`.version-btn[data-version="${version}"]`).click();
+				for (const tab of ['simulator', 'discovery', 'foodlist', 'crockpot']) {
+					await page.locator(`#navbar [data-tab="${tab}"]`).click();
+					const layout = await page.evaluate(() => ({
+						width: innerWidth,
+						pageWidth: document.documentElement.scrollWidth,
+						controls: [
+							...document.querySelectorAll('.ingredient-search-controls button'),
+						]
+							.map(button => button.getBoundingClientRect())
+							.filter(rect => rect.width > 0)
+							.map(rect => ({ left: rect.left, right: rect.right })),
+					}));
+					const context = `${width}px, ${locale}, ${version}, ${tab}`;
+					assert.ok(layout.pageWidth <= layout.width, `Page overflow: ${context}`);
+					assert.ok(
+						layout.controls.every(rect => rect.left >= 0 && rect.right <= layout.width),
+						`Clipped picker controls: ${context}`,
+					);
+				}
+			}
+		}
+	}
+});
+
+test('keyboard mode controls update ingredient variants, analysis, and saved selections', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [
+			['meat', 'meat', 'honey', 'carrot'],
+			['meat', 'meat@together', 'batnose'],
+		],
+	});
+	const errors = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const selectedKeys = selector =>
+		page
+			.locator(`${selector} .ingredient[data-id]`)
+			.evaluateAll(slots => slots.map(slot => slot.dataset.id));
+	assert.deepEqual(await selectedKeys('#ingredients'), [
+		'meat@together',
+		'meat@together',
+		'honey@together',
+		'carrot@together',
+	]);
+	assert.deepEqual(await selectedKeys('#inventory'), ['meat@together', 'batnose']);
+
+	const dontStarve = page.getByRole('button', { name: "Don't Starve", exact: true });
+	await dontStarve.focus();
+	await dontStarve.press('Enter');
+	assert.equal(await dontStarve.getAttribute('aria-pressed'), 'true');
+	assert.deepEqual(await selectedKeys('#ingredients'), ['meat', 'meat', 'honey', 'carrot']);
+	assert.deepEqual(await selectedKeys('#inventory'), ['meat']);
+	const giants = page.getByRole('button', { name: 'Reign of Giants', exact: true });
+	await giants.focus();
+	await giants.press('Space');
+	assert.equal(await giants.getAttribute('aria-pressed'), 'true');
+	const webber = page.getByRole('button', { name: 'Webber', exact: true });
+	await webber.focus();
+	await webber.press('Enter');
+	assert.equal(await webber.getAttribute('aria-pressed'), 'true');
+	await webber.press('Space');
+	assert.equal(await webber.getAttribute('aria-pressed'), 'false');
+
+	await page.locator('#navbar [data-tab="discovery"]').click();
+	await page.locator('#makable .makablebutton').click();
+	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
+	assert.ok((await page.locator('#makable td:nth-child(2)').count()) > 0);
+	await page.reload({ waitUntil: 'networkidle' });
+	assert.equal(await dontStarve.getAttribute('aria-pressed'), 'true');
+	assert.equal(await giants.getAttribute('aria-pressed'), 'true');
+	assert.deepEqual(await selectedKeys('#ingredients'), ['meat', 'meat', 'honey', 'carrot']);
+	assert.deepEqual(await selectedKeys('#inventory'), ['meat']);
+	assert.deepEqual(errors, []);
+});
+
+test('restored DLC ingredients remain available during initial picker creation', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'dontstarve',
+		dlc: { giants: true, shipwrecked: false },
+		pickers: [['mole'], ['mole']],
+	});
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	assert.equal(await page.locator('#ingredients [data-id="mole"]').count(), 1);
+	assert.equal(await page.locator('#inventory [data-id="mole"]').count(), 1);
+	assert.equal(
+		await page
+			.getByRole('button', { name: 'Reign of Giants', exact: true })
+			.getAttribute('aria-pressed'),
+		'true',
+	);
+});
+
+test('large recipe groups allow direct browsing without rendering the whole dataset', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(
+		browser,
+		baseUrl,
+		{ activeTab: 'statistics', version: 'together' },
+		{ hasTouch: true, viewport: { width: 375, height: 812 } },
+	);
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(async () => {
+		const { createSortableTableFactory } = await import('./sortable-table.js');
+		const { t } = await import('./strings.js');
+		const { cells, makeSortableTable } = createSortableTableFactory({
+			translate: t,
+			translateTableLabel: label => label,
+			translateTableHint: hint => hint,
+			translateSummaryLabel: label => label,
+			localeTables: new Set(),
+			responsiveTables: new Set(),
+		});
+		const dataset = Array.from({ length: 620 }, (_, index) => ({
+			name: 'Meaty Stew',
+			recipe: 'stew',
+			hunger: 1000 - index / 1000,
+			index,
+		}));
+		for (let index = 0; index < 61; index++) {
+			dataset.push({
+				name: `Other recipe ${index}`,
+				recipe: `other-${index}`,
+				hunger: 610 - index,
+				index: 620 + index,
+			});
+		}
+		let renders = 0;
+		const table = makeSortableTable({
+			captionKey: 'tableEfficientRecipes',
+			headers: { Name: 'name', Hunger: 'hunger' },
+			dataset,
+			defaultSort: 'hunger',
+			rowGenerator: item => {
+				renders++;
+				const row = cells('td', item.name, item.hunger);
+				row.dataset.recipe = item.recipe;
+				row.dataset.index = String(item.index);
+				return row;
+			},
+			groupRows: {
+				key: item => item.recipe,
+				toggleLabel: (item, count, expanded) =>
+					t(expanded ? 'analysisHideCombinations' : 'analysisShowCombinations', {
+						name: item.name,
+						count,
+					}),
+			},
+			columnConfig: { toggleable: true, columns: ['Hunger'] },
+		});
+		table.id = 'large-group-fixture';
+		document.querySelector('#statistics').append(table);
+		document.addEventListener('foodguide:localechange', () => table.updateLocale());
+		window.paginationFixture = { table, dataset, renders: () => renders };
+	});
+	const fixture = page.locator('#large-group-fixture');
+	const rows = fixture.locator('tbody tr[data-recipe]');
+	const overview = fixture.locator('.table-group-pagination').first();
+	const toggle = fixture.locator('.table-group-toggle').first();
+	assert.equal(await rows.count(), 25);
+	assert.equal(await toggle.getAttribute('data-count'), '620');
+	assert.equal(
+		await rows.nth(1).getAttribute('data-recipe'),
+		'other-0',
+		'Later recipes are visible despite a first run longer than 500 combinations',
+	);
+	assert.equal(
+		await page.evaluate(() => window.paginationFixture.renders()),
+		25,
+		'Collapsed details are never generated',
+	);
+	await fixture
+		.locator('.table-group-pagination')
+		.last()
+		.locator('[data-table-action=page-next]')
+		.tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-24');
+	const overviewBounds = await overview.evaluate(e => ({
+		top: e.getBoundingClientRect().top,
+		bottom: e.getBoundingClientRect().bottom,
+		viewport: innerHeight,
+	}));
+	assert.ok(
+		// scrollIntoView rounds the scroll offset while layout retains fractional pixels.
+		overviewBounds.top >= -1 && overviewBounds.bottom <= overviewBounds.viewport + 1,
+		`Bottom paging reveals the overview controls: ${JSON.stringify(overviewBounds)}`,
+	);
+	assert.equal(
+		await overview
+			.locator('[data-table-action=page-next]')
+			.evaluate(e => e === document.activeElement),
+		true,
+		'Bottom paging returns focus and viewport to the start of the next page',
+	);
+	await overview.locator('[data-table-action=page-first]').tap();
+	await toggle.tap();
+	assert.equal(await rows.count(), 49);
+	const details = fixture.locator('.table-combination-pagination:visible');
+	const input = details.locator('[data-table-action=page-number]');
+	await input.fill('20');
+	await input.press('Enter');
+	assert.deepEqual(
+		await fixture
+			.locator('tr[data-recipe=stew]')
+			.evaluateAll(rows => rows.map(row => Number(row.dataset.index))),
+		Array.from({ length: 25 }, (_, index) => index + 475),
+	);
+	await details.locator('[data-table-action=page-last]').tap();
+	assert.deepEqual(
+		await fixture
+			.locator('tr[data-recipe=stew]')
+			.evaluateAll(rows => rows.map(row => Number(row.dataset.index))),
+		Array.from({ length: 20 }, (_, index) => index + 600),
+	);
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	await input.fill('0');
+	await input.press('Enter');
+	assert.equal(
+		await fixture.locator('tr[data-recipe=stew]').first().getAttribute('data-index'),
+		'600',
+		'Out-of-range page input cannot change the table',
+	);
+	await input.fill('25');
+	await page.locator('#language-picker').selectOption('zh');
+	assert.equal(await input.inputValue(), '25');
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	assert.equal(
+		await details.locator('.table-page-range').textContent(),
+		'组合 601–620，共 620 个',
+	);
+	await overview.locator('[data-table-action=page-number]').fill('3');
+	await overview.locator('[data-table-action=page-go]').tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-49');
+	assert.equal(await rows.count(), 12);
+	await overview.locator('[data-table-action=page-previous]').tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-24');
+	await overview.locator('[data-table-action=page-first]').tap();
+	assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+	assert.equal(
+		await fixture.locator('tr[data-recipe=stew]').first().getAttribute('data-index'),
+		'600',
+	);
+	await fixture
+		.locator('.column-toggle-bar button')
+		.filter({ hasText: /^Hunger/ })
+		.tap();
+	assert.equal(
+		await fixture.locator('.table-group-pager:visible td').evaluate(e => e.colSpan),
+		1,
+	);
+	assert.equal(await input.isVisible(), true, 'Column hiding keeps the group pager reachable');
+	assert.equal(
+		await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+		true,
+	);
+	assert.ok(await input.evaluate(e => e.getBoundingClientRect().height >= 44));
+	const groupSize = overview.locator('[data-table-action=group-page-size]');
+	const combinationSize = overview.locator('[data-table-action=combination-page-size]');
+	await groupSize.selectOption('50');
+	assert.equal(await fixture.locator('tr[data-recipe]:not(.table-group-detail)').count(), 50);
+	assert.equal(
+		await fixture
+			.locator('.table-group-pagination')
+			.last()
+			.locator('[data-table-action=group-page-size]')
+			.inputValue(),
+		'50',
+	);
+	await combinationSize.selectOption('100');
+	assert.equal(await input.inputValue(), '7');
+	assert.equal(
+		await fixture.locator('tr[data-recipe=stew]').first().getAttribute('data-index'),
+		'600',
+	);
+	await details.locator('[data-table-action=page-first]').tap();
+	assert.equal(await fixture.locator('tr[data-recipe=stew]').count(), 100);
+	assert.equal(await fixture.locator('.table-group-expanded').count(), 101);
+	assert.equal(await fixture.locator('.table-group-end').count(), 1);
+	assert.equal(await fixture.locator('.table-group-end').getAttribute('data-index'), '99');
+	assert.equal(
+		await fixture
+			.locator('.table-group-expanded td')
+			.first()
+			.evaluate(e => getComputedStyle(e).borderInlineStartWidth),
+		'3px',
+	);
+	assert.equal(
+		await fixture
+			.locator('.table-group-end td')
+			.first()
+			.evaluate(e => getComputedStyle(e).borderBottomWidth),
+		'2px',
+	);
+	assert.equal(
+		await fixture
+			.locator('tr[data-recipe=other-0]')
+			.evaluate(e => e.classList.contains('table-group-expanded')),
+		false,
+	);
+	await groupSize.selectOption('10');
+	await combinationSize.selectOption('10');
+	assert.equal(await fixture.locator('tr[data-recipe]:not(.table-group-detail)').count(), 10);
+	assert.equal(await fixture.locator('tr[data-recipe=stew]').count(), 10);
+	assert.ok(await groupSize.evaluate(e => e.getBoundingClientRect().height >= 44));
+	await page.evaluate(axe.source);
+	for (const theme of ['light', 'dark']) {
+		await page.emulateMedia({ colorScheme: theme });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			const violations = await page.evaluate(async () =>
+				(await window.axe.run()).violations.map(({ id, nodes }) => ({
+					id,
+					targets: nodes.map(node => node.target),
+				})),
+			);
+			assert.deepEqual(
+				violations,
+				[],
+				`${theme}, ${locale} expanded pagination accessibility`,
+			);
+		}
+	}
+	await input.fill('20');
+	await input.press('Enter');
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.push(
+			...Array.from({ length: 37 }, (_, index) => ({
+				name: 'Meaty Stew',
+				recipe: 'stew',
+				hunger: 1001 - index / 1000,
+				index: index - 37,
+			})),
+		);
+		table.refresh();
+	});
+	assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+	assert.equal(await toggle.getAttribute('data-count'), '657');
+	assert.equal(await input.inputValue(), '23');
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	assert.ok(
+		(
+			await fixture
+				.locator('tr[data-recipe=stew]')
+				.evaluateAll(rows => rows.map(row => Number(row.dataset.index)))
+		).includes(190),
+		'Refresh retains the previously displayed combination when new rows precede it',
+	);
+	await overview.locator('[data-table-action=page-next]').tap();
+	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-9');
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.push(
+			...Array.from({ length: 13 }, (_, index) => ({
+				name: `New recipe ${index}`,
+				recipe: `new-${index}`,
+				hunger: 2000 - index,
+				index: 1000 + index,
+			})),
+		);
+		table.refresh();
+	});
+	assert.equal(await overview.locator('[data-table-action=page-number]').inputValue(), '3');
+	assert.equal(await fixture.locator('tr[data-recipe=other-9]').count(), 1);
+	await overview.locator('[data-table-action=page-first]').tap();
+	await overview.locator('[data-table-action=page-next]').tap();
+	await input.focus();
+	const readingOffset = await input.evaluate(e => e.getBoundingClientRect().top);
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.push(
+			...Array.from({ length: 5 }, (_, index) => ({
+				name: `Later recipe ${index}`,
+				recipe: `later-${index}`,
+				hunger: 3000 - index,
+				index: 2000 + index,
+			})),
+		);
+		table.refresh();
+	});
+	await page.waitForFunction(offset => {
+		const input = document.querySelector(
+			'#large-group-fixture .table-group-pager:not([hidden]) input',
+		);
+		return Math.abs(input.getBoundingClientRect().top - offset) < 1;
+	}, readingOffset);
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	await overview.locator('[data-table-action=page-number]').focus();
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.splice(0, dataset.length, ...dataset.filter(item => item.recipe === 'stew'));
+		table.refresh();
+	});
+	assert.equal(await overview.locator('form').isVisible(), false);
+	assert.equal(await groupSize.evaluate(e => e === document.activeElement), true);
+	await input.focus();
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.splice(2);
+		table.refresh();
+	});
+	assert.equal(await details.locator('form').isVisible(), false);
+	assert.equal(await toggle.evaluate(e => e === document.activeElement), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('running analysis refreshes without pausing and reloads its final results with page sizes intact', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		pickers: [
+			[],
+			[
+				'meat',
+				'berries',
+				'carrot',
+				'honey',
+				'twigs',
+				'ice',
+				'bird_egg',
+				'monstermeat',
+				'cave_banana',
+				'pumpkin',
+				'tomato',
+				'potato',
+				'eggplant',
+				'asparagus',
+				'garlic',
+				'onion',
+				'pepper',
+				'green_mushroom',
+				'red_mushroom',
+			],
+		],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	await page.locator('#makable .makablebutton').click();
+	const overview = page.locator('#makable .table-group-pagination').first();
+	const refresh = overview.locator('[data-table-action=refresh]');
+	const progress = page.locator('#makable progress');
+	const count = page.locator('#makable .analysis-result-count');
+	await overview.locator('[data-table-action=group-page-size]').selectOption('10');
+	await overview.locator('[data-table-action=combination-page-size]').selectOption('50');
+	const initial = await count.textContent();
+	const initialProgress = await progress.evaluate(e => e.value);
+	await page.clock.runFor(1);
+	assert.equal(await page.locator('#makable .makablebutton').isDisabled(), true);
+	assert.ok((await progress.evaluate(e => e.value)) > initialProgress);
+	assert.equal(await count.textContent(), initial, 'New batches do not interrupt table browsing');
+	const checked = await progress.evaluate(e => e.value);
+	await refresh.focus();
+	await refresh.press('Space');
+	assert.notEqual(await count.textContent(), initial);
+	assert.equal(await progress.evaluate(e => e.value), checked);
+	assert.equal(await page.locator('#makable .pauseButton').textContent(), 'Pause');
+	assert.match(
+		await page.locator('#makable [role=status]').first().textContent(),
+		/Results refreshed/,
+	);
+	const found = Number(
+		(await page.locator('#makable .makableSummary').textContent()).match(/Found (\d+)/)[1],
+	);
+	assert.match(await count.textContent(), new RegExp(`; ${found} matching combinations`));
+	const currentPage = await overview.locator('[data-table-action=page-number]').inputValue();
+	assert.equal(currentPage, '1', 'Refreshing an untouched overview keeps the best results first');
+	await refresh.click();
+	assert.equal(
+		await overview.locator('[data-table-action=page-number]').inputValue(),
+		currentPage,
+	);
+	await refresh.focus();
+	await page.clock.runFor(1000);
+	assert.equal(await page.locator('#makable .makablebutton').isEnabled(), true);
+	assert.equal(await refresh.isVisible(), false);
+	assert.equal(
+		await overview.locator('[data-table-action=page-number]').inputValue(),
+		'1',
+		'Completion keeps an untouched overview at the start of the final ranking',
+	);
+	assert.equal(
+		await overview
+			.locator('[data-table-action=group-page-size]')
+			.evaluate(e => e === document.activeElement),
+		true,
+		'Completion recovers focus when hiding Refresh',
+	);
+	assert.equal(await overview.locator('[data-table-action=group-page-size]').inputValue(), '10');
+	assert.equal(
+		await overview.locator('[data-table-action=combination-page-size]').inputValue(),
+		'50',
+	);
+	const total = await page.evaluate(() => window.analysis.made.length);
+	assert.ok(total > found);
+	assert.match(
+		await count.textContent(),
+		new RegExp(`; ${total} matching combinations`),
+		'Completion refreshes the final snapshot automatically',
+	);
+	assert.equal(await progress.evaluate(e => e.value === e.max), true);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('section URLs restore game and ingredients, support history, and open native new-tab links', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext();
+	t.after(() => context.close());
+	const page = await context.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=dontstarve&dlc=giants,shipwrecked&character=warly&ingredients=meat,meat,carrot,honey`,
+		{ waitUntil: 'networkidle' },
+	);
+	const pot = target =>
+		target
+			.locator('#ingredients .ingredient')
+			.evaluateAll(slots => slots.map(slot => slot.dataset.id));
+	assert.deepEqual(await pot(page), ['meat', 'meat', 'carrot', 'honey']);
+	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
+	assert.doesNotMatch(page.url(), /ingredients=/);
+	await page.getByRole('button', { name: 'Share', exact: true }).click();
+	const originalUrl = await page.locator('#personal-share-link').inputValue();
+	await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
+	await page.locator('#tab-discovery').click();
+	assert.match(page.url(), /#discovery\?/);
+	await page.locator('#discovery .ingredientpicker').fill('Berries');
+	await page.locator('#discovery .ingredientpicker').press('Enter');
+	assert.doesNotMatch(page.url(), /inventory=/);
+	await page.goBack();
+	assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+	assert.deepEqual(await pot(page), ['meat', 'meat', 'carrot', 'honey']);
+	await page.goForward();
+	assert.equal(await page.locator('#tab-discovery').getAttribute('aria-selected'), 'true');
+	assert.equal(await page.locator('#inventory [data-id="berries"]').count(), 1);
+	const opened = context.waitForEvent('page');
+	await page.locator('#tab-simulator').click({ modifiers: ['Control'] });
+	const linked = await opened;
+	const linkedDiagnostics = trackDiagnostics(linked);
+	await linked.waitForLoadState('networkidle');
+	assert.deepEqual(await pot(linked), ['meat', 'meat', 'carrot', 'honey']);
+	assert.equal(await page.locator('#tab-discovery').getAttribute('aria-selected'), 'true');
+	const clean = await browser.newPage();
+	t.after(() => clean.close());
+	await clean.goto(originalUrl, { waitUntil: 'networkidle' });
+	assert.deepEqual(await pot(clean), ['meat', 'meat', 'carrot', 'honey']);
+	await clean.goto(`${baseUrl}/index.html#statistics?game=together`, {
+		waitUntil: 'networkidle',
+	});
+	assert.equal(await clean.locator('#tab-statistics').getAttribute('aria-selected'), 'true');
+	assert.equal(await clean.locator('#statistics .makablebutton').count(), 1);
+	await page.locator('.version-btn[data-version="together"]').click();
+	await page.reload({ waitUntil: 'networkidle' });
+	await page.locator('.version-btn[data-version="dontstarve"]').click();
+	assert.equal(await page.locator('.dlc-btn.selected').count(), 2);
+
+	assert.deepEqual(diagnostics, []);
+	assert.deepEqual(linkedDiagnostics, []);
+});
+
+test('shared-origin tabs isolate ingredients and picker views across reloads while sharing theme and language', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext();
+	t.after(() => context.close());
+	const first = await context.newPage();
+	const second = await context.newPage();
+	const diagnostics = [trackDiagnostics(first), trackDiagnostics(second)];
+	await first.goto(`${baseUrl}/index.htm#simulator?game=together&ingredients=meat%40together`, {
+		waitUntil: 'networkidle',
+	});
+	await second.goto(`${baseUrl}/index.htm#discovery?game=hamlet&inventory=carrot`, {
+		waitUntil: 'networkidle',
+	});
+	// First keeps its untouched Compact default while Second saves Cozy.
+	await second.locator('#tab-simulator').click();
+	await second.locator('#simulator .densityingredients').click();
+	await second
+		.locator('#simulator .densityingredients')
+		.locator('..')
+		.getByRole('menuitemradio', { name: 'Cozy', exact: true })
+		.click();
+	await second.locator('#simulator .ingredientpicker').fill('Berries');
+	await second.locator('#simulator .ingredientpicker').press('Enter');
+	await first.reload({ waitUntil: 'networkidle' });
+	await second.reload({ waitUntil: 'networkidle' });
+	assert.equal(
+		await first.locator('.version-btn.selected').getAttribute('data-version'),
+		'together',
+	);
+	assert.equal(
+		await second.locator('.version-btn.selected').getAttribute('data-version'),
+		'hamlet',
+	);
+	assert.equal(await first.locator('#ingredients [data-id="meat@together"]').count(), 1);
+	assert.equal(await first.locator('#ingredients [data-id="berries@together"]').count(), 0);
+	assert.equal(await second.locator('#ingredients [data-id="berries"]').count(), 1);
+	assert.match(await first.locator('#simulator .densityingredients').textContent(), /Compact/);
+	assert.match(await second.locator('#simulator .densityingredients').textContent(), /Cozy/);
+	await first.locator('#language-picker').selectOption('es');
+	await second.waitForFunction(() => document.documentElement.lang === 'es');
+	assert.match(await second.title(), /Simulador/);
+	const oldTheme = await second.locator('html').getAttribute('data-theme');
+	await first.locator('#theme-toggle').click();
+	await second.waitForFunction(
+		previous => document.documentElement.getAttribute('data-theme') !== previous,
+		oldTheme,
+	);
+	assert.equal(await first.locator('#ingredients [data-id="meat@together"]').count(), 1);
+	assert.equal(await second.locator('#ingredients [data-id="berries"]').count(), 1);
+	assert.deepEqual(diagnostics, [[], []]);
+});
+
+test('manual URL navigation validates inputs and restores food and recipe highlights', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	t.after(() => page.close());
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm#foodlist?game=together&highlight=*Carrot`, {
+		waitUntil: 'networkidle',
+	});
+	assert.equal(await page.locator('#food tr.highlighted').count(), 1);
+	assert.match(await page.locator('#food tr.highlighted').textContent(), /Carrot/);
+	const sectionUrl = page.url();
+	await page.locator('.skip-link').focus();
+	await page.locator('.skip-link').press('Enter');
+	assert.equal(
+		await page.locator('#main').evaluate(main => main === document.activeElement),
+		true,
+	);
+	assert.equal(await page.locator('#tab-foodlist').getAttribute('aria-selected'), 'true');
+	assert.equal(page.url(), sectionUrl);
+
+	await page.evaluate(() => {
+		location.hash = '#crockpot?game=together&highlight=*Meaty%20Stew';
+	});
+	await page.waitForFunction(
+		() => document.querySelector('#tab-crockpot')?.getAttribute('aria-selected') === 'true',
+	);
+	assert.equal(await page.locator('#recipes tr.highlighted').count(), 1);
+	assert.match(await page.locator('#recipes tr.highlighted').textContent(), /Meaty Stew/);
+	const permalink = page.getByRole('link', { name: 'Link to Ratatouille', exact: true });
+	await permalink.click();
+	await page.waitForFunction(() => location.hash.includes('Ratatouille'));
+	assert.match(await page.locator('#recipes tr.highlighted').textContent(), /Ratatouille/);
+	assert.equal(
+		await page
+			.getByRole('link', { name: 'Link to Ratatouille', exact: true })
+			.evaluate(link => link === document.activeElement),
+		true,
+	);
+
+	await page.evaluate(() => {
+		location.hash = '#foodlist?game=together';
+	});
+	await page.waitForFunction(
+		() => document.querySelector('#tab-foodlist')?.getAttribute('aria-selected') === 'true',
+	);
+	assert.equal(await page.locator('#food tr.highlighted').count(), 0);
+	await page.evaluate(() => {
+		location.hash =
+			'#simulator?game=constructor&character=__proto__&ingredients=constructor,__proto__,rot,carrot%40together';
+	});
+	await page.waitForFunction(
+		() => document.querySelector('#tab-simulator')?.getAttribute('aria-selected') === 'true',
+	);
+	assert.equal(await page.locator('#ingredients [data-id="carrot@together"]').count(), 1);
+	assert.equal(await page.locator('#ingredients .icon').count(), 1);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('personal inventories synchronize edits while tabs choose inventories independently', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext();
+	t.after(() => context.close());
+	const first = await context.newPage(),
+		second = await context.newPage();
+	const diagnostics = [trackDiagnostics(first), trackDiagnostics(second)];
+	await Promise.all([
+		first.goto(`${baseUrl}/index.htm#discovery`, { waitUntil: 'networkidle' }),
+		second.goto(`${baseUrl}/index.htm#discovery`, { waitUntil: 'networkidle' }),
+	]);
+	const pick = async (page, food) => {
+		await page.locator('#discovery .ingredientpicker').fill(food);
+		await page.locator('#discovery .ingredientpicker').press('Enter');
+	};
+	await Promise.all([pick(first, 'Carrot'), pick(second, 'Berries')]);
+	for (const page of [first, second]) {
+		await page.waitForFunction(
+			() => document.querySelectorAll('#inventory [data-id]').length === 2,
+		);
+	}
+	const sharedId = await first.locator('#inventory-select').inputValue();
+	await second.getByRole('button', { name: 'New inventory', exact: true }).click();
+	const otherId = await second.locator('#inventory-select').inputValue();
+	assert.notEqual(otherId, sharedId);
+	await second.locator('#inventory-name').fill('Winter base');
+	await second.locator('#inventory-name').press('Enter');
+	await pick(second, 'Honey');
+	await first.waitForFunction(
+		() => document.querySelectorAll('#inventory-select option').length === 2,
+	);
+	assert.equal(await first.locator('#inventory-select').inputValue(), sharedId);
+	assert.equal(await first.locator('#inventory [data-id="honey@together"]').count(), 0);
+	await first.locator('#inventory-select').selectOption(otherId);
+	assert.equal(await first.locator('#inventory [data-id="honey@together"]').count(), 1);
+	await pick(first, 'Ice');
+	await second.waitForFunction(() =>
+		document.querySelector('#inventory [data-id="ice@together"]'),
+	);
+	await first.locator('#inventory-select').selectOption(sharedId);
+	await first.reload({ waitUntil: 'networkidle' });
+	await second.reload({ waitUntil: 'networkidle' });
+	assert.equal(await first.locator('#inventory-select').inputValue(), sharedId);
+	assert.equal(await second.locator('#inventory-select').inputValue(), otherId);
+	assert.equal(await second.locator('#inventory-name').inputValue(), 'Winter base');
+	await second.locator('.version-btn[data-version="hamlet"]').click();
+	assert.equal(await second.locator('#inventory [data-id="ice@together"]').count(), 0);
+	await second.locator('.version-btn[data-version="together"]').click();
+	assert.equal(await second.locator('#inventory [data-id="ice@together"]').count(), 1);
+	await first.getByRole('button', { name: 'Share', exact: true }).click();
+	const share = await first.locator('#personal-share-link').inputValue();
+	assert.match(share, /inventory=/);
+	assert.doesNotMatch(first.url(), /inventory=/);
+	await first.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
+	const recipient = await browser.newPage();
+	t.after(() => recipient.close());
+	await recipient.goto(share, { waitUntil: 'networkidle' });
+	assert.equal(await recipient.locator('#inventory [data-id]').count(), 2);
+	assert.match(await recipient.locator('#inventory-name').inputValue(), /Shared inventory/);
+	assert.doesNotMatch(recipient.url(), /inventory=/);
+	// Deleting one shared inventory falls back locally in tabs viewing it; other data stays intact.
+	await second
+		.locator('#inventory-controls')
+		.getByRole('button', { name: 'Delete', exact: true })
+		.click();
+	await second.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+	await first.waitForFunction(
+		() => document.querySelectorAll('#inventory-select option').length === 1,
+	);
+	assert.equal(await second.locator('#inventory-select').inputValue(), sharedId);
+	assert.deepEqual(diagnostics, [[], []]);
+});
+
+test('personal cookbook and backups support loading, explicit sharing, import validation and keyboard dialogs', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=together&character=warly&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
+		{ waitUntil: 'networkidle' },
+	);
+	await page.locator('#cookbook-save').waitFor();
+	await page.waitForFunction(() => !location.hash.includes('ingredients='));
+	assert.doesNotMatch(page.url(), /ingredients=/, JSON.stringify(diagnostics));
+	await page.locator('#cookbook-dish-name').fill('Camp dinner');
+	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
+	assert.equal(await page.getByRole('button', { name: /^Camp dinner Load dish/ }).count(), 1);
+	assert.match(
+		await page.locator('.cookbook-card-footer > span').textContent(),
+		/Don't Starve Together \/ Warly/,
+	);
+	await page.locator('#simulator .clearingredientsbtn').click();
+	assert.equal(await page.locator('#cookbook-save button').isDisabled(), true);
+	await page.locator('.version-btn[data-version="hamlet"]').click();
+	await page.getByRole('button', { name: /^Camp dinner Load dish/ }).click();
+	assert.equal(
+		await page.locator('.version-btn.selected').getAttribute('data-version'),
+		'together',
+	);
+	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
+	assert.equal(await page.locator('#ingredients [data-id]').count(), 4);
+	await page.getByRole('button', { name: 'Share', exact: true }).click();
+	const link = await page.locator('#personal-share-link').inputValue();
+	assert.match(link, /ingredients=/);
+	await page.getByRole('dialog').getByRole('checkbox').uncheck();
+	assert.doesNotMatch(await page.locator('#personal-share-link').inputValue(), /ingredients=/);
+	await page.keyboard.press('Escape');
+	assert.equal(await page.getByRole('dialog').count(), 0);
+	assert.equal(
+		await page
+			.getByRole('button', { name: 'Share', exact: true })
+			.evaluate(node => node === document.activeElement),
+		true,
+	);
+	await page.getByRole('button', { name: 'My data', exact: true }).click();
+	const download = page.waitForEvent('download');
+	await page.getByRole('button', { name: 'Export backup', exact: true }).click();
+	const backup = await download;
+	const stream = await backup.createReadStream();
+	let content = '';
+	for await (const chunk of stream) {
+		content += chunk.toString();
+	}
+	const parsed = JSON.parse(content);
+	assert.equal(parsed.dishes[0].name, 'Camp dinner');
+	assert.equal(parsed.dishes[0].ingredients.length, 4);
+	await page.locator('#personal-import').setInputFiles({
+		name: 'invalid.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from('{"version":99}'),
+	});
+	await page
+		.getByRole('dialog')
+		.getByRole('status')
+		.filter({ hasText: 'Could not import' })
+		.waitFor();
+	assert.equal(
+		await page.evaluate(
+			() => JSON.parse(localStorage.getItem('foodGuidePersonalData')).dishes.length,
+		),
+		1,
+	);
+	await page.locator('#personal-import').setInputFiles({
+		name: 'backup.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from(content),
+	});
+	await page
+		.getByRole('dialog')
+		.getByRole('status')
+		.filter({ hasText: 'Imported 1 inventories and 1 dishes' })
+		.waitFor();
+	const restored = await page.evaluate(() =>
+		JSON.parse(localStorage.getItem('foodGuidePersonalData')),
+	);
+	assert.equal(restored.dishes.length, 2);
+	assert.equal(new Set(restored.dishes.map(d => d.id)).size, 2);
+	await page.keyboard.press('Escape');
+	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await page.locator('#inventory-select').count(), 1);
+	assert.equal(await page.locator('#cookbook-dish-name').count(), 1);
+	assert.equal(await page.getByRole('button', { name: /^Camp dinner Cargar plato/ }).count(), 2);
+	await page.reload({ waitUntil: 'networkidle' });
+	await page.locator('#personal-cookbook').evaluate(node => (node.open = true));
+	assert.equal(await page.getByRole('button', { name: /^Camp dinner Cargar plato/ }).count(), 2);
+	await page.locator('#tab-crockpot').click();
+	await page.locator('#personal-share-button').click();
+	assert.equal(await page.getByRole('dialog').getByRole('checkbox').count(), 0);
+	await page.keyboard.press('Escape');
+	assert.deepEqual(diagnostics, []);
+});
+
+test('cookbook cards predict saved recipes independently and supporting sections explain empty states', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const selection = {
+		version: 'together',
+		dlc: { giants: false, shipwrecked: false },
+		character: null,
+	};
+	const renamed = 'Camp dinner <b>with friends</b>';
+	const data = {
+		format: 'foodguide-personal-data',
+		version: 1,
+		inventories: [{ id: 'pack', name: 'Pack', ingredients: [] }],
+		dishes: [
+			{
+				id: 'fig',
+				name: renamed,
+				ingredients: ['fig', 'asparagus', 'asparagus', 'asparagus'],
+				selection,
+			},
+			{
+				id: 'breakfast',
+				name: 'Surprise breakfast',
+				ingredients: ['butterflywings', 'bird_egg', 'carrot', 'honey'],
+				selection,
+			},
+			{
+				id: 'chef',
+				name: 'Chef’s special',
+				ingredients: ['butter', 'honey', 'dragonfruit', 'dragonfruit'],
+				selection: { ...selection, character: 'warly' },
+			},
+		],
+	};
+	const context = await browser.newContext({
+		viewport: { width: 1280, height: 900 },
+		storageState: {
+			cookies: [],
+			origins: [
+				{
+					origin: baseUrl,
+					localStorage: [{ name: 'foodGuidePersonalData', value: JSON.stringify(data) }],
+				},
+			],
+		},
+	});
+	const page = await context.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm#simulator?game=hamlet`, { waitUntil: 'networkidle' });
+	await page.locator('#personal-cookbook summary').click();
+	const cards = page.locator('.cookbook-card');
+	assert.equal(await cards.count(), 3);
+	assert.equal(await cards.first().locator('.cookbook-dish-name').textContent(), renamed);
+	assert.equal(await cards.first().locator('b').count(), 0, 'Saved names stay plain text');
+	assert.match(
+		await cards.first().locator('.cookbook-outcomes').textContent(),
+		/Makes: Figatoni/,
+	);
+	assert.match(
+		await cards.nth(1).locator('.cookbook-outcomes').textContent(),
+		/Possible results: Butter MuffinBreakfast Skillet/,
+	);
+	assert.match(
+		await cards.nth(2).locator('.cookbook-outcomes').textContent(),
+		/Fresh Fruit Crepes/,
+	);
+	for (const card of await cards.all()) {
+		assert.equal(await card.locator('.cookbook-ingredients .icon').count(), 4);
+		assert.equal(
+			await card.locator('.cookbook-ingredients').innerText(),
+			'',
+			'Ingredients are displayed as icons',
+		);
+		const description = await card.locator('.cookbook-load').getAttribute('aria-describedby');
+		assert.ok(description.includes('cookbook-description-'));
+	}
+	assert.deepEqual(
+		await page.evaluate(() => JSON.parse(localStorage.foodGuidePersonalData).dishes),
+		data.dishes,
+		'Rendering does not store predicted recipes or replace saved variants',
+	);
+	await cards.first().locator('.cookbook-load').focus();
+	const otherWindow = await page.context().newPage();
+	await otherWindow.goto(
+		`${baseUrl}/index.htm#simulator?game=together&ingredients=fig,asparagus,asparagus,asparagus`,
+		{ waitUntil: 'networkidle' },
+	);
+	await otherWindow.locator('#cookbook-dish-name').fill('Other window supper');
+	await otherWindow.getByRole('button', { name: 'Save dish', exact: true }).click();
+	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 4);
+	assert.equal(
+		await cards
+			.first()
+			.locator('.cookbook-load')
+			.evaluate(node => node === document.activeElement),
+		true,
+		'A synchronized cookbook update preserves the focused dish',
+	);
+	await cards.last().locator('.cookbook-load').focus();
+	await otherWindow
+		.getByRole('button', { name: 'Delete Other window supper', exact: true })
+		.click();
+	await otherWindow
+		.getByRole('dialog')
+		.getByRole('button', { name: 'Delete', exact: true })
+		.click();
+	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 3);
+	assert.equal(
+		await page
+			.locator('#personal-cookbook summary')
+			.evaluate(node => node === document.activeElement),
+		true,
+		'Removing the focused dish in another window returns focus to the cookbook',
+	);
+	await otherWindow.close();
+	for (const width of [1280, 320]) {
+		await page.setViewportSize({ width, height: 900 });
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			assert.equal(await page.locator('.cookbook-card').count(), 3);
+			assert.equal(
+				await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+				true,
+				`${width}/${locale}: cookbook overflow`,
+			);
+		}
+	}
+	await page.locator('#language-picker').selectOption('en');
+	await page.getByRole('button', { name: /^Chef’s special Load dish/ }).click();
+	assert.equal(
+		await page.locator('.version-btn.selected').getAttribute('data-version'),
+		'together',
+	);
+	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
+	assert.equal(await page.locator('#ingredients [data-id]').count(), 4);
+	assert.deepEqual(await page.locator('#results .tool-section h2').allTextContents(), [
+		'Crock pot results',
+		'Recipe suggestions',
+	]);
+	await page.locator('#tab-discovery').click();
+	await page.locator('#discovery-empty').waitFor({ state: 'visible' });
+	assert.equal(await page.locator('#discovery .tool-section:visible').count(), 0);
+	const search = page.locator('#discovery .ingredientpicker');
+	await search.fill('*petals');
+	await page.locator('#discovery').getByRole('option', { name: 'Petals', exact: true }).click();
+	await page.locator('#discovery-empty').waitFor({ state: 'hidden' });
+	assert.equal(await page.locator('#discovery .tool-section:visible').count(), 2);
+	assert.match(await page.locator('#discover').innerText(), /No recipes match/);
+	await search.fill('*meat');
+	await page.locator('#discovery').getByRole('option', { name: 'Meat', exact: true }).click();
+	assert.equal(await page.locator('#discovery .tool-section:visible').count(), 3);
+	await page.locator('#tab-statistics').click();
+	assert.equal(await page.locator('#statistics h2').textContent(), 'Statistics Analyzer');
+	assert.match(
+		await page.locator('#statistics .instructions').innerText(),
+		/four-ingredient combinations/,
+	);
+	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await page.locator('#statistics h2').textContent(), 'Analizador de estadísticas');
+	await page.locator('#language-picker').selectOption('en');
+	await page.locator('#tab-simulator').click();
+	const remove = page.getByRole('button', { name: /^Delete Camp dinner/ });
+	await remove.focus();
+	await page.keyboard.press('Enter');
+	await page.getByRole('dialog').waitFor();
+	await page.keyboard.press('Escape');
+	assert.equal(await remove.evaluate(node => node === document.activeElement), true);
+	await page.keyboard.press('Enter');
+	await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 2);
+	// Removing the card precedes the dialog's queued close event and focus recovery.
+	await page.waitForFunction(
+		() => document.activeElement === document.querySelector('#personal-cookbook summary'),
+	);
+	assert.equal(
+		await page
+			.locator('#personal-cookbook summary')
+			.evaluate(node => node === document.activeElement),
+		true,
+		'Deleting a focused dish returns focus to the cookbook',
+	);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('personal inventory, cookbook and sharing dialogs remain accessible on touch screens in every locale', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		hasTouch: true,
+		isMobile: true,
+		viewport: { width: 320, height: 812 },
+	});
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=together&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
+		{ waitUntil: 'networkidle' },
+	);
+	await page.locator('#cookbook-save').waitFor();
+	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
+	await page.evaluate(axe.source);
+	for (const theme of ['light', 'dark']) {
+		await page.evaluate(
+			value => document.documentElement.setAttribute('data-theme', value),
+			theme,
+		);
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			const audit = async context => {
+				await page.waitForFunction(() =>
+					document.getAnimations().every(a => a.playState !== 'running'),
+				);
+				const violations = await page.evaluate(async () =>
+					(await window.axe.run()).violations.map(({ id, nodes }) => ({
+						id,
+						nodes: nodes.map(({ target, failureSummary }) => ({
+							target,
+							failureSummary,
+						})),
+					})),
+				);
+				assert.deepEqual(violations, [], `${theme}/${locale}/${context}`);
+				assert.equal(
+					await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+					true,
+					`${theme}/${locale}/${context}: page overflow`,
+				);
+			};
+			await audit('cookbook');
+			await page.locator('#personal-share-button').tap();
+			await audit('sharing');
+			await page.keyboard.press('Escape');
+			await page.locator('.personal-toolbar button').last().tap();
+			await audit('backup');
+			await page.keyboard.press('Escape');
+			await page.locator('#tab-discovery').tap();
+			await audit('inventory');
+			await page.locator('#tab-simulator').tap();
+		}
+	}
+});
+
+test('header actions fit existing bars and retain keyboard focus when changing screen size', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	const share = page.locator('#personal-share-button');
+	await share.waitFor();
+	const placement = () =>
+		page.locator('.personal-toolbar').evaluate(node => node.parentElement.className);
+	assert.equal(await placement(), 'tab-navigation');
+	assert.equal(await page.locator('.personal-toolbar [role="tab"]').count(), 0);
+	assert.equal(await page.locator('#navbar [role="tab"]').count(), 7);
+	await share.focus();
+	await page.setViewportSize({ width: 320, height: 812 });
+	await page.waitForFunction(() =>
+		document
+			.querySelector('.personal-toolbar')
+			.parentElement.classList.contains('header-identity'),
+	);
+	assert.equal(await share.evaluate(node => node === document.activeElement), true);
+	for (const locale of ['en', 'es', 'zh']) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(
+			await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+			true,
+		);
+		const rects = await page.locator('.header-identity').evaluate(node => {
+			const parent = node.getBoundingClientRect();
+			return Array.from(node.querySelectorAll('button'), button => {
+				const rect = button.getBoundingClientRect();
+				return (
+					rect.left >= parent.left &&
+					rect.right <= parent.right &&
+					rect.top >= parent.top &&
+					rect.bottom <= parent.bottom
+				);
+			});
+		});
+		assert.deepEqual(rects, [true, true], `${locale}: action buttons stay in the title bar`);
+	}
+	await share.focus();
+	await page.setViewportSize({ width: 1000, height: 700 });
+	await page.waitForFunction(() =>
+		document
+			.querySelector('.personal-toolbar')
+			.parentElement.classList.contains('tab-navigation'),
+	);
+	assert.equal(await share.evaluate(node => node === document.activeElement), true);
+	await share.press('Enter');
+	assert.equal(await page.getByRole('dialog').count(), 1);
+	await page.keyboard.press('Escape');
+	assert.equal(await share.evaluate(node => node === document.activeElement), true);
+});
+
+test('personal storage failures remain visible while using the cookbook and allow exporting unsaved data', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=together&ingredients=meat,meat,carrot,honey`,
+		{ waitUntil: 'networkidle' },
+	);
+	await page.locator('#cookbook-save').waitFor();
+	await page.evaluate(async () => {
+		await navigator.locks.request('foodGuidePersonalData', () => {});
+		const original = Storage.prototype.setItem;
+		Storage.prototype.setItem = function (key, value) {
+			if (key === 'foodGuidePersonalData') {
+				throw new DOMException('Storage is full', 'QuotaExceededError');
+			}
+			return original.call(this, key, value);
+		};
+	});
+	await page.locator('#cookbook-dish-name').fill('Unsaved dinner');
+	await page.locator('#cookbook-save button').click();
+	const status = page.locator('#personal-data-status');
+	await page.waitForFunction(() =>
+		document.querySelector('#personal-data-status').textContent.includes('Export'),
+	);
+	const warning = await status.textContent();
+	await page.getByRole('button', { name: /^Unsaved dinner Load dish/ }).click();
+	assert.ok((await status.textContent()).includes(warning));
+	assert.equal(await status.evaluate(node => getComputedStyle(node).clipPath), 'none');
+	await page.locator('.personal-toolbar button').last().click();
+	const downloading = page.waitForEvent('download');
+	await page.getByRole('button', { name: 'Export backup', exact: true }).click();
+	const download = await downloading;
+	const stream = await download.createReadStream();
+	const chunks = [];
+	for await (const chunk of stream) {
+		chunks.push(chunk);
+	}
+	const backup = JSON.parse(Buffer.concat(chunks).toString());
+	assert.equal(backup.dishes[0].name, 'Unsaved dinner');
+	await page.keyboard.press('Escape');
+	await page.locator('#language-picker').selectOption('es');
+	assert.match(await status.textContent(), /export/i);
+	assert.equal(await status.evaluate(node => getComputedStyle(node).clipPath), 'none');
 });

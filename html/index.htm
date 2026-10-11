@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<title>Don't Starve Food Guide</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta
 			http-equiv="Content-Security-Policy"
 			content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
@@ -19,6 +19,7 @@
 		<link rel="stylesheet" href="style/main.css" />
 	</head>
 	<body>
+		<a class="skip-link" href="#main" data-i18n="skipToContent">Skip to content</a>
 		<div id="content">
 			<noscript>
 				<h1 data-i18n="noscriptMessage">
@@ -28,7 +29,7 @@
 
 			<header class="site-header" id="site-header">
 				<div class="header-top">
-					<span class="site-title">Don't Starve Food Guide</span>
+					<h1 class="site-title" id="site-title">Don't Starve Food Guide</h1>
 					<!-- Mode selectors are injected here by foodguide.js -->
 					<select
 						id="language-picker"
@@ -48,82 +49,103 @@
 						🌙
 					</button>
 				</div>
-				<ul id="navbar">
-					<li
-						data-tab="simulator"
-						data-i18n="tabSimulator"
-						data-i18n-attr-title="tabSimulatorTitle"
-						title="Crock Pot recipe simulation"
+				<div class="tab-navigation">
+					<ul id="navbar" role="tablist" aria-labelledby="site-title">
+						<li role="presentation">
+							<a
+								href="#simulator"
+								data-tab="simulator"
+								data-i18n="tabSimulator"
+								data-i18n-attr-title="tabSimulatorTitle"
+								title="Crock Pot recipe simulation"
+							>
+								Simulator
+							</a>
+						</li>
+						<li role="presentation">
+							<a
+								href="#discovery"
+								data-tab="discovery"
+								data-i18n="tabDiscovery"
+								data-i18n-attr-title="tabDiscoveryTitle"
+								title="Add inventory items to find recipes"
+							>
+								Discovery
+							</a>
+						</li>
+						<li role="presentation">
+							<a
+								href="#foodlist"
+								data-tab="foodlist"
+								data-i18n="tabFoodList"
+								data-i18n-attr-title="tabFoodListTitle"
+								title="View all food in the selected DLC"
+							>
+								Food List
+							</a>
+						</li>
+						<li role="presentation">
+							<a
+								href="#crockpot"
+								data-tab="crockpot"
+								data-i18n="tabRecipeList"
+								data-i18n-attr-title="tabRecipeListTitle"
+								title="View all recipes for the selected DLC"
+							>
+								Recipe List
+							</a>
+						</li>
+						<li role="presentation">
+							<a
+								href="#statistics"
+								data-tab="statistics"
+								data-i18n="tabStatistics"
+								data-i18n-attr-title="tabStatisticsTitle"
+								title="Explore ingredient combinations and compare recipe efficiency"
+							>
+								Statistics Analyzer
+							</a>
+						</li>
+						<li role="presentation">
+							<a
+								href="#about"
+								data-tab="about"
+								data-i18n="tabAbout"
+								data-i18n-attr-title="tabAboutTitle"
+								title="About this tool and how to use it"
+							>
+								About
+							</a>
+						</li>
+						<li role="presentation">
+							<a
+								href="#gameinfo"
+								data-tab="gameinfo"
+								data-i18n="tabGameInfo"
+								data-i18n-attr-title="tabGameInfoTitle"
+								title="Don't Starve game mechanics reference"
+							>
+								Game Info
+							</a>
+						</li>
+					</ul>
+					<a
+						class="game-link"
+						href="https://www.klei.com/games/dont-starve"
+						target="_blank"
+						rel="noopener"
+						>Don't Starve</a
 					>
-						Simulator
-					</li>
-					<li
-						data-tab="discovery"
-						data-i18n="tabDiscovery"
-						data-i18n-attr-title="tabDiscoveryTitle"
-						title="Add inventory items to find recipes"
-					>
-						Discovery
-					</li>
-					<li
-						data-tab="foodlist"
-						data-i18n="tabFoodList"
-						data-i18n-attr-title="tabFoodListTitle"
-						title="View all food in the selected DLC"
-					>
-						Food List
-					</li>
-					<li
-						data-tab="crockpot"
-						data-i18n="tabRecipeList"
-						data-i18n-attr-title="tabRecipeListTitle"
-						title="View all recipes for the selected DLC"
-					>
-						Recipe List
-					</li>
-					<li
-						data-tab="statistics"
-						data-i18n="tabStatistics"
-						data-i18n-attr-title="tabStatisticsTitle"
-						title="Find all recipes (unstable)"
-					>
-						Statistics Analyzer
-					</li>
-					<li
-						data-tab="about"
-						data-i18n="tabAbout"
-						data-i18n-attr-title="tabAboutTitle"
-						title="About this tool and how to use it"
-					>
-						About
-					</li>
-					<li
-						data-tab="gameinfo"
-						data-i18n="tabGameInfo"
-						data-i18n-attr-title="tabGameInfoTitle"
-						title="Don't Starve game mechanics reference"
-					>
-						Game Info
-					</li>
-					<li>
-						<a
-							title="Give Klei your money"
-							href="https://www.klei.com/games/dont-starve"
-							target="_blank"
-							rel="noopener"
-							>Don't Starve</a
-						>
-					</li>
-				</ul>
+				</div>
 			</header>
 
-			<div id="main">
+			<main id="main" tabindex="-1">
 				<div id="simulator">
 					<div class="instructions">
-						<strong data-i18n="simulatorHeading">Crock Pot Simulator</strong><br />
+						<h2 data-i18n="simulatorHeading">Crock Pot Simulator</h2>
 						<span data-i18n="simulatorBody"
-							>Search for ingredients below, then click them to add to the pot. Click
-							a slot to remove an ingredient.</span
+							>Click ingredients to add. Uncheck to remove all copies; use − or a pot
+							slot to remove one.</span
 						>
 					</div>
 					<input
@@ -137,17 +159,17 @@
 						aria-label="Search ingredients..."
 					/>
 					<div id="ingredients" class="ingredientlist">
-						<span class="ingredient"></span>
-						<span class="ingredient"></span>
-						<span class="ingredient"></span>
-						<span class="ingredient"></span>
+						<button type="button" class="ingredient"></button>
+						<button type="button" class="ingredient"></button>
+						<button type="button" class="ingredient"></button>
+						<button type="button" class="ingredient"></button>
 					</div>
 					<div id="results"></div>
 				</div>
 
 				<div id="discovery">
 					<div class="instructions">
-						<strong data-i18n="discoveryHeading">Inventory Discovery</strong><br />
+						<h2 data-i18n="discoveryHeading">Inventory Discovery</h2>
 						<span data-i18n="discoveryBody"
 							>Add all items in your inventory below to see what recipes you can make.
 							Click the + to add more items.</span
@@ -162,14 +184,23 @@
 						aria-label="Search ingredients..."
 					/>
 					<div id="inventory" class="ingredientlist"></div>
-					<h2 data-i18n="discoveryFoodStatsHeading">Stats about your food:</h2>
-					<div id="discoverfood"></div>
-					<h2 data-i18n="discoveryRecipesHeading">With these, you can make:</h2>
-					<div id="discover"></div>
-					<h2 data-i18n="discoveryEfficientHeading">
-						Find what recipes are most efficient:
-					</h2>
-					<div id="makable"></div>
+					<p id="discovery-empty" class="section-empty" data-i18n="discoveryEmpty">
+						Add ingredients to your inventory to compare their stats and find recipes.
+					</p>
+					<section class="tool-section">
+						<h2 data-i18n="discoveryFoodStatsHeading">Ingredient stats</h2>
+						<div id="discoverfood"></div>
+					</section>
+					<section class="tool-section">
+						<h2 data-i18n="discoveryRecipesHeading">Available recipes</h2>
+						<p class="section-note" data-i18n="discoveryRecipesHelp"></p>
+						<div id="discover"></div>
+					</section>
+					<section class="tool-section">
+						<h2 data-i18n="discoveryEfficientHeading">Recipe efficiency</h2>
+						<p class="section-note" data-i18n="discoveryEfficiencyHelp"></p>
+						<div id="makable"></div>
+					</section>
 				</div>
 
 				<div id="foodlist">
@@ -204,6 +235,11 @@
 					<h3 data-i18n="aboutStatisticsHeading">Statistics Analyzer</h3>
 					<p data-i18n="aboutStatisticsBody"></p>
 
+					<h2 data-i18n="aboutNavigationHeading">Sharing and multiple tabs</h2>
+					<p data-i18n="aboutNavigationBody">
+						Use Share to include your pot or inventory. Named inventories and cookbook
+						dishes are saved and synchronized across tabs.
+					</p>
 					<h2 data-i18n="aboutAdvancedHeading">Advanced Use (JavaScript Globals)</h2>
 					<p data-i18n-html="aboutAdvancedBody1"></p>
 					<p data-i18n-html="aboutAdvancedBody2"></p>
@@ -270,6 +306,9 @@
 					<p data-i18n="gameInfoFavoritesBody"></p>
 
 					<table id="help-favorite-foods">
+						<caption class="sr-only" data-i18n="gameInfoFavoritesHeading">
+							Favorite Foods (DST)
+						</caption>
 						<thead>
 							<tr>
 								<th data-i18n="favoritesHeaderCharacter">Character</th>
@@ -397,12 +436,12 @@
 						</li>
 					</ul>
 				</div>
-			</div>
+			</main>
 
-			<div id="footer">
+			<footer id="footer">
 				<p data-i18n-html="footerCopyrightLicense"></p>
 				<p data-i18n-html="footerLinks"></p>
-			</div>
+			</footer>
 		</div>
 
 		<script type="module" src="foodguide.js"></script>

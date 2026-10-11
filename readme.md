@@ -2,7 +2,7 @@
 
 An unofficial food reference, Crock Pot simulator, and recipe discovery tool for
 Don't Starve, Don't Starve Together, and their supported DLCs and characters.
-The guide is a static JavaScript/HTML/CSS application with reusable food and recipe
+The guide is a static TypeScript/HTML/CSS application with reusable food and recipe
 data and no runtime package dependencies.
 
 Use the [live guide](https://foodguide.bluehexagons.com) or the
@@ -12,8 +12,8 @@ provides an Electron desktop wrapper and release builds.
 
 ## Run locally
 
-Use Node.js 24 and npm. The supported Node ranges are listed in
-[`package.json`](package.json); they match the development tools' requirements.
+Use Node.js 24 or newer and npm. CI uses Node.js 24; `nvm use` selects that
+major version from `.nvmrc`. Dependency installation rejects older Node versions.
 
 ```bash
 npm ci --ignore-scripts
@@ -32,24 +32,100 @@ possible recipes. Food List and Recipe List provide sortable reference tables.
 The Statistics Analyzer evaluates ingredient combinations in batches and can be paused.
 
 Use Tab to reach controls and page tabs. In an ingredient search, use Up/Down to
-highlight results, Enter to select, and Escape to clear the highlight. Dropdown
-menus support Up/Down, Home/End, Enter/Space, and Escape.
+highlight results and Enter to select. Shift+Enter removes one copy; Ctrl+Enter
+(Command+Enter on macOS) removes all copies. Escape dismisses the results;
+Up/Down or refocusing the search reopens them. Dropdown menus support Up/Down,
+Home/End, Enter/Space, and Escape.
+
+Picked ingredients show a checkbox to remove all copies. When there is more than
+one copy, a minus also appears to remove one.
+The ingredient itself adds another copy in the Simulator and toggles membership
+in Discovery. Choose Compact for dense rows, Normal for larger rows, or Cozy for
+cards; list and icon-only views are also available. Compact icons pack into smaller
+tiles, with larger targets retained on touchscreens.
+
+Group results by ingredient type or preparation, or leave them ungrouped. Groups
+appear as cards across wider pickers and stack on narrow screens. Auto
+sort prioritizes exact names and search relevance, keeps related preparations
+together while browsing, and uses character-adjusted values for stat searches.
+Explicit name and stat sorts remain available. Display, density, sort, grouping, and cooking
+preferences are saved separately for the Simulator and Discovery.
+
+Use **Cooking: Practical** to focus on crock pot inputs: it hides duplicate cooked
+and dried foods, redundant substitutes, and uncommon ingredients without a named
+recipe role. Specialties such as Butter and Royal Jelly remain, and Warly-only
+inputs appear when Warly is selected. **Cooking: Everyday** also hides those
+uncommon specialties. Both retain needed prepared ingredients, such as Roasted
+Birchnut, and use fish meat in place of most interchangeable live fish.
+These are curated browsing suggestions; availability depends on your world and
+play style. **Cooking: All**, the default, restores the full list. Cooking views
+apply to searches too, leave selected food in place, and do not change recipe
+calculations, the Food List, or analyzer filters.
+When a search has hidden matches, its summary offers **Show all** to restore them
+without clearing the search or changing the other picker's view.
+
+The Statistics Analyzer and Discovery's efficiency results group consecutive
+combinations for the same recipe across the full filtered dataset, preserving
+sort order. The overview shows 25 groups per page with each group's full count.
+Expand a group to browse its combinations, 25 at a time. Both levels support
+first/previous/next/last navigation and direct page-number jumps. The main paging
+bars let you choose groups per page and, separately, combinations per expanded group page (10, 25, 50, or 100). Expanded runs
+have a tinted background and borders marking where their paged results start and end.
+Sort by **Name** to browse each recipe's combinations together, or by a stat to compare outcomes.
+Each row shows the exact combination's values; click its ingredients to fill the
+crock pot and open the Simulator.
+**Refresh results** updates a running analysis without pausing or restarting it.
+Completion automatically refreshes the table, preserving your browsing position
+where possible. You can also pause to inspect a stable snapshot. Its progress bar
+reports combinations checked out of the full search, including combinations that produce
+no valid recipe. The table reports the group range and total matching combinations.
+**Reset filters** restores the analysis's original filters, including the Statistics
+Analyzer's default exclusions, and returns to the first overview page.
+Stat gains show absolute changes; percentages appear when the ingredient baseline
+is nonzero.
 
 Ingredient searches accept display names and game identifiers, with spaces or
 underscores between words. For example, `mushroom` finds Red, Green, and Blue Caps
 and their cooked forms. Use `tag:meat` to filter by a food tag or
 `recipe:butter muffin` to find ingredients for an exact recipe name.
 
+The # links beside food and recipe names highlight an entry and can be copied or
+opened in another tab. The browser address links to the current section and game;
+use **Share** to include a snapshot of your pot or inventory. A shared inventory
+opens as a new named copy. Ordinary addresses do not include ingredient selections.
+Back and Forward navigate between sections.
+
+**Share** and **My data** sit beside the section tabs on wider screens and beside
+the title on smaller screens.
+
+Discovery supports multiple named inventories: create, rename, duplicate, or delete
+an inventory using its controls. Inventories persist between sessions and synchronize
+across tabs on the same browser profile and site. Each tab independently chooses
+which inventory to view. Changing the game hides unavailable items without deleting
+them. Pot choices and picker preferences remain local to each tab; new tabs start
+with the last saved defaults. Theme and language synchronize across tabs.
+
+Choose four pot ingredients and select **Save dish** to keep the combination in
+**My cookbook**, with its game and character settings. Loading a dish restores those
+settings and its ingredients. Cookbook cards show ingredient icons and recalculate
+the possible recipes using the saved settings, even when a dish has a custom name.
+**My data** exports all inventories and dishes as a
+JSON backup or imports additional copies without replacing existing entries.
+Backups support transferring data to another browser or the desktop app. Personal
+data stays on your device and is not sent to a server.
+
 ## Development and deployment
 
 ```bash
-npx playwright install chromium
+npx playwright install chromium firefox
 npm run check
+npm run test:browser -- --browser=firefox
 ```
 
-`check` runs formatting, linting, JavaScript type checking, unit tests, and a Chromium
-browser smoke test. On Linux, deployment tests also require Git, Bash, `flock`, and
-`rsync`.
+`check` runs formatting, linting, source type checking, unit tests, and the Chromium
+browser suite. The next command runs the shared suite in Firefox. CI and deployment
+checks require both browsers. On Linux, deployment tests also require Git, Bash,
+`flock`, and `rsync`.
 
 - [Development guide](docs/development.md): commands, module layout, tests, and assets.
 - [Deployment guide](docs/deployment.md): GitHub Pages and the optional server webhook.
@@ -82,9 +158,9 @@ shared mutable objects with keyed lookups and array-like helpers; see the
 
 ## Translations
 
-JavaScript UI strings live in `html/strings.js`. Static HTML uses `data-i18n="key"`,
+UI strings live in `src/strings.ts`. Static HTML uses `data-i18n="key"`,
 `data-i18n-html="key"`, and `data-i18n-attr-NAME="key"` attributes. English is the
-fallback; bundled Spanish and Chinese dictionaries live in `html/locales/` and are
+fallback; bundled Spanish and Chinese dictionaries live in `src/locales/` and are
 registered by the package entry point.
 
 The Spanish and Chinese translations were generated by Anthropic Claude Opus and
@@ -102,8 +178,12 @@ registerLocale('fr', 'Français', {
 setLocale('fr');
 ```
 
-For a bundled locale, add its module to `html/locales/index.js`; the language picker
-uses the registered locale list automatically.
+For a bundled locale, add its module to `src/locales/index.ts`; the language picker
+uses the registered locale list automatically. Its exported `dict` must satisfy
+`BundledLocaleDict` from `src/strings.ts`, covering every UI string, tag, and note.
+The shared theme icons can use the English defaults. Tests check interpolation
+parameters and the HTML IDs used to populate game mechanics values. Custom locales
+registered through the public API can still provide partial dictionaries.
 
 ## Contributors
 

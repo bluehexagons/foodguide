@@ -1,5 +1,123 @@
 /* Components: ingredient picker, dropdowns, buttons, filters, search */
 
+.personal-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+}
+.personal-status:empty {
+	display: none;
+}
+.personal-status {
+	margin: 0;
+}
+.personal-status:not(.sr-only) {
+	padding: 8px 14px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font-size: 13px;
+}
+.personal-controls label,
+.personal-dialog label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.personal-controls label {
+	max-width: 100%;
+	flex-wrap: wrap;
+}
+.personal-controls input,
+.personal-controls select,
+.personal-dialog input:not([type='checkbox']) {
+	max-width: 100%;
+	min-width: 0;
+	padding: 6px 8px;
+	border: 1px solid var(--border-color);
+	border-radius: 5px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font: inherit;
+}
+.personal-controls button,
+.personal-dialog button,
+.cookbook-list button {
+	min-height: 32px;
+	padding: 6px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 5px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font: inherit;
+	cursor: pointer;
+}
+.personal-controls button:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+.personal-help {
+	margin: 0;
+	flex-basis: 100%;
+	font-size: 0.85rem;
+	color: var(--fg-secondary);
+}
+.personal-dialog {
+	width: min(640px, calc(100% - 32px));
+	max-height: calc(100% - 32px);
+	overflow: auto;
+	padding: 20px;
+	border: 1px solid var(--border-color);
+	border-radius: 10px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+}
+.personal-dialog::backdrop {
+	background: rgb(0 0 0 / 45%);
+}
+.personal-dialog h2 {
+	margin-top: 0;
+}
+.personal-dialog label {
+	margin: 12px 0;
+	flex-wrap: wrap;
+}
+.personal-dialog input[type='text'] {
+	width: 100%;
+}
+.personal-dialog-heading {
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: 12px;
+}
+.personal-dialog-close {
+	flex-shrink: 0;
+}
+#personal-cookbook summary {
+	cursor: pointer;
+	min-height: 32px;
+}
+.cookbook-list {
+	list-style: none;
+	padding: 0;
+}
+@media (pointer: coarse) {
+	.personal-controls :is(button, input, select),
+	.personal-dialog :is(button, input),
+	.cookbook-list button,
+	#personal-cookbook summary {
+		min-height: 44px;
+	}
+}
+
+.instructions h2 {
+	margin: 0 0 4px;
+	padding: 0;
+	font-size: inherit;
+}
+
 /* Ingredient list and slots */
 .selectionpanel {
 	margin-top: 16px;
@@ -11,11 +129,12 @@
 }
 
 .selectionpanel-title {
+	padding: 0;
+	margin: 0 0 10px;
 	font-size: 0.95rem;
 	font-weight: 700;
 	letter-spacing: 0.02em;
 	color: var(--fg-secondary);
-	margin-bottom: 10px;
 }
 
 .ingredientlist {
@@ -26,6 +145,8 @@
 }
 
 .ingredient {
+	color: var(--fg-primary);
+	padding: 0;
 	margin: 0;
 	overflow: hidden;
 	cursor: pointer;
@@ -34,12 +155,45 @@
 	position: relative;
 	border-radius: 6px;
 	border: 2px solid var(--border-light);
-	transition: all var(--transition-fast);
+	transition:
+		transform var(--transition-fast),
+		border-color var(--transition-fast),
+		box-shadow var(--transition-fast);
 	width: 72px;
 	height: 72px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+.analysis-filter {
+	display: inline-flex;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	color: var(--fg-primary);
+	border-radius: 5px;
+}
+
+.analysis-filter-name {
+	display: none;
+}
+
+.ingredient-name {
+	display: none;
+}
+
+.ingredient-search-summary {
+	margin-top: 6px;
+	color: var(--fg-secondary);
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.analysis-filter:focus-visible .icon,
+.clearingredients:focus-visible {
+	opacity: 1;
 }
 
 /* Empty slot styling */
@@ -98,39 +252,21 @@
 	border: 2px solid var(--border-light);
 }
 
-@keyframes ingredient-action-error {
-	0%,
-	100% {
-		transform: translateX(0);
-	}
-	20%,
-	60% {
-		transform: translateX(-3px);
-	}
-	40%,
-	80% {
-		transform: translateX(3px);
-	}
-}
-
 .ingredient.ingredient-action-error,
 .ingredientdropdown .item.ingredient-action-error,
-table.links span.link.ingredient-action-error {
+table.links .link.ingredient-action-error {
 	border-color: var(--excluded-border);
-	box-shadow:
-		0 0 0 1px var(--excluded-border),
-		0 0 10px rgba(127, 17, 17, 0.3);
-	animation: ingredient-action-error 0.28s ease;
+	box-shadow: 0 0 0 1px var(--excluded-border);
 }
 
 .ingredientdropdown .item.ingredient-action-error,
-table.links span.link.ingredient-action-error {
+table.links .link.ingredient-action-error {
 	position: relative;
 }
 
 .ingredient.ingredient-action-error::after,
 .ingredientdropdown .item.ingredient-action-error::after,
-table.links span.link.ingredient-action-error::after {
+table.links .link.ingredient-action-error::after {
 	content: '!';
 	position: absolute;
 	z-index: 2;
@@ -155,17 +291,9 @@ table.links span.link.ingredient-action-error::after {
 }
 
 .ingredientdropdown .item.ingredient-action-error::after,
-table.links span.link.ingredient-action-error::after {
+table.links .link.ingredient-action-error::after {
 	top: -8px;
 	right: -8px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.ingredient.ingredient-action-error,
-	.ingredientdropdown .item.ingredient-action-error,
-	table.links span.link.ingredient-action-error {
-		animation: none;
-	}
 }
 
 /* Search selector toggle */
@@ -261,20 +389,7 @@ table.links span.link.ingredient-action-error::after {
 
 /* Dropdown styles for sort and display mode */
 
-/* Makable / statistics buttons */
-button.makablebutton {
-	font-size: 12pt;
-	margin: 4px;
-	padding: 4px 12px;
-	display: inline-block;
-	border: 1px solid var(--medium);
-	background: var(--bg-primary);
-	color: var(--fg-primary);
-	border-radius: 3px;
-	cursor: pointer;
-	transition: all var(--transition-fast);
-}
-
+/* Makable / statistics button states */
 button.makablebutton:hover {
 	background: var(--table-hover);
 	border-color: var(--light);
@@ -435,50 +550,9 @@ div.foodFilter :is(img, .icon).excluded::after {
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Grinder/Statistics container */
-.makableContainer {
-	margin: 8px 0;
-	padding: 12px;
-	background: var(--bg-primary);
-	border: 1px solid var(--medium);
-	border-radius: 5px;
-}
-
-.makableSummary {
-	font-size: 14pt;
-	margin-bottom: 12px;
-	padding: 8px;
-	background: var(--table-bg);
-	border-radius: 3px;
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	flex-wrap: wrap;
-	color: var(--fg-primary);
-}
-
-.makableFootnote {
-	font-size: 11pt;
-	color: var(--fg-secondary);
-	margin-bottom: 8px;
-	padding: 4px 8px;
-	font-style: italic;
-}
-
-.makableFilterHelp {
-	font-size: 10pt;
-	color: var(--fg-secondary);
-	margin-bottom: 12px;
-	padding: 6px 12px;
-	background: var(--table-bg);
-	border-left: 3px solid var(--medium);
-	border-radius: 3px;
-	opacity: 0.9;
-}
-
 button.deleteButton,
 button.pauseButton,
-button.showMoreButton {
+button.resetAnalysisFiltersButton {
 	font-size: 12pt;
 	padding: 4px 12px;
 	border: 1px solid var(--medium);
@@ -491,7 +565,7 @@ button.showMoreButton {
 
 button.deleteButton:hover,
 button.pauseButton:hover,
-button.showMoreButton:hover {
+button.resetAnalysisFiltersButton:hover {
 	background: var(--table-hover);
 	border-color: var(--light);
 }
@@ -502,7 +576,9 @@ button.deleteButton {
 }
 
 button.deleteButton:hover {
-	background: var(--excluded-border);
+	/* Keep the same readable foreground throughout the hover transition. */
+	background: color-mix(in srgb, var(--excluded-bg) 85%, var(--fg-primary));
+	border-color: var(--excluded-border);
 }
 
 button.makablebutton:disabled {
@@ -511,8 +587,8 @@ button.makablebutton:disabled {
 }
 
 button.makablebutton:disabled:hover {
-	background: var(--bg-primary);
-	border-color: var(--medium);
+	background: var(--picked-bg);
+	border-color: var(--focus-color);
 }
 
 /* Responsive: small screens */
@@ -580,10 +656,13 @@ button.makablebutton:disabled:hover {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	flex-wrap: wrap;
 }
 
 .ingredient-search-controls .toggleingredients,
 .ingredient-search-controls .sortingredients,
+.ingredient-search-controls .groupingredients,
+.ingredient-search-controls .cookingingredients,
 .ingredient-search-controls .displaymodeingredients,
 .ingredient-search-controls .densityingredients {
 	margin: 0;
@@ -603,6 +682,8 @@ button.makablebutton:disabled:hover {
 
 .ingredient-search-controls .toggleingredients:hover,
 .ingredient-search-controls .sortingredients:hover,
+.ingredient-search-controls .groupingredients:hover,
+.ingredient-search-controls .cookingingredients:hover,
 .ingredient-search-controls .displaymodeingredients:hover,
 .ingredient-search-controls .densityingredients:hover {
 	background: var(--table-hover);
@@ -632,8 +713,12 @@ button.makablebutton:disabled:hover {
 	color: var(--strike-text);
 }
 
-/* Redesign the ingredient dropdown to look much better */
+/* Ingredient result groups and their option layouts. */
 .ingredientdropdown {
+	container: ingredient-picker / inline-size;
+	--ingredient-group-width: 20rem;
+	--ingredient-group-gap: 12px;
+	--ingredient-group-padding: 8px;
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -644,14 +729,52 @@ button.makablebutton:disabled:hover {
 	overflow-y: auto;
 }
 
-.ingredientdropdown div {
+.ingredient-result-group + .ingredient-result-group {
+	margin-top: var(--ingredient-group-gap);
+}
+
+.ingredient-result-group {
+	min-width: 0;
+}
+
+/* Use the picker's available width, including when browser zoom makes it narrower. */
+@container ingredient-picker (min-width: 640px) {
+	.ingredient-result-groups.is-grouped:has(
+			> .ingredient-result-group + .ingredient-result-group
+		) {
+		columns: var(--ingredient-group-width);
+		column-gap: var(--ingredient-group-gap);
+	}
+
+	.ingredient-result-groups.is-grouped > .ingredient-result-group {
+		break-inside: avoid-column;
+		margin: 0 0 var(--ingredient-group-gap);
+		padding: var(--ingredient-group-padding);
+		border: 1px solid var(--border-color);
+		border-radius: 6px;
+		background: var(--bg-secondary);
+	}
+}
+
+.ingredient-group-heading {
+	display: block;
+	margin-bottom: 6px;
+	padding: 3px 4px;
+	border-bottom: 1px solid var(--border-color);
+	color: var(--fg-secondary);
+	font-size: 12px;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.ingredientdropdown .ingredient-options {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
 	gap: 4px;
 	margin: 0;
 }
 
-.ingredientdropdown.listmode div {
+.ingredientdropdown.listmode .ingredient-options {
 	display: flex;
 	flex-direction: column;
 }
@@ -663,7 +786,10 @@ button.makablebutton:disabled:hover {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	transition: all var(--transition-fast);
+	transition:
+		background-color var(--transition-fast),
+		border-color var(--transition-fast),
+		box-shadow var(--transition-fast);
 	background: var(--bg-secondary);
 	margin: 0;
 	width: 100%;
@@ -676,7 +802,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown .item:hover {
 	background: var(--table-hover);
 	border-color: var(--dark);
-	transform: translateY(-1px);
+	transform: none;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -697,7 +823,7 @@ button.makablebutton:disabled:hover {
 	justify-content: center;
 }
 
-.ingredientdropdown.hidetext div {
+.ingredientdropdown.hidetext .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
 	gap: 3px;
 }
@@ -710,7 +836,8 @@ button.makablebutton:disabled:hover {
 
 .ingredientdropdown .item .text {
 	font-size: 12px;
-	line-height: 1.1;
+	/* Leave room for font ascenders and descenders in Firefox's font metrics. */
+	line-height: 1.4;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -719,17 +846,23 @@ button.makablebutton:disabled:hover {
 .ingredient-search-controls-right {
 	position: relative;
 }
-.ingredientdropdown .item.faded {
-	background: var(--medium);
-	color: var(--fg-tertiary);
-	opacity: 0.6;
-}
-
 /* Density variations for ingredient dropdown */
 /* Compact */
-.ingredientdropdown.density-compact div {
+.ingredientdropdown.density-compact .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
 	gap: 2px;
+}
+.ingredientdropdown.density-compact {
+	--ingredient-group-width: 16rem;
+	--ingredient-group-gap: 8px;
+	--ingredient-group-padding: 6px;
+}
+.ingredientdropdown.density-compact .ingredient-group-heading {
+	margin-bottom: 4px;
+	padding-block: 2px;
+}
+.ingredientdropdown.hidetext.density-compact {
+	--ingredient-group-width: 12rem;
 }
 .ingredientdropdown.density-compact .item {
 	padding: 2px 4px;
@@ -755,7 +888,7 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.density-compact .item .text {
 	font-size: 11px;
 }
-.ingredientdropdown.hidetext.density-compact div {
+.ingredientdropdown.hidetext.density-compact .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
 	gap: 2px;
 }
@@ -766,7 +899,7 @@ button.makablebutton:disabled:hover {
 }
 
 /* Normal */
-.ingredientdropdown.density-normal div {
+.ingredientdropdown.density-normal .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 	gap: 8px;
 }
@@ -780,9 +913,12 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.density-normal .item .text {
 	font-size: 13px;
 }
-.ingredientdropdown.hidetext.density-normal div {
+.ingredientdropdown.hidetext.density-normal .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
 	gap: 6px;
+}
+.ingredientdropdown.hidetext.density-normal {
+	--ingredient-group-width: 14rem;
 }
 .ingredientdropdown.hidetext.density-normal .item :is(img, .icon) {
 	width: 28px;
@@ -791,7 +927,7 @@ button.makablebutton:disabled:hover {
 }
 
 /* Cozy */
-.ingredientdropdown.density-cozy div {
+.ingredientdropdown.density-cozy .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 	gap: 12px;
 }
@@ -806,9 +942,12 @@ button.makablebutton:disabled:hover {
 .ingredientdropdown.density-cozy .item .text {
 	font-size: 14px;
 }
-.ingredientdropdown.hidetext.density-cozy div {
+.ingredientdropdown.hidetext.density-cozy .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
 	gap: 8px;
+}
+.ingredientdropdown.hidetext.density-cozy {
+	--ingredient-group-width: 16rem;
 }
 .ingredientdropdown.hidetext.density-cozy .item :is(img, .icon) {
 	width: 36px;
@@ -904,7 +1043,7 @@ button.makablebutton:disabled:hover {
 }
 
 .ui-dropdown-btn:focus-visible {
-	outline: 2px solid var(--fg-primary);
+	outline: 2px solid var(--focus-color);
 	outline-offset: 2px;
 }
 
@@ -922,7 +1061,7 @@ button.makablebutton:disabled:hover {
 
 .searchselector.ui-dropdown-btn:hover,
 .searchselector.ui-dropdown-btn:active {
-	background: var(--medium);
+	background: var(--selected-bg);
 }
 
 .sortingredients.ui-dropdown-btn,

@@ -15,7 +15,8 @@ import { accumulateIngredients } from '../html/utils.js';
 import { recipes } from '../html/recipes.js';
 import { food } from '../html/food.js';
 import { NAME } from '../html/functions.js';
-import { defaultStatMultipliers } from '../html/constants.js';
+import { defaultStatMultipliers, characters, TOGETHER } from '../html/constants.js';
+import { getCharacterFoodModifiers } from '../html/mode-utils.js';
 
 const accumulate = items => {
 	const names = {};
@@ -66,6 +67,31 @@ describe('accumulateIngredients', () => {
 
 		assert.strictEqual(names.meat, 1);
 		assert.strictEqual(tags.meat, 1);
+	});
+
+	it('applies character rules to current and prepared ingredient stats without changing cooking tags', () => {
+		for (const [character, ingredient, expected] of [
+			['webber', food.monstermeat, { health: 0, bestHealth: 0, sanity: 0, bestSanity: 0 }],
+			['webber', food.meat, { health: 3, bestHealth: 3, sanity: 0, bestSanity: 0 }],
+			['wigfrid', food.carrot, { health: 0, bestHealth: 0, hunger: 0, bestHunger: 0 }],
+		]) {
+			const names = {};
+			const tags = {};
+			accumulateIngredients([ingredient], names, tags, defaultStatMultipliers, {
+				...getCharacterFoodModifiers(character, characters),
+				modeMask: TOGETHER,
+			});
+			assert.deepStrictEqual(names, { [ingredient.id]: 1 });
+			for (const [stat, value] of Object.entries(expected)) {
+				assert.strictEqual(tags[stat], value, `${character}: ${ingredient.name} ${stat}`);
+			}
+			for (const tag of ['meat', 'monster', 'veggie']) {
+				assert.strictEqual(
+					tags[tag],
+					ingredient[tag] === undefined ? undefined : Number(ingredient[tag]),
+				);
+			}
+		}
 	});
 });
 
@@ -262,7 +288,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -279,7 +307,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, wingsDst.nameObject, wingsDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -299,7 +329,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -316,7 +348,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;
@@ -333,7 +367,9 @@ describe('NAME() unified identity matching', () => {
 
 		for (const req of recipe.requirements) {
 			if (req.test(null, plantmeatDst.nameObject, plantmeatDst)) {
-				if (!req.cancel) qualifies = true;
+				if (!req.cancel) {
+					qualifies = true;
+				}
 			} else if (req.cancel) {
 				qualifies = false;
 				break;

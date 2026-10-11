@@ -25,16 +25,19 @@ to register them.
 
 ## Collections and records
 
-Use `food.carrot` or `recipes.meatballs` for keyed lookups. Importing recipes (or
-the main entry point) also gives both collections numeric indexes, `length`,
+Use `food.carrot` or `recipes.meatballs` for keyed lookups. Both collections have numeric indexes, `length`,
 `forEach`, `filter`, `sort`, and `byName`. They are array-like objects rather than
 iterable arrays: use `Array.from(food)` when an ordinary array is needed.
 `Object.values(food)` also includes indexes and helper properties after
 initialization, so it is unsuitable for enumerating foods without duplicates.
 
-The package marks `html/recipes.js` as having side effects because it initializes
-both collections. Preserve that metadata when bundling the library; otherwise,
-an import of only `food` from the main entry point can lose its collection helpers.
+The package includes generated declarations and `types` export conditions.
+TypeScript consumers can import `Food`, `Recipe`, `Requirement`, and collection
+types from the main entry point. Authored definitions keep preparation IDs, while
+initialized records expose references to other `Food` objects.
+
+The package marks recipe initialization and locale registration as side effects.
+Preserve that metadata when bundling the library.
 
 `byName` expects an exact lowercase display name. A food's `key` identifies its
 record, while `id` identifies the ingredient counted by recipe predicates.
@@ -56,6 +59,12 @@ Records and cross-references are shared mutable objects, and preparation links m
 form cycles. Avoid serializing the collections directly as JSON or changing them
 globally when you only need a filtered view. In browsers, some presentation fields
 contain DOM fragments; in Node, link markup remains text.
+
+When several foods share a cooked output, author its canonical `raw` ID explicitly.
+For example, Freshwater Fish and Fish Morsel both cook into Cooked Fish Morsel,
+whose reverse link points to Fish Morsel. This keeps raw inputs in the correct
+preparation category. The [Fish Morsel data](https://dontstarve.wiki.gg/wiki/Fish_Morsel/DST)
+also lists the cooked form's six-day spoilage time.
 
 ## Filter by game and character
 

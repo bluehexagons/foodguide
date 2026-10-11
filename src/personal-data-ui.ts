@@ -1,4 +1,5 @@
 import type { GameSelection } from './preferences.js';
+import { characters, dlcOptions, gameVersions } from './constants.js';
 import {
 	createPersonalDataStore,
 	editInventory,
@@ -23,6 +24,7 @@ interface PersonalUIOptions {
 	loadDish: (dish: CookbookDish) => void;
 	ingredientName: (id: string) => string;
 	shareUrl: (snapshot: boolean) => string;
+	canShareSnapshot: () => boolean;
 }
 
 export function createPersonalDataUI(options: PersonalUIOptions) {
@@ -337,8 +339,20 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		}
 		updatePot();
 	};
-	const gameName = (selection: GameSelection) =>
-		`${selection.version}${selection.character ? ` / ${selection.character}` : ''}`;
+	const gameName = (selection: GameSelection) => {
+		const names = [gameVersions[selection.version].name];
+		if (selection.version === 'dontstarve') {
+			for (const key of ['giants', 'shipwrecked']) {
+				if (selection.dlc[key]) {
+					names.push(dlcOptions[key].name);
+				}
+			}
+		}
+		if (selection.character) {
+			names.push(characters[selection.character].name);
+		}
+		return names.join(' / ');
+	};
 	store.subscribe(refresh);
 	window.addEventListener('storage', event => {
 		if (
@@ -392,6 +406,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		link.value = options.shareUrl(snapshot.checked);
 	});
 	button(toolbar, 'personalShare', () => {
+		snapshotLabel.hidden = !options.canShareSnapshot();
 		link.value = options.shareUrl(snapshot.checked);
 		copyStatus.textContent = '';
 		shareDialog.showModal();

@@ -3243,6 +3243,7 @@ import './locales/index.js';
 			url.hash = routeFor(activeTabId, snapshot);
 			return url.href;
 		},
+		canShareSnapshot: () => activeTabId === 'simulator' || activeTabId === 'discovery',
 	});
 	if (initialRoute?.inventory) {
 		personalUI.shareInventory(initialRoute.inventory);

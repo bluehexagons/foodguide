@@ -5270,6 +5270,10 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 			.count(),
 		1,
 	);
+	assert.match(
+		await page.locator('.cookbook-list li > span').textContent(),
+		/Don't Starve Together \/ Warly/,
+	);
 	await page.locator('#simulator .clearingredientsbtn').click();
 	assert.equal(await page.locator('#cookbook-save button').isDisabled(), true);
 	await page.locator('.version-btn[data-version="hamlet"]').click();
@@ -5356,6 +5360,10 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 			.count(),
 		2,
 	);
+	await page.locator('#tab-crockpot').click();
+	await page.locator('#personal-share-button').click();
+	assert.equal(await page.getByRole('dialog').getByRole('checkbox').count(), 0);
+	await page.keyboard.press('Escape');
 	assert.deepEqual(diagnostics, []);
 });
 

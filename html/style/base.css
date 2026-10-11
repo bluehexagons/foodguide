@@ -20,7 +20,7 @@ html {
 	--border-light: #e8e8e8;
 	--table-bg: #eaeae8;
 	--table-hover: #e2e2df;
-	--table-highlight: #fff8dd;
+	--table-highlight: #ffedb3;
 
 	--darkest: black;
 	--darker: #333;
@@ -46,7 +46,7 @@ html {
 	--selected-border: #8a8;
 	--excluded-bg: #fcc;
 	--excluded-border: #711;
-	--highlighted-border: #e6d980;
+	--highlighted-border: #8a6300;
 	--strike-text: #755;
 
 	--transition-fast: 0.12s ease;
@@ -125,7 +125,7 @@ html[data-theme='dark'] {
 	--border-light: #333;
 	--table-bg: #2a2a2a;
 	--table-hover: #323232;
-	--table-highlight: #4a4a00;
+	--table-highlight: #493a16;
 
 	--darkest: #e0e0e0;
 	--darker: #d0d0d0;
@@ -142,7 +142,7 @@ html[data-theme='dark'] {
 	--selected-border: #6d6;
 	--excluded-bg: #5a2d2d;
 	--excluded-border: #f88;
-	--highlighted-border: #aa8844;
+	--highlighted-border: #e3bd5b;
 	--strike-text: #aaa;
 
 	--fontColor: var(--fg-primary);
@@ -170,7 +170,7 @@ html[data-theme='light'] {
 	--border-light: #e8e8e8;
 	--table-bg: #eaeae8;
 	--table-hover: #e2e2df;
-	--table-highlight: #fff8dd;
+	--table-highlight: #ffedb3;
 
 	--darkest: black;
 	--darker: #333;
@@ -191,7 +191,7 @@ html[data-theme='light'] {
 	--selected-border: #8a8;
 	--excluded-bg: #fcc;
 	--excluded-border: #711;
-	--highlighted-border: #e6d980;
+	--highlighted-border: #8a6300;
 	--strike-text: #755;
 
 	/* Header/table header colors (light mode) */

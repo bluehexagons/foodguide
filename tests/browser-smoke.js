@@ -433,6 +433,112 @@ test('selection indicators survive forced colors and track modes, menus, columns
 	assert.deepEqual(diagnostics, []);
 });
 
+test('matched table rows keep aligned, contrasting edges through hover, focus, and forced colors', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		version: 'together',
+		pickers: [['fig', 'carrot', 'carrot', 'ice'], []],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
+	const match = page.locator('#results tr.highlighted').first();
+	const name = match.locator('.name-cell a').first();
+	assert.equal(await name.textContent(), 'Figatoni');
+	await page
+		.locator('#results .column-toggle-bar')
+		.first()
+		.getByRole('button', { name: 'Mode', exact: true })
+		.click();
+	assert.equal(await match.locator('td').last().isVisible(), false);
+	const edges = () =>
+		match.evaluate(row => {
+			const cells = Array.from(row.cells).filter(cell => cell.getClientRects().length);
+			const marker = getComputedStyle(row.querySelector('.name-cell'), '::before');
+			const rowTop = row.getBoundingClientRect().top;
+			return {
+				cells: cells.map(cell => {
+					const style = getComputedStyle(cell);
+					const rect = cell.getBoundingClientRect();
+					return {
+						top: rect.top - rowTop,
+						bottom: rect.bottom - rowTop,
+						background: style.backgroundColor,
+						color: style.color,
+						borderTop: style.borderTopColor,
+						borderBottom: style.borderBottomColor,
+						borderStart: style.borderInlineStartColor,
+						borderEnd: style.borderInlineEndColor,
+						borderStartWidth: parseFloat(style.borderInlineStartWidth),
+					};
+				}),
+				marker: { color: marker.borderBottomColor, content: marker.content },
+				neighborBackground: getComputedStyle(row.previousElementSibling.cells[0])
+					.backgroundColor,
+			};
+		});
+	for (const theme of ['light', 'dark']) {
+		for (const forcedColors of ['none', 'active']) {
+			await page.emulateMedia({ colorScheme: theme, forcedColors });
+			await page.waitForFunction(
+				theme => document.documentElement.dataset.theme === theme,
+				theme,
+			);
+			const label = `${theme}, forced colors ${forcedColors}`;
+			const before = await edges();
+			const first = before.cells[0];
+			for (const cell of before.cells) {
+				assert.equal(cell.top, first.top, `${label}: aligned top edge`);
+				assert.equal(cell.bottom, first.bottom, `${label}: aligned bottom edge`);
+				assert.equal(cell.borderTop, first.borderTop, `${label}: continuous top border`);
+				assert.equal(
+					cell.borderBottom,
+					first.borderTop,
+					`${label}: continuous bottom border`,
+				);
+				assert.ok(
+					colorContrast(cell.color, cell.background) >= 4.5,
+					`${label}: readable text`,
+				);
+			}
+			assert.ok(first.borderStartWidth >= 3, `${label}: prominent edge marker`);
+			assert.equal(first.borderStart, first.borderTop);
+			assert.equal(
+				before.cells.at(-1).borderEnd,
+				first.borderTop,
+				`${label}: visible end edge`,
+			);
+			assert.ok(
+				colorContrast(first.borderTop, first.background) >= 3,
+				`${label}: inner edge contrast`,
+			);
+			assert.ok(
+				colorContrast(first.borderTop, before.neighborBackground) >= 3,
+				`${label}: outer edge contrast`,
+			);
+			assert.notEqual(before.marker.content, 'none', `${label}: non-color match indicator`);
+			assert.ok(
+				colorContrast(before.marker.color, first.background) >= 3,
+				`${label}: checkmark contrast`,
+			);
+			await name.hover();
+			await name.focus();
+			assert.deepEqual(await edges(), before, `${label}: hover and focus preserve the row`);
+			assert.equal(await name.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+			const violations = await page.evaluate(async () =>
+				(await window.axe.run(document.querySelector('#results'))).violations.map(
+					({ id, nodes }) => ({
+						id,
+						targets: nodes.map(n => n.target),
+					}),
+				),
+			);
+			assert.deepEqual(violations, [], `${label}: accessible results`);
+		}
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
 test('full-pot errors remain readable with reduced motion and release temporary feedback', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(

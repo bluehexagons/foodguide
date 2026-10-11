@@ -21,6 +21,8 @@ table {
 }
 
 table td {
+	/* Reserve the highlight edges so matching a row does not change its size. */
+	border-top: 1px solid transparent;
 	border-bottom: 1px solid var(--border-color);
 	border-right: 1px solid var(--border-light);
 	background: var(--table-bg);
@@ -31,7 +33,7 @@ table td {
 }
 
 table td:first-child {
-	border-left: 1px solid var(--border-light);
+	border-inline-start: 4px solid transparent;
 }
 
 table .numeric-cell {
@@ -64,7 +66,19 @@ table tr:hover td {
 
 table tr.highlighted td {
 	background: var(--table-highlight);
-	border-bottom-color: var(--highlighted-border);
+	border-block-color: var(--highlighted-border);
+}
+
+table tr.highlighted td:first-child {
+	border-inline-start-color: var(--highlighted-border);
+}
+
+table tr.highlighted td:nth-last-child(1 of :not(.col-hidden)) {
+	border-inline-end-color: var(--highlighted-border);
+}
+
+table tr.highlighted a:is(:hover, :focus-visible) {
+	color: var(--fg-primary);
 }
 
 table th {
@@ -307,14 +321,6 @@ table.links .link.strike {
 	height: 20px;
 	margin-bottom: -2px;
 	vertical-align: text-bottom;
-}
-
-.highlighted {
-	outline: 1px solid #ccb;
-}
-
-#results .highlighted td {
-	border-bottom: 4px solid #ccb !important;
 }
 
 .table-pagination {

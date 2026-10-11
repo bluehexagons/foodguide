@@ -63,6 +63,9 @@ table .name-cell {
 table tr.highlighted .name-cell::before {
 	top: calc(50% - 4px);
 	left: 12px;
+	width: 10px;
+	height: 6px;
+	color: var(--highlighted-border);
 }
 
 .ingredient-feedback-space,

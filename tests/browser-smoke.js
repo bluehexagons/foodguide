@@ -4708,12 +4708,15 @@ test('large recipe groups allow direct browsing without rendering the whole data
 		.locator('[data-table-action=page-next]')
 		.tap();
 	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-24');
+	const overviewBounds = await overview.evaluate(e => ({
+		top: e.getBoundingClientRect().top,
+		bottom: e.getBoundingClientRect().bottom,
+		viewport: innerHeight,
+	}));
 	assert.ok(
-		await overview.evaluate(
-			e =>
-				e.getBoundingClientRect().top >= 0 &&
-				e.getBoundingClientRect().bottom < innerHeight,
-		),
+		// scrollIntoView rounds the scroll offset while layout retains fractional pixels.
+		overviewBounds.top >= -1 && overviewBounds.bottom <= overviewBounds.viewport + 1,
+		`Bottom paging reveals the overview controls: ${JSON.stringify(overviewBounds)}`,
 	);
 	assert.equal(
 		await overview
@@ -5541,6 +5544,10 @@ test('cookbook cards predict saved recipes independently and supporting sections
 	await page.keyboard.press('Enter');
 	await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
 	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 2);
+	// Removing the card precedes the dialog's queued close event and focus recovery.
+	await page.waitForFunction(
+		() => document.activeElement === document.querySelector('#personal-cookbook summary'),
+	);
 	assert.equal(
 		await page
 			.locator('#personal-cookbook summary')

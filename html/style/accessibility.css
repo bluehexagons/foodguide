@@ -508,7 +508,8 @@ table tr.highlighted .name-cell::before {
 		--fg-primary: CanvasText;
 		--fg-secondary: CanvasText;
 		--fg-tertiary: CanvasText;
-		--focus-color: Highlight;
+		/* Firefox's Highlight can be too pale against Canvas; use the text pair. */
+		--focus-color: CanvasText;
 		--picked-bg: Canvas;
 		--picked-border: CanvasText;
 		--border-color: CanvasText;
@@ -530,10 +531,9 @@ table tr.highlighted .name-cell::before {
 		--header-bg: Canvas;
 		--header-text: CanvasText;
 		--selected-bg: Canvas;
-		--selected-border: Highlight;
+		--selected-border: CanvasText;
 		--excluded-bg: Canvas;
 		--excluded-border: CanvasText;
-		/* Firefox's Highlight can be too pale against Canvas; use the text pair. */
 		--highlighted-border: CanvasText;
 		--strike-text: CanvasText;
 	}
@@ -553,8 +553,9 @@ table tr.highlighted .name-cell::before {
 
 	.ingredientdropdown .item.faded .ingredient-toggle-visual {
 		forced-color-adjust: none;
-		background: Highlight;
-		color: HighlightText;
+		background: ButtonFace;
+		color: ButtonText;
+		border-color: ButtonText;
 	}
 
 	.ingredient {
@@ -570,7 +571,7 @@ table tr.highlighted .name-cell::before {
 
 	.mode-btn.selected,
 	.column-toggle-bar button.active {
-		border-color: Highlight;
+		border-color: CanvasText;
 	}
 
 	.mode-btn.selected::before,
@@ -582,18 +583,16 @@ table tr.highlighted .name-cell::before {
 	}
 
 	.ingredientdropdown .item.selected {
-		background: Highlight;
-		color: HighlightText;
+		background: Canvas;
+		color: CanvasText;
+		outline: 2px solid CanvasText;
+		/* Separate the active option's outline from its picked-state border. */
+		outline-offset: -3px;
 	}
 
 	.ui-dropdown-list button.is-selected {
 		/* Override the shared hover/focus background while keeping its text legible. */
-		background: Highlight !important;
-		color: HighlightText;
-	}
-
-	.ingredientdropdown .item.selected {
-		outline: 2px solid Highlight;
-		outline-offset: -2px;
+		background: Canvas !important;
+		color: CanvasText;
 	}
 }

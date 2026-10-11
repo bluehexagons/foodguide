@@ -777,7 +777,8 @@ button.makablebutton:disabled:hover {
 
 .ingredientdropdown .item .text {
 	font-size: 12px;
-	line-height: 1.1;
+	/* Leave room for font ascenders and descenders in Firefox's font metrics. */
+	line-height: 1.4;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;

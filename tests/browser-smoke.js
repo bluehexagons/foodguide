@@ -334,6 +334,14 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	await page.emulateMedia({ reducedMotion: 'reduce', forcedColors: 'active' });
 	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
 	assert.equal(await calculate.evaluate(e => getComputedStyle(e).outlineWidth), '2px');
+	const forcedFocus = await calculate.evaluate(element => ({
+		outline: getComputedStyle(element).outlineColor,
+		background: getComputedStyle(document.body).backgroundColor,
+	}));
+	assert.ok(
+		colorContrast(forcedFocus.outline, forcedFocus.background) >= 3,
+		'Forced-color keyboard focus must contrast against the canvas',
+	);
 	assert.deepEqual(diagnostics, []);
 });
 
@@ -370,6 +378,14 @@ test('selection indicators survive forced colors and track modes, menus, columns
 		);
 		assert.equal(await indicatorVisible(solo), false);
 		assert.equal(await together.evaluate(e => getComputedStyle(e).opacity), '1');
+		const selectedColors = await together.evaluate(element => ({
+			border: getComputedStyle(element).borderTopColor,
+			background: getComputedStyle(element).backgroundColor,
+		}));
+		assert.ok(
+			colorContrast(selectedColors.border, selectedColors.background) >= 3,
+			`${theme}: selected game border contrast`,
+		);
 		await solo.click();
 		assert.equal(await indicatorVisible(solo), true);
 		assert.equal(await indicatorVisible(together), false);
@@ -391,6 +407,17 @@ test('selection indicators survive forced colors and track modes, menus, columns
 			await page.getByRole('option', { name: new RegExp(`^${name}(?: \\d)?$`) }).click();
 		}
 		await page.locator('#simulator .clearsearchbtn').click();
+		const pickedColors = await page
+			.locator('#simulator .item.faded .ingredient-toggle-visual')
+			.first()
+			.evaluate(element => ({
+				color: getComputedStyle(element).color,
+				background: getComputedStyle(element).backgroundColor,
+			}));
+		assert.ok(
+			colorContrast(pickedColors.color, pickedColors.background) >= 4.5,
+			`${theme}: picked checkbox contrast`,
+		);
 
 		const menuButton = page.locator('#simulator .densityingredients');
 		await menuButton.click();
@@ -400,8 +427,8 @@ test('selection indicators survive forced colors and track modes, menus, columns
 		assert.equal(await indicatorVisible(cozy), false);
 		const systemColors = await page.evaluate(() => {
 			const probe = document.createElement('span');
-			probe.style.background = 'Highlight';
-			probe.style.color = 'HighlightText';
+			probe.style.background = 'Canvas';
+			probe.style.color = 'CanvasText';
 			document.body.appendChild(probe);
 			const style = getComputedStyle(probe);
 			const palette = { background: style.backgroundColor, color: style.color };
@@ -449,6 +476,14 @@ test('selection indicators survive forced colors and track modes, menus, columns
 		await page.keyboard.press('ArrowDown');
 		const selected = page.locator('#simulator [role=option][aria-selected=true]');
 		assert.equal(await selected.evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+		const activeColors = await selected.evaluate(element => ({
+			outline: getComputedStyle(element).outlineColor,
+			background: getComputedStyle(element).backgroundColor,
+		}));
+		assert.ok(
+			colorContrast(activeColors.outline, activeColors.background) >= 3,
+			`${theme}: active picker option outline contrast (${activeColors.outline} on ${activeColors.background})`,
+		);
 		const violations = await page.evaluate(async () =>
 			(
 				await window.axe.run({ runOnly: { type: 'rule', values: ['color-contrast'] } })

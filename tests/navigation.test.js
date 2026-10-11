@@ -80,3 +80,12 @@ test('inventory and highlights preserve text safely, with bounded and deduplicat
 		4,
 	);
 });
+
+test('links preserve inactive single-player DLC preferences while overriding active DLC context', () => {
+	const state = { version: 'dontstarve', dlc: { giants: true, shipwrecked: true } };
+	applyGuideRoute(state, parseGuideRoute('#discovery?game=together'));
+	assert.equal(state.version, 'together');
+	assert.deepEqual(state.dlc, { giants: true, shipwrecked: true });
+	applyGuideRoute(state, parseGuideRoute('#discovery?game=dontstarve&dlc=giants'));
+	assert.deepEqual(state.dlc, { giants: true, shipwrecked: false });
+});

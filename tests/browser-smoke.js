@@ -3103,9 +3103,10 @@ test('nested control contents preserve mode changes, slot removal, table sorting
 	const cookedCarrot = page.locator('#food [data-link="*Roasted Carrot"]').first();
 	await nestControlContents(cookedCarrot);
 	await cookedCarrot.locator('.icon').click();
-	assert.deepEqual(await page.locator('#food .highlighted td:nth-child(2)').allTextContents(), [
-		'Roasted Carrot',
-	]);
+	assert.deepEqual(
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
+		['Roasted Carrot'],
+	);
 	const meatballs = page.locator('#food [data-link="recipe:Meatballs"]').first();
 	await nestControlContents(meatballs);
 	await meatballs.locator('.icon').click();
@@ -3114,7 +3115,9 @@ test('nested control contents preserve mode changes, slot removal, table sorting
 		'true',
 	);
 	assert.deepEqual(
-		await page.locator('#recipes .highlighted td:nth-child(2)').allTextContents(),
+		await page
+			.locator('#recipes .highlighted .reference-name > a:first-child')
+			.allTextContents(),
 		['Meatballs'],
 	);
 	await page.locator('#navbar [data-tab="discovery"]').click();
@@ -3317,7 +3320,11 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 			await page.locator('#simulator [role=status]').textContent(),
 			/4 ingredientes/,
 		);
-		await page.locator('#tab-discovery').click();
+		await page.goBack();
+		await page.waitForFunction(
+			() =>
+				document.querySelector('#tab-discovery')?.getAttribute('aria-selected') === 'true',
+		);
 		assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
 		const cell = detail.locator('.analysis-ingredients-cell');
 		if (hasTouch) {
@@ -4160,9 +4167,10 @@ test('tables retain sorting, pinned summaries, column visibility, and linked hig
 	await page.locator('#navbar [data-tab="foodlist"]').click();
 	const cookedCarrot = page.locator('#food [data-link="*Roasted Carrot"] .icon').first();
 	await cookedCarrot.click();
-	assert.deepEqual(await page.locator('#food .highlighted td:nth-child(2)').allTextContents(), [
-		'Roasted Carrot',
-	]);
+	assert.deepEqual(
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
+		['Roasted Carrot'],
+	);
 	await cookedCarrot.click();
 	assert.equal(await page.locator('#food .highlighted').count(), 0);
 
@@ -4172,7 +4180,9 @@ test('tables retain sorting, pinned summaries, column visibility, and linked hig
 		'true',
 	);
 	assert.deepEqual(
-		await page.locator('#recipes .highlighted td:nth-child(2)').allTextContents(),
+		await page
+			.locator('#recipes .highlighted .reference-name > a:first-child')
+			.allTextContents(),
 		['Meatballs'],
 	);
 	await page.locator('#recipes th[data-sort="health"]').click();
@@ -4181,14 +4191,14 @@ test('tables retain sorting, pinned summaries, column visibility, and linked hig
 	const meatLink = page.locator('#recipes [data-link="tag:meat"]').first();
 	await meatLink.click();
 	const meatHighlights = await page
-		.locator('#food .highlighted td:nth-child(2)')
+		.locator('#food .highlighted .reference-name > a:first-child')
 		.allTextContents();
 	assert.ok(meatHighlights.includes('Meat'));
 	assert.ok(meatHighlights.length > 1);
 	await page.locator('#navbar [data-tab="crockpot"]').click();
 	await meatLink.click();
 	assert.deepEqual(
-		await page.locator('#food .highlighted td:nth-child(2)').allTextContents(),
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
 		meatHighlights,
 	);
 
@@ -4271,9 +4281,10 @@ test('table controls support keyboard sorting, toggles, and linked highlights wi
 	assert.equal(await carrot.getAttribute('type'), 'button');
 	await carrot.focus();
 	await carrot.press('Enter');
-	assert.deepEqual(await page.locator('#food .highlighted td:nth-child(2)').allTextContents(), [
-		'Roasted Carrot',
-	]);
+	assert.deepEqual(
+		await page.locator('#food .highlighted .reference-name > a:first-child').allTextContents(),
+		['Roasted Carrot'],
+	);
 	assert.equal(await carrot.evaluate(button => button === document.activeElement), true);
 	await carrot.press('Space');
 	assert.equal(await page.locator('#food .highlighted').count(), 0);
@@ -5029,6 +5040,11 @@ test('section URLs restore game and ingredients, support history, and open nativ
 	});
 	assert.equal(await clean.locator('#tab-statistics').getAttribute('aria-selected'), 'true');
 	assert.equal(await clean.locator('#statistics .makablebutton').count(), 1);
+	await page.locator('.version-btn[data-version="together"]').click();
+	await page.reload({ waitUntil: 'networkidle' });
+	await page.locator('.version-btn[data-version="dontstarve"]').click();
+	assert.equal(await page.locator('.dlc-btn.selected').count(), 2);
+
 	assert.deepEqual(diagnostics, []);
 	assert.deepEqual(linkedDiagnostics, []);
 });

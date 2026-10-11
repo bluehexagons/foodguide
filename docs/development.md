@@ -112,7 +112,9 @@ Tabs are native anchors with tab semantics: modified clicks and the browser's
 link menu open independent copies. Section changes push history entries; edits
 replace the current URL without filling history with each ingredient change.
 Back, Forward, and manual fragment changes restore the matching page, game, and
-active selection. Tab-local state and durable defaults still recover work before
+active selection. Matching ingredient selections retain existing analyzer results,
+expanded groups, and page positions. Together/Hamlet links preserve inactive
+single-player DLC preferences and do not treat them as a game change. Tab-local state and durable defaults still recover work before
 an unload event, including ingredients pruned by game changes. The browser suite
 checks shared-origin tabs, independent reloads, native new-tab links, history,
 deep links, and live theme/language synchronization in Chromium and Firefox.

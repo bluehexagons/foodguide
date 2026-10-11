@@ -116,10 +116,13 @@ export function applyGuideRoute(state: SavedState, route: GuideRoute) {
 	state.activeTab = route.tab;
 	if (route.selection) {
 		state.version = route.selection.version;
-		state.dlc = {
-			giants: !!route.selection.dlc.giants,
-			shipwrecked: !!route.selection.dlc.shipwrecked,
-		};
+		// A Together/Hamlet link doesn't specify the user's inactive single-player DLCs.
+		if (route.selection.version === 'dontstarve' || !state.dlc) {
+			state.dlc = {
+				giants: !!route.selection.dlc.giants,
+				shipwrecked: !!route.selection.dlc.shipwrecked,
+			};
+		}
 		state.character = route.selection.character;
 	}
 	if (route.ingredients || route.inventory) {

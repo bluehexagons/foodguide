@@ -2382,6 +2382,25 @@ import './locales/index.js';
 			}
 
 			pickerRestorers[index] = ids => {
+				const requested = ids
+					.map(id => (id ? resolveIngredient(id, modeMask, charMask) : undefined))
+					.filter(
+						(item): item is Food => !!item && (allowUncookable || !item.uncookable),
+					);
+				const restored = limited
+					? requested.slice(0, fixedSlots.length)
+					: [...new Map(requested.map(item => [item.key, item])).values()];
+				const current = limited
+					? fixedSlots.map(slot => getSlot(slot)?.key).filter(Boolean)
+					: slots;
+				if (
+					loaded &&
+					current.length === restored.length &&
+					restored.every((item, position) => item.key === current[position])
+				) {
+					// Returning through history must retain a matching analysis and its pages.
+					return;
+				}
 				const wasLoaded = loaded;
 				// Restore as one edit: rebuilding analysis tables for each item is expensive.
 				loaded = false;
@@ -2394,11 +2413,8 @@ import './locales/index.js';
 						parent.replaceChildren();
 						slots.length = 0;
 					}
-					for (const id of ids) {
-						const item = id ? resolveIngredient(id, modeMask, charMask) : undefined;
-						if (item && (allowUncookable || !item.uncookable)) {
-							appendSlot(item.key);
-						}
+					for (const item of restored) {
+						appendSlot(item.key);
 					}
 				} finally {
 					loaded = wasLoaded;
@@ -3110,11 +3126,16 @@ import './locales/index.js';
 		try {
 			if (
 				route.selection &&
-				JSON.stringify(route.selection) !==
-					JSON.stringify(restoreGameSelection(captureState()))
+				(currentVersion !== route.selection.version ||
+					currentCharacter !== route.selection.character ||
+					(route.selection.version === 'dontstarve' &&
+						(activeDlc.giants !== route.selection.dlc.giants ||
+							activeDlc.shipwrecked !== route.selection.dlc.shipwrecked)))
 			) {
 				currentVersion = route.selection.version;
-				Object.assign(activeDlc, route.selection.dlc);
+				if (currentVersion === 'dontstarve') {
+					Object.assign(activeDlc, route.selection.dlc);
+				}
 				currentCharacter = route.selection.character;
 				setMode();
 			}

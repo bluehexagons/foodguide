@@ -3760,7 +3760,14 @@ test('legacy settings and both ingredient pickers survive migration and reload',
 	assert.equal(saved.character, 'warly');
 	assert.deepEqual(saved.dlc, { giants: true, shipwrecked: true });
 	assert.equal(saved.pickers[0].filter(Boolean).length, 1);
-	assert.equal(saved.pickers[1].filter(Boolean).length, 2);
+	assert.equal(
+		await page.evaluate(
+			() =>
+				JSON.parse(localStorage.getItem('foodGuidePersonalData')).inventories[0].ingredients
+					.length,
+		),
+		2,
+	);
 	assert.equal(await page.locator('#ingredients .icon').count(), 1);
 	assert.equal(await page.locator('#discovery .ingredient .icon').count(), 2);
 	assert.deepEqual(errors, []);
@@ -3771,7 +3778,16 @@ test('current selections persist before unload and recover after an interrupted 
 	const page = await browser.newPage();
 	const diagnostics = trackDiagnostics(page);
 	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
-	const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('foodGuideState')));
+	const stored = async () => {
+		await page.evaluate(() => navigator.locks.request('foodGuidePersonalData', () => {}));
+		return page.evaluate(() => {
+			const state = JSON.parse(localStorage.getItem('foodGuideState'));
+			state.pickers[1] = JSON.parse(
+				localStorage.getItem('foodGuidePersonalData'),
+			).inventories[0].ingredients;
+			return state;
+		});
+	};
 	const pick = async (panel, name) => {
 		const search = page.locator(`${panel} .ingredientpicker`);
 		await search.fill(name);
@@ -3788,7 +3804,7 @@ test('current selections persist before unload and recover after an interrupted 
 	assert.deepEqual((await stored()).pickers[1], ['carrot@together']);
 	await page.locator('.version-btn[data-version="dontstarve"]').click();
 	assert.equal((await stored()).version, 'dontstarve');
-	assert.deepEqual((await stored()).pickers, [['meat', null, null, null], ['carrot']]);
+	assert.deepEqual((await stored()).pickers, [['meat', null, null, null], ['carrot@together']]);
 	await page.locator('.dlc-btn[data-dlc="giants"]').click();
 	assert.equal((await stored()).dlc.giants, true);
 	await page.locator('.char-btn[data-character="wigfrid"]').click();
@@ -3797,7 +3813,7 @@ test('current selections persist before unload and recover after an interrupted 
 	assert.equal((await stored()).character, null);
 	await pick('#discovery', 'Cactus Flesh');
 	await page.locator('.dlc-btn[data-dlc="giants"]').click();
-	assert.deepEqual((await stored()).pickers[1], ['carrot']);
+	assert.deepEqual((await stored()).pickers[1], ['carrot@together', 'cactusmeat']);
 	await page.getByRole('tab', { name: 'Simulator', exact: true }).click();
 	await page.locator('#ingredients [data-id="meat"]').click();
 	assert.deepEqual((await stored()).pickers[0], [null, null, null, null]);
@@ -3818,7 +3834,7 @@ test('current selections persist before unload and recover after an interrupted 
 	assert.equal(await restored.locator('#inventory [data-id="carrot"]').count(), 1);
 	page.once('dialog', dialog => dialog.dismiss());
 	await page.locator('#discovery .clearingredientsbtn').click();
-	assert.deepEqual((await stored()).pickers[1], ['carrot']);
+	assert.deepEqual((await stored()).pickers[1], ['carrot@together', 'cactusmeat']);
 	page.once('dialog', dialog => dialog.accept());
 	await page.locator('#discovery .clearingredientsbtn').click();
 	assert.deepEqual((await stored()).pickers[1], []);
@@ -5012,12 +5028,15 @@ test('section URLs restore game and ingredients, support history, and open nativ
 			.evaluateAll(slots => slots.map(slot => slot.dataset.id));
 	assert.deepEqual(await pot(page), ['meat', 'meat', 'carrot', 'honey']);
 	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
-	const originalUrl = page.url();
+	assert.doesNotMatch(page.url(), /ingredients=/);
+	await page.getByRole('button', { name: 'Share', exact: true }).click();
+	const originalUrl = await page.locator('#personal-share-link').inputValue();
+	await page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
 	await page.locator('#tab-discovery').click();
 	assert.match(page.url(), /#discovery\?/);
 	await page.locator('#discovery .ingredientpicker').fill('Berries');
 	await page.locator('#discovery .ingredientpicker').press('Enter');
-	assert.match(page.url(), /inventory=berries/);
+	assert.doesNotMatch(page.url(), /inventory=/);
 	await page.goBack();
 	assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
 	assert.deepEqual(await pot(page), ['meat', 'meat', 'carrot', 'honey']);
@@ -5157,4 +5176,240 @@ test('manual URL navigation validates inputs and restores food and recipe highli
 	assert.equal(await page.locator('#ingredients [data-id="carrot@together"]').count(), 1);
 	assert.equal(await page.locator('#ingredients .icon').count(), 1);
 	assert.deepEqual(diagnostics, []);
+});
+
+test('personal inventories synchronize edits while tabs choose inventories independently', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext();
+	t.after(() => context.close());
+	const first = await context.newPage(),
+		second = await context.newPage();
+	const diagnostics = [trackDiagnostics(first), trackDiagnostics(second)];
+	await Promise.all([
+		first.goto(`${baseUrl}/index.htm#discovery`, { waitUntil: 'networkidle' }),
+		second.goto(`${baseUrl}/index.htm#discovery`, { waitUntil: 'networkidle' }),
+	]);
+	const pick = async (page, food) => {
+		await page.locator('#discovery .ingredientpicker').fill(food);
+		await page.locator('#discovery .ingredientpicker').press('Enter');
+	};
+	await Promise.all([pick(first, 'Carrot'), pick(second, 'Berries')]);
+	for (const page of [first, second]) {
+		await page.waitForFunction(
+			() => document.querySelectorAll('#inventory [data-id]').length === 2,
+		);
+	}
+	const sharedId = await first.locator('#inventory-select').inputValue();
+	await second.getByRole('button', { name: 'New inventory', exact: true }).click();
+	const otherId = await second.locator('#inventory-select').inputValue();
+	assert.notEqual(otherId, sharedId);
+	await second.locator('#inventory-name').fill('Winter base');
+	await second.locator('#inventory-name').press('Enter');
+	await pick(second, 'Honey');
+	await first.waitForFunction(
+		() => document.querySelectorAll('#inventory-select option').length === 2,
+	);
+	assert.equal(await first.locator('#inventory-select').inputValue(), sharedId);
+	assert.equal(await first.locator('#inventory [data-id="honey@together"]').count(), 0);
+	await first.locator('#inventory-select').selectOption(otherId);
+	assert.equal(await first.locator('#inventory [data-id="honey@together"]').count(), 1);
+	await pick(first, 'Ice');
+	await second.waitForFunction(() =>
+		document.querySelector('#inventory [data-id="ice@together"]'),
+	);
+	await first.locator('#inventory-select').selectOption(sharedId);
+	await first.reload({ waitUntil: 'networkidle' });
+	await second.reload({ waitUntil: 'networkidle' });
+	assert.equal(await first.locator('#inventory-select').inputValue(), sharedId);
+	assert.equal(await second.locator('#inventory-select').inputValue(), otherId);
+	assert.equal(await second.locator('#inventory-name').inputValue(), 'Winter base');
+	await second.locator('.version-btn[data-version="hamlet"]').click();
+	assert.equal(await second.locator('#inventory [data-id="ice@together"]').count(), 0);
+	await second.locator('.version-btn[data-version="together"]').click();
+	assert.equal(await second.locator('#inventory [data-id="ice@together"]').count(), 1);
+	await first.getByRole('button', { name: 'Share', exact: true }).click();
+	const share = await first.locator('#personal-share-link').inputValue();
+	assert.match(share, /inventory=/);
+	assert.doesNotMatch(first.url(), /inventory=/);
+	await first.getByRole('dialog').getByRole('button', { name: 'Close', exact: true }).click();
+	const recipient = await browser.newPage();
+	t.after(() => recipient.close());
+	await recipient.goto(share, { waitUntil: 'networkidle' });
+	assert.equal(await recipient.locator('#inventory [data-id]').count(), 2);
+	assert.match(await recipient.locator('#inventory-name').inputValue(), /Shared inventory/);
+	assert.doesNotMatch(recipient.url(), /inventory=/);
+	// Deleting one shared inventory falls back locally in tabs viewing it; other data stays intact.
+	await second
+		.locator('#inventory-controls')
+		.getByRole('button', { name: 'Delete', exact: true })
+		.click();
+	await second.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+	await first.waitForFunction(
+		() => document.querySelectorAll('#inventory-select option').length === 1,
+	);
+	assert.equal(await second.locator('#inventory-select').inputValue(), sharedId);
+	assert.deepEqual(diagnostics, [[], []]);
+});
+
+test('personal cookbook and backups support loading, explicit sharing, import validation and keyboard dialogs', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=together&character=warly&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
+		{ waitUntil: 'networkidle' },
+	);
+	await page.locator('#cookbook-save').waitFor();
+	await page.waitForFunction(() => !location.hash.includes('ingredients='));
+	assert.doesNotMatch(page.url(), /ingredients=/, JSON.stringify(diagnostics));
+	await page.locator('#cookbook-dish-name').fill('Camp dinner');
+	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
+	assert.equal(
+		await page
+			.getByRole('button', { name: 'Load Camp dinner into the crock pot', exact: true })
+			.count(),
+		1,
+	);
+	await page.locator('#simulator .clearingredientsbtn').click();
+	assert.equal(await page.locator('#cookbook-save button').isDisabled(), true);
+	await page.locator('.version-btn[data-version="hamlet"]').click();
+	await page
+		.getByRole('button', { name: 'Load Camp dinner into the crock pot', exact: true })
+		.click();
+	assert.equal(
+		await page.locator('.version-btn.selected').getAttribute('data-version'),
+		'together',
+	);
+	assert.equal(await page.locator('.char-btn.selected').getAttribute('data-character'), 'warly');
+	assert.equal(await page.locator('#ingredients [data-id]').count(), 4);
+	await page.getByRole('button', { name: 'Share', exact: true }).click();
+	const link = await page.locator('#personal-share-link').inputValue();
+	assert.match(link, /ingredients=/);
+	await page.getByRole('dialog').getByRole('checkbox').uncheck();
+	assert.doesNotMatch(await page.locator('#personal-share-link').inputValue(), /ingredients=/);
+	await page.keyboard.press('Escape');
+	assert.equal(await page.getByRole('dialog').count(), 0);
+	assert.equal(
+		await page
+			.getByRole('button', { name: 'Share', exact: true })
+			.evaluate(node => node === document.activeElement),
+		true,
+	);
+	await page.getByRole('button', { name: 'My data', exact: true }).click();
+	const download = page.waitForEvent('download');
+	await page.getByRole('button', { name: 'Export backup', exact: true }).click();
+	const backup = await download;
+	const stream = await backup.createReadStream();
+	let content = '';
+	for await (const chunk of stream) {
+		content += chunk.toString();
+	}
+	const parsed = JSON.parse(content);
+	assert.equal(parsed.dishes[0].name, 'Camp dinner');
+	assert.equal(parsed.dishes[0].ingredients.length, 4);
+	await page.locator('#personal-import').setInputFiles({
+		name: 'invalid.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from('{"version":99}'),
+	});
+	await page
+		.getByRole('dialog')
+		.getByRole('status')
+		.filter({ hasText: 'Could not import' })
+		.waitFor();
+	assert.equal(
+		await page.evaluate(
+			() => JSON.parse(localStorage.getItem('foodGuidePersonalData')).dishes.length,
+		),
+		1,
+	);
+	await page.locator('#personal-import').setInputFiles({
+		name: 'backup.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from(content),
+	});
+	await page
+		.getByRole('dialog')
+		.getByRole('status')
+		.filter({ hasText: 'Imported 1 inventories and 1 dishes' })
+		.waitFor();
+	const restored = await page.evaluate(() =>
+		JSON.parse(localStorage.getItem('foodGuidePersonalData')),
+	);
+	assert.equal(restored.dishes.length, 2);
+	assert.equal(new Set(restored.dishes.map(d => d.id)).size, 2);
+	await page.keyboard.press('Escape');
+	await page.locator('#language-picker').selectOption('es');
+	assert.equal(await page.locator('#inventory-select').count(), 1);
+	assert.equal(await page.locator('#cookbook-dish-name').count(), 1);
+	assert.equal(
+		await page
+			.getByRole('button', { name: 'Cargar Camp dinner en la olla', exact: true })
+			.count(),
+		2,
+	);
+	await page.reload({ waitUntil: 'networkidle' });
+	await page.locator('#personal-cookbook').evaluate(node => (node.open = true));
+	assert.equal(
+		await page
+			.getByRole('button', { name: 'Cargar Camp dinner en la olla', exact: true })
+			.count(),
+		2,
+	);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('personal inventory, cookbook and sharing dialogs remain accessible on touch screens in every locale', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		hasTouch: true,
+		isMobile: true,
+		viewport: { width: 320, height: 812 },
+	});
+	await page.goto(
+		`${baseUrl}/index.htm#simulator?game=together&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
+		{ waitUntil: 'networkidle' },
+	);
+	await page.locator('#cookbook-save').waitFor();
+	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
+	await page.evaluate(axe.source);
+	for (const theme of ['light', 'dark']) {
+		await page.evaluate(
+			value => document.documentElement.setAttribute('data-theme', value),
+			theme,
+		);
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			const audit = async context => {
+				await page.waitForFunction(() =>
+					document.getAnimations().every(a => a.playState !== 'running'),
+				);
+				const violations = await page.evaluate(async () =>
+					(await window.axe.run()).violations.map(({ id, nodes }) => ({
+						id,
+						nodes: nodes.map(({ target, failureSummary }) => ({
+							target,
+							failureSummary,
+						})),
+					})),
+				);
+				assert.deepEqual(violations, [], `${theme}/${locale}/${context}`);
+				assert.equal(
+					await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+					true,
+					`${theme}/${locale}/${context}: page overflow`,
+				);
+			};
+			await audit('cookbook');
+			await page.locator('#personal-share-button').tap();
+			await audit('sharing');
+			await page.keyboard.press('Escape');
+			await page.locator('.personal-toolbar button').last().tap();
+			await audit('backup');
+			await page.keyboard.press('Escape');
+			await page.locator('#tab-discovery').tap();
+			await audit('inventory');
+			await page.locator('#tab-simulator').tap();
+		}
+	}
 });

@@ -20,7 +20,7 @@ test('section links round-trip game context and repeated ingredients without app
 	assert.equal(guideTab('constructor'), 'simulator');
 	assert.deepEqual(parseGuideRoute('#statistics'), { tab: 'statistics' });
 	assert.equal(parseGuideRoute('#constructor?game=together'), null);
-	assert.equal(parseGuideRoute(`#simulator?${'a'.repeat(8192)}`), null);
+	assert.equal(parseGuideRoute(`#simulator?${'a'.repeat(131072)}`), null);
 });
 
 test('URL state overrides only the matching saved picker and validates game and character names', () => {
@@ -65,12 +65,12 @@ test('inventory and highlights preserve text safely, with bounded and deduplicat
 	]);
 	assert.equal(
 		parseGuideRoute(
-			`#discovery?inventory=${Array(300)
+			`#discovery?inventory=${Array(1100)
 				.fill('meat')
 				.map((_, i) => `meat${i}`)
 				.join(',')}`,
 		).inventory.length,
-		256,
+		1024,
 	);
 	const route = { tab: 'crockpot', highlight: 'ingredient:Fish & Chips' };
 	assert.deepEqual(parseGuideRoute(formatGuideRoute(route)), route);

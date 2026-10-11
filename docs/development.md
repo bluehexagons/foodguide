@@ -89,40 +89,50 @@ then rebuild before opening `html/index.htm` or importing the library.
 live in `tools/` and compile to `scripts/`. `npm ci --ignore-scripts` requires an
 explicit build; normal installs and package creation run it automatically.
 
-The page controller reads saved preferences once at startup. `preferences.ts`
-validates JSON and translates historical game settings. `tab-storage.ts` keeps
-working state and picker display preferences in each tab's `sessionStorage`,
-seeded from `localStorage` for a new tab. A memory snapshot keeps tabs independent
-when storage is unavailable. Writes save immediately to the tab and to durable
-last-used defaults independently; reloads use the tab's snapshot, so another
-window cannot overwrite its ingredients or view settings. Theme and language
-remain shared preferences; storage events apply them without writing them back.
+`preferences.ts` validates JSON and migrates historical game settings.
+`tab-storage.ts` stores the pot, game context, active section, and picker views in
+`sessionStorage`, seeded from durable last-used defaults for a new tab. A memory
+snapshot preserves the tab's choices when storage is unavailable. Theme and language
+remain shared preferences.
 
-`navigation.ts` parses and formats fragment routes, which work beneath a hosting
-subpath and with the desktop's `file:` entry point. For example,
-`#simulator?game=together&ingredients=meat%40together,carrot%40together` opens that
-pot. The seven panel IDs are section routes; `#help` still opens About. Parameters
-include `game`, optional `dlc`/`character`, `ingredients` for Simulator,
-`inventory` for Discovery, and `highlight` for Food List/Recipe List. URL state
-overrides the corresponding saved state; the other picker's work stays local.
-URLs exclude appearance preferences and analyzer calculations. Unknown sections
-and invalid game/character/item values recover safely; input lengths are bounded.
+`personal-data.ts` owns the versioned `localStorage.foodGuidePersonalData` document:
+named inventories and cookbook dishes, each with a stable ID. Inventory ingredients
+are a set; dishes contain exactly four ingredients, including repeated ones, and
+capture their game/DLC/character context. `personal-data-ui.ts` owns their controls,
+sharing dialogs, and backup import/export. The active inventory ID is a tab preference,
+not part of the shared document. First use migrates the previous inventory once into
+“My inventory”; a fixed default ID and a Web Lock prevent duplicate first-run imports.
 
-Tabs are native anchors with tab semantics: modified clicks and the browser's
-link menu open independent copies. Section changes push history entries; edits
-replace the current URL without filling history with each ingredient change.
-Back, Forward, and manual fragment changes restore the matching page, game, and
-active selection. Matching ingredient selections retain existing analyzer results,
-expanded groups, and page positions. Together/Hamlet links preserve inactive
-single-player DLC preferences and do not treat them as a game change. Tab-local state and durable defaults still recover work before
-an unload event, including ingredients pruned by game changes. The browser suite
-checks shared-origin tabs, independent reloads, native new-tab links, history,
-deep links, and live theme/language synchronization in Chromium and Firefox.
+Writes use `navigator.locks` to serialize read/modify/write across tabs and Electron
+windows. User edits apply ingredient additions/removals to the latest stored inventory,
+not a stale full replacement. Other inventories, concurrent additions, and items hidden
+by the current game remain intact. Pending deltas overlay incoming storage events;
+storage and visibility events refresh the view without writing it back. Browsers without
+Web Locks fall back to queued writes within a tab, with no cross-tab locking guarantee.
+Storage failures retain edits in memory and show an export reminder. Invalid stored data
+is not overwritten automatically. Imports validate the entire JSON file, including IDs,
+names, ingredient availability for dishes, and game context, before adding copies with
+new IDs. Limits are 2 MB, 200 inventories, 2,000 dishes, and 1,024 items per inventory.
 
-Ingredient selections follow the active game on restoration and mode changes.
-Shared ingredients resolve to an available variant by their base ID; ingredients
-absent from the selected game are removed. Discovery keeps one of each ingredient,
-while the simulator preserves quantities in its four slots.
+`navigation.ts` parses and formats fragment routes for static subpaths and the desktop's
+`file:` entry point. Ordinary URLs contain the section, `game`, optional `dlc`/`character`,
+and reference `highlight`. Only **Share** adds `ingredients` (Simulator) or `inventory`
+(Discovery). Opening a snapshot restores the pot or creates a new shared-inventory copy,
+then replaces the address with the short navigation route. Appearance and analyzer
+results never enter the URL. Payload size and item counts are bounded.
+
+Tabs are native anchors with tab semantics, including modified clicks and link menus.
+Section changes push history; game edits replace the current route. Back/Forward and
+manual routes restore section and context while retaining the tab's pot and selected
+shared inventory. Returning to an unchanged selection preserves computed analyses,
+expanded groups, and page positions. Together/Hamlet links retain inactive single-player
+DLC preferences. Chromium and Firefox tests cover these routes, independent pot/views,
+synchronized inventories, cookbook loading, backup validation, and dialog keyboard use.
+
+Ingredient selections resolve to an available variant by base ID. Pot selections prune
+items unavailable in the chosen game; inventories preserve them in storage and display
+only those currently available. Discovery keeps one of each ingredient while the pot
+preserves quantities in four slots.
 
 Sortable tables take a `TableOptions<T>` object with a required localized caption.
 Overflowing wrappers become named, focusable regions so keyboard users can scroll

@@ -13,6 +13,57 @@
 import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
+	// Personal inventories, cookbook, sharing, and backups
+	inventoryLabel: 'Inventario',
+	inventoryDefault: 'Mi inventario',
+	inventoryName: 'Nombre del inventario',
+	inventoryRename: 'Renombrar',
+	inventoryNew: 'Nuevo inventario',
+	inventoryNewName: 'Inventario',
+	inventoryDuplicate: 'Duplicar',
+	inventoryShared: 'Inventario compartido',
+	inventorySyncHelp:
+		'Los inventarios se guardan y sincronizan entre pestañas. Cada pestaña puede ver un inventario diferente. Los ingredientes no disponibles en este juego siguen guardados.',
+	cookbookTitle: 'Mi recetario',
+	cookbookDishName: 'Nombre del plato (opcional)',
+	cookbookSave: 'Guardar plato',
+	cookbookSaveHelp:
+		'Elige cuatro ingredientes para guardar un plato con su configuración de juego y personaje.',
+	cookbookDishDefault: 'Plato de olla',
+	cookbookEmpty: 'Aún no hay platos guardados.',
+	cookbookSaved: 'Plato guardado en tu recetario.',
+	cookbookLoaded: 'Plato guardado cargado en la olla.',
+	cookbookLoad: 'Cargar plato',
+	cookbookLoadNamed: 'Cargar {name} en la olla',
+	personalCopy: 'copia',
+	personalClose: 'Cerrar',
+	personalDelete: 'Eliminar',
+	personalDeleteNamed: 'Eliminar {name}',
+	personalDeleteTitle: 'Eliminar elemento guardado',
+	personalDeletePrompt:
+		'¿Eliminar «{name}»? También se eliminará de las otras pestañas abiertas.',
+	personalCancel: 'Cancelar',
+	personalShare: 'Compartir',
+	personalShareHelp:
+		'Crea un enlace con una copia para otra persona. Las direcciones normales solo contienen la navegación y la configuración del juego. Los inventarios compartidos se abren como copias nuevas.',
+	personalShareSnapshot: 'Incluir la olla o el inventario actual',
+	personalShareLink: 'Enlace para compartir',
+	personalCopyLink: 'Copiar enlace',
+	personalLinkCopied: 'Enlace copiado.',
+	personalCopyManually: 'El enlace está seleccionado. Cópialo con el navegador o el teclado.',
+	personalData: 'Mis datos',
+	personalDataHelp:
+		'Exporta todos los inventarios y platos del recetario como una copia JSON. La importación añade copias nuevas sin reemplazar los datos existentes. Los datos personales permanecen en este dispositivo; compartirlos y exportarlos requiere una acción explícita.',
+	personalExport: 'Exportar copia de seguridad',
+	personalImport: 'Importar copia de seguridad',
+	personalImported: 'Se importaron {inventories} inventarios y {dishes} platos.',
+	personalImportError:
+		'No se pudo importar el archivo. Usa una copia JSON de la Guía de Comida con ingredientes, nombres y ajustes válidos (hasta 2 MB). Los datos existentes no se han reemplazado.',
+	personalStorageError:
+		'Los cambios están disponibles en esta pestaña, pero no se pudieron guardar. Exporta una copia antes de cerrarla.',
+	personalLimitError:
+		'Se alcanzó el límite de datos guardados. Exporta una copia y elimina primero las entradas que no uses.',
+
 	themeToggleTitle: 'Cambiar tema claro/oscuro',
 	themeSwitchToLight: 'Cambiar al tema claro',
 	themeSwitchToDark: 'Cambiar al tema oscuro',
@@ -319,7 +370,7 @@ export const dict = {
 	linkToItem: 'Enlace a {name}',
 	aboutNavigationHeading: 'Compartir y usar varias pestañas',
 	aboutNavigationBody:
-		'Copia la dirección para compartir la sección actual, el juego y la olla o el inventario. Atrás y Adelante permiten volver a las secciones. Abre el enlace de una sección en otra pestaña para comparar de forma independiente. Cada pestaña conserva sus ingredientes y ajustes de visualización al recargar; las pestañas nuevas comienzan con la última configuración guardada. El tema y el idioma se actualizan en todas las pestañas abiertas.',
+		'Copia la dirección para enlazar a una sección y un juego. Usa Compartir para incluir una copia de la olla o el inventario actual. Los inventarios con nombre y los platos del recetario se guardan entre sesiones y se sincronizan entre pestañas; cada pestaña elige su inventario. Los enlaces a inventarios compartidos crean copias nuevas. La olla y las vistas del selector son propias de cada pestaña. Mis datos permite importar o exportar una copia. El tema y el idioma se aplican a todas las pestañas.',
 	aboutAdvancedHeading: 'Uso avanzado (variables globales de JavaScript)',
 	aboutAdvancedBody1:
 		'La Guía de Comida añade a <code>window</code> algunas propiedades: <code>food</code>, <code>recipes</code> y <code>matchingNames</code>. El Analizador de Estadísticas escribe sus resultados en <code>analysis</code> y <code>recipeCrunchData</code>. Cada pestaña guarda su estado en <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> proporciona la última configuración guardada para las pestañas nuevas.',

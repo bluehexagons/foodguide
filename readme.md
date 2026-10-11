@@ -90,10 +90,24 @@ and their cooked forms. Use `tag:meat` to filter by a food tag or
 `recipe:butter muffin` to find ingredients for an exact recipe name.
 
 The # links beside food and recipe names highlight an entry and can be copied or
-opened in another tab. Copy the browser address to share a section with its game and current pot or
-inventory. Back and Forward navigate between sections. Section links can open
-in a new tab for comparison; each tab keeps its own work and picker preferences
-when reloaded. Theme and language changes synchronize across open tabs.
+opened in another tab. The browser address links to the current section and game;
+use **Share** to include a snapshot of your pot or inventory. A shared inventory
+opens as a new named copy. Ordinary addresses do not include ingredient selections.
+Back and Forward navigate between sections.
+
+Discovery supports multiple named inventories: create, rename, duplicate, or delete
+an inventory using its controls. Inventories persist between sessions and synchronize
+across tabs on the same browser profile and site. Each tab independently chooses
+which inventory to view. Changing the game hides unavailable items without deleting
+them. Pot choices and picker preferences remain local to each tab; new tabs start
+with the last saved defaults. Theme and language synchronize across tabs.
+
+Choose four pot ingredients and select **Save dish** to keep the combination in
+**My cookbook**, with its game and character settings. Loading a dish restores those
+settings and its ingredients. **My data** exports all inventories and dishes as a
+JSON backup or imports additional copies without replacing existing entries.
+Backups support transferring data to another browser or the desktop app. Personal
+data stays on your device and is not sent to a server.
 
 ## Development and deployment
 

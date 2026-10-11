@@ -25,7 +25,7 @@ export function guideTab(value: string | undefined): GuideTab {
 
 /** Fragment routes work with static subpath hosting and the desktop's file URL. */
 export function parseGuideRoute(hash: string): GuideRoute | null {
-	if (!hash.startsWith('#') || hash.length > 8192) {
+	if (!hash.startsWith('#') || hash.length > 131072) {
 		return null;
 	}
 	const [name, query = ''] = hash.slice(1).split('?');
@@ -65,7 +65,7 @@ export function parseGuideRoute(hash: string): GuideRoute | null {
 		route.ingredients = ids('ingredients', 4).map(id => id || null);
 	}
 	if (route.tab === 'discovery' && params.has('inventory')) {
-		route.inventory = [...new Set(ids('inventory', 256).filter(Boolean))];
+		route.inventory = [...new Set(ids('inventory', 1024).filter(Boolean))];
 	}
 	const highlight = params.get('highlight');
 	if (

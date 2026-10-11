@@ -15,6 +15,7 @@ import type { StringKey } from './strings.js';
 import type { DropdownItem } from './dropdown.js';
 import { createSavedStateStore, restoreGameSelection, type SavedState } from './preferences.js';
 import { createTabStorage } from './tab-storage.js';
+import { createPersonalDataUI } from './personal-data-ui.js';
 import {
 	applyGuideRoute,
 	formatGuideRoute,
@@ -22,7 +23,7 @@ import {
 	parseGuideRoute,
 	type GuideTab,
 } from './navigation.js';
-import { createFoodSelectionResolver } from './food-selection.js';
+import { createFoodSelectionResolver, getSavedFood } from './food-selection.js';
 import { createAnalysisFilters } from './analysis-filters.js';
 import { formatSignedValue, formatStatGain, percentageGain } from './number-format.js';
 import { getCollectionItem } from './collection.js';
@@ -160,9 +161,13 @@ import './locales/index.js';
 	let writeNavigation = () => {};
 	let pushNavigation = (_tab: GuideTab) => {};
 	const pickerRestorers: ((ids: (string | null)[]) => void)[] = [];
+	let personalUI: ReturnType<typeof createPersonalDataUI> | undefined = undefined;
+	let readInventory = (): string[] => [];
 	// Capture all controllers together, including selections pruned by a game change.
 	const saveState = () => {
 		if (initialized && !applyingRoute) {
+			personalUI?.saveInventory(readInventory());
+			personalUI?.updatePot();
 			preferences.update(state => {
 				for (const write of stateWriters) {
 					write(state);
@@ -174,7 +179,7 @@ import './locales/index.js';
 	const savedState = preferences.load();
 	const initialRoute = parseGuideRoute(window.location.hash);
 	if (initialRoute) {
-		applyGuideRoute(savedState, initialRoute);
+		applyGuideRoute(savedState, { ...initialRoute, inventory: undefined });
 	}
 	let activeTabId = guideTab(savedState.activeTab);
 	const selection = restoreGameSelection(savedState);
@@ -444,6 +449,7 @@ import './locales/index.js';
 		for (let i = 0; i < modeRefreshers.length; i++) {
 			modeRefreshers[i]();
 		}
+		personalUI?.refreshInventory();
 		saveState();
 	};
 
@@ -2624,7 +2630,7 @@ import './locales/index.js';
 
 			clearIngredientsBtn.addEventListener('click', () => {
 				// Check if there are any ingredients to clear
-				let hasIngredients = false;
+				let hasIngredients = !limited && !!personalUI?.inventorySnapshot().length;
 				for (let i = 0; i < parent.children.length; i++) {
 					if (getSlot(parent.children[i])) {
 						hasIngredients = true;
@@ -2653,6 +2659,7 @@ import './locales/index.js';
 					updateRecipes();
 				} else {
 					// Unlimited mode: remove elements directly, then rebuild
+					personalUI?.clearInventory();
 					const children = Array.from(parent.children);
 					children.forEach(child => {
 						if (getSlot(child)) {
@@ -2829,8 +2836,11 @@ import './locales/index.js';
 				state.pickers ??= [];
 				state.pickers[index] = limited
 					? fixedSlots.map(slot => getSlot(slot)?.key ?? null)
-					: [...slots];
+					: [];
 			});
+			if (!limited) {
+				readInventory = () => [...slots];
+			}
 
 			const refreshSelection = () => {
 				if (limited) {
@@ -3065,17 +3075,15 @@ import './locales/index.js';
 		}
 		return state;
 	};
-	const routeFor = (tab: GuideTab) => {
+	const routeFor = (tab: GuideTab, snapshot = false) => {
 		const state = captureState();
 		return formatGuideRoute({
 			tab,
 			selection: restoreGameSelection(state),
-			...(tab === 'simulator' ? { ingredients: state.pickers?.[0] ?? [] } : {}),
-			...(tab === 'discovery'
+			...(snapshot && tab === 'simulator' ? { ingredients: state.pickers?.[0] ?? [] } : {}),
+			...(snapshot && tab === 'discovery'
 				? {
-						inventory: (state.pickers?.[1] ?? []).filter(
-							(id): id is string => id !== null,
-						),
+						inventory: personalUI?.inventorySnapshot() ?? readInventory(),
 					}
 				: {}),
 			highlight:
@@ -3143,7 +3151,7 @@ import './locales/index.js';
 				pickerRestorers[0](route.ingredients);
 			}
 			if (route.inventory) {
-				pickerRestorers[1](route.inventory);
+				personalUI?.shareInventory(route.inventory);
 			}
 			setTab(route.tab);
 			if (route.tab === 'foodlist') {
@@ -3169,6 +3177,75 @@ import './locales/index.js';
 	}
 	if (initialRoute?.tab === 'crockpot' && initialRoute.highlight) {
 		highlightRecipes(initialRoute.highlight);
+	}
+	personalUI = createPersonalDataUI({
+		getTabStorage: () => tabStorage,
+		legacyInventory: (savedState.pickers?.[1] ?? [])
+			.map(id => (id ? getSavedFood(food, id)?.key : undefined))
+			.filter((id): id is string => !!id),
+		validIngredient: id => !!getCollectionItem(food, id),
+		validDish: dish => {
+			const selection = dish.selection;
+			const dishMode = calculateModeMask(
+				selection.version,
+				selection.dlc,
+				selection.character,
+				gameVersions,
+				dlcOptions,
+				characters,
+			);
+			const dishChar = calculateCharMask(
+				selection.character,
+				selection.version,
+				selection.dlc,
+				characters,
+			);
+			return dish.ingredients.every(id => {
+				const item = resolveIngredient(id, dishMode, dishChar);
+				return !!item && !item.uncookable;
+			});
+		},
+		projectIngredient: id => resolveIngredient(id, modeMask, charMask)?.key,
+		showInventory: ids => pickerRestorers[1](ids),
+		getPot: () => (captureState().pickers?.[0] ?? []).filter((id): id is string => id !== null),
+		getSelection: () => restoreGameSelection(captureState()),
+		getDishName: () => {
+			const items = (captureState().pickers?.[0] ?? [])
+				.map(id => (id ? getCollectionItem(food, id) : undefined))
+				.filter((item): item is Food => !!item);
+			if (items.length !== 4) {
+				return t('cookbookDishDefault');
+			}
+			const results = getRecipes(items);
+			const priority = highestPriority(results);
+			return results
+				.filter(row => row.priority === priority)
+				.map(row => row.name)
+				.join(' / ');
+		},
+		loadDish: dish => {
+			currentVersion = dish.selection.version;
+			Object.assign(activeDlc, dish.selection.dlc);
+			currentCharacter = dish.selection.character;
+			setMode();
+			pickerRestorers[0](dish.ingredients);
+			setTab('simulator');
+			requireElement('ingredients').querySelector<HTMLButtonElement>('button')?.focus();
+			saveState();
+		},
+		ingredientName: id => getCollectionItem(food, id)?.name ?? id,
+		shareUrl: snapshot => {
+			const url = new URL(
+				window.location.protocol === 'file:'
+					? 'https://foodguide.bluehexagons.com/index.htm'
+					: window.location.href,
+			);
+			url.hash = routeFor(activeTabId, snapshot);
+			return url.href;
+		},
+	});
+	if (initialRoute?.inventory) {
+		personalUI.shareInventory(initialRoute.inventory);
 	}
 	initialized = true;
 	saveState();

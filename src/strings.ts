@@ -29,6 +29,56 @@ const STORAGE_KEY = 'foodGuideLocale';
  * may then provide partial overrides. Anything missing falls back to English.
  */
 const defaultStrings = {
+	// Personal inventories, cookbook, sharing, and backups
+	inventoryLabel: 'Inventory',
+	inventoryDefault: 'My inventory',
+	inventoryName: 'Inventory name',
+	inventoryRename: 'Rename',
+	inventoryNew: 'New inventory',
+	inventoryNewName: 'Inventory',
+	inventoryDuplicate: 'Duplicate',
+	inventoryShared: 'Shared inventory',
+	inventorySyncHelp:
+		'Inventories are saved and synchronized across tabs. Each tab can view a different inventory. Items unavailable in this game stay saved.',
+	cookbookTitle: 'My cookbook',
+	cookbookDishName: 'Dish name (optional)',
+	cookbookSave: 'Save dish',
+	cookbookSaveHelp:
+		'Choose four ingredients to save a dish, including its game and character settings.',
+	cookbookDishDefault: 'Crock pot dish',
+	cookbookEmpty: 'No saved dishes yet.',
+	cookbookSaved: 'Dish saved to your cookbook.',
+	cookbookLoaded: 'Saved dish loaded into the crock pot.',
+	cookbookLoad: 'Load dish',
+	cookbookLoadNamed: 'Load {name} into the crock pot',
+	personalCopy: 'copy',
+	personalClose: 'Close',
+	personalDelete: 'Delete',
+	personalDeleteNamed: 'Delete {name}',
+	personalDeleteTitle: 'Delete saved item',
+	personalDeletePrompt: 'Delete “{name}”? This also removes it from other open tabs.',
+	personalCancel: 'Cancel',
+	personalShare: 'Share',
+	personalShareHelp:
+		'Create a snapshot link for someone else. Ordinary page addresses contain only navigation and game settings. Shared inventories open as new copies.',
+	personalShareSnapshot: 'Include the current pot or inventory',
+	personalShareLink: 'Shareable link',
+	personalCopyLink: 'Copy link',
+	personalLinkCopied: 'Link copied.',
+	personalCopyManually: 'The link is selected. Copy it using your browser or keyboard.',
+	personalData: 'My data',
+	personalDataHelp:
+		'Export all inventories and cookbook dishes as a JSON backup. Import adds new copies without replacing existing data. Personal data stays on this device; sharing and export are explicit.',
+	personalExport: 'Export backup',
+	personalImport: 'Import backup',
+	personalImported: 'Imported {inventories} inventories and {dishes} dishes.',
+	personalImportError:
+		'Could not import this file. Use a Food Guide JSON backup with valid ingredients, names, and game settings (up to 2 MB). Existing data has not been replaced.',
+	personalStorageError:
+		'Changes are available in this tab, but could not be saved. Export a backup before closing it.',
+	personalLimitError:
+		'The saved-data limit has been reached. Export a backup and remove unused entries first.',
+
 	// Theme toggle
 	themeToggleToDark: '🌙',
 	themeToggleToLight: '☀️',
@@ -347,7 +397,7 @@ const defaultStrings = {
 	linkToItem: 'Link to {name}',
 	aboutNavigationHeading: 'Sharing and multiple tabs',
 	aboutNavigationBody:
-		'Copy the address to share the current section, game, and pot or inventory. Back and Forward revisit sections. Open a section link in another tab to compare independently. Each tab keeps its own ingredients and view settings across reloads; new tabs start with your last saved setup. Theme and language changes apply to all open tabs.',
+		'Copy the address to link to a section and game. Use Share to include a snapshot of the current pot or inventory. Named inventories and cookbook dishes are saved between sessions and synchronized across tabs; each tab chooses its own inventory. Shared inventory links create new copies. Pot choices and picker views stay local to each tab. My data imports or exports a backup. Theme and language apply to all tabs.',
 	aboutAdvancedHeading: 'Advanced Use (JavaScript Globals)',
 	aboutAdvancedBody1:
 		'The Food Guide populates <code>window</code> with a few properties: <code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The Statistics Analyzer writes its results to <code>analysis</code> and <code>recipeCrunchData</code>. Each tab keeps its working state under <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> supplies the last saved setup for new tabs.',

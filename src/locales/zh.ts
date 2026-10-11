@@ -13,6 +13,53 @@
 import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
+	// Personal inventories, cookbook, sharing, and backups
+	inventoryLabel: '库存',
+	inventoryDefault: '我的库存',
+	inventoryName: '库存名称',
+	inventoryRename: '重命名',
+	inventoryNew: '新建库存',
+	inventoryNewName: '库存',
+	inventoryDuplicate: '复制',
+	inventoryShared: '分享的库存',
+	inventorySyncHelp:
+		'库存会保存并在标签页之间同步。每个标签页可以查看不同的库存。当前游戏中不可用的食材仍会保留。',
+	cookbookTitle: '我的食谱集',
+	cookbookDishName: '菜品名称（可选）',
+	cookbookSave: '保存菜品',
+	cookbookSaveHelp: '选择四种食材即可保存菜品及其游戏和角色设置。',
+	cookbookDishDefault: '烹饪锅菜品',
+	cookbookEmpty: '还没有保存的菜品。',
+	cookbookSaved: '菜品已保存到食谱集。',
+	cookbookLoaded: '已将保存的菜品载入烹饪锅。',
+	cookbookLoad: '载入菜品',
+	cookbookLoadNamed: '将{name}载入烹饪锅',
+	personalCopy: '副本',
+	personalClose: '关闭',
+	personalDelete: '删除',
+	personalDeleteNamed: '删除{name}',
+	personalDeleteTitle: '删除保存的项目',
+	personalDeletePrompt: '删除“{name}”？这也会从其他打开的标签页中删除该项目。',
+	personalCancel: '取消',
+	personalShare: '分享',
+	personalShareHelp:
+		'创建快照链接以分享给他人。普通页面地址只包含导航和游戏设置。分享的库存会作为新副本打开。',
+	personalShareSnapshot: '包含当前烹饪锅或库存',
+	personalShareLink: '分享链接',
+	personalCopyLink: '复制链接',
+	personalLinkCopied: '链接已复制。',
+	personalCopyManually: '链接已选中。请使用浏览器或键盘复制。',
+	personalData: '我的数据',
+	personalDataHelp:
+		'将所有库存和食谱集菜品导出为 JSON 备份。导入会添加新副本，不会替换现有数据。个人数据保存在此设备上；只有主动分享或导出时才会生成副本。',
+	personalExport: '导出备份',
+	personalImport: '导入备份',
+	personalImported: '已导入{inventories}个库存和{dishes}道菜品。',
+	personalImportError:
+		'无法导入此文件。请使用包含有效食材、名称和游戏设置的食物指南 JSON 备份（最大 2 MB）。现有数据未被替换。',
+	personalStorageError: '此标签页中可以使用更改，但无法保存。关闭前请导出备份。',
+	personalLimitError: '已达到保存数据上限。请先导出备份并删除不用的项目。',
+
 	themeToggleTitle: '切换深色/浅色主题',
 	themeSwitchToLight: '切换到浅色主题',
 	themeSwitchToDark: '切换到深色主题',
@@ -295,7 +342,7 @@ export const dict = {
 	linkToItem: '链接到{name}',
 	aboutNavigationHeading: '分享与多个标签页',
 	aboutNavigationBody:
-		'复制地址可分享当前页面、游戏和烹饪锅或库存。使用后退和前进可返回各个页面。在新标签页打开页面链接，即可独立比较。每个标签页重新加载后仍会保留自己的食材和显示设置；新标签页从上次保存的设置开始。主题和语言的更改会同步到所有打开的标签页。',
+		'复制地址可以链接到页面和游戏。使用“分享”可包含当前烹饪锅或库存的快照。命名库存和食谱集菜品会跨会话保存并在标签页之间同步；每个标签页可以选择自己的库存。分享的库存链接会创建新副本。烹饪锅选择和食材选择器显示设置各自保留在每个标签页中。“我的数据”可导入或导出备份。主题和语言会应用到所有标签页。',
 	aboutAdvancedHeading: '高级用法(JavaScript 全局变量)',
 	aboutAdvancedBody1:
 		'本食物指南会向 <code>window</code> 添加几个属性:<code>food</code>、<code>recipes</code> 和 <code>matchingNames</code>。统计分析器将其结果写入 <code>analysis</code> 和 <code>recipeCrunchData</code>。每个标签页的工作状态保存在 <code>sessionStorage.foodGuideState</code> 中；<code>localStorage.foodGuideState</code> 为新标签页提供上次保存的设置。',

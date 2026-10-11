@@ -1,5 +1,132 @@
 /* Components: ingredient picker, dropdowns, buttons, filters, search */
 
+.personal-toolbar,
+.personal-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+}
+.personal-toolbar {
+	padding: 8px 16px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+}
+.personal-status:empty {
+	display: none;
+}
+.personal-status {
+	flex-basis: 100%;
+	margin: 0;
+}
+.personal-controls label,
+.personal-dialog label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.personal-controls input,
+.personal-controls select,
+.personal-dialog input:not([type='checkbox']) {
+	max-width: 100%;
+	min-width: 0;
+	padding: 6px 8px;
+	border: 1px solid var(--border-color);
+	border-radius: 5px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font: inherit;
+}
+.personal-controls button,
+.personal-toolbar button,
+.personal-dialog button,
+.cookbook-list button {
+	min-height: 32px;
+	padding: 6px 10px;
+	border: 1px solid var(--border-color);
+	border-radius: 5px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font: inherit;
+	cursor: pointer;
+}
+.personal-controls button:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+.personal-help {
+	margin: 0;
+	flex-basis: 100%;
+	font-size: 0.85rem;
+	color: var(--fg-secondary);
+}
+.personal-dialog {
+	width: min(640px, calc(100% - 32px));
+	max-height: calc(100% - 32px);
+	overflow: auto;
+	padding: 20px;
+	border: 1px solid var(--border-color);
+	border-radius: 10px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+}
+.personal-dialog::backdrop {
+	background: rgb(0 0 0 / 45%);
+}
+.personal-dialog h2 {
+	margin-top: 0;
+}
+.personal-dialog label {
+	margin: 12px 0;
+	flex-wrap: wrap;
+}
+.personal-dialog input[type='text'] {
+	width: 100%;
+}
+.personal-dialog-heading {
+	display: flex;
+	align-items: start;
+	justify-content: space-between;
+	gap: 12px;
+}
+.personal-dialog-close {
+	flex-shrink: 0;
+}
+#personal-cookbook {
+	margin-top: 8px;
+}
+#personal-cookbook summary {
+	cursor: pointer;
+	min-height: 32px;
+}
+.cookbook-list {
+	list-style: none;
+	padding: 0;
+	margin: 8px 0;
+}
+.cookbook-list li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 0;
+	border-top: 1px solid var(--border-color);
+}
+.cookbook-list li > span {
+	flex: 1 1 240px;
+	font-size: 0.9rem;
+}
+@media (pointer: coarse) {
+	.personal-controls :is(button, input, select),
+	.personal-toolbar button,
+	.personal-dialog :is(button, input),
+	.cookbook-list button,
+	#personal-cookbook summary {
+		min-height: 44px;
+	}
+}
+
 .instructions h2 {
 	margin: 0 0 4px;
 	padding: 0;

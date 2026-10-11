@@ -92,13 +92,15 @@ and their cooked forms. Use `tag:meat` to filter by a food tag or
 ## Development and deployment
 
 ```bash
-npx playwright install chromium
+npx playwright install chromium firefox
 npm run check
+npm run test:browser -- --browser=firefox
 ```
 
-`check` runs formatting, linting, source type checking, unit tests, and a Chromium
-browser smoke test. On Linux, deployment tests also require Git, Bash, `flock`, and
-`rsync`.
+`check` runs formatting, linting, source type checking, unit tests, and the Chromium
+browser suite. The next command runs the shared suite in Firefox. CI and deployment
+checks require both browsers. On Linux, deployment tests also require Git, Bash,
+`flock`, and `rsync`.
 
 - [Development guide](docs/development.md): commands, module layout, tests, and assets.
 - [Deployment guide](docs/deployment.md): GitHub Pages and the optional server webhook.

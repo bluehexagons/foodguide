@@ -2,11 +2,27 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
+import { parseArgs } from 'node:util';
+import { chromium, firefox } from 'playwright';
 import axe from 'axe-core';
 
 const ROOT_DIR = join(import.meta.dirname, '..');
 const HTTP_SERVER = join(ROOT_DIR, 'node_modules/http-server/bin/http-server');
+const { values: browserOptions } = parseArgs({
+	options: {
+		browser: { type: 'string', default: process.env.PLAYWRIGHT_BROWSER || 'chromium' },
+		headed: { type: 'boolean', default: false },
+	},
+});
+const browserType = new Map([
+	['chromium', chromium],
+	['firefox', firefox],
+]).get(browserOptions.browser);
+if (!browserType) {
+	throw new Error(`Unsupported browser: ${browserOptions.browser}. Choose chromium or firefox.`);
+}
+const chromiumOnly =
+	browserType === chromium ? false : 'Trusted gesture injection requires Chromium CDP';
 
 const colorContrast = (first, second) => {
 	const luminance = color => {
@@ -96,9 +112,9 @@ const createBrowserFixture = async t => {
 	const { server, ready } = startServer();
 	t.after(() => stopServer(server));
 	const baseUrl = await ready;
-	const browser = await chromium.launch({
-		headless: true,
-		...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
+	const browser = await browserType.launch({
+		headless: !browserOptions.headed,
+		...(browserType === chromium && process.env.PLAYWRIGHT_EXECUTABLE_PATH
 			? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
 			: {}),
 	});
@@ -124,6 +140,20 @@ const trackDiagnostics = page => {
 	const diagnostics = [];
 	page.on('pageerror', error => diagnostics.push(error.message));
 	page.on('console', message => {
+		// Juggler can query layout before navigation finishes; retain application warnings.
+		if (
+			browserType === firefox &&
+			message.type() === 'warning' &&
+			message
+				.text()
+				.startsWith(
+					'[JavaScript Warning: "Layout was forced before the page was fully loaded.',
+				) &&
+			message.text().includes('file: "chrome://juggler/content/content/main.js"')
+		) {
+			console.info('Firefox automation emitted an internal pre-load layout warning.');
+			return;
+		}
 		if (['warning', 'error'].includes(message.type())) {
 			diagnostics.push(message.text());
 		}
@@ -512,7 +542,7 @@ test('matched table rows keep aligned, contrasting edges through hover, focus, a
 			);
 			assert.ok(
 				colorContrast(first.borderTop, first.background) >= 3,
-				`${label}: inner edge contrast`,
+				`${label}: inner edge contrast (${first.borderTop} on ${first.background})`,
 			);
 			assert.ok(
 				colorContrast(first.borderTop, before.neighborBackground) >= 3,
@@ -1712,6 +1742,10 @@ for (const { tab, slots } of [
 	{ tab: 'discovery', slots: '#inventory' },
 ]) {
 	test(`${tab} touch input supports taps, cancellation, and scrolling without accidental changes`, async t => {
+		if (chromiumOnly) {
+			t.skip(chromiumOnly);
+			return;
+		}
 		const { baseUrl, browser } = await createBrowserFixture(t);
 		const page = await createSavedPage(
 			browser,
@@ -1736,7 +1770,10 @@ for (const { tab, slots } of [
 			touchPoints: [point],
 		});
 		assert.deepEqual(await selectedKeys(), [], 'Pressing does not select');
-		await session.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+		await session.send('Input.dispatchTouchEvent', {
+			type: 'touchCancel',
+			touchPoints: [],
+		});
 		assert.deepEqual(await selectedKeys(), []);
 		await touchContextMenu(session, meat);
 		assert.deepEqual(
@@ -2806,6 +2843,10 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 });
 
 test('touch scrolling of recipe tables and analyzer filters does not activate their controls', async t => {
+	if (chromiumOnly) {
+		t.skip(chromiumOnly);
+		return;
+	}
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(
 		browser,

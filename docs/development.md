@@ -2,24 +2,25 @@
 
 Use Node.js 24 or newer (`nvm use` selects the CI version), install the lockfile
 with `npm ci --ignore-scripts`, and install
-the test browser with `npx playwright install chromium`. On Linux,
-`npx playwright install --with-deps chromium` also installs the browser's system
+the test browsers with `npx playwright install chromium firefox`. On Linux,
+`npx playwright install --with-deps chromium firefox` also installs their system
 dependencies; this may require administrator access. After upgrading Playwright,
 [install its matching browser binaries again](https://playwright.dev/docs/browsers).
 
 ## Commands
 
-| Command                                 | Purpose                                                                 |
-| --------------------------------------- | ----------------------------------------------------------------------- |
-| `npm run dev`                           | Build modules, generate sprites, and serve `html/` at `127.0.0.1:8080`. |
-| `npm run build`                         | Compile browser modules to `html/` and build tools to `scripts/`.       |
-| `npm run generate-sprites`              | Rebuild ignored sprite sheets and their manifest.                       |
-| `npm run check`                         | Run all formatting, lint, type, unit, and browser checks.               |
-| `npm test`                              | Run Node's tests, including deployment tests on Linux.                  |
-| `npm run test:browser`                  | Generate sprites and run the Chromium smoke test.                       |
-| `npm run typecheck`                     | Check strict sources and library consumers with both module resolvers.  |
-| `npm run format:check` / `npm run lint` | Check formatting or lint independently.                                 |
-| `npm run fix`                           | Apply oxfmt formatting and oxlint's safe automatic fixes.               |
+| Command                                     | Purpose                                                                 |
+| ------------------------------------------- | ----------------------------------------------------------------------- |
+| `npm run dev`                               | Build modules, generate sprites, and serve `html/` at `127.0.0.1:8080`. |
+| `npm run build`                             | Compile browser modules to `html/` and build tools to `scripts/`.       |
+| `npm run generate-sprites`                  | Rebuild ignored sprite sheets and their manifest.                       |
+| `npm run check`                             | Run all formatting, lint, type, unit, and browser checks.               |
+| `npm test`                                  | Run Node's tests, including deployment tests on Linux.                  |
+| `npm run test:browser`                      | Generate sprites and run the Chromium smoke test.                       |
+| `npm run test:browser -- --browser=firefox` | Run the shared browser suite in Firefox.                                |
+| `npm run typecheck`                         | Check strict sources and library consumers with both module resolvers.  |
+| `npm run format:check` / `npm run lint`     | Check formatting or lint independently.                                 |
+| `npm run fix`                               | Apply oxfmt formatting and oxlint's safe automatic fixes.               |
 
 All production modules, including the page controller and sprite generator, use
 strict TypeScript. JavaScript tests exercise the compiled browser modules. oxlint
@@ -29,8 +30,23 @@ and configuration. Generated output and the npm-managed lockfile are excluded.
 The compiler separately checks strict types and public library declarations.
 Unit tests also pack the library and install it offline into a temporary consumer,
 then check its runtime exports and strict NodeNext and bundler type resolution.
-`PLAYWRIGHT_EXECUTABLE_PATH` can select an existing Chromium executable for the
-smoke test; CI uses the browser downloaded for the locked Playwright version.
+Browser tests default to Chromium. Select Firefox with `--browser=firefox`, or set
+`PLAYWRIGHT_BROWSER=firefox` when running a focused Node test. `--headed` opens a
+visible test browser in a graphical session; for example:
+
+```bash
+npm run test:browser -- --browser=firefox --headed
+```
+
+`PLAYWRIGHT_EXECUTABLE_PATH` selects an existing Chromium executable and is ignored
+for Firefox. Firefox automation uses Playwright's patched build, installed by the
+command above, rather than a desktop Firefox installation. See the
+[Playwright browser guide](https://playwright.dev/docs/browsers#firefox).
+CI runs the shared suite in both browsers using the binaries matched to the locked
+Playwright version. The deployment workflow requires both jobs to pass.
+The known Firefox automation warning about pre-load layout in
+`chrome://juggler/content/content/main.js` is reported separately; application
+warnings and errors still fail the browser checks.
 
 On Linux, install Git, Bash, `flock` (usually supplied by `util-linux`), and `rsync`
 for the deployment integration tests. Those tests use temporary repositories and
@@ -347,8 +363,11 @@ paused statistics results, empty filtered tables, empty searches, and full-pot
 feedback. English small-screen and forced-color scans repeat both themes. It also
 exercises keyboard flows, horizontal table scrolling, search feedback,
 and focus recovery,
-trusted Chromium touch taps/canceled gestures, picker/table scrolling, and
-long-press event handling. Touch layout checks cover 320, 375, 768, and 1280-pixel
+touch taps and long-press event handling. Chromium also tests trusted canceled
+gestures and picker/table scrolling through CDP; those three tests report explicit
+skips in Firefox, where CDP is unavailable. Firefox still exercises emulated touch
+taps and mobile viewport layouts. Touch layout
+checks cover 320, 375, 768, and 1280-pixel
 viewports in all three languages, plus every picker display/density combination.
 Narrow-screen checks also apply the [increased text spacing](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing)
 values and verify that selected ingredient names remain unclipped.

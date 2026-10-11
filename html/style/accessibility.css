@@ -533,7 +533,8 @@ table tr.highlighted .name-cell::before {
 		--selected-border: Highlight;
 		--excluded-bg: Canvas;
 		--excluded-border: CanvasText;
-		--highlighted-border: Highlight;
+		/* Firefox's Highlight can be too pale against Canvas; use the text pair. */
+		--highlighted-border: CanvasText;
 		--strike-text: CanvasText;
 	}
 

@@ -14,6 +14,26 @@ Use Node.js 24 or newer and include development dependencies; Sharp is required 
 the sprite assets. Both `index.html` and `index.htm` must be served. Relative URLs
 allow the site to work under the GitHub Pages repository path.
 
+## Basaltwater
+
+`basaltwater.json` builds the complete site once and serves that output at both
+the supplied deployment domain and `bluehexagons.com/foodguide/`. Deploy it with
+the portfolio repository in the same setup command so Nginx retains both routes:
+
+```bash
+basaltw setup server_web SERVER_IP deploy --cloudflare \
+    --deploy bluehexagons.com https://github.com/bluehexagons/bluehexagons.git \
+    --deploy foodguide.bluehexagons.com https://github.com/bluehexagons/foodguide.git
+```
+
+The checked-in `.nvmrc` selects Node 24 for the isolated build account. The
+manifest installs development dependencies with lifecycle scripts disabled;
+`generate-sprites` also compiles the TypeScript modules. No separate webhook
+receiver is required for setup or `basaltw patch` deployments. After initial
+setup, run `sudo setup-cloudflare-tunnel` on the server and configure both
+hostnames in Cloudflare DNS. `/foodguide` redirects to `/foodguide/` so relative
+module and image URLs work.
+
 ## GitHub Pages
 
 `.github/workflows/deploy.yml` runs on pushes to `main` and manual dispatch. It

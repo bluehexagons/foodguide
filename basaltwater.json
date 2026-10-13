@@ -1,0 +1,19 @@
+{
+	"version": 1,
+	"components": [
+		{
+			"name": "site",
+			"type": "static",
+			"domain": "{{domain}}",
+			"build": "npm ci --ignore-scripts --include=dev && npm run generate-sprites",
+			"output": "html"
+		},
+		{
+			"name": "portfolio-path",
+			"type": "static",
+			"domain": "bluehexagons.com",
+			"path": "/foodguide/",
+			"output": "html"
+		}
+	]
+}

@@ -24,12 +24,24 @@ const createDeployment = async t => {
 	await git(['config', 'user.email', 'deployment-test@example.invalid']);
 	await mkdir(join(origin, 'html'));
 	await writeFile(join(origin, 'html', 'index.html'), 'current guide');
+	await mkdir(join(origin, 'build-tool'));
+	await writeFile(
+		join(origin, 'build-tool', 'package.json'),
+		JSON.stringify({
+			name: 'foodguide-build-tool',
+			version: '1.0.0',
+			type: 'module',
+			exports: './index.js',
+		}),
+	);
+	await writeFile(join(origin, 'build-tool', 'index.js'), 'export const generated = true;');
 	await writeFile(
 		join(origin, 'generate.mjs'),
 		`import { mkdir, writeFile } from 'node:fs/promises';
+import { generated } from 'foodguide-build-tool';
 if (process.env.FOODGUIDE_TEST_FAIL_BUILD) throw new Error('Sprite generation failed');
 await mkdir('html/img/sprites', { recursive: true });
-await writeFile('html/img/sprites/sprites.json', '{"generated":true}');
+await writeFile('html/img/sprites/sprites.json', JSON.stringify({ generated }));
 `,
 	);
 	await writeFile(
@@ -37,6 +49,7 @@ await writeFile('html/img/sprites/sprites.json', '{"generated":true}');
 		JSON.stringify({
 			name: 'foodguide-deployment-fixture',
 			version: '1.0.0',
+			devDependencies: { 'foodguide-build-tool': 'file:build-tool' },
 			scripts: {
 				preinstall: 'node -e "process.exit(1)"',
 				build: 'node generate.mjs',
@@ -51,7 +64,13 @@ await writeFile('html/img/sprites/sprites.json', '{"generated":true}');
 			version: '1.0.0',
 			lockfileVersion: 3,
 			packages: {
-				'': { name: 'foodguide-deployment-fixture', version: '1.0.0' },
+				'': {
+					name: 'foodguide-deployment-fixture',
+					version: '1.0.0',
+					devDependencies: { 'foodguide-build-tool': 'file:build-tool' },
+				},
+				'build-tool': { name: 'foodguide-build-tool', version: '1.0.0', dev: true },
+				'node_modules/foodguide-build-tool': { resolved: 'build-tool', link: true },
 			},
 		}),
 	);
@@ -86,6 +105,20 @@ test(
 			},
 		);
 		await assert.rejects(readFile(join(serving, 'obsolete.txt')), { code: 'ENOENT' });
+	},
+);
+
+test(
+	'server deployment installs build tools when NODE_ENV is production',
+	{ skip: process.platform !== 'linux' },
+	async t => {
+		const { serving, deploy } = await createDeployment(t);
+		await deploy({ NODE_ENV: 'production' });
+		assert.equal(await readFile(join(serving, 'index.html'), 'utf8'), 'current guide');
+		assert.deepEqual(
+			JSON.parse(await readFile(join(serving, 'img/sprites/sprites.json'), 'utf8')),
+			{ generated: true },
+		);
 	},
 );
 

@@ -5,7 +5,7 @@ The compiler output and `html/img/sprites/` are ignored by Git and must be creat
 each checkout.
 
 ```bash
-npm ci --ignore-scripts
+npm ci --ignore-scripts --include=dev
 npm run generate-sprites
 ```
 
@@ -86,7 +86,8 @@ also update the hook's executable and working directory if the installation path
 changes.
 
 Each invocation locks the deployment checkout, fetches `origin/main`, resets the
-checkout to that revision, installs the lockfile with lifecycle scripts disabled,
+checkout to that revision, installs the lockfile with lifecycle scripts disabled
+and development dependencies included even when `NODE_ENV=production`,
 compiles modules, generates sprites, and copies `html/` with `rsync --delete`. Local changes in the
 deployment checkout are discarded. A dependency installation or sprite build
 failure stops before copying files to the serving directory. The final rsync

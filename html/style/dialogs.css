@@ -139,7 +139,7 @@ html:has(.personal-dialog[open]) {
 	color: var(--fg-primary);
 	background: var(--excluded-bg);
 }
-.personal-dialog-body > .share-snapshot {
+.share-choice {
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
@@ -150,7 +150,7 @@ html:has(.personal-dialog[open]) {
 	cursor: pointer;
 	font-weight: 400;
 }
-.share-snapshot input {
+.share-choice input {
 	min-height: 0;
 	margin: 4px 0 0;
 	width: 18px;
@@ -158,11 +158,11 @@ html:has(.personal-dialog[open]) {
 	flex-shrink: 0;
 	accent-color: var(--focus-color);
 }
-.share-snapshot strong,
-.share-snapshot small {
+.share-choice strong,
+.share-choice small {
 	display: block;
 }
-.share-snapshot small {
+.share-choice small {
 	margin-top: 4px;
 	color: var(--fg-secondary);
 	font-size: 12px;
@@ -343,4 +343,31 @@ html:has(.personal-dialog[open]) {
 	.personal-dialog button.personal-dialog-close {
 		width: 44px;
 	}
+}
+
+.share-includes {
+	border: 0;
+	padding: 0;
+	margin: 20px 0 12px;
+	min-width: 0;
+}
+.share-includes legend {
+	margin-bottom: 10px;
+	font-weight: 600;
+}
+.share-includes .share-choice {
+	margin: 0 0 8px;
+	padding: 10px 12px;
+	font-size: 13px;
+}
+.share-choice:has(input:disabled) {
+	opacity: 0.65;
+	cursor: default;
+}
+.share-choice:focus-within {
+	outline: 2px solid var(--focus-color);
+	outline-offset: 2px;
+}
+.share-choice[hidden] {
+	display: none;
 }

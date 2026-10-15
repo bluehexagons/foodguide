@@ -14,7 +14,29 @@ import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
 	// Dialogs, options, and information pages
-	personalShareTitle: 'Compartir esta vista',
+	shareDestination: 'Enlace a',
+	shareCurrentSite: 'Este sitio web',
+	shareDevelopmentSite: 'Versión en desarrollo · GitHub Pages',
+	shareRepository: 'Código fuente · GitHub',
+	shareCurrentHelp: 'Comparte un enlace al sitio web que estás usando.',
+	shareDevelopmentHelp:
+		'La versión en desarrollo más reciente, publicada desde la rama main tras superar las comprobaciones.',
+	shareRepositoryHelp:
+		'Comparte el código fuente, los informes de problemas y el historial de desarrollo del proyecto.',
+	shareIncludes: 'Incluir en el enlace',
+	shareSection: 'Sección actual',
+	shareSectionHelp: 'Desmárcala para compartir un enlace general a la guía.',
+	shareGame: 'Juego, DLC y personaje',
+	sharePot: 'Ingredientes de la olla',
+	shareInventory: 'Ingredientes del inventario',
+	shareHighlight: 'Alimento o receta resaltados',
+	shareDetailsHelp:
+		'Incluye la sección y los ajustes del juego para compartir ingredientes o un elemento resaltado.',
+	shareRemember: 'Estas opciones solo se recuerdan en esta pestaña.',
+	linkDevelopmentSite: 'Versión en desarrollo en GitHub Pages',
+	aboutDevelopment:
+		'GitHub Pages aloja la versión en desarrollo actual de esta guía. Se actualiza desde la rama principal de desarrollo (llamada «main») después de superar las comprobaciones automáticas. Puedes usarla para consultar los cambios recientes.',
+	personalShareTitle: 'Compartir un enlace',
 	personalSnapshotHelp:
 		'La otra persona recibe una copia. Sus cambios no afectarán a tu olla ni a tu inventario.',
 	optionsAppearance: 'Idioma y apariencia',
@@ -36,7 +58,6 @@ export const dict = {
 	personalDone: 'Listo',
 	personalExported: 'Tu copia de seguridad está lista para guardar.',
 	personalImporting: 'Importando {name}…',
-	aboutEyebrow: 'Cocina con un plan',
 	gameInfoHeading: 'Conceptos de alimentación y cocina',
 	gameInfoIntro:
 		'Una referencia rápida sobre frescura, reglas de la olla y alimentación de los personajes.',
@@ -96,8 +117,7 @@ export const dict = {
 	personalCancel: 'Cancelar',
 	personalShare: 'Compartir',
 	personalShareHelp:
-		'Comparte esta sección y los ajustes del juego. No se incluyen el tema ni el idioma.',
-	personalShareSnapshot: 'Incluir mi olla o inventario',
+		'Elige el destino del enlace y qué incluir. No se incluyen el tema ni el idioma.',
 	personalShareLink: 'Enlace para compartir',
 	personalCopyLink: 'Copiar enlace',
 	personalLinkCopied: 'Enlace copiado.',
@@ -419,7 +439,7 @@ export const dict = {
 		'Código abierto, mantenido como esfuerzo comunitario en GitHub: <a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">github.com/bluehexagons/foodguide</a>.',
 	aboutChangelog:
 		'Para ver los cambios más recientes, consulta el <a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank" rel="noopener">historial de commits</a>.',
-	aboutSectionsHeading: 'Encuentra la herramienta adecuada',
+	aboutSectionsHeading: 'Secciones',
 	aboutSimulatorHeading: 'Simulador',
 	aboutSimulatorBody:
 		'Llena la olla con hasta cuatro ingredientes para ver los platos de mayor prioridad. Las sugerencias muestran qué puedes cocinar al completar una olla parcial.',
@@ -433,7 +453,7 @@ export const dict = {
 	aboutStatisticsBody:
 		'Compara combinaciones de cuatro ingredientes y filtra por receta o ingrediente. Despliega un grupo para explorar sus combinaciones; puedes pausar o actualizar mientras se realiza el cálculo.',
 	linkToItem: 'Enlace a {name}',
-	aboutNavigationHeading: 'Guardar y compartir',
+	aboutNavigationHeading: 'Datos guardados y enlaces compartidos',
 	aboutNavigationBody:
 		'Comparte esta sección y el juego con una captura opcional de la olla o el inventario. Los inventarios y platos se guardan en este navegador y se sincronizan entre sus pestañas. Cada pestaña mantiene su propia olla y vista de trabajo. Abre Opciones para cambiar el idioma, el tema o gestionar copias de seguridad.',
 	aboutAdvancedHeading: 'Avanzado: consola de JavaScript',

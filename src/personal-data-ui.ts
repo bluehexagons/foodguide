@@ -1,3 +1,5 @@
+import { formatShareUrl, type SharePreferences } from './share-link.js';
+import type { GuideRoute } from './navigation.js';
 import type { GameSelection } from './preferences.js';
 import { characters, dlcOptions, gameVersions } from './constants.js';
 import { createHeaderActions } from './header-actions.js';
@@ -29,8 +31,7 @@ interface PersonalUIOptions {
 	getDishName: () => string;
 	loadDish: (dish: CookbookDish) => void;
 	previewDish: (dish: CookbookDish) => CookbookPreview;
-	shareUrl: (snapshot: boolean) => string;
-	canShareSnapshot: () => boolean;
+	getShareRoute: () => GuideRoute;
 }
 
 export function createPersonalDataUI(options: PersonalUIOptions) {
@@ -503,14 +504,61 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	text(shareHelp, 'personalShareHelp');
 	shareHelp.id = 'personal-share-description';
 	shareDialog.setAttribute('aria-describedby', shareHelp.id);
-	const snapshotLabel = element('label', shareBody);
-	snapshotLabel.className = 'share-snapshot';
-	const snapshot = element('input', snapshotLabel);
-	snapshot.type = 'checkbox';
-	snapshot.checked = true;
-	const snapshotCaption = element('span', snapshotLabel);
-	text(element('strong', snapshotCaption), 'personalShareSnapshot');
-	text(element('small', snapshotCaption), 'personalSnapshotHelp');
+	const destinationLabel = element('label', shareBody);
+	destinationLabel.htmlFor = 'personal-share-destination';
+	text(destinationLabel, 'shareDestination');
+	const destination = element('select', shareBody);
+	destination.id = 'personal-share-destination';
+	for (const [value, key] of [
+		['current', 'shareCurrentSite'],
+		['development', 'shareDevelopmentSite'],
+		['repository', 'shareRepository'],
+	] as const) {
+		const option = element('option', destination);
+		option.value = value;
+		text(option, key);
+	}
+	const destinationHelp = element('p', shareBody);
+	destinationHelp.id = 'personal-share-destination-help';
+	destinationHelp.className = 'option-help';
+	destination.setAttribute('aria-describedby', destinationHelp.id);
+	const includes = element('fieldset', shareBody);
+	includes.className = 'share-includes';
+	text(element('legend', includes), 'shareIncludes');
+	const shareChoice = (id: string, key: StringKey, helpKey?: StringKey) => {
+		const label = element('label', includes);
+		label.className = 'share-choice';
+		const input = element('input', label);
+		input.id = id;
+		input.type = 'checkbox';
+		input.checked = true;
+		const caption = element('span', label);
+		text(element('strong', caption), key);
+		if (helpKey) {
+			const help = element('small', caption);
+			help.id = `${id}-help`;
+			text(help, helpKey);
+			input.setAttribute('aria-describedby', help.id);
+		}
+		return { input, label, caption };
+	};
+	const sectionChoice = shareChoice('share-section', 'shareSection', 'shareSectionHelp');
+	const selectionChoice = shareChoice('share-selection', 'shareGame');
+	const snapshotChoice = shareChoice('share-snapshot', 'sharePot', 'personalSnapshotHelp');
+	const highlightChoice = shareChoice('share-highlight', 'shareHighlight');
+	const detailHelp = element('p', includes);
+	detailHelp.className = 'option-help';
+	detailHelp.id = 'share-detail-help';
+	text(detailHelp, 'shareDetailsHelp');
+	for (const input of [snapshotChoice.input, highlightChoice.input]) {
+		input.setAttribute(
+			'aria-describedby',
+			[input.getAttribute('aria-describedby'), detailHelp.id].filter(Boolean).join(' '),
+		);
+	}
+	const remember = element('p', shareBody);
+	remember.className = 'option-help';
+	text(remember, 'shareRemember');
 	const linkLabel = element('label', shareBody);
 	linkLabel.htmlFor = 'personal-share-link';
 	text(linkLabel, 'personalShareLink');
@@ -544,18 +592,48 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		}),
 		'copy',
 	).classList.add('button-primary');
-	snapshot.addEventListener('change', () => {
-		link.value = options.shareUrl(snapshot.checked);
+	// These controls belong to this document, never to shared localStorage preferences.
+	const updateShare = () => {
+		const route = options.getShareRoute();
+		const repository = destination.value === 'repository';
+		includes.disabled = repository;
+		includes.hidden = repository;
+		destinationHelp.textContent = t(
+			repository
+				? 'shareRepositoryHelp'
+				: destination.value === 'development'
+					? 'shareDevelopmentHelp'
+					: 'shareCurrentHelp',
+		);
+		snapshotChoice.label.hidden = !route.ingredients && !route.inventory;
+		snapshotChoice.caption.querySelector('strong')!.textContent = t(
+			route.inventory ? 'shareInventory' : 'sharePot',
+		);
+		highlightChoice.label.hidden = !route.highlight;
+		const details = sectionChoice.input.checked && selectionChoice.input.checked;
+		snapshotChoice.input.disabled = !details;
+		highlightChoice.input.disabled = !details;
+		detailHelp.hidden =
+			details || (snapshotChoice.label.hidden && highlightChoice.label.hidden);
+		const choices: SharePreferences = {
+			destination: destination.value as SharePreferences['destination'],
+			section: sectionChoice.input.checked,
+			selection: selectionChoice.input.checked,
+			snapshot: snapshotChoice.input.checked,
+			highlight: highlightChoice.input.checked,
+		};
+		link.value = formatShareUrl(window.location.href, route, choices);
 		showCopyStatus();
-	});
+	};
+	destination.addEventListener('change', updateShare);
+	includes.addEventListener('change', updateShare);
+	labels.push(updateShare);
 	withIcon(
 		button(toolbar, 'personalShare', () => {
-			snapshotLabel.hidden = !options.canShareSnapshot();
-			link.value = options.shareUrl(snapshot.checked);
-			showCopyStatus();
+			updateShare();
 			shareDialog.showModal();
-			link.focus();
-			link.select();
+			shareBody.scrollTop = 0;
+			destination.focus();
 		}),
 		'share',
 	).id = 'personal-share-button';

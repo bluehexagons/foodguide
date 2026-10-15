@@ -30,7 +30,28 @@ const STORAGE_KEY = 'foodGuideLocale';
  */
 const defaultStrings = {
 	// Dialogs, options, and information pages
-	personalShareTitle: 'Share this view',
+	shareDestination: 'Link to',
+	shareCurrentSite: 'This website',
+	shareDevelopmentSite: 'Development version · GitHub Pages',
+	shareRepository: 'Source code · GitHub',
+	shareCurrentHelp: 'Share a link to the website you are using.',
+	shareDevelopmentHelp:
+		'The latest development version, published from the main branch after checks pass.',
+	shareRepositoryHelp: 'Share the project’s source code, issue tracker and development history.',
+	shareIncludes: 'Include in the link',
+	shareSection: 'Current section',
+	shareSectionHelp: 'Leave unchecked for a general link to the guide.',
+	shareGame: 'Game, DLC and character',
+	sharePot: 'Pot ingredients',
+	shareInventory: 'Inventory ingredients',
+	shareHighlight: 'Highlighted food or recipe',
+	shareDetailsHelp:
+		'Include both the section and game settings to share ingredients or a highlighted item.',
+	shareRemember: 'These choices are remembered only in this tab.',
+	linkDevelopmentSite: 'Development version on GitHub Pages',
+	aboutDevelopment:
+		'GitHub Pages hosts the current development version of this guide. It updates from the main development branch (called “main”) after automated checks pass. You can use it to check recent changes.',
+	personalShareTitle: 'Share a link',
 	personalSnapshotHelp:
 		'The recipient gets a copy. Their changes won’t affect your pot or inventory.',
 	optionsAppearance: 'Language & appearance',
@@ -51,7 +72,6 @@ const defaultStrings = {
 	personalDone: 'Done',
 	personalExported: 'Your backup is ready to save.',
 	personalImporting: 'Importing {name}…',
-	aboutEyebrow: 'Cook with a plan',
 	gameInfoHeading: 'Food & cooking basics',
 	gameInfoIntro: 'A quick reference for freshness, Crock Pot rules and character food mechanics.',
 	gameInfoContents: 'Jump to a topic',
@@ -108,8 +128,8 @@ const defaultStrings = {
 	personalDeletePrompt: 'Delete “{name}”? This also removes it from other open tabs.',
 	personalCancel: 'Cancel',
 	personalShare: 'Share',
-	personalShareHelp: 'Share this section and game settings. Theme and language are not included.',
-	personalShareSnapshot: 'Include my pot or inventory',
+	personalShareHelp:
+		'Choose where the link goes and what to include. Theme and language are not included.',
 	personalShareLink: 'Shareable link',
 	personalCopyLink: 'Copy link',
 	personalLinkCopied: 'Link copied.',
@@ -439,7 +459,7 @@ const defaultStrings = {
 		'Open-source and maintained as a community effort on GitHub: <a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">github.com/bluehexagons/foodguide</a>.',
 	aboutChangelog:
 		'For the latest changes, see the <a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank" rel="noopener">commit history</a>.',
-	aboutSectionsHeading: 'Find the right tool',
+	aboutSectionsHeading: 'Sections',
 	aboutSimulatorHeading: 'Simulator',
 	aboutSimulatorBody:
 		'Fill the pot with up to four ingredients to see the highest-priority dishes. Suggestions show what you could cook by completing a partial pot.',
@@ -453,7 +473,7 @@ const defaultStrings = {
 	aboutStatisticsBody:
 		'Compare four-ingredient combinations and filter by recipe or ingredient. Expand a recipe group to browse its combinations; pause or refresh while the search runs.',
 	linkToItem: 'Link to {name}',
-	aboutNavigationHeading: 'Save and share',
+	aboutNavigationHeading: 'Saved data and sharing',
 	aboutNavigationBody:
 		'Share links to this section and game, with an optional pot or inventory snapshot. Inventories and cookbook dishes stay saved in this browser and sync across its tabs. Each tab keeps its own pot and working view. Open Options for language, theme and backup controls.',
 	aboutAdvancedHeading: 'Advanced: JavaScript console',

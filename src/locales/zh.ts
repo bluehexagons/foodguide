@@ -14,7 +14,26 @@ import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
 	// Dialogs, options, and information pages
-	personalShareTitle: '分享当前视图',
+	shareDestination: '链接目标',
+	shareCurrentSite: '当前网站',
+	shareDevelopmentSite: '开发版本 · GitHub Pages',
+	shareRepository: '源代码 · GitHub',
+	shareCurrentHelp: '分享你正在使用的网站链接。',
+	shareDevelopmentHelp: '最新开发版本，通过检查后从 main 分支发布。',
+	shareRepositoryHelp: '分享项目的源代码、问题反馈和开发历史。',
+	shareIncludes: '链接包含的内容',
+	shareSection: '当前页面',
+	shareSectionHelp: '不勾选时，分享不指定当前页面的指南链接。',
+	shareGame: '游戏、DLC 和角色',
+	sharePot: '锅中的食材',
+	shareInventory: '库存食材',
+	shareHighlight: '高亮的食物或配方',
+	shareDetailsHelp: '要分享食材或高亮条目，请同时包含当前页面和游戏设置。',
+	shareRemember: '这些选项仅在当前标签页中记住。',
+	linkDevelopmentSite: 'GitHub Pages 上的开发版本',
+	aboutDevelopment:
+		'GitHub Pages 托管本指南当前的开发版本。它会在自动检查通过后，从主开发分支（名为“main”）更新。你可以在这里查看最近的改动。',
+	personalShareTitle: '分享链接',
 	personalSnapshotHelp: '接收者会获得一份副本。对方的更改不会影响你的锅或库存。',
 	optionsAppearance: '语言与外观',
 	optionsLanguageHelp: '对所有标签页生效。食物、配方和角色名称仍使用英文。',
@@ -32,7 +51,6 @@ export const dict = {
 	personalDone: '完成',
 	personalExported: '备份已准备好，可以保存。',
 	personalImporting: '正在导入 {name}…',
-	aboutEyebrow: '有计划地烹饪',
 	gameInfoHeading: '食物与烹饪基础',
 	gameInfoIntro: '快速了解新鲜度、烹饪锅规则和角色的食物机制。',
 	gameInfoContents: '跳转到主题',
@@ -86,8 +104,7 @@ export const dict = {
 	personalDeletePrompt: '删除“{name}”？这也会从其他打开的标签页中删除该项目。',
 	personalCancel: '取消',
 	personalShare: '分享',
-	personalShareHelp: '分享当前页面和游戏设置，不包含主题和语言。',
-	personalShareSnapshot: '包含我的锅或库存',
+	personalShareHelp: '选择链接目标及要包含的内容，不包含主题和语言。',
 	personalShareLink: '分享链接',
 	personalCopyLink: '复制链接',
 	personalLinkCopied: '链接已复制。',
@@ -376,7 +393,7 @@ export const dict = {
 		'开源,作为社区项目维护于 GitHub:<a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">github.com/bluehexagons/foodguide</a>。',
 	aboutChangelog:
 		'最新更改请查看 <a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank" rel="noopener">提交历史</a>。',
-	aboutSectionsHeading: '选择合适的工具',
+	aboutSectionsHeading: '各部分说明',
 	aboutSimulatorHeading: '模拟器',
 	aboutSimulatorBody:
 		'在锅中放入最多四份食材，查看最高优先级的菜肴。锅未装满时，建议会显示补全食材后可以制作的菜肴。',
@@ -390,7 +407,7 @@ export const dict = {
 	aboutStatisticsBody:
 		'比较四份食材的组合，按配方或食材筛选。展开配方组可浏览其中的组合；计算过程中可以暂停或刷新结果。',
 	linkToItem: '链接到{name}',
-	aboutNavigationHeading: '保存与分享',
+	aboutNavigationHeading: '保存的数据与分享',
 	aboutNavigationBody:
 		'分享当前页面和游戏设置，也可附带锅或库存的快照。库存和收藏的菜肴会保存在此浏览器中，并在其标签页之间同步。每个标签页保留各自的锅和工作视图。打开“选项”可设置语言、主题并管理备份。',
 	aboutAdvancedHeading: '高级：JavaScript 控制台',

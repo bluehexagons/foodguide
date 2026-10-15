@@ -151,6 +151,12 @@ Share, Options, and language retain accessible names when their text is hidden.
 
 ### URLs and history
 
+`share-link.ts` filters explicitly selected link contents and selects the current
+site, GitHub Pages development site, or source repository. Sharing controls retain
+their values only in the current document; they do not write shared preferences.
+Ingredient snapshots and highlights require section and game settings so their
+context is preserved. Deselecting all contents produces a plain site URL.
+
 `navigation.ts` parses and formats fragment routes for static subpaths and the desktop's
 `file:` entry point. Ordinary URLs contain the section, `game`, optional `dlc`/`character`,
 and reference `highlight`. Only **Share** adds `ingredients` (Simulator) or `inventory`

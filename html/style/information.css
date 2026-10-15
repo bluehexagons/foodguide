@@ -59,13 +59,6 @@
 	width: 34px;
 	height: 34px;
 }
-.info-page .info-eyebrow {
-	margin: 0 0 6px;
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.09em;
-	text-transform: uppercase;
-}
 .info-section {
 	margin-block: 28px;
 }
@@ -298,10 +291,9 @@
 		display: contents;
 	}
 	.info-hero-icon {
-		grid-row: 1 / 3;
+		grid-row: 1;
 	}
-	.info-hero h2,
-	.info-hero .info-eyebrow {
+	.info-hero h2 {
 		grid-column: 2;
 	}
 	.info-hero > div:last-child > p:last-child {

@@ -94,7 +94,11 @@ and their cooked forms. Use `tag:meat` to filter by a food tag or
 The # links beside food and recipe names highlight an entry and can be copied or
 opened in another tab. The browser address links to the current section and game;
 use **Share** to include a snapshot of your pot or inventory. A shared inventory
-opens as a new named copy. Ordinary addresses do not include ingredient selections.
+opens as a new named copy. Share lets you choose the current section, game settings,
+and ingredients or a highlighted entry, or omit all of them for a plain site link.
+You can also link to the development version on GitHub Pages or the GitHub source
+repository. These choices stay in the current tab between openings of the dialog.
+Ordinary addresses do not include ingredient selections.
 Back and Forward navigate between sections.
 
 **Share** and **Options** sit beside the section tabs on wider screens and beside

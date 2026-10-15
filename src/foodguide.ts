@@ -3123,9 +3123,9 @@ import './locales/index.js';
 		}
 		return state;
 	};
-	const routeFor = (tab: GuideTab, snapshot = false) => {
+	const routeStateFor = (tab: GuideTab, snapshot = false) => {
 		const state = captureState();
-		return formatGuideRoute({
+		return {
 			tab,
 			selection: restoreGameSelection(state),
 			...(snapshot && tab === 'simulator' ? { ingredients: state.pickers?.[0] ?? [] } : {}),
@@ -3140,8 +3140,10 @@ import './locales/index.js';
 					: tab === 'crockpot'
 						? recipeHighlight
 						: undefined,
-		});
+		};
 	};
+	const routeFor = (tab: GuideTab, snapshot = false) =>
+		formatGuideRoute(routeStateFor(tab, snapshot));
 	let lastRouteHash = window.location.hash;
 	const writeUrl = (tab: GuideTab, push = false) => {
 		const hash = routeFor(tab);
@@ -3286,17 +3288,7 @@ import './locales/index.js';
 			saveState();
 		},
 		previewDish: previewCookbookDish,
-		shareUrl: snapshot => {
-			const url = new URL(
-				window.location.protocol === 'file:'
-					? 'https://foodguide.bluehexagons.com/'
-					: window.location.href,
-			);
-			url.pathname = url.pathname.replace(/\/index\.html?$/, '/');
-			url.hash = routeFor(activeTabId, snapshot);
-			return url.href;
-		},
-		canShareSnapshot: () => activeTabId === 'simulator' || activeTabId === 'discovery',
+		getShareRoute: () => routeStateFor(activeTabId, true),
 	});
 	if (initialRoute?.inventory) {
 		personalUI.shareInventory(initialRoute.inventory);

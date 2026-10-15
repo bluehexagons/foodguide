@@ -5351,7 +5351,7 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 	await page.getByRole('button', { name: 'Share', exact: true }).click();
 	const link = await page.locator('#personal-share-link').inputValue();
 	assert.match(link, /ingredients=/);
-	await page.getByRole('dialog').getByRole('checkbox').uncheck();
+	await page.locator('#share-snapshot').uncheck();
 	assert.doesNotMatch(await page.locator('#personal-share-link').inputValue(), /ingredients=/);
 	await page.keyboard.press('Escape');
 	assert.equal(await page.getByRole('dialog').count(), 0);
@@ -5414,7 +5414,7 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 	assert.equal(await page.getByRole('button', { name: /^Camp dinner Cargar plato/ }).count(), 2);
 	await page.locator('#tab-crockpot').click();
 	await page.locator('#personal-share-button').click();
-	assert.equal(await page.getByRole('dialog').getByRole('checkbox').count(), 0);
+	assert.equal(await page.locator('#share-snapshot').isVisible(), false);
 	await page.keyboard.press('Escape');
 	assert.deepEqual(diagnostics, []);
 });
@@ -5942,5 +5942,87 @@ test('compact portrait headers keep named icon controls, full language choices, 
 	assert.equal(await page.locator('.site-mark').isVisible(), false);
 	assert.ok((await page.locator('.site-title-text').boundingBox()).width > 100);
 	assert.ok((await page.locator('#personal-options-button > span').boundingBox()).width > 10);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('sharing choices stay in one tab and filter site, development, repository and highlighted links', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext({
+		viewport: { width: 375, height: 812 },
+		hasTouch: true,
+	});
+	const page = await context.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(
+		`${baseUrl}/#simulator?game=together&character=warly&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
+		{ waitUntil: 'networkidle' },
+	);
+	await page.locator('#personal-share-button').click();
+	const link = page.locator('#personal-share-link');
+	assert.match(await link.inputValue(), /ingredients=/);
+	await page.locator('#share-snapshot').uncheck();
+	await page.keyboard.press('Escape');
+	await page.locator('#personal-share-button').click();
+	assert.equal(await page.locator('#share-snapshot').isChecked(), false);
+	assert.doesNotMatch(await link.inputValue(), /ingredients=/);
+	await page.locator('#personal-share-destination').selectOption('development');
+	assert.match(
+		await link.inputValue(),
+		/^https:\/\/bluehexagons.github.io\/foodguide\/#simulator\?game=together&character=warly$/,
+	);
+	await page.locator('#personal-share-destination').selectOption('repository');
+	assert.equal(await link.inputValue(), 'https://github.com/bluehexagons/foodguide');
+	assert.equal(await page.getByRole('dialog').getByRole('checkbox').count(), 0);
+	await page.keyboard.press('Escape');
+	await page.locator('#personal-share-button').click();
+	assert.equal(await page.locator('#personal-share-destination').inputValue(), 'repository');
+	const other = await context.newPage();
+	await other.goto(`${baseUrl}/#simulator?game=together`, { waitUntil: 'networkidle' });
+	await other.locator('#personal-share-button').click();
+	assert.equal(await other.locator('#personal-share-destination').inputValue(), 'current');
+	assert.equal(await other.locator('#share-snapshot').isChecked(), true);
+	await other.close();
+	await page.locator('#personal-share-destination').selectOption('current');
+	await page.locator('#share-section').uncheck();
+	await page.locator('#share-selection').uncheck();
+	assert.equal(await link.inputValue(), `${baseUrl}/`);
+	assert.equal(await page.locator('#share-snapshot').isDisabled(), true);
+	await page.keyboard.press('Escape');
+	await page.locator('#tab-about').click();
+	assert.equal(await page.locator('.info-eyebrow').count(), 0);
+	assert.equal(await page.getByText('Find the right tool', { exact: true }).count(), 0);
+	const development = page.locator('#about a[data-i18n="linkDevelopmentSite"]');
+	assert.equal(
+		await development.getAttribute('href'),
+		'https://bluehexagons.github.io/foodguide/',
+	);
+	assert.match(
+		await page.locator('[data-i18n="aboutDevelopment"]').textContent(),
+		/main.*after automated checks pass/,
+	);
+	await page.locator('#personal-share-button').click();
+	assert.equal(
+		await link.inputValue(),
+		`${baseUrl}/`,
+		'Remember contents after changing sections',
+	);
+	await page.locator('#share-section').check();
+	assert.equal(await link.inputValue(), `${baseUrl}/#about`);
+	await page.keyboard.press('Escape');
+	await page.goto(`${baseUrl}/#foodlist?game=together&highlight=meat`, {
+		waitUntil: 'networkidle',
+	});
+	await page.locator('#personal-share-button').click();
+	assert.equal(await page.locator('#share-snapshot').isVisible(), false);
+	assert.equal(await page.locator('#share-highlight').isVisible(), true);
+	assert.equal(await page.locator('#share-selection').isChecked(), false);
+	assert.equal(await page.locator('#share-highlight').isDisabled(), true);
+	await page.locator('#share-selection').check();
+	assert.match(await link.inputValue(), /highlight=meat/);
+	await page.locator('#share-highlight').uncheck();
+	assert.doesNotMatch(await link.inputValue(), /highlight=/);
+	await page.keyboard.press('Escape');
+	await page.locator('#personal-share-button').click();
+	assert.equal(await page.locator('#share-highlight').isChecked(), false);
 	assert.deepEqual(diagnostics, []);
 });

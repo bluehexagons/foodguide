@@ -505,13 +505,16 @@ keys and cross-references as described in the [data guide](data.md).
 ## Dependency maintenance
 
 Use `npm outdated` and `npm audit` to review direct and transitive dependencies.
-Update `package.json` and the lockfile together. Keep `@types/node` aligned with
-the supported Node 24 baseline. After a Playwright update, reinstall both matching
+Update `package.json` and the lockfile together. Node declarations are a build-time
+dependency and may track the current release; Node 24 remains the supported runtime
+and CI baseline. Do not introduce newer runtime APIs without updating that baseline.
+After a Playwright update, reinstall both matching
 browser binaries and run `npm run check` plus the Firefox suite before committing. Review major
 version changes against upstream release notes. GitHub Actions are pinned to
 full commit SHAs; update the version comment with each pin.
 
 Pull requests targeting `main` and manual CI runs use the shared checks. Pushes
-to `main` run them once through the deployment workflow, which requires both
-browsers to pass before publishing. Superseded pull-request runs are canceled;
-deployments are serialized without canceling an active publication.
+to `main` run them once through the deployment workflow. Formatting, lint, types,
+unit tests, dependency auditing, and four Chromium smoke scenarios gate publication.
+Full browser and accessibility suites are developer-run. Superseded checks are
+canceled; publication alone is serialized without canceling an active deployment.

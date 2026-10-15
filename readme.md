@@ -139,6 +139,7 @@ checks require both browsers. On Linux, deployment tests also require Git, Bash,
 
 - [Development guide](docs/development.md): commands, module layout, tests, and assets.
 - [Deployment guide](docs/deployment.md): Basaltwater, GitHub Pages, and the optional server webhook.
+- [Browser console guide](docs/console.md): state, calculator helpers, and paged analysis exports.
 - [Data and library guide](docs/data.md): package exports, data shape, and mode filtering.
 
 Bug reports and pull requests are welcome, especially when the food data differs

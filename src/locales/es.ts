@@ -458,9 +458,9 @@ export const dict = {
 		'Comparte esta sección y el juego con una captura opcional de la olla o el inventario. Los inventarios y platos se guardan en este navegador y se sincronizan entre sus pestañas. Cada pestaña mantiene su propia olla y vista de trabajo. Abre Opciones para cambiar el idioma, el tema o gestionar copias de seguridad.',
 	aboutAdvancedHeading: 'Avanzado: consola de JavaScript',
 	aboutAdvancedBody1:
-		'La Guía de Comida añade a <code>window</code> algunas propiedades: <code>food</code>, <code>recipes</code> y <code>matchingNames</code>. El Analizador de Estadísticas escribe sus resultados en <code>analysis</code> y <code>recipeCrunchData</code>. Cada pestaña guarda su estado en <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> proporciona la última configuración guardada para las pestañas nuevas.',
+		'La consola de JavaScript ofrece <code>foodGuide</code> con datos de alimentos y recetas, y funciones de búsqueda y cálculo. <code>foodGuide.getState()</code> devuelve la sección, los ajustes del juego, la olla y el inventario actuales.',
 	aboutAdvancedBody2:
-		'Para uso avanzado, abre la consola JavaScript del navegador. <code>analysis.made</code> contiene la lista de combinaciones válidas del último análisis completado, incluyendo las ocultas por los filtros o la paginación.',
+		'Usa <code>foodGuide.analyses()</code> para consultar el progreso y los ajustes de cada cálculo. <code>foodGuide.analysisRows("discovery", {limit: 100, filtered: true})</code> devuelve una página de resultados con los filtros actuales; usa <code>"statistics"</code> para el Analizador de Estadísticas. Las variables globales existentes, como <code>food</code>, <code>recipes</code>, <code>matchingNames</code>, <code>analysis.made</code> y <code>recipeCrunchData</code>, siguen disponibles.',
 	aboutLinksHeading: 'Enlaces',
 	linkChangelog: 'Registro de cambios de la Guía',
 	linkBugReports: 'Reportar errores / problemas de la Guía',

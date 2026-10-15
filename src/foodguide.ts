@@ -24,6 +24,7 @@ import {
 	type GuideTab,
 } from './navigation.js';
 import { createFoodSelectionResolver, getSavedFood } from './food-selection.js';
+import { createAnalysisInspector, type GuideConsole } from './console-api.js';
 import { createAnalysisFilters } from './analysis-filters.js';
 import { formatSignedValue, formatStatGain, percentageGain } from './number-format.js';
 import { getCollectionItem } from './collection.js';
@@ -31,6 +32,7 @@ import { bindActivation } from './activation.js';
 
 declare global {
 	interface Window {
+		foodGuide: GuideConsole;
 		food: FoodCollection;
 		recipes: RecipeCollection;
 		recipeCrunchData: RecipeData;
@@ -501,6 +503,7 @@ import './locales/index.js';
 		},
 	});
 	const getRealRecipesFromCollection = recipeAnalyzer.analyze;
+	const analysisInspector = createAnalysisInspector();
 
 	let setTab: (id: string) => void;
 	let statisticsGrinder: ReturnType<typeof makeRecipeGrinder> | undefined;
@@ -971,7 +974,7 @@ import './locales/index.js';
 						? recipes.filter(item => item.defaultExclude).map(item => item.id)
 						: [],
 				});
-				let made: AnalysisRow[] = [];
+				const made: AnalysisRow[] = [];
 
 				const deleteButton = document.createElement('button');
 				deleteButton.appendChild(document.createTextNode(t('clearResults')));
@@ -1044,7 +1047,18 @@ import './locales/index.js';
 					}
 				}
 
-				made = [];
+				const inspection = analysisInspector.register(
+					ingredients ? 'discovery' : 'statistics',
+					{
+						selection: restoreGameSelection(captureState()),
+						modeMask: analysisMode,
+						charMask,
+						multipliers: { ...statMultipliers },
+						ingredients: idealIngredients.map(item => item.key),
+					},
+					made,
+					filters.matches,
+				);
 				let paused = false;
 				const resultCount = document.createElement('p');
 				resultCount.className = 'analysis-result-count';
@@ -1362,6 +1376,7 @@ import './locales/index.js';
 					currentProgress => {
 						// Chunk callback - show pause button if this is called (meaning async operation)
 						progress = currentProgress;
+						inspection.update(progress);
 						updateProgress();
 						if (isCalculating && !pauseButton.parentNode) {
 							makableSummary.appendChild(pauseButton);
@@ -1372,6 +1387,7 @@ import './locales/index.js';
 					},
 					() => {
 						//computation finished
+						inspection.update(progress, 'complete');
 						isCalculating = false;
 						paused = false;
 						snapshotNotice.hidden = true;
@@ -1406,6 +1422,7 @@ import './locales/index.js';
 				clearResults = () => {
 					const restoreFocus = makableDiv.contains(document.activeElement);
 					calculationControl.cancel();
+					inspection.clear();
 					makableDiv.remove();
 					makableTable.dispose();
 					document.removeEventListener('foodguide:localechange', updateMakableTexts);
@@ -1434,6 +1451,7 @@ import './locales/index.js';
 						return;
 					}
 					paused = calculationControl.isPaused();
+					inspection.update(progress, paused ? 'paused' : 'running');
 					snapshotNotice.hidden = paused;
 					pauseButton.textContent = t(calculationControl.isPaused() ? 'resume' : 'pause');
 					makableTable.update();
@@ -1469,6 +1487,24 @@ import './locales/index.js';
 		);
 	};
 
+	window.foodGuide = {
+		food,
+		recipes,
+		matchingNames,
+		getRecipes,
+		getSuggestions,
+		getState: () => {
+			const state = captureState();
+			return {
+				tab: activeTabId,
+				selection: restoreGameSelection(state),
+				pot: state.pickers?.[0] ?? [],
+				inventory: personalUI?.inventorySnapshot() ?? readInventory(),
+			};
+		},
+		analyses: analysisInspector.summaries,
+		analysisRows: analysisInspector.rows,
+	};
 	window.food = food;
 	window.recipes = recipes;
 	window.matchingNames = matchingNames;

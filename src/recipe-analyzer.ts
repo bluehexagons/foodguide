@@ -70,13 +70,24 @@ export const createRecipeAnalyzer = ({
 					item.foodtype !== 'roughage',
 			)
 			.sort((a, b) => b.priority - a.priority);
-		const recipeData: RecipeData = {
-			recipes: availableRecipes,
-			test: availableRecipes.map(recipe => recipe.test),
-			tests: availableRecipes.map(recipe => recipe.test.toString()),
-			priority: availableRecipes.map(recipe => recipe.priority || 0),
-		};
-		onRecipeData?.(recipeData);
+		if (onRecipeData) {
+			// Console compatibility arrays are derived only when someone inspects them.
+			let test: RecipeData['test'] | undefined;
+			let tests: RecipeData['tests'] | undefined;
+			let priority: RecipeData['priority'] | undefined;
+			onRecipeData({
+				recipes: availableRecipes,
+				get test() {
+					return (test ??= availableRecipes.map(recipe => recipe.test));
+				},
+				get tests() {
+					return (tests ??= availableRecipes.map(recipe => recipe.test.toString()));
+				},
+				get priority() {
+					return (priority ??= availableRecipes.map(recipe => recipe.priority || 0));
+				},
+			});
+		}
 
 		const pendingResults: AnalysisResult[] = [];
 		const total = countCombinations(items.length);
@@ -103,7 +114,7 @@ export const createRecipeAnalyzer = ({
 
 			const matches: Recipe[] = [];
 			// Recipes are sorted by priority. Once one matches, only its ties can win.
-			for (const recipe of recipeData.recipes) {
+			for (const recipe of availableRecipes) {
 				if (matches.length && recipe.priority < matches[0].priority) {
 					break;
 				}

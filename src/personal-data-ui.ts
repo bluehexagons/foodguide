@@ -569,6 +569,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	link.readOnly = true;
 	link.id = 'personal-share-link';
 	let copyStatusKey: StringKey | undefined;
+	let copyRequest = 0;
 	const copyStatus = element('p', shareBody);
 	copyStatus.className = 'dialog-status';
 	copyStatus.setAttribute('role', 'status');
@@ -577,15 +578,25 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		copyStatus.textContent = key ? t(key) : '';
 	};
 	labels.push(() => showCopyStatus(copyStatusKey));
+	shareDialog.addEventListener('close', () => {
+		copyRequest++;
+	});
 	withIcon(
 		button(linkRow, 'personalCopyLink', () => {
+			const request = ++copyRequest;
+			const value = link.value;
+			const copied = (key: StringKey) => {
+				if (request === copyRequest && shareDialog.open && value === link.value) {
+					showCopyStatus(key);
+				}
+			};
 			link.focus();
 			link.select();
 			if (navigator.clipboard) {
 				void navigator.clipboard
-					.writeText(link.value)
-					.then(() => showCopyStatus('personalLinkCopied'))
-					.catch(() => showCopyStatus('personalCopyManually'));
+					.writeText(value)
+					.then(() => copied('personalLinkCopied'))
+					.catch(() => copied('personalCopyManually'));
 			} else {
 				showCopyStatus('personalCopyManually');
 			}
@@ -594,6 +605,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	).classList.add('button-primary');
 	// These controls belong to this document, never to shared localStorage preferences.
 	const updateShare = () => {
+		copyRequest++;
 		const route = options.getShareRoute();
 		const repository = destination.value === 'repository';
 		includes.disabled = repository;

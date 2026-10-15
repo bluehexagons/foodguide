@@ -478,9 +478,9 @@ const defaultStrings = {
 		'Share links to this section and game, with an optional pot or inventory snapshot. Inventories and cookbook dishes stay saved in this browser and sync across its tabs. Each tab keeps its own pot and working view. Open Options for language, theme and backup controls.',
 	aboutAdvancedHeading: 'Advanced: JavaScript console',
 	aboutAdvancedBody1:
-		'The Food Guide populates <code>window</code> with a few properties: <code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The Statistics Analyzer writes its results to <code>analysis</code> and <code>recipeCrunchData</code>. Each tab keeps its working state under <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> supplies the last saved setup for new tabs.',
+		'The JavaScript console exposes <code>foodGuide</code> with food and recipe data, search and calculation helpers. <code>foodGuide.getState()</code> returns the current section, game settings, pot and inventory.',
 	aboutAdvancedBody2:
-		"For advanced use, open your browser's JavaScript console. <code>analysis.made</code> contains the list of the working combinations from the last completed analysis, including those hidden by filters or pagination.",
+		'Use <code>foodGuide.analyses()</code> for analysis progress and captured settings. <code>foodGuide.analysisRows("discovery", {limit: 100, filtered: true})</code> returns a page of results matching the current filters; use <code>"statistics"</code> for the Statistics Analyzer. Existing globals such as <code>food</code>, <code>recipes</code>, <code>matchingNames</code>, <code>analysis.made</code> and <code>recipeCrunchData</code> remain available.',
 	aboutLinksHeading: 'Links',
 	linkChangelog: 'Food Guide Changelog',
 	linkBugReports: 'Report Food Guide Bugs / Issues',

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import { defaultStatMultipliers, TOGETHER, VANILLA, baseModes } from '../html/constants.js';
 import { food } from '../html/food.js';
+import { recipes } from '../html/recipes.js';
 import { createRecipeAnalyzer } from '../html/recipe-analyzer.js';
 import { combinationGenerator, createRecipeCalculator } from '../html/recipe-calculator.js';
 
@@ -54,6 +55,50 @@ const enoughIngredientsForMultipleBatches = [
 ];
 
 describe('recipe analyzer', () => {
+	it('builds and caches console predicate text only when requested', () => {
+		const scheduler = createScheduler();
+		const predicate = recipes.meatballs.test;
+		const original = Object.getOwnPropertyDescriptor(predicate, 'toString');
+		let calls = 0;
+		predicate.toString = () => {
+			calls++;
+			return 'deferred predicate';
+		};
+		try {
+			let data;
+			createRecipeAnalyzer({
+				...analyzerOptions(scheduler),
+				getModeMask: () => VANILLA,
+				onRecipeData: value => {
+					data = value;
+				},
+			}).analyze([food.meat], () => {});
+			assert.equal(calls, 0);
+			assert.ok(data.recipes.some(recipe => recipe.test === predicate));
+			assert.equal(typeof Object.getOwnPropertyDescriptor(data, 'tests').get, 'function');
+			const text = data.tests;
+			assert.ok(calls > 0);
+			const count = calls;
+			assert.equal(data.tests, text);
+			assert.equal(calls, count);
+			assert.deepEqual(
+				data.test,
+				data.recipes.map(recipe => recipe.test),
+			);
+			assert.equal(data.test, data.test);
+			assert.deepEqual(
+				data.priority,
+				data.recipes.map(recipe => recipe.priority || 0),
+			);
+		} finally {
+			if (original) {
+				Object.defineProperty(predicate, 'toString', original);
+			} else {
+				delete predicate.toString;
+			}
+		}
+	});
+
 	it('agrees with the Simulator on winning priorities and alternate outcomes', () => {
 		for (const mode of Object.values(baseModes).map(mode => mode.mask)) {
 			const scheduler = createScheduler();

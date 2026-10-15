@@ -6026,3 +6026,135 @@ test('sharing choices stay in one tab and filter site, development, repository a
 	assert.equal(await page.locator('#share-highlight').isChecked(), false);
 	assert.deepEqual(diagnostics, []);
 });
+
+test('console helpers expose bounded live analysis data, captured context, filters and cleanup', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await createSavedPage(browser, baseUrl, {
+		activeTab: 'discovery',
+		version: 'together',
+		character: 'warly',
+		pickers: [[], ['meat', 'carrot', 'honey', 'twigs', 'ice', 'bird_egg']],
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
+	assert.deepEqual(await page.evaluate(() => foodGuide.analyses()), []);
+	assert.equal(
+		await page.evaluate(
+			() =>
+				foodGuide.food === food &&
+				foodGuide.recipes === recipes &&
+				foodGuide.matchingNames === matchingNames,
+		),
+		true,
+	);
+	const state = await page.evaluate(() => foodGuide.getState());
+	assert.equal(state.tab, 'discovery');
+	assert.equal(state.selection.character, 'warly');
+	assert.equal(state.inventory.length, 6);
+	assert.ok(
+		await page.evaluate(
+			() => foodGuide.getRecipes([food.meat, food.meat, food.carrot, food.honey]).length,
+		),
+	);
+	await page.locator('#makable .makablebutton').click();
+	let summary = await page.evaluate(() => foodGuide.analyses()[0]);
+	assert.equal(summary.source, 'discovery');
+	assert.equal(summary.status, 'running');
+	assert.ok(summary.checked < summary.total);
+	await page.locator('#makable .pauseButton').click();
+	assert.equal(await page.evaluate(() => foodGuide.analyses()[0].status), 'paused');
+	const rows = await page.evaluate(() => foodGuide.analysisRows('discovery', { limit: 2 }));
+	assert.equal(rows.length, 2);
+	assert.equal(typeof rows[0].recipe, 'string');
+	assert.equal(typeof rows[0].ingredients[0], 'string');
+	assert.ok(!('tags' in rows[0]));
+	assert.equal(
+		await page.evaluate(() => foodGuide.analysisRows('discovery').length <= 100),
+		true,
+	);
+	await page.locator('#makable .pauseButton').click();
+	await page.clock.runFor(1000);
+	summary = await page.evaluate(() => foodGuide.analyses()[0]);
+	assert.equal(summary.status, 'complete');
+	assert.equal(summary.checked, summary.total);
+	assert.equal(summary.resultCount, await page.evaluate(() => analysis.made.length));
+	await page.locator('#tab-statistics').click();
+	await page.locator('#statistics .makablebutton').click();
+	assert.equal(await page.evaluate(() => foodGuide.analyses().length), 2);
+	assert.equal(
+		await page.evaluate(
+			() => foodGuide.analyses().find(run => run.source === 'statistics').status,
+		),
+		'running',
+	);
+	await page.locator('#statistics .deleteButton').click();
+	assert.deepEqual(await page.evaluate(() => foodGuide.analyses().map(run => run.source)), [
+		'discovery',
+	]);
+	assert.equal(await page.evaluate(() => analysis.made.length), summary.resultCount);
+	await page.locator('#tab-discovery').click();
+	await page.locator('#makable .recipeFilter .analysis-filter').first().click();
+	const filtered = await page.evaluate(() =>
+		foodGuide.analysisRows('discovery', { filtered: true, limit: 10000 }),
+	);
+	assert.ok(filtered.length > 0);
+	assert.ok(filtered.length < summary.resultCount);
+	assert.equal(new Set(filtered.map(row => row.recipe)).size, 1);
+	await page.evaluate(() => {
+		const row = foodGuide.analysisRows('discovery', { limit: 1 })[0];
+		row.ingredients[0] = 'mutated';
+	});
+	assert.equal(
+		await page.evaluate(
+			() => foodGuide.analysisRows('discovery', { limit: 1 })[0].ingredients[0] === 'mutated',
+		),
+		false,
+	);
+	await page.locator('#makable .deleteButton').click();
+	assert.deepEqual(await page.evaluate(() => foodGuide.analyses()), []);
+	assert.deepEqual(await page.evaluate(() => foodGuide.analysisRows('discovery')), []);
+	assert.equal(await page.evaluate(() => analysis.made.length), 0);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('delayed clipboard results never report success for a changed or reopened share link', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#simulator?game=together`, { waitUntil: 'networkidle' });
+	await page.evaluate(() =>
+		Object.defineProperty(navigator, 'clipboard', {
+			configurable: true,
+			value: {
+				writeText(value) {
+					window.copiedValue = value;
+					return new Promise(resolve => {
+						window.finishCopy = resolve;
+					});
+				},
+			},
+		}),
+	);
+	await page.locator('#personal-share-button').click();
+	const copy = page.getByRole('button', { name: 'Copy link', exact: true });
+	const status = page.locator('dialog[open] .dialog-status');
+	await copy.click();
+	await page.locator('#personal-share-destination').selectOption('repository');
+	await page.evaluate(() => window.finishCopy());
+	assert.equal(await status.textContent(), '');
+	await copy.click();
+	await page.keyboard.press('Escape');
+	await page.locator('#personal-share-button').click();
+	await page.evaluate(() => window.finishCopy());
+	assert.equal(await status.textContent(), '');
+	await copy.click();
+	await page.evaluate(() => window.finishCopy());
+	assert.equal(await status.textContent(), 'Link copied.');
+	assert.equal(
+		await page.evaluate(() => window.copiedValue),
+		'https://github.com/bluehexagons/foodguide',
+	);
+	assert.deepEqual(diagnostics, []);
+});

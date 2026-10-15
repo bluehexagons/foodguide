@@ -412,9 +412,9 @@ export const dict = {
 		'分享当前页面和游戏设置，也可附带锅或库存的快照。库存和收藏的菜肴会保存在此浏览器中，并在其标签页之间同步。每个标签页保留各自的锅和工作视图。打开“选项”可设置语言、主题并管理备份。',
 	aboutAdvancedHeading: '高级：JavaScript 控制台',
 	aboutAdvancedBody1:
-		'本食物指南会向 <code>window</code> 添加几个属性:<code>food</code>、<code>recipes</code> 和 <code>matchingNames</code>。统计分析器将其结果写入 <code>analysis</code> 和 <code>recipeCrunchData</code>。每个标签页的工作状态保存在 <code>sessionStorage.foodGuideState</code> 中；<code>localStorage.foodGuideState</code> 为新标签页提供上次保存的设置。',
+		'JavaScript 控制台中的 <code>foodGuide</code> 提供食物和配方数据，以及搜索和计算函数。<code>foodGuide.getState()</code> 返回当前页面、游戏设置、锅和库存。',
 	aboutAdvancedBody2:
-		'高级用法请打开浏览器的 JavaScript 控制台。<code>analysis.made</code> 包含上次已完成分析中所有有效组合的列表，包括被筛选条件或分页隐藏的组合。',
+		'使用 <code>foodGuide.analyses()</code> 查看分析进度及计算时的设置。<code>foodGuide.analysisRows("discovery", {limit: 100, filtered: true})</code> 返回符合当前筛选条件的一页结果；统计分析器请使用 <code>"statistics"</code>。现有全局变量 <code>food</code>、<code>recipes</code>、<code>matchingNames</code>、<code>analysis.made</code> 和 <code>recipeCrunchData</code> 仍然可用。',
 	aboutLinksHeading: '链接',
 	linkChangelog: '本指南更新日志',
 	linkBugReports: '反馈本指南的错误 / 问题',

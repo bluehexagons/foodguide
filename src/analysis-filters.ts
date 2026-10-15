@@ -73,12 +73,20 @@ export function createAnalysisFilters({
 			blockedRecipes.has(id) ? blockedRecipes.delete(id) : blockedRecipes.add(id);
 		},
 		matches({ recipe, ingredients }: Pick<AnalysisRow, 'recipe' | 'ingredients'>) {
-			return (
-				(!requiredRecipe || recipe.id === requiredRecipe) &&
-				!blockedRecipes.has(recipe.id) &&
-				!ingredients.some(item => blockedIngredients.has(item.key)) &&
-				[...requiredIngredients].every(id => ingredients.some(item => item.key === id))
-			);
+			if (
+				(requiredRecipe && recipe.id !== requiredRecipe) ||
+				blockedRecipes.has(recipe.id) ||
+				ingredients.some(item => blockedIngredients.has(item.key))
+			) {
+				return false;
+			}
+			// This runs for every retained row; avoid copying a set for each match.
+			for (const id of requiredIngredients) {
+				if (!ingredients.some(item => item.key === id)) {
+					return false;
+				}
+			}
+			return true;
 		},
 	};
 }

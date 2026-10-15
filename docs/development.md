@@ -412,6 +412,11 @@ Locale changes preserve the snapshot, overview page, detail pages, expansion, an
 focused controls. Sorting collapses groups and resets both levels. Pagination
 announces the new range without announcing every calculation batch. Bottom overview
 navigation returns the viewport and focus to the top paging bar of the next page.
+The [browser console API](console.md) exposes captured analysis context, progress,
+and bounded JSON-friendly result pages. `console-api.ts` references UI-owned arrays
+and drops each registration when its panel clears. It does not duplicate full
+results or scan them for summary counts. Legacy predicate text is generated lazily.
+
 The analyzer drains delivered results from its batch buffer; the UI owns the
 retained result collection. Gains from a zero ingredient baseline have no relative
 percentage and show only the signed absolute change. Recipe values use the

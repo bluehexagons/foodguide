@@ -40,10 +40,12 @@ module and image URLs work.
 ## GitHub Pages
 
 `.github/workflows/deploy.yml` runs on pushes to `main` and manual dispatch. It
-runs the shared checks, compiles modules, generates sprites in a fresh checkout, uploads `html/`,
-and deploys to the `github-pages` environment. Configure the repository's Pages
+runs formatting, lint, types, unit tests, dependency auditing, and a small Chromium
+smoke suite. Full browser/accessibility audits are developer-run. It then compiles
+modules, generates sprites in a fresh checkout, uploads `html/`, and deploys to the `github-pages` environment. Configure the repository's Pages
 source as **GitHub Actions**. Deployment jobs receive only their required token
-permissions, and the Pages concurrency group serializes publication.
+permissions. New commits cancel obsolete shared checks; the Pages concurrency group
+serializes only publication, so an older check run cannot block new checks.
 
 ## Optional server webhook
 

@@ -10,13 +10,6 @@ on:
 # Default to no repository token permissions; jobs opt into only what they need.
 permissions: {}
 
-# Allow only one concurrent deployment, skipping runs queued between the run
-# in-progress and latest queued. Do not cancel in-progress runs as we want to
-# allow these deployments to complete.
-concurrency:
-    group: pages
-    cancel-in-progress: false
-
 jobs:
     # Run the same checks as CI before deploying
     check:
@@ -26,6 +19,10 @@ jobs:
 
     deploy-pages:
         name: Deploy to GitHub Pages
+        # Serialize publication without queuing new checks behind an old test run.
+        concurrency:
+            group: pages
+            cancel-in-progress: false
         needs: check
         runs-on: ubuntu-latest
         environment:

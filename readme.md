@@ -132,10 +132,12 @@ npm run check
 npm run test:browser -- --browser=firefox
 ```
 
-`check` runs formatting, linting, source type checking, unit tests, and the Chromium
-browser suite. The next command runs the shared suite in Firefox. CI and deployment
-checks require both browsers. On Linux, deployment tests also require Git, Bash,
-`flock`, and `rsync`.
+`check` runs formatting, linting, types, unit tests, and the full Chromium browser
+and accessibility suite. The next command runs the full suite in Firefox. Developers
+should run both for browser/UI changes. CI and deployment run the fast
+`npm run check:ci` checks and four Chromium smoke scenarios via
+`npm run test:browser:smoke`; full browser and accessibility audits are developer-run.
+On Linux, deployment tests also require Git, Bash, `flock`, and `rsync`.
 
 - [Development guide](docs/development.md): commands, module layout, tests, and assets.
 - [Deployment guide](docs/deployment.md): Basaltwater, GitHub Pages, and the optional server webhook.
@@ -192,8 +194,7 @@ setLocale('fr');
 For a bundled locale, add its module to `src/locales/index.ts`; the language picker
 uses the registered locale list automatically. Its exported `dict` must satisfy
 `BundledLocaleDict` from `src/strings.ts`, covering every UI string, tag, and note.
-The shared theme icons can use the English defaults. Tests check interpolation
-parameters and the HTML IDs used to populate game mechanics values. Custom locales
+Tests check interpolation parameters and the HTML IDs used to populate game mechanics values. Custom locales
 registered through the public API can still provide partial dictionaries.
 
 ## Contributors

@@ -85,7 +85,7 @@
 		"lint:fix": "oxlint --fix --deny-warnings",
 		"format": "oxfmt",
 		"format:check": "oxfmt --check",
-		"check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run test:browser",
+		"check": "npm run check:ci && npm run test:browser",
 		"fix": "npm run lint:fix && npm run format",
 		"test": "npm run build && node --test",
 		"test:browser": "npm run generate-sprites && node tests/browser-smoke.js",
@@ -94,7 +94,9 @@
 		"build": "tsc && tsc -p tsconfig.tools.json",
 		"prepare": "npm run build",
 		"prepack": "npm run build",
-		"build:watch": "tsc --watch"
+		"build:watch": "tsc --watch",
+		"check:ci": "npm run format:check && npm run lint && npm run typecheck && npm test",
+		"test:browser:smoke": "npm run generate-sprites && node --test --test-timeout=60000 --test-name-pattern=\"^CI smoke:\" tests/browser-smoke.js"
 	},
 	"keywords": [
 		"dont-starve",

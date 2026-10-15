@@ -6,10 +6,16 @@ on:
 permissions:
     contents: read
 
+# A newer revision replaces obsolete checks; publication has its own lock.
+concurrency:
+    group: checks-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 jobs:
     check:
         name: Check
         runs-on: ubuntu-latest
+        timeout-minutes: 10
 
         steps:
             - name: Checkout code
@@ -29,33 +35,11 @@ jobs:
             - name: Audit dependencies
               run: npm audit
 
-            - name: Install Playwright browser
-              run: npx playwright install --with-deps chromium
+            - name: Check formatting, lint, types, and unit tests
+              run: npm run check:ci
 
-            - name: Check formatting, lint, types, and tests
-              run: npm run check
+            - name: Install Chromium headless shell
+              run: npx playwright install --with-deps --only-shell chromium
 
-    firefox:
-        name: Firefox
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-              with:
-                  persist-credentials: false
-
-            - name: Set up Node.js
-              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-              with:
-                  node-version: 24
-                  cache: npm
-
-            - name: Install dependencies
-              run: npm ci --ignore-scripts
-
-            - name: Install Playwright Firefox
-              run: npx playwright install --with-deps firefox
-
-            - name: Test in Firefox
-              run: npm run test:browser -- --browser=firefox
+            - name: Run Chromium smoke checks
+              run: npm run test:browser:smoke

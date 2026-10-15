@@ -9,18 +9,20 @@ dependencies; this may require administrator access. After upgrading Playwright,
 
 ## Commands
 
-| Command                                     | Purpose                                                                 |
-| ------------------------------------------- | ----------------------------------------------------------------------- |
-| `npm run dev`                               | Build modules, generate sprites, and serve `html/` at `127.0.0.1:8080`. |
-| `npm run build`                             | Compile browser modules to `html/` and build tools to `scripts/`.       |
-| `npm run generate-sprites`                  | Compile modules and regenerate sprite sheets and their manifest.        |
-| `npm run check`                             | Run all formatting, lint, type, unit, and browser checks.               |
-| `npm test`                                  | Run Node's tests, including deployment tests on Linux.                  |
-| `npm run test:browser`                      | Generate sprites and run the Chromium smoke test.                       |
-| `npm run test:browser -- --browser=firefox` | Run the shared browser suite in Firefox.                                |
-| `npm run typecheck`                         | Check strict sources and library consumers with both module resolvers.  |
-| `npm run format:check` / `npm run lint`     | Check formatting or lint independently.                                 |
-| `npm run fix`                               | Apply oxfmt formatting and oxlint's safe automatic fixes.               |
+| Command                                     | Purpose                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------- |
+| `npm run dev`                               | Build modules, generate sprites, and serve `html/` at `127.0.0.1:8080`.    |
+| `npm run build`                             | Compile browser modules to `html/` and build tools to `scripts/`.          |
+| `npm run generate-sprites`                  | Compile modules and regenerate sprite sheets and their manifest.           |
+| `npm run check`                             | Run fast checks and the full Chromium browser/accessibility suite.         |
+| `npm run check:ci`                          | Run formatting, lint, types, and unit tests without a browser.             |
+| `npm run test:browser:smoke`                | Build sprites and run four fast Chromium smoke scenarios.                  |
+| `npm test`                                  | Run Node's tests, including deployment tests on Linux.                     |
+| `npm run test:browser`                      | Generate sprites and run the full Chromium regression/accessibility suite. |
+| `npm run test:browser -- --browser=firefox` | Run the shared browser suite in Firefox.                                   |
+| `npm run typecheck`                         | Check strict sources and library consumers with both module resolvers.     |
+| `npm run format:check` / `npm run lint`     | Check formatting or lint independently.                                    |
+| `npm run fix`                               | Apply oxfmt formatting and oxlint's safe automatic fixes.                  |
 
 All production modules, including the page controller and sprite generator, use
 strict TypeScript. JavaScript tests exercise the compiled browser modules. oxlint
@@ -48,19 +50,34 @@ node --test --test-name-pattern='entry points|section URLs' tests/browser-smoke.
 PLAYWRIGHT_BROWSER=firefox node --test --test-name-pattern='entry points|section URLs' tests/browser-smoke.js
 ```
 
+CI runs `check:ci` plus `test:browser:smoke`. The smoke command selects the four
+`CI smoke:` scenarios: startup/assets/calculation, root and subpath entry links,
+section history and shared snapshots, and link-sharing choices. Each scenario has
+a 60-second test timeout. It does not run accessibility audits or the full browser
+regression suite. The workflow installs only Chromium's headless shell and has a
+10-minute job limit.
+
+Developers should run the full Chromium and Firefox suites for browser/UI changes:
+
+```bash
+npm run check
+npm run test:browser -- --browser=firefox
+```
+
 The full suite includes an extensive accessibility audit and can take several
 minutes. It reports progress after each panel, including theme, locale, viewport
-mode, and completed scan count. A focused check supplements the full CI suite.
+mode, and completed scan count. Use focused checks while editing, then run the full
+suites before submitting browser/UI changes. Keep CI smoke scenarios small; broad
+coverage belongs in the developer-run suite.
 
 `PLAYWRIGHT_EXECUTABLE_PATH` selects an existing Chromium executable and is ignored
 for Firefox. Firefox automation uses Playwright's patched build, installed by the
 command above, rather than a desktop Firefox installation. See the
 [Playwright browser guide](https://playwright.dev/docs/browsers#firefox).
-CI runs the shared suite in both browsers using the binaries matched to the locked
-Playwright version. The deployment workflow requires both jobs to pass.
-The known Firefox automation warning about pre-load layout in
-`chrome://juggler/content/content/main.js` is reported separately; application
-warnings and errors still fail the browser checks.
+Use binaries matched to the locked Playwright version. Firefox's engine diagnostics
+about pre-load layout in `chrome://juggler/content/content/main.js` and automatic
+scroll anchoring are reported separately; application warnings and errors still
+fail the developer-run browser checks.
 
 On Linux, install Git, Bash, `flock` (usually supplied by `util-linux`), and `rsync`
 for the deployment integration tests. Those tests use temporary repositories and

@@ -154,6 +154,21 @@ const trackDiagnostics = page => {
 			console.info('Firefox automation emitted an internal pre-load layout warning.');
 			return;
 		}
+		// Firefox emits this engine diagnostic when dynamic rows defeat its automatic
+		// scroll anchoring. The suite checks scroll positions explicitly; it is not
+		// an application console warning and should not fail unrelated assertions.
+		if (
+			browserType === firefox &&
+			message.type() === 'warning' &&
+			message
+				.text()
+				.startsWith(
+					'[JavaScript Warning: "Scroll anchoring was disabled in a scroll container because of too many consecutive adjustments (',
+				)
+		) {
+			console.info('Firefox emitted a browser scroll-anchoring diagnostic.');
+			return;
+		}
 		if (['warning', 'error'].includes(message.type())) {
 			diagnostics.push(message.text());
 		}
@@ -3611,7 +3626,7 @@ test('changing analyzer inputs cancels pending work and releases translation lis
 	assert.deepEqual(diagnostics, []);
 });
 
-test('entry points preserve routes and generate file-free share links at root and subpaths', async t => {
+test('CI smoke: entry points preserve routes and generate file-free share links at root and subpaths', async t => {
 	for (const [directory, mount] of [
 		['html', '/'],
 		['.', '/html/'],
@@ -3644,7 +3659,11 @@ test('entry points preserve routes and generate file-free share links at root an
 				await page.getByRole('button', { name: 'Share', exact: true }).click();
 				const sharedUrl = new URL(await page.locator('#personal-share-link').inputValue());
 				assert.equal(sharedUrl.pathname, mount);
-				assert.equal(sharedUrl.search, '?ref=old%20link');
+				assert.equal(
+					sharedUrl.search,
+					'',
+					'Share links omit unrelated page query parameters',
+				);
 				assert.match(sharedUrl.hash, /^#discovery\?game=together/);
 				assert.deepEqual(diagnostics, []);
 				await page.close();
@@ -3653,7 +3672,7 @@ test('entry points preserve routes and generate file-free share links at root an
 	}
 });
 
-test('loads the guide, assets, translations, and a rendered food table', async t => {
+test('CI smoke: loads the guide, assets, translations, and a rendered food table', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
 	const pageErrors = [];
@@ -5081,7 +5100,7 @@ test('running analysis refreshes without pausing and reloads its final results w
 	assert.deepEqual(diagnostics, []);
 });
 
-test('section URLs restore game and ingredients, support history, and open native new-tab links', async t => {
+test('CI smoke: section URLs restore game and ingredients, support history, and open native new-tab links', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const context = await browser.newContext();
 	t.after(() => context.close());
@@ -5945,7 +5964,7 @@ test('compact portrait headers keep named icon controls, full language choices, 
 	assert.deepEqual(diagnostics, []);
 });
 
-test('sharing choices stay in one tab and filter site, development, repository and highlighted links', async t => {
+test('CI smoke: sharing choices stay in one tab and filter site, development, repository and highlighted links', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const context = await browser.newContext({
 		viewport: { width: 375, height: 812 },

@@ -13,6 +13,52 @@
 import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
+	// Dialogs, options, and information pages
+	personalShareTitle: 'Compartir esta vista',
+	personalSnapshotHelp:
+		'La otra persona recibe una copia. Sus cambios no afectarán a tu olla ni a tu inventario.',
+	optionsAppearance: 'Idioma y apariencia',
+	optionsLanguageHelp:
+		'Se aplica a todas tus pestañas. Los nombres de alimentos, recetas y personajes se mantienen en inglés.',
+	optionsTheme: 'Tema de color',
+	themeAuto: 'Dispositivo',
+	themeLight: 'Claro',
+	themeDark: 'Oscuro',
+	optionsThemeHelp:
+		'Dispositivo sigue el tema del sistema. El botón de la cabecera permite cambiarlo rápidamente.',
+	optionsDataHeading: 'Inventarios y recetario',
+	optionsExportHeading: 'Guardar una copia',
+	optionsExportHelp: 'Descarga tus inventarios y platos guardados en un archivo JSON.',
+	optionsImportHeading: 'Importar una copia',
+	optionsImportHelp:
+		'Añade copias desde un archivo JSON de Food Guide (hasta 2 MB). Se conservan los datos actuales.',
+	optionsPrivacy: 'Se guarda en este dispositivo. Tus datos nunca se suben a un servidor.',
+	personalDone: 'Listo',
+	personalExported: 'Tu copia de seguridad está lista para guardar.',
+	personalImporting: 'Importando {name}…',
+	aboutEyebrow: 'Cocina con un plan',
+	gameInfoHeading: 'Conceptos de alimentación y cocina',
+	gameInfoIntro:
+		'Una referencia rápida sobre frescura, reglas de la olla y alimentación de los personajes.',
+	gameInfoContents: 'Ir a un tema',
+	gameInfoFreshHeading: 'Fresco',
+	gameInfoFreshBody:
+		'Come los alimentos antes de la mitad de su tiempo de conservación para obtener los beneficios indicados.',
+	gameInfoStaleHeading: 'Pasado · 50%',
+	gameInfoStaleBody:
+		'Aporta <strong><span id="stalehealth"></span> de salud</strong> y <strong><span id="stalehunger"></span> de hambre</strong>, pero <strong>nada de cordura</strong>.',
+	gameInfoSpoiledHeading: 'Deteriorado · 75%',
+	gameInfoSpoiledBody:
+		'Aporta <strong><span id="spoiledhunger"></span> de hambre</strong> y nada de salud. Comerlo resta <strong><span id="spoiledsanity"></span> de cordura</strong>.',
+	gameInfoStorageHeading: 'Almacenamiento y estaciones',
+	gameInfoStorageBody:
+		'En el suelo, los alimentos se deterioran al <strong><span id="perishground"></span></strong> de su ritmo normal: <strong><span id="perishwinter"></span></strong> en invierno y <strong><span id="perishsummer"></span></strong> en verano. La Ice Box reduce el ritmo al <strong><span id="perishfridge"></span></strong>.',
+	gameInfoCookingHeading: 'Reglas de la olla',
+	gameInfoPriorityHeading: 'Gana la prioridad más alta',
+	gameInfoWarmthHeading: 'Calentar y enfriar',
+	gameInfoCookedHeading: '¿Crudo o cocinado?',
+	favoritesNone: 'Sin comida favorita',
+
 	// Personal inventories, cookbook, sharing, and backups
 	inventoryLabel: 'Inventario',
 	inventoryDefault: 'Mi inventario',
@@ -50,15 +96,14 @@ export const dict = {
 	personalCancel: 'Cancelar',
 	personalShare: 'Compartir',
 	personalShareHelp:
-		'Crea un enlace con una copia para otra persona. Las direcciones normales solo contienen la navegación y la configuración del juego. Los inventarios compartidos se abren como copias nuevas.',
-	personalShareSnapshot: 'Incluir la olla o el inventario actual',
+		'Comparte esta sección y los ajustes del juego. No se incluyen el tema ni el idioma.',
+	personalShareSnapshot: 'Incluir mi olla o inventario',
 	personalShareLink: 'Enlace para compartir',
 	personalCopyLink: 'Copiar enlace',
 	personalLinkCopied: 'Enlace copiado.',
 	personalCopyManually: 'El enlace está seleccionado. Cópialo con el navegador o el teclado.',
-	personalData: 'Mis datos',
-	personalDataHelp:
-		'Exporta todos los inventarios y platos del recetario como una copia JSON. La importación añade copias nuevas sin reemplazar los datos existentes. Los datos personales permanecen en este dispositivo; compartirlos y exportarlos requiere una acción explícita.',
+	personalData: 'Opciones',
+	personalDataHelp: 'Guarda tus inventarios y platos o llévalos a otro navegador.',
 	personalExport: 'Exportar copia de seguridad',
 	personalImport: 'Importar copia de seguridad',
 	personalImported: 'Se importaron {inventories} inventarios y {dishes} platos.',
@@ -365,7 +410,7 @@ export const dict = {
 	tableHealthGainHint: 'Salud ganada en comparación con los ingredientes',
 	tableHungerGainHint: 'Hambre ganada en comparación con los ingredientes',
 
-	aboutHeading: 'Acerca de esta Guía de Comida',
+	aboutHeading: 'Acerca de esta guía',
 	aboutIntro:
 		'Esta es una herramienta no oficial para evitar morir de hambre en <a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">Don\'t Starve</a>, un implacable juego de supervivencia salvaje lleno de ciencia y magia hecho por <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a>.',
 	aboutBrowser:
@@ -374,24 +419,24 @@ export const dict = {
 		'Código abierto, mantenido como esfuerzo comunitario en GitHub: <a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">github.com/bluehexagons/foodguide</a>.',
 	aboutChangelog:
 		'Para ver los cambios más recientes, consulta el <a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank" rel="noopener">historial de commits</a>.',
-	aboutSectionsHeading: 'Secciones',
+	aboutSectionsHeading: 'Encuentra la herramienta adecuada',
 	aboutSimulatorHeading: 'Simulador',
 	aboutSimulatorBody:
-		'El Simulador funciona como una Olla: añade objetos y te dirá qué comida se preparará. Solo las recetas de mayor prioridad podrán salir al cocinar realmente en el juego. Los totales combinados arriba reflejan los ingredientes añadidos, donde el tiempo de caducidad es el más corto. Las sugerencias debajo de los resultados reales muestran qué recetas podrías preparar añadiendo otros ingredientes a los que ya hay en la Olla.',
+		'Llena la olla con hasta cuatro ingredientes para ver los platos de mayor prioridad. Las sugerencias muestran qué puedes cocinar al completar una olla parcial.',
 	aboutDiscoveryHeading: 'Descubrimiento',
 	aboutDiscoveryBody:
-		'La pestaña Descubrimiento encuentra qué recetas pueden prepararse con un conjunto de ingredientes. No tiene en cuenta la cantidad de cada uno; asume que tienes cuatro de cada. También puedes calcular las recetas más eficientes con tus ingredientes para sacar el máximo provecho de salud o hambre al cocinarlos. Funciona igual que la pestaña Analizador de Estadísticas, pero limitado a tu inventario.',
+		'Crea un inventario con nombre y busca recetas con los ingredientes que tienes. Se ignoran las cantidades: la guía supone que tienes cuatro de cada ingrediente.',
 	aboutFoodRecipeListsHeading: 'Lista de Comida y Lista de Recetas',
 	aboutFoodRecipeListsBody:
-		"Explora todas las comidas y recetas de Olla disponibles en la versión de juego seleccionada. Usa el selector de versión en la parte superior para cambiar entre Don't Starve Together, Don't Starve y Hamlet.",
+		'Compara alimentos y recetas de la olla para el juego y personaje elegidos. Ordena por estadísticas o usa los enlaces # para compartir una entrada resaltada.',
 	aboutStatisticsHeading: 'Analizador de Estadísticas',
 	aboutStatisticsBody:
-		'Explora combinaciones para el juego y el personaje seleccionados con una selección representativa de ingredientes aptos para la olla. Filtra por receta o ingredientes y ordena por Nombre para ver las recetas juntas, o por una estadística para comparar los resultados. Expande un grupo para recorrer sus combinaciones; las barras de paginación permiten cambiar ambos tamaños de página. El cálculo puede tardar. Actualiza los resultados para ver el progreso sin pausar; la tabla se actualiza automáticamente al terminar el cálculo.',
+		'Compara combinaciones de cuatro ingredientes y filtra por receta o ingrediente. Despliega un grupo para explorar sus combinaciones; puedes pausar o actualizar mientras se realiza el cálculo.',
 	linkToItem: 'Enlace a {name}',
-	aboutNavigationHeading: 'Compartir y usar varias pestañas',
+	aboutNavigationHeading: 'Guardar y compartir',
 	aboutNavigationBody:
-		'Copia la dirección para enlazar a una sección y un juego. Usa Compartir para incluir una copia de la olla o el inventario actual. Los inventarios con nombre y los platos del recetario se guardan entre sesiones y se sincronizan entre pestañas; cada pestaña elige su inventario. Los enlaces a inventarios compartidos crean copias nuevas. La olla y las vistas del selector son propias de cada pestaña. Mis datos permite importar o exportar una copia. El tema y el idioma se aplican a todas las pestañas.',
-	aboutAdvancedHeading: 'Uso avanzado (variables globales de JavaScript)',
+		'Comparte esta sección y el juego con una captura opcional de la olla o el inventario. Los inventarios y platos se guardan en este navegador y se sincronizan entre sus pestañas. Cada pestaña mantiene su propia olla y vista de trabajo. Abre Opciones para cambiar el idioma, el tema o gestionar copias de seguridad.',
+	aboutAdvancedHeading: 'Avanzado: consola de JavaScript',
 	aboutAdvancedBody1:
 		'La Guía de Comida añade a <code>window</code> algunas propiedades: <code>food</code>, <code>recipes</code> y <code>matchingNames</code>. El Analizador de Estadísticas escribe sus resultados en <code>analysis</code> y <code>recipeCrunchData</code>. Cada pestaña guarda su estado en <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> proporciona la última configuración guardada para las pestañas nuevas.',
 	aboutAdvancedBody2:
@@ -402,9 +447,9 @@ export const dict = {
 	linkOfficialSite: "Sitio oficial de Don't Starve",
 	linkWiki: "Wiki de Don't Starve",
 
-	gameInfoFoodMechHeading: 'Mecánicas de Comida',
+	gameInfoFoodMechHeading: 'Frescura y deterioro',
 	gameInfoFoodMechBody:
-		'El <strong>tiempo de caducidad</strong> es el tiempo antes de que la comida se convierta en <strong>Podredumbre</strong>. A la <strong>mitad</strong> de ese tiempo, se vuelve <strong>rancia</strong>, y aporta <strong><span id="stalehealth"></span> de salud</strong> y <strong><span id="stalehunger"></span> de hambre</strong>, sin <strong>cordura</strong>. La comida se <strong>echa a perder</strong> a los <strong>tres cuartos</strong>, dando solo <strong><span id="spoiledhunger"></span> de hambre</strong> y <strong>ya no aporta salud</strong>. Comer comida echada a perder reduce la cordura en <strong><span id="spoiledsanity"></span></strong>. La comida <strong>tirada al suelo</strong> <strong>caduca</strong> a una tasa de <strong><span id="perishground"></span></strong> (o <strong><span id="perishwinter"></span></strong> en <strong>Invierno</strong>, <strong><span id="perishsummer"></span></strong> en <strong>Verano</strong>); guardarla en la <strong>Nevera</strong> reduce la tasa a <strong><span id="perishfridge"></span></strong>.',
+		'El tiempo de conservación indica cuánto tarda un alimento en convertirse en Rot. Su frescura cambia los beneficios al comerlo.',
 	gameInfoWarmth:
 		'Las comidas que dan <strong>calor</strong> o <strong>frescor</strong> funcionan como una piedra térmica: al comerlas, proporcionan una fuente de calor a cierta temperatura durante un tiempo. Comer otro alimento que caliente o enfríe durante ese periodo reemplaza el efecto anterior.',
 	gameInfoPriority:

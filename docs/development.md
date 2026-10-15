@@ -117,14 +117,15 @@ remain shared preferences.
 named inventories and cookbook dishes, each with a stable ID. Inventory ingredients
 are a set; dishes contain exactly four ingredients, including repeated ones, and
 capture their game/DLC/character context. `personal-data-ui.ts` owns their controls,
-sharing dialogs, and backup import/export. `cookbook-preview.ts` resolves each dish's
+sharing and Options dialogs, synchronized language/theme controls, and backup
+import/export. `cookbook-preview.ts` resolves each dish's
 ingredients for its saved context and re-simulates all highest-priority outcomes.
 Predictions are derived from current recipe data; they are not stored in backups
 or calculated by changing the active Simulator. The active inventory ID is a tab preference,
 not part of the shared document. First use migrates the previous inventory once into
 “My inventory”; a fixed default ID and a Web Lock prevent duplicate first-run imports.
 
-`header-actions.ts` places the same Share/My data controls beside the tablist on
+`header-actions.ts` places the same Share/Options controls beside the tablist on
 wide screens and beside the title at widths up to 767 px. Reparenting preserves
 keyboard focus and keeps the visual order aligned with the Tab order.
 
@@ -138,6 +139,15 @@ Storage failures retain edits in memory and show an export reminder. Invalid sto
 is not overwritten automatically. Imports validate the entire JSON file, including IDs,
 names, ingredient availability for dishes, and game context, before adding copies with
 new IDs. Limits are 2 MB, 200 inventories, 2,000 dishes, and 1,024 items per inventory.
+
+### Dialogs and appearance
+
+`ui-icons.ts` supplies decorative inline SVGs and the information-page links.
+Dialogs support Close, Escape, and backdrop clicks; a drag beginning inside a
+dialog does not dismiss it. Options shares the theme controller and locale state
+with the header, including automatic device appearance and cross-tab updates.
+The compact header uses a monochrome SVG book-and-pot mark at widths up to 480 px;
+Share, Options, and language retain accessible names when their text is hidden.
 
 ### URLs and history
 

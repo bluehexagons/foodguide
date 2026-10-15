@@ -5361,7 +5361,7 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 			.evaluate(node => node === document.activeElement),
 		true,
 	);
-	await page.getByRole('button', { name: 'My data', exact: true }).click();
+	await page.getByRole('button', { name: 'Options', exact: true }).click();
 	const download = page.waitForEvent('download');
 	await page.getByRole('button', { name: 'Export backup', exact: true }).click();
 	const backup = await download;
@@ -5752,4 +5752,195 @@ test('personal storage failures remain visible while using the cookbook and allo
 	await page.locator('#language-picker').selectOption('es');
 	assert.match(await status.textContent(), /export/i);
 	assert.equal(await status.evaluate(node => getComputedStyle(node).clipPath), 'none');
+});
+
+test('Options synchronizes appearance and language while dialogs dismiss safely and restore focus', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#simulator?game=together`, { waitUntil: 'networkidle' });
+	const options = page.locator('#personal-options-button');
+	await options.click();
+	const dialog = page.locator('.options-dialog');
+	await dialog.getByRole('radio', { name: 'Dark', exact: true }).check();
+	assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
+	assert.equal(
+		await page.locator('#theme-toggle').getAttribute('aria-label'),
+		'Switch to light theme',
+	);
+	await page.keyboard.press('Escape');
+	assert.equal(await options.evaluate(node => document.activeElement === node), true);
+	await page.locator('#theme-toggle').click();
+	await options.click();
+	assert.equal(await dialog.getByRole('radio', { name: 'Light', exact: true }).isChecked(), true);
+	await dialog.getByRole('radio', { name: 'Device', exact: true }).check();
+	await page.emulateMedia({ colorScheme: 'dark' });
+	await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
+	await page.locator('#options-language').selectOption('es');
+	assert.equal(await page.locator('#language-picker').inputValue(), 'es');
+	assert.equal(await dialog.getByRole('heading', { level: 2 }).textContent(), 'Opciones');
+	await page.mouse.click(8, 8);
+	assert.equal(await page.getByRole('dialog').count(), 0);
+	assert.equal(await options.evaluate(node => document.activeElement === node), true);
+	await page.locator('#language-picker').selectOption('en');
+	await page.locator('#personal-share-button').click();
+	const share = page.getByRole('dialog');
+	await share.locator('.dialog-intro').click();
+	assert.equal(await share.isVisible(), true, 'Clicking content leaves the dialog open');
+	const box = await share.boundingBox();
+	await page.mouse.move(box.x + box.width / 2, box.y + 30);
+	await page.mouse.down();
+	await page.mouse.move(8, 8);
+	await page.mouse.up();
+	assert.equal(await share.isVisible(), true, 'Dragging from the dialog does not dismiss it');
+	await page.mouse.click(8, 8);
+	assert.equal(await page.getByRole('dialog').count(), 0);
+	assert.equal(
+		await page
+			.locator('#personal-share-button')
+			.evaluate(node => document.activeElement === node),
+		true,
+	);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('About and Game Info are navigable, localized, and accessible on narrow screens', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({ viewport: { width: 320, height: 812 }, hasTouch: true });
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#about?game=together`, { waitUntil: 'networkidle' });
+	assert.match(
+		await page.locator('#about a[data-guide-tab="simulator"]').getAttribute('href'),
+		/#simulator\?game=together/,
+	);
+	await page.locator('#about a[data-guide-tab="simulator"]').click();
+	assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+	await page.locator('#tab-about').click();
+	await page.locator('#about [data-header-action="options"]').click();
+	await page.getByRole('button', { name: 'Close', exact: true }).click();
+	await page.evaluate(axe.source);
+	for (const theme of ['light', 'dark']) {
+		await page.evaluate(value => (document.documentElement.dataset.theme = value), theme);
+		for (const locale of ['en', 'es', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			for (const tab of ['about', 'gameinfo']) {
+				await page.locator(`#tab-${tab}`).click();
+				await page.waitForFunction(() =>
+					document.getAnimations().every(animation => animation.playState !== 'running'),
+				);
+				const violations = await page.evaluate(async () =>
+					(await window.axe.run()).violations.map(({ id, nodes }) => ({
+						id,
+						targets: nodes.map(node => node.target),
+					})),
+				);
+				assert.deepEqual(violations, [], `${theme}/${locale}/${tab}`);
+				assert.equal(
+					await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+					true,
+				);
+			}
+			for (const id of [
+				'stalehealth',
+				'stalehunger',
+				'spoiledhunger',
+				'spoiledsanity',
+				'perishground',
+				'perishwinter',
+				'perishsummer',
+				'perishfridge',
+			]) {
+				assert.match(await page.locator(`#${id}`).textContent(), /\d/);
+			}
+		}
+	}
+	await page.locator('[data-info-scroll="gameinfo-favorites"]').click();
+	assert.equal(
+		await page.locator('#gameinfo-favorites').evaluate(node => document.activeElement === node),
+		true,
+	);
+	assert.equal(await page.locator('#help-favorite-foods tbody th[scope="row"]').count(), 19);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('compact portrait headers keep named icon controls, full language choices, and touch targets', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({
+		viewport: { width: 320, height: 812 },
+		hasTouch: true,
+		isMobile: true,
+	});
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#simulator?game=together`, { waitUntil: 'networkidle' });
+	await page.evaluate(axe.source);
+	for (const locale of ['en', 'es', 'zh']) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.equal(await page.locator('.site-mark').isVisible(), true);
+		assert.equal(
+			await page.getByRole('heading', { name: "Don't Starve Food Guide", level: 1 }).count(),
+			1,
+		);
+		const titleBox = await page.locator('.site-title-text').boundingBox();
+		assert.ok(
+			titleBox.width <= 1 && titleBox.height <= 1,
+			'Compact title remains accessible without taking visual space',
+		);
+		for (const selector of [
+			'#personal-share-button',
+			'#personal-options-button',
+			'#theme-toggle',
+			'#language-picker',
+		]) {
+			const bounds = await page.locator(selector).boundingBox();
+			assert.ok(
+				bounds.width >= 44 && bounds.height >= 44,
+				`${locale}: ${selector} touch size`,
+			);
+			assert.ok(
+				bounds.x >= 0 && bounds.x + bounds.width <= 320,
+				`${locale}: ${selector} fits`,
+			);
+		}
+		for (const button of ['#personal-share-button', '#personal-options-button']) {
+			assert.ok(await page.locator(button).getAttribute('title'));
+			const label = await page.locator(`${button} > span`).boundingBox();
+			assert.ok(
+				label.width <= 1 && label.height <= 1,
+				'Button names are visually clipped, not removed',
+			);
+		}
+		const headerHeight = (await page.locator('.header-top').boundingBox()).height;
+		assert.ok(
+			headerHeight < 125,
+			`${locale}: Together controls fit two compact rows (${headerHeight}px)`,
+		);
+		const choices = await page.locator('#language-picker option').allTextContents();
+		for (const name of ['English', 'Español', '简体中文']) {
+			assert.ok(choices.some(choice => choice.includes(name)));
+		}
+		await page.locator('#personal-options-button').tap();
+		assert.equal(await page.locator('#options-language').inputValue(), locale);
+		await page.locator('dialog[open] .personal-dialog-close').tap();
+		await page.waitForFunction(() =>
+			document.getAnimations().every(animation => animation.playState !== 'running'),
+		);
+		const violations = await page.evaluate(async () =>
+			(await window.axe.run()).violations.map(({ id }) => id),
+		);
+		assert.deepEqual(violations, [], locale);
+	}
+	await page.locator('.version-btn[data-version="dontstarve"]').tap();
+	assert.equal(
+		await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+		true,
+	);
+	assert.ok(
+		(await page.locator('.header-top').boundingBox()).height < 180,
+		'Single-player DLC controls fit three compact rows',
+	);
+	await page.setViewportSize({ width: 1280, height: 800 });
+	assert.equal(await page.locator('.site-mark').isVisible(), false);
+	assert.ok((await page.locator('.site-title-text').boundingBox()).width > 100);
+	assert.ok((await page.locator('#personal-options-button > span').boundingBox()).width > 10);
+	assert.deepEqual(diagnostics, []);
 });

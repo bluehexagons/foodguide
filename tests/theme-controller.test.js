@@ -28,7 +28,6 @@ const createHarness = ({ savedTheme = null, prefersDark = false, storageThrows =
 		},
 	};
 	const toggleButton = {
-		textContent: '',
 		setAttribute(key, value) {
 			this[key] = value;
 		},
@@ -67,7 +66,6 @@ describe('theme controller', () => {
 
 		assert.strictEqual(harness.controller.getTheme(), 'auto');
 		assert.strictEqual(harness.attributes.get('data-theme'), 'dark');
-		assert.strictEqual(harness.toggleButton.textContent, 'themeToggleToLight');
 		assert.strictEqual(harness.toggleButton['aria-label'], 'themeSwitchToLight');
 	});
 
@@ -92,5 +90,28 @@ describe('theme controller', () => {
 		harness.mediaListeners.get('change')();
 		assert.strictEqual(harness.attributes.get('data-theme'), 'light');
 		assert.deepStrictEqual(harness.writes, [['foodGuideTheme', 'light']]);
+	});
+	it('sets an explicit preference, restores device appearance, and notifies other controls', () => {
+		const harness = createHarness();
+		const changes = [];
+		const unsubscribe = harness.controller.subscribe(() => {
+			changes.push([harness.controller.getTheme(), harness.attributes.get('data-theme')]);
+		});
+		harness.controller.setTheme('dark');
+		harness.controller.setTheme('auto');
+		harness.mediaQuery.matches = true;
+		harness.mediaListeners.get('change')();
+		assert.deepStrictEqual(changes, [
+			['dark', 'dark'],
+			['auto', 'light'],
+			['auto', 'dark'],
+		]);
+		assert.deepStrictEqual(harness.writes, [
+			['foodGuideTheme', 'dark'],
+			['foodGuideTheme', 'auto'],
+		]);
+		unsubscribe();
+		harness.controller.toggle();
+		assert.strictEqual(changes.length, 3);
 	});
 });

@@ -157,9 +157,6 @@ describe('strings locale behavior', () => {
 				assert.deepEqual(htmlIds(translated), htmlIds(english), `HTML hooks: ${context}`);
 			};
 			for (const [key, english] of Object.entries(strings)) {
-				if (key === 'themeToggleToDark' || key === 'themeToggleToLight') {
-					continue;
-				}
 				if (typeof english === 'string') {
 					compare(key, english, dict[key]);
 				} else {

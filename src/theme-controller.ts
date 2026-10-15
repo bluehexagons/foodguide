@@ -7,11 +7,14 @@ interface ThemeOptions {
 	translate: (key: StringKey) => string;
 }
 const validThemes = new Set(['auto', 'light', 'dark']);
+export type ThemePreference = 'auto' | 'light' | 'dark';
 
-const readTheme = (getStorage: ThemeOptions['getStorage']) => {
+const readTheme = (getStorage: ThemeOptions['getStorage']): ThemePreference => {
 	try {
 		const savedTheme = getStorage().getItem('foodGuideTheme');
-		return savedTheme !== null && validThemes.has(savedTheme) ? savedTheme : 'auto';
+		return savedTheme !== null && validThemes.has(savedTheme)
+			? (savedTheme as ThemePreference)
+			: 'auto';
 	} catch {
 		return 'auto';
 	}
@@ -29,14 +32,12 @@ export const createThemeController = ({
 	translate,
 }: ThemeOptions) => {
 	let currentTheme = readTheme(getStorage);
+	const listeners = new Set<() => void>();
 
 	const isDark = () => (currentTheme === 'auto' ? mediaQuery.matches : currentTheme === 'dark');
 
 	const updateLabel = () => {
 		if (toggleButton) {
-			toggleButton.textContent = translate(
-				isDark() ? 'themeToggleToLight' : 'themeToggleToDark',
-			);
 			const label = translate(isDark() ? 'themeSwitchToLight' : 'themeSwitchToDark');
 			toggleButton.setAttribute('aria-label', label);
 			toggleButton.title = label;
@@ -46,18 +47,13 @@ export const createThemeController = ({
 	const apply = () => {
 		rootElement.setAttribute('data-theme', isDark() ? 'dark' : 'light');
 		updateLabel();
+		for (const listener of listeners) {
+			listener();
+		}
 	};
 
-	const toggle = () => {
-		currentTheme =
-			currentTheme === 'auto'
-				? mediaQuery.matches
-					? 'light'
-					: 'dark'
-				: currentTheme === 'light'
-					? 'dark'
-					: 'light';
-
+	const setTheme = (theme: ThemePreference) => {
+		currentTheme = theme;
 		try {
 			getStorage().setItem('foodGuideTheme', currentTheme);
 		} catch {
@@ -65,6 +61,7 @@ export const createThemeController = ({
 		}
 		apply();
 	};
+	const toggle = () => setTheme(isDark() ? 'light' : 'dark');
 
 	toggleButton?.addEventListener('click', toggle);
 	mediaQuery.addEventListener('change', () => {
@@ -82,6 +79,11 @@ export const createThemeController = ({
 		apply,
 		updateLabel,
 		toggle,
+		setTheme,
+		subscribe: (listener: () => void) => {
+			listeners.add(listener);
+			return () => listeners.delete(listener);
+		},
 		getTheme: () => currentTheme,
 	};
 };

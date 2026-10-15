@@ -36,6 +36,10 @@
 	padding: 3px 8px;
 }
 .personal-toolbar button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
 	min-height: 32px;
 	padding: 4px 8px;
 	border: 1px solid rgba(255, 255, 255, 0.25);
@@ -310,6 +314,17 @@
 }
 
 /* Theme toggle button */
+.theme-to-light,
+html[data-theme='dark'] .theme-to-dark {
+	display: none;
+}
+html[data-theme='dark'] .theme-to-light {
+	display: inline-flex;
+}
+.theme-to-dark {
+	display: inline-flex;
+}
+
 #theme-toggle {
 	cursor: pointer;
 	display: flex;
@@ -350,5 +365,111 @@
 		width: 30px;
 		height: 30px;
 		font-size: 16px;
+	}
+}
+
+.header-language {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+.site-mark,
+.language-compact {
+	display: none;
+}
+
+/* Keep portrait headers useful without spending several lines on labels. */
+@media (max-width: 480px) {
+	#content {
+		padding-inline: 0;
+	}
+	.header-identity {
+		width: auto;
+		flex: 1 1 calc(100% - 100px);
+		min-width: 132px;
+		gap: 8px;
+	}
+	.site-title {
+		flex-shrink: 0;
+	}
+	.site-mark {
+		display: block;
+		width: 40px;
+		height: 40px;
+		background: var(--header-text);
+		mask: url('../img/foodguide.svg') center / contain no-repeat;
+	}
+	.site-title-text,
+	.personal-toolbar button > span,
+	.header-top .mode-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
+	}
+	.personal-toolbar {
+		gap: 4px;
+	}
+	.personal-toolbar button {
+		width: 44px;
+		min-height: 44px;
+		padding: 10px;
+	}
+	.personal-toolbar .ui-icon {
+		width: 21px;
+		height: 21px;
+	}
+	.header-language {
+		width: 44px;
+		height: 44px;
+		border: 1px solid rgb(255 255 255 / 25%);
+		border-radius: 5px;
+		background: rgb(255 255 255 / 5%);
+	}
+	.language-compact {
+		display: grid;
+		place-items: center;
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		color: var(--header-text);
+	}
+	.language-compact .ui-icon {
+		width: 22px;
+		height: 22px;
+	}
+	.header-language:focus-within {
+		outline: 2px solid var(--header-text);
+		outline-offset: 2px;
+	}
+	#language-picker {
+		/* Keep the native picker and its full, accessible option labels. */
+		opacity: 0;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+	}
+	#theme-toggle {
+		width: 44px;
+		height: 44px;
+	}
+	.header-top .mode-section {
+		gap: 4px;
+	}
+	.char-section {
+		margin-inline-start: auto;
+	}
+}
+
+@media (forced-colors: active) {
+	.site-mark {
+		forced-color-adjust: none;
+		background: CanvasText;
 	}
 }

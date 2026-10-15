@@ -29,15 +29,25 @@
 
 			<header class="site-header" id="site-header">
 				<div class="header-top">
-					<h1 class="site-title" id="site-title">Don't Starve Food Guide</h1>
+					<h1 class="site-title" id="site-title" title="Don't Starve Food Guide">
+						<span class="site-mark" aria-hidden="true"></span>
+						<span class="site-title-text">Don't Starve Food Guide</span>
+					</h1>
 					<!-- Mode selectors are injected here by foodguide.js -->
-					<select
-						id="language-picker"
-						data-i18n-attr-title="languagePickerTitle"
-						data-i18n-attr-aria-label="languagePickerLabel"
-						title="Change language"
-						aria-label="Language"
-					></select>
+					<div class="header-language">
+						<span
+							class="language-compact"
+							data-ui-icon="globe"
+							aria-hidden="true"
+						></span>
+						<select
+							id="language-picker"
+							data-i18n-attr-title="languagePickerTitle"
+							data-i18n-attr-aria-label="languagePickerLabel"
+							title="Change language"
+							aria-label="Language"
+						></select>
+					</div>
 					<button
 						id="theme-toggle"
 						type="button"
@@ -46,7 +56,8 @@
 						title="Toggle dark/light theme"
 						aria-label="Toggle dark/light theme"
 					>
-						🌙
+						<span class="theme-to-light" data-ui-icon="sun" aria-hidden="true"></span>
+						<span class="theme-to-dark" data-ui-icon="moon" aria-hidden="true"></span>
 					</button>
 				</div>
 				<div class="tab-navigation">
@@ -213,228 +224,411 @@
 
 				<div id="statistics"></div>
 
-				<div id="about">
-					<h2 data-i18n="aboutHeading">About This Food Guide</h2>
-
-					<p data-i18n-html="aboutIntro"></p>
-					<p data-i18n="aboutBrowser"></p>
-					<p data-i18n-html="aboutSource"></p>
-					<p data-i18n-html="aboutChangelog"></p>
-
-					<h2 data-i18n="aboutSectionsHeading">Sections</h2>
-
-					<h3 data-i18n="aboutSimulatorHeading">Simulator</h3>
-					<p data-i18n="aboutSimulatorBody"></p>
-
-					<h3 data-i18n="aboutDiscoveryHeading">Discovery</h3>
-					<p data-i18n="aboutDiscoveryBody"></p>
-
-					<h3 data-i18n="aboutFoodRecipeListsHeading">Food List &amp; Recipe List</h3>
-					<p data-i18n="aboutFoodRecipeListsBody"></p>
-
-					<h3 data-i18n="aboutStatisticsHeading">Statistics Analyzer</h3>
-					<p data-i18n="aboutStatisticsBody"></p>
-
-					<h2 data-i18n="aboutNavigationHeading">Sharing and multiple tabs</h2>
-					<p data-i18n="aboutNavigationBody">
-						Use Share to include your pot or inventory. Named inventories and cookbook
-						dishes are saved and synchronized across tabs.
-					</p>
-					<h2 data-i18n="aboutAdvancedHeading">Advanced Use (JavaScript Globals)</h2>
-					<p data-i18n-html="aboutAdvancedBody1"></p>
-					<p data-i18n-html="aboutAdvancedBody2"></p>
-
-					<h2 data-i18n="aboutLinksHeading">Links</h2>
-
-					<ul>
-						<li>
-							<a
-								href="https://github.com/bluehexagons/foodguide/commits/main"
-								target="_blank"
-								rel="noopener"
-								data-i18n="linkChangelog"
-								>Food Guide Changelog</a
-							>
-						</li>
-						<li>
-							<a
-								href="https://github.com/bluehexagons/foodguide/issues"
-								target="_blank"
-								rel="noopener"
-								data-i18n="linkBugReports"
-								>Report Food Guide Bugs / Issues</a
-							>
-						</li>
-						<li>
-							<a
-								href="https://www.klei.com/games/dont-starve"
-								target="_blank"
-								rel="noopener"
-								data-i18n="linkOfficialSite"
-								>Don't Starve Official Website</a
-							>
-						</li>
-						<li>
-							<a
-								href="https://dontstarve.wiki.gg/"
-								target="_blank"
-								rel="noopener"
-								data-i18n="linkWiki"
-								>Don't Starve Wiki</a
-							>
-						</li>
-					</ul>
+				<div id="about" class="info-page">
+					<div class="info-hero">
+						<div class="info-hero-icon" data-ui-icon="book"></div>
+						<div>
+							<p class="info-eyebrow" data-i18n="aboutEyebrow"></p>
+							<h2 data-i18n="aboutHeading">About this guide</h2>
+							<p data-i18n-html="aboutIntro"></p>
+						</div>
+					</div>
+					<section class="info-section" aria-labelledby="about-tools-heading">
+						<h2 id="about-tools-heading" data-i18n="aboutSectionsHeading"></h2>
+						<div class="info-grid tool-cards">
+							<article class="info-card">
+								<h3>
+									<a
+										class="info-tool-link"
+										href="#simulator"
+										data-guide-tab="simulator"
+										><span class="info-icon" data-ui-icon="pot"></span
+										><span data-i18n="aboutSimulatorHeading"></span
+										><span class="info-link-arrow" data-ui-icon="arrow"></span
+									></a>
+								</h3>
+								<p data-i18n="aboutSimulatorBody"></p>
+							</article>
+							<article class="info-card">
+								<h3>
+									<a
+										class="info-tool-link"
+										href="#discovery"
+										data-guide-tab="discovery"
+										><span class="info-icon" data-ui-icon="bag"></span
+										><span data-i18n="aboutDiscoveryHeading"></span
+										><span class="info-link-arrow" data-ui-icon="arrow"></span
+									></a>
+								</h3>
+								<p data-i18n="aboutDiscoveryBody"></p>
+							</article>
+							<article class="info-card">
+								<h3 class="info-section-title">
+									<span class="info-icon" data-ui-icon="list"></span
+									><span data-i18n="aboutFoodRecipeListsHeading"></span>
+								</h3>
+								<p data-i18n="aboutFoodRecipeListsBody"></p>
+								<div class="info-inline-links">
+									<a
+										href="#foodlist"
+										data-guide-tab="foodlist"
+										data-i18n="tabFoodList"
+										>Food List</a
+									><a
+										href="#crockpot"
+										data-guide-tab="crockpot"
+										data-i18n="tabRecipeList"
+										>Recipe List</a
+									>
+								</div>
+							</article>
+							<article class="info-card">
+								<h3>
+									<a
+										class="info-tool-link"
+										href="#statistics"
+										data-guide-tab="statistics"
+										><span class="info-icon" data-ui-icon="chart"></span
+										><span data-i18n="aboutStatisticsHeading"></span
+										><span class="info-link-arrow" data-ui-icon="arrow"></span
+									></a>
+								</h3>
+								<p data-i18n="aboutStatisticsBody"></p>
+							</article>
+						</div>
+					</section>
+					<section class="info-callout">
+						<h2 class="info-section-title">
+							<span class="info-icon" data-ui-icon="share"></span
+							><span data-i18n="aboutNavigationHeading"></span>
+						</h2>
+						<p data-i18n="aboutNavigationBody"></p>
+						<div class="info-actions">
+							<button type="button" data-header-action="share">
+								<span class="info-icon" data-ui-icon="share"></span
+								><span data-i18n="personalShare"></span>
+							</button>
+							<button type="button" data-header-action="options">
+								<span class="info-icon" data-ui-icon="options"></span
+								><span data-i18n="personalData"></span>
+							</button>
+						</div>
+					</section>
+					<details class="info-details">
+						<summary data-i18n="aboutAdvancedHeading"></summary>
+						<div>
+							<p data-i18n-html="aboutAdvancedBody1"></p>
+							<p data-i18n-html="aboutAdvancedBody2"></p>
+						</div>
+					</details>
+					<section class="info-section info-community">
+						<h2 class="info-section-title">
+							<span class="info-icon" data-ui-icon="book"></span
+							><span data-i18n="aboutLinksHeading"></span>
+						</h2>
+						<p data-i18n-html="aboutSource"></p>
+						<div class="info-resource-links">
+							<ul>
+								<li>
+									<a
+										href="https://github.com/bluehexagons/foodguide/commits/main"
+										target="_blank"
+										rel="noopener"
+										data-i18n="linkChangelog"
+										>Food Guide Changelog</a
+									>
+								</li>
+								<li>
+									<a
+										href="https://github.com/bluehexagons/foodguide/issues"
+										target="_blank"
+										rel="noopener"
+										data-i18n="linkBugReports"
+										>Report Food Guide Bugs / Issues</a
+									>
+								</li>
+								<li>
+									<a
+										href="https://www.klei.com/games/dont-starve"
+										target="_blank"
+										rel="noopener"
+										data-i18n="linkOfficialSite"
+										>Don't Starve Official Website</a
+									>
+								</li>
+								<li>
+									<a
+										href="https://dontstarve.wiki.gg/"
+										target="_blank"
+										rel="noopener"
+										data-i18n="linkWiki"
+										>Don't Starve Wiki</a
+									>
+								</li>
+							</ul>
+						</div>
+						<p class="info-footnote" data-i18n="aboutBrowser"></p>
+					</section>
 				</div>
-
-				<div id="gameinfo">
-					<h2 data-i18n="gameInfoFoodMechHeading">Food Mechanics</h2>
-
-					<p data-i18n-html="gameInfoFoodMechBody"></p>
-					<p data-i18n-html="gameInfoWarmth"></p>
-					<p data-i18n-html="gameInfoPriority"></p>
-					<p data-i18n="gameInfoCooked"></p>
-
-					<h2 data-i18n="gameInfoVersionsHeading">Game Versions and DLC</h2>
-					<p data-i18n="gameInfoVersionsBody"></p>
-
-					<h2 data-i18n="gameInfoCharactersHeading">Character Food Mechanics</h2>
-					<p data-i18n-html="gameInfoWarly"></p>
-					<p data-i18n-html="gameInfoWebber"></p>
-					<p data-i18n-html="gameInfoWigfrid"></p>
-
-					<h2 data-i18n="gameInfoFavoritesHeading">Favorite Foods (DST)</h2>
-					<p data-i18n="gameInfoFavoritesBody"></p>
-
-					<table id="help-favorite-foods">
-						<caption class="sr-only" data-i18n="gameInfoFavoritesHeading">
-							Favorite Foods (DST)
-						</caption>
-						<thead>
-							<tr>
-								<th data-i18n="favoritesHeaderCharacter">Character</th>
-								<th data-i18n="favoritesHeaderFavorite">Favorite Food</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>Wilson</td>
-								<td>Bacon and Eggs</td>
-							</tr>
-							<tr>
-								<td>Willow</td>
-								<td>Spicy Chili</td>
-							</tr>
-							<tr>
-								<td>Wendy</td>
-								<td>Banana Pop</td>
-							</tr>
-							<tr>
-								<td>Wolfgang</td>
-								<td>Roasted Potato</td>
-							</tr>
-							<tr>
-								<td>Woodie</td>
-								<td>Honey Nuggets</td>
-							</tr>
-							<tr>
-								<td>Wickerbottom</td>
-								<td>Surf 'n' Turf</td>
-							</tr>
-							<tr>
-								<td>WX-78</td>
-								<td>Butter Muffin</td>
-							</tr>
-							<tr>
-								<td>Wes</td>
-								<td>Fresh Fruit Crepes</td>
-							</tr>
-							<tr>
-								<td>Maxwell</td>
-								<td>Wobster Dinner</td>
-							</tr>
-							<tr>
-								<td>Wigfrid</td>
-								<td>Turkey Dinner</td>
-							</tr>
-							<tr>
-								<td>Webber</td>
-								<td>Ice Cream</td>
-							</tr>
-							<tr>
-								<td>Winona</td>
-								<td>Vegetable Stinger</td>
-							</tr>
-							<tr>
-								<td>Wortox</td>
-								<td>Pomegranates</td>
-							</tr>
-							<tr>
-								<td>Wormwood</td>
-								<td>Cooked Cave Banana</td>
-							</tr>
-							<tr>
-								<td>Warly</td>
-								<td>None</td>
-							</tr>
-							<tr>
-								<td>Wurt</td>
-								<td>Extra Smelly Durian</td>
-							</tr>
-							<tr>
-								<td>Walter</td>
-								<td>Trail Mix</td>
-							</tr>
-							<tr>
-								<td>Wanda</td>
-								<td>Taffy</td>
-							</tr>
-							<tr>
-								<td>Wonkey</td>
-								<td>Cave Banana</td>
-							</tr>
-						</tbody>
-					</table>
-
-					<h2 data-i18n="gameInfoWikiHeading">Useful Wiki Pages</h2>
-
-					<ul class="wiki-links-list">
-						<li>
-							<a
-								href="https://dontstarve.wiki.gg/wiki/Food"
-								target="_blank"
-								rel="noopener"
-								data-i18n="wikiFood"
-								>Food</a
-							>
-						</li>
-						<li>
-							<a
-								href="https://dontstarve.wiki.gg/wiki/Cooking"
-								target="_blank"
-								rel="noopener"
-								data-i18n="wikiCooking"
-								>Cooking</a
-							>
-						</li>
-						<li>
-							<a
-								href="https://dontstarve.wiki.gg/wiki/Crock_Pot"
-								target="_blank"
-								rel="noopener"
-								data-i18n="wikiCrockPot"
-								>Crock Pot</a
-							>
-						</li>
-						<li>
-							<a
-								href="https://dontstarve.wiki.gg/wiki/Farming"
-								target="_blank"
-								rel="noopener"
-								data-i18n="wikiFarming"
-								>Farming</a
-							>
-						</li>
-					</ul>
+				<div id="gameinfo" class="info-page">
+					<div class="info-hero">
+						<div class="info-hero-icon" data-ui-icon="leaf"></div>
+						<div>
+							<h2 data-i18n="gameInfoHeading">Food &amp; cooking basics</h2>
+							<p data-i18n="gameInfoIntro"></p>
+						</div>
+					</div>
+					<nav
+						class="info-contents"
+						aria-label="Jump to a topic"
+						data-i18n-attr-aria-label="gameInfoContents"
+					>
+						<button
+							type="button"
+							data-info-scroll="gameinfo-freshness"
+							data-i18n="gameInfoFoodMechHeading"
+						></button
+						><button
+							type="button"
+							data-info-scroll="gameinfo-cooking"
+							data-i18n="gameInfoCookingHeading"
+						></button
+						><button
+							type="button"
+							data-info-scroll="gameinfo-versions"
+							data-i18n="gameInfoVersionsHeading"
+						></button
+						><button
+							type="button"
+							data-info-scroll="gameinfo-characters"
+							data-i18n="gameInfoCharactersHeading"
+						></button
+						><button
+							type="button"
+							data-info-scroll="gameinfo-favorites"
+							data-i18n="gameInfoFavoritesHeading"
+						></button>
+					</nav>
+					<section class="info-section" aria-labelledby="gameinfo-freshness">
+						<h2
+							id="gameinfo-freshness"
+							tabindex="-1"
+							data-i18n="gameInfoFoodMechHeading"
+						></h2>
+						<p data-i18n="gameInfoFoodMechBody"></p>
+						<div class="freshness-grid">
+							<article class="info-card freshness-fresh">
+								<h3 data-i18n="gameInfoFreshHeading"></h3>
+								<p data-i18n-html="gameInfoFreshBody"></p>
+							</article>
+							<article class="info-card freshness-stale">
+								<h3 data-i18n="gameInfoStaleHeading"></h3>
+								<p data-i18n-html="gameInfoStaleBody"></p>
+							</article>
+							<article class="info-card freshness-spoiled">
+								<h3 data-i18n="gameInfoSpoiledHeading"></h3>
+								<p data-i18n-html="gameInfoSpoiledBody"></p>
+							</article>
+						</div>
+						<aside class="info-note">
+							<h3 data-i18n="gameInfoStorageHeading"></h3>
+							<p data-i18n-html="gameInfoStorageBody"></p>
+						</aside>
+					</section>
+					<div class="info-grid">
+						<section class="info-card" aria-labelledby="gameinfo-cooking">
+							<h2
+								id="gameinfo-cooking"
+								tabindex="-1"
+								data-i18n="gameInfoCookingHeading"
+							></h2>
+							<h3 data-i18n="gameInfoPriorityHeading"></h3>
+							<p data-i18n-html="gameInfoPriority"></p>
+							<h3 data-i18n="gameInfoCookedHeading"></h3>
+							<p data-i18n="gameInfoCooked"></p>
+							<h3 data-i18n="gameInfoWarmthHeading"></h3>
+							<p data-i18n-html="gameInfoWarmth"></p>
+						</section>
+						<section class="info-card" aria-labelledby="gameinfo-versions">
+							<h2
+								id="gameinfo-versions"
+								tabindex="-1"
+								data-i18n="gameInfoVersionsHeading"
+							></h2>
+							<p data-i18n="gameInfoVersionsBody"></p>
+						</section>
+					</div>
+					<section class="info-section" aria-labelledby="gameinfo-characters">
+						<h2
+							id="gameinfo-characters"
+							tabindex="-1"
+							data-i18n="gameInfoCharactersHeading"
+						></h2>
+						<div class="info-grid character-cards">
+							<article class="info-card">
+								<h3>Warly</h3>
+								<p data-i18n-html="gameInfoWarly"></p>
+							</article>
+							<article class="info-card">
+								<h3>Webber</h3>
+								<p data-i18n-html="gameInfoWebber"></p>
+							</article>
+							<article class="info-card">
+								<h3>Wigfrid</h3>
+								<p data-i18n-html="gameInfoWigfrid"></p>
+							</article>
+						</div>
+					</section>
+					<section
+						class="info-section favorites-section"
+						aria-labelledby="gameinfo-favorites"
+					>
+						<h2
+							id="gameinfo-favorites"
+							tabindex="-1"
+							data-i18n="gameInfoFavoritesHeading"
+						></h2>
+						<p data-i18n="gameInfoFavoritesBody"></p>
+						<div class="favorites-table">
+							<table id="help-favorite-foods">
+								<caption class="sr-only" data-i18n="gameInfoFavoritesHeading">
+									Favorite Foods (DST)
+								</caption>
+								<thead>
+									<tr>
+										<th scope="col" data-i18n="favoritesHeaderCharacter">
+											Character
+										</th>
+										<th scope="col" data-i18n="favoritesHeaderFavorite">
+											Favorite Food
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<th scope="row">Wilson</th>
+										<td>Bacon and Eggs</td>
+									</tr>
+									<tr>
+										<th scope="row">Willow</th>
+										<td>Spicy Chili</td>
+									</tr>
+									<tr>
+										<th scope="row">Wendy</th>
+										<td>Banana Pop</td>
+									</tr>
+									<tr>
+										<th scope="row">Wolfgang</th>
+										<td>Roasted Potato</td>
+									</tr>
+									<tr>
+										<th scope="row">Woodie</th>
+										<td>Honey Nuggets</td>
+									</tr>
+									<tr>
+										<th scope="row">Wickerbottom</th>
+										<td>Surf 'n' Turf</td>
+									</tr>
+									<tr>
+										<th scope="row">WX-78</th>
+										<td>Butter Muffin</td>
+									</tr>
+									<tr>
+										<th scope="row">Wes</th>
+										<td>Fresh Fruit Crepes</td>
+									</tr>
+									<tr>
+										<th scope="row">Maxwell</th>
+										<td>Wobster Dinner</td>
+									</tr>
+									<tr>
+										<th scope="row">Wigfrid</th>
+										<td>Turkey Dinner</td>
+									</tr>
+									<tr>
+										<th scope="row">Webber</th>
+										<td>Ice Cream</td>
+									</tr>
+									<tr>
+										<th scope="row">Winona</th>
+										<td>Vegetable Stinger</td>
+									</tr>
+									<tr>
+										<th scope="row">Wortox</th>
+										<td>Pomegranates</td>
+									</tr>
+									<tr>
+										<th scope="row">Wormwood</th>
+										<td>Cooked Cave Banana</td>
+									</tr>
+									<tr>
+										<th scope="row">Warly</th>
+										<td data-i18n="favoritesNone">No favorite food</td>
+									</tr>
+									<tr>
+										<th scope="row">Wurt</th>
+										<td>Extra Smelly Durian</td>
+									</tr>
+									<tr>
+										<th scope="row">Walter</th>
+										<td>Trail Mix</td>
+									</tr>
+									<tr>
+										<th scope="row">Wanda</th>
+										<td>Taffy</td>
+									</tr>
+									<tr>
+										<th scope="row">Wonkey</th>
+										<td>Cave Banana</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</section>
+					<section class="info-section">
+						<h2 class="info-section-title">
+							<span class="info-icon" data-ui-icon="book"></span
+							><span data-i18n="gameInfoWikiHeading"></span>
+						</h2>
+						<ul class="wiki-links-list">
+							<li>
+								<a
+									href="https://dontstarve.wiki.gg/wiki/Food"
+									target="_blank"
+									rel="noopener"
+									data-i18n="wikiFood"
+									>Food</a
+								>
+							</li>
+							<li>
+								<a
+									href="https://dontstarve.wiki.gg/wiki/Cooking"
+									target="_blank"
+									rel="noopener"
+									data-i18n="wikiCooking"
+									>Cooking</a
+								>
+							</li>
+							<li>
+								<a
+									href="https://dontstarve.wiki.gg/wiki/Crock_Pot"
+									target="_blank"
+									rel="noopener"
+									data-i18n="wikiCrockPot"
+									>Crock Pot</a
+								>
+							</li>
+							<li>
+								<a
+									href="https://dontstarve.wiki.gg/wiki/Farming"
+									target="_blank"
+									rel="noopener"
+									data-i18n="wikiFarming"
+									>Farming</a
+								>
+							</li>
+						</ul>
+					</section>
 				</div>
 			</main>
 

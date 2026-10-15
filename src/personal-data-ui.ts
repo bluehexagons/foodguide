@@ -12,9 +12,12 @@ import {
 	type CookbookDish,
 	type Inventory,
 } from './personal-data.js';
-import { t, type StringKey } from './strings.js';
+import { t, getLocale, listLocales, localeName, setLocale, type StringKey } from './strings.js';
+import { createIcon, type IconName } from './ui-icons.js';
+import type { createThemeController, ThemePreference } from './theme-controller.js';
 
 interface PersonalUIOptions {
+	theme: Pick<ReturnType<typeof createThemeController>, 'getTheme' | 'setTheme' | 'subscribe'>;
 	getTabStorage: () => Pick<Storage, 'getItem' | 'setItem'>;
 	legacyInventory: string[];
 	validIngredient: (id: string) => boolean;
@@ -38,9 +41,12 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	};
 	const labels: (() => void)[] = [];
 	const text = (node: HTMLElement, key: StringKey) => {
-		const target = node.tagName === 'LABEL' ? element('span', node) : node;
+		const target = ['LABEL', 'BUTTON'].includes(node.tagName) ? element('span', node) : node;
 		const update = () => {
 			target.textContent = t(key);
+			if (node.closest('.personal-toolbar')) {
+				node.title = t(key);
+			}
 		};
 		labels.push(update);
 		update();
@@ -179,21 +185,57 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			addInventory([...current.ingredients], `${current.name} (${t('personalCopy')})`);
 		}
 	});
-	const dialog = (key: StringKey) => {
+	const withIcon = <T extends HTMLElement>(node: T, name: IconName) => {
+		node.prepend(createIcon(name));
+		return node;
+	};
+	const dialog = (key: StringKey, icon: IconName) => {
 		const node = element('dialog', document.getElementById('content')!);
 		node.className = 'personal-dialog';
 		const top = element('div', node);
 		top.className = 'personal-dialog-heading';
-		const heading = element('h2', top);
+		const title = element('div', top);
+		title.className = 'personal-dialog-title';
+		title.append(createIcon(icon));
+		const heading = element('h2', title);
 		heading.id = `personal-dialog-${key}`;
 		text(heading, key);
 		node.setAttribute('aria-labelledby', heading.id);
 		const close = button(top, 'personalClose', () => node.close());
 		close.className = 'personal-dialog-close';
-		return node;
+		close.querySelector('span')!.className = 'sr-only';
+		close.prepend(createIcon('close'));
+		const body = element('div', node);
+		body.className = 'personal-dialog-body';
+		let backdropPress = false;
+		const outside = (event: MouseEvent) => {
+			const rect = node.getBoundingClientRect();
+			return (
+				event.clientX < rect.left ||
+				event.clientX > rect.right ||
+				event.clientY < rect.top ||
+				event.clientY > rect.bottom
+			);
+		};
+		node.addEventListener('pointerdown', event => {
+			backdropPress = event.target === node && outside(event);
+		});
+		node.addEventListener('pointercancel', () => {
+			backdropPress = false;
+		});
+		node.addEventListener('click', event => {
+			if (backdropPress && event.target === node && outside(event)) {
+				node.close();
+			}
+			backdropPress = false;
+		});
+		return { node, body };
 	};
-	const deleteDialog = dialog('personalDeleteTitle');
-	const deletePrompt = element('p', deleteDialog);
+	const { node: deleteDialog, body: deleteBody } = dialog('personalDeleteTitle', 'trash');
+	const deletePrompt = element('p', deleteBody);
+	const deleteActions = element('div', deleteBody);
+	deleteActions.className = 'dialog-actions';
+	button(deleteActions, 'personalCancel', () => deleteDialog.close());
 	let deleteAction = () => {};
 	let deleteTrigger: HTMLElement | null = null;
 	let deleteFallback: HTMLElement = select;
@@ -205,11 +247,10 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			deleteFallback.focus();
 		}
 	});
-	button(deleteDialog, 'personalDelete', () => {
+	button(deleteActions, 'personalDelete', () => {
 		deleteAction();
 		deleteDialog.close();
-	});
-	button(deleteDialog, 'personalCancel', () => deleteDialog.close());
+	}).classList.add('button-danger');
 	const confirmDelete = (title: string, action: () => void, fallback: HTMLElement = select) => {
 		deleteTrigger =
 			document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -456,76 +497,181 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		}
 	});
 
-	const shareDialog = dialog('personalShare');
-	const shareHelp = element('p', shareDialog);
+	const { node: shareDialog, body: shareBody } = dialog('personalShareTitle', 'share');
+	const shareHelp = element('p', shareBody);
+	shareHelp.className = 'dialog-intro';
 	text(shareHelp, 'personalShareHelp');
-	const snapshotLabel = element('label', shareDialog);
+	shareHelp.id = 'personal-share-description';
+	shareDialog.setAttribute('aria-describedby', shareHelp.id);
+	const snapshotLabel = element('label', shareBody);
+	snapshotLabel.className = 'share-snapshot';
 	const snapshot = element('input', snapshotLabel);
 	snapshot.type = 'checkbox';
 	snapshot.checked = true;
-	const snapshotText = element('span', snapshotLabel);
-	text(snapshotText, 'personalShareSnapshot');
-	const linkLabel = element('label', shareDialog);
+	const snapshotCaption = element('span', snapshotLabel);
+	text(element('strong', snapshotCaption), 'personalShareSnapshot');
+	text(element('small', snapshotCaption), 'personalSnapshotHelp');
+	const linkLabel = element('label', shareBody);
+	linkLabel.htmlFor = 'personal-share-link';
 	text(linkLabel, 'personalShareLink');
-	const link = element('input', linkLabel);
+	const linkRow = element('div', shareBody);
+	linkRow.className = 'share-link-field';
+	const link = element('input', linkRow);
 	link.type = 'text';
 	link.readOnly = true;
 	link.id = 'personal-share-link';
-	const copyStatus = element('p', shareDialog);
+	let copyStatusKey: StringKey | undefined;
+	const copyStatus = element('p', shareBody);
+	copyStatus.className = 'dialog-status';
 	copyStatus.setAttribute('role', 'status');
-	button(shareDialog, 'personalCopyLink', () => {
-		link.focus();
-		link.select();
-		if (navigator.clipboard) {
-			void navigator.clipboard
-				.writeText(link.value)
-				.then(() => {
-					copyStatus.textContent = t('personalLinkCopied');
-				})
-				.catch(() => {
-					copyStatus.textContent = t('personalCopyManually');
-				});
-		} else {
-			copyStatus.textContent = t('personalCopyManually');
-		}
-	});
+	const showCopyStatus = (key?: StringKey) => {
+		copyStatusKey = key;
+		copyStatus.textContent = key ? t(key) : '';
+	};
+	labels.push(() => showCopyStatus(copyStatusKey));
+	withIcon(
+		button(linkRow, 'personalCopyLink', () => {
+			link.focus();
+			link.select();
+			if (navigator.clipboard) {
+				void navigator.clipboard
+					.writeText(link.value)
+					.then(() => showCopyStatus('personalLinkCopied'))
+					.catch(() => showCopyStatus('personalCopyManually'));
+			} else {
+				showCopyStatus('personalCopyManually');
+			}
+		}),
+		'copy',
+	).classList.add('button-primary');
 	snapshot.addEventListener('change', () => {
 		link.value = options.shareUrl(snapshot.checked);
+		showCopyStatus();
 	});
-	button(toolbar, 'personalShare', () => {
-		snapshotLabel.hidden = !options.canShareSnapshot();
-		link.value = options.shareUrl(snapshot.checked);
-		copyStatus.textContent = '';
-		shareDialog.showModal();
-		link.focus();
-		link.select();
-	}).id = 'personal-share-button';
+	withIcon(
+		button(toolbar, 'personalShare', () => {
+			snapshotLabel.hidden = !options.canShareSnapshot();
+			link.value = options.shareUrl(snapshot.checked);
+			showCopyStatus();
+			shareDialog.showModal();
+			link.focus();
+			link.select();
+		}),
+		'share',
+	).id = 'personal-share-button';
 
-	const dataDialog = dialog('personalData');
-	const dataHelp = element('p', dataDialog);
-	text(dataHelp, 'personalDataHelp');
-	const dataStatus = element('p', dataDialog);
-	dataStatus.setAttribute('role', 'status');
-	button(dataDialog, 'personalExport', () => {
-		void store.settled().then(() => {
-			const blob = new Blob([JSON.stringify(store.get(), null, 2)], {
-				type: 'application/json',
-			});
-			const url = URL.createObjectURL(blob);
-			const anchor = element('a', dataDialog);
-			anchor.href = url;
-			anchor.download = 'foodguide-personal-data.json';
-			anchor.click();
-			anchor.remove();
-			window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-		});
+	const { node: dataDialog, body: dataBody } = dialog('personalData', 'options');
+	dataDialog.classList.add('options-dialog');
+	const section = (parent: HTMLElement, key: StringKey) => {
+		const node = element('section', parent);
+		node.className = 'options-section';
+		text(element('h3', node), key);
+		return node;
+	};
+	const appearance = section(dataBody, 'optionsAppearance');
+	const languageLabel = element('label', appearance);
+	languageLabel.className = 'option-label';
+	text(languageLabel, 'languagePickerLabel');
+	const language = element('select', languageLabel);
+	language.id = 'options-language';
+	for (const code of listLocales()) {
+		const option = element('option', language);
+		option.value = code;
+		option.textContent = localeName(code);
+	}
+	language.value = getLocale();
+	language.addEventListener('change', () => setLocale(language.value));
+	const languageHelp = element('p', appearance);
+	languageHelp.className = 'option-help';
+	languageHelp.id = 'options-language-help';
+	text(languageHelp, 'optionsLanguageHelp');
+	language.setAttribute('aria-describedby', languageHelp.id);
+	labels.push(() => {
+		language.value = getLocale();
 	});
-	const importLabel = element('label', dataDialog);
-	text(importLabel, 'personalImport');
-	const file = element('input', importLabel);
+	const themes = element('fieldset', appearance);
+	themes.className = 'theme-options';
+	text(element('legend', themes), 'optionsTheme');
+	const themeInputs: HTMLInputElement[] = [];
+	for (const [value, key, icon] of [
+		['auto', 'themeAuto', 'device'],
+		['light', 'themeLight', 'sun'],
+		['dark', 'themeDark', 'moon'],
+	] as const) {
+		const label = element('label', themes);
+		const radio = element('input', label);
+		radio.type = 'radio';
+		radio.name = 'options-theme';
+		radio.value = value;
+		radio.addEventListener('change', () => options.theme.setTheme(value as ThemePreference));
+		label.append(createIcon(icon));
+		text(element('span', label), key);
+		themeInputs.push(radio);
+	}
+	const updateTheme = () => {
+		for (const radio of themeInputs) {
+			radio.checked = radio.value === options.theme.getTheme();
+		}
+	};
+	options.theme.subscribe(updateTheme);
+	updateTheme();
+	const themeHelp = element('p', appearance);
+	themeHelp.className = 'option-help';
+	themeHelp.id = 'options-theme-help';
+	text(themeHelp, 'optionsThemeHelp');
+	themes.setAttribute('aria-describedby', themeHelp.id);
+
+	const backups = section(dataBody, 'optionsDataHeading');
+	const dataHelp = element('p', backups);
+	dataHelp.className = 'option-help';
+	text(dataHelp, 'personalDataHelp');
+	const backupCards = element('div', backups);
+	backupCards.className = 'backup-cards';
+	const exportCard = element('div', backupCards);
+	exportCard.className = 'backup-card';
+	text(element('h4', exportCard), 'optionsExportHeading');
+	text(element('p', exportCard), 'optionsExportHelp');
+	const importCard = element('div', backupCards);
+	importCard.className = 'backup-card';
+	text(element('h4', importCard), 'optionsImportHeading');
+	text(element('p', importCard), 'optionsImportHelp');
+	const dataStatus = element('p', backups);
+	dataStatus.className = 'dialog-status';
+	dataStatus.setAttribute('role', 'status');
+	let dataFeedback: { key: StringKey; params?: Record<string, string | number> } | undefined;
+	const showDataStatus = (key?: StringKey, params?: Record<string, string | number>) => {
+		dataFeedback = key ? { key, params } : undefined;
+		dataStatus.textContent = key ? t(key, params) : '';
+		dataStatus.dataset.tone = key === 'personalImportError' ? 'error' : 'success';
+	};
+	labels.push(() => showDataStatus(dataFeedback?.key, dataFeedback?.params));
+	withIcon(
+		button(exportCard, 'personalExport', () => {
+			void store.settled().then(() => {
+				const blob = new Blob([JSON.stringify(store.get(), null, 2)], {
+					type: 'application/json',
+				});
+				const url = URL.createObjectURL(blob);
+				const anchor = element('a', dataDialog);
+				anchor.href = url;
+				anchor.download = 'foodguide-personal-data.json';
+				anchor.click();
+				anchor.remove();
+				window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+				showDataStatus('personalExported');
+			});
+		}),
+		'download',
+	);
+	const importButton = withIcon(
+		button(importCard, 'personalImport', () => file.click()),
+		'upload',
+	);
+	const file = element('input', importCard);
 	file.type = 'file';
 	file.accept = '.json,application/json';
 	file.id = 'personal-import';
+	file.hidden = true;
 	file.addEventListener('change', () => {
 		void (async () => {
 			try {
@@ -533,6 +679,8 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 				if (!input) {
 					return;
 				}
+				importButton.disabled = true;
+				showDataStatus('personalImporting', { name: input.name });
 				if (input.size > maxPersonalDataBytes) {
 					throw new Error('Too large');
 				}
@@ -567,21 +715,35 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 				if (!applied) {
 					throw new Error('Import could not be applied');
 				}
-				dataStatus.textContent = t('personalImported', {
+				showDataStatus('personalImported', {
 					inventories: imported.inventories.length,
 					dishes: imported.dishes.length,
 				});
 			} catch {
-				dataStatus.textContent = t('personalImportError');
+				showDataStatus('personalImportError');
 			} finally {
 				file.value = '';
+				importButton.disabled = false;
 			}
 		})();
 	});
-	button(toolbar, 'personalData', () => {
-		dataStatus.textContent = '';
-		dataDialog.showModal();
-	});
+	const privacy = element('p', dataBody);
+	privacy.className = 'options-privacy';
+	privacy.append(createIcon('shield'));
+	text(element('span', privacy), 'optionsPrivacy');
+	const done = element('div', dataBody);
+	done.className = 'dialog-actions';
+	button(done, 'personalDone', () => dataDialog.close()).classList.add('button-primary');
+	withIcon(
+		button(toolbar, 'personalData', () => {
+			showDataStatus();
+			language.value = getLocale();
+			updateTheme();
+			dataDialog.showModal();
+			language.focus();
+		}),
+		'options',
+	).id = 'personal-options-button';
 	document.addEventListener('foodguide:localechange', () => {
 		for (const update of labels) {
 			update();

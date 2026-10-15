@@ -29,6 +29,50 @@ const STORAGE_KEY = 'foodGuideLocale';
  * may provide partial overrides. Missing custom translations fall back to English.
  */
 const defaultStrings = {
+	// Dialogs, options, and information pages
+	personalShareTitle: 'Share this view',
+	personalSnapshotHelp:
+		'The recipient gets a copy. Their changes won’t affect your pot or inventory.',
+	optionsAppearance: 'Language & appearance',
+	optionsLanguageHelp:
+		'Applies to all your tabs. Food, recipe and character names stay in English.',
+	optionsTheme: 'Color theme',
+	themeAuto: 'Device',
+	themeLight: 'Light',
+	themeDark: 'Dark',
+	optionsThemeHelp: 'Device follows your system theme. Use the header button for a quick switch.',
+	optionsDataHeading: 'Inventories & cookbook',
+	optionsExportHeading: 'Save a backup',
+	optionsExportHelp: 'Download your saved inventories and dishes as a JSON file.',
+	optionsImportHeading: 'Bring in a backup',
+	optionsImportHelp:
+		'Add copies from a Food Guide JSON file (up to 2 MB). Existing data is kept.',
+	optionsPrivacy: 'Saved on this device. Your data is never uploaded.',
+	personalDone: 'Done',
+	personalExported: 'Your backup is ready to save.',
+	personalImporting: 'Importing {name}…',
+	aboutEyebrow: 'Cook with a plan',
+	gameInfoHeading: 'Food & cooking basics',
+	gameInfoIntro: 'A quick reference for freshness, Crock Pot rules and character food mechanics.',
+	gameInfoContents: 'Jump to a topic',
+	gameInfoFreshHeading: 'Fresh',
+	gameInfoFreshBody:
+		'Eat food before the halfway point of its perish time for its listed benefits.',
+	gameInfoStaleHeading: 'Stale · 50%',
+	gameInfoStaleBody:
+		'Gives <strong><span id="stalehealth"></span> health</strong> and <strong><span id="stalehunger"></span> hunger</strong>, with <strong>no sanity</strong>.',
+	gameInfoSpoiledHeading: 'Spoiled · 75%',
+	gameInfoSpoiledBody:
+		'Gives <strong><span id="spoiledhunger"></span> hunger</strong> and no health. Eating it costs <strong><span id="spoiledsanity"></span> sanity</strong>.',
+	gameInfoStorageHeading: 'Storage & seasons',
+	gameInfoStorageBody:
+		'On the ground, food perishes at <strong><span id="perishground"></span></strong> of its normal rate: <strong><span id="perishwinter"></span></strong> in Winter and <strong><span id="perishsummer"></span></strong> in Summer. An Ice Box reduces the rate to <strong><span id="perishfridge"></span></strong>.',
+	gameInfoCookingHeading: 'Crock Pot rules',
+	gameInfoPriorityHeading: 'Highest priority wins',
+	gameInfoWarmthHeading: 'Warming & cooling',
+	gameInfoCookedHeading: 'Raw or cooked?',
+	favoritesNone: 'No favorite food',
+
 	// Personal inventories, cookbook, sharing, and backups
 	inventoryLabel: 'Inventory',
 	inventoryDefault: 'My inventory',
@@ -64,16 +108,14 @@ const defaultStrings = {
 	personalDeletePrompt: 'Delete “{name}”? This also removes it from other open tabs.',
 	personalCancel: 'Cancel',
 	personalShare: 'Share',
-	personalShareHelp:
-		'Create a snapshot link for someone else. Ordinary page addresses contain only navigation and game settings. Shared inventories open as new copies.',
-	personalShareSnapshot: 'Include the current pot or inventory',
+	personalShareHelp: 'Share this section and game settings. Theme and language are not included.',
+	personalShareSnapshot: 'Include my pot or inventory',
 	personalShareLink: 'Shareable link',
 	personalCopyLink: 'Copy link',
 	personalLinkCopied: 'Link copied.',
 	personalCopyManually: 'The link is selected. Copy it using your browser or keyboard.',
-	personalData: 'My data',
-	personalDataHelp:
-		'Export all inventories and cookbook dishes as a JSON backup. Import adds new copies without replacing existing data. Personal data stays on this device; sharing and export are explicit.',
+	personalData: 'Options',
+	personalDataHelp: 'Save your inventories and dishes or move them to another browser.',
 	personalExport: 'Export backup',
 	personalImport: 'Import backup',
 	personalImported: 'Imported {inventories} inventories and {dishes} dishes.',
@@ -85,8 +127,6 @@ const defaultStrings = {
 		'The saved-data limit has been reached. Export a backup and remove unused entries first.',
 
 	// Theme toggle
-	themeToggleToDark: '🌙',
-	themeToggleToLight: '☀️',
 	themeSwitchToLight: 'Switch to light theme',
 	themeSwitchToDark: 'Switch to dark theme',
 	themeToggleTitle: 'Toggle dark/light theme',
@@ -390,7 +430,7 @@ const defaultStrings = {
 	tableHungerGainHint: 'Hunger gained compared to ingredients',
 
 	// About page
-	aboutHeading: 'About This Food Guide',
+	aboutHeading: 'About this guide',
 	aboutIntro:
 		'This is an unofficial tool to help avoid starvation in <a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">Don\'t Starve</a>, an uncompromising wilderness survival game full of science and magic by <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a>.',
 	aboutBrowser:
@@ -399,24 +439,24 @@ const defaultStrings = {
 		'Open-source and maintained as a community effort on GitHub: <a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">github.com/bluehexagons/foodguide</a>.',
 	aboutChangelog:
 		'For the latest changes, see the <a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank" rel="noopener">commit history</a>.',
-	aboutSectionsHeading: 'Sections',
+	aboutSectionsHeading: 'Find the right tool',
 	aboutSimulatorHeading: 'Simulator',
 	aboutSimulatorBody:
-		'The Simulator works like a Crock Pot: add items, and it will tell you what food will be prepared. Note that only the highest-priority recipes will be candidates when actually cooking in-game. The combined totals at the top reflect the ingredients added, where perish time is the shortest. The suggestions below the real results show what recipes could be made by adding different items to those already in the Crock Pot.',
+		'Fill the pot with up to four ingredients to see the highest-priority dishes. Suggestions show what you could cook by completing a partial pot.',
 	aboutDiscoveryHeading: 'Discovery',
 	aboutDiscoveryBody:
-		"The Discovery tab finds what recipes can be prepared using a collection of ingredients. It doesn't take item quantity into account, instead assuming you have four of each. You are also able to calculate efficient recipes using your ingredients to get the most health or hunger benefit from cooking them in the crock pot. This works identically to the Statistics Analyzer tab, but limited to your inventory.",
+		'Build a named inventory and find recipes from the ingredients you have. Quantities are ignored: the guide assumes four of each ingredient.',
 	aboutFoodRecipeListsHeading: 'Food List & Recipe List',
 	aboutFoodRecipeListsBody:
-		"Browse all foods and Crock Pot recipes available in the selected game version. Use the version selector at the top to switch between Don't Starve Together, Don't Starve, and Hamlet.",
+		'Compare foods and Crock Pot recipes for your selected game and character. Sort by stats, or use the # links to share a highlighted entry.',
 	aboutStatisticsHeading: 'Statistics Analyzer',
 	aboutStatisticsBody:
-		'Explore combinations for the selected game and character using a representative set of ingredients that can go in the crock pot. Filter by recipe or ingredients and sort by Name to browse recipes together, or by a stat to compare outcomes. Expand a group to page through its combinations; the paging bars let you change both page sizes. Calculations can take some time. Refresh results to inspect progress without pausing; the table refreshes automatically when calculation finishes.',
+		'Compare four-ingredient combinations and filter by recipe or ingredient. Expand a recipe group to browse its combinations; pause or refresh while the search runs.',
 	linkToItem: 'Link to {name}',
-	aboutNavigationHeading: 'Sharing and multiple tabs',
+	aboutNavigationHeading: 'Save and share',
 	aboutNavigationBody:
-		'Copy the address to link to a section and game. Use Share to include a snapshot of the current pot or inventory. Named inventories and cookbook dishes are saved between sessions and synchronized across tabs; each tab chooses its own inventory. Shared inventory links create new copies. Pot choices and picker views stay local to each tab. My data imports or exports a backup. Theme and language apply to all tabs.',
-	aboutAdvancedHeading: 'Advanced Use (JavaScript Globals)',
+		'Share links to this section and game, with an optional pot or inventory snapshot. Inventories and cookbook dishes stay saved in this browser and sync across its tabs. Each tab keeps its own pot and working view. Open Options for language, theme and backup controls.',
+	aboutAdvancedHeading: 'Advanced: JavaScript console',
 	aboutAdvancedBody1:
 		'The Food Guide populates <code>window</code> with a few properties: <code>food</code>, <code>recipes</code>, and <code>matchingNames</code>. The Statistics Analyzer writes its results to <code>analysis</code> and <code>recipeCrunchData</code>. Each tab keeps its working state under <code>sessionStorage.foodGuideState</code>; <code>localStorage.foodGuideState</code> supplies the last saved setup for new tabs.',
 	aboutAdvancedBody2:
@@ -428,9 +468,9 @@ const defaultStrings = {
 	linkWiki: "Don't Starve Wiki",
 
 	// Game Info page
-	gameInfoFoodMechHeading: 'Food Mechanics',
+	gameInfoFoodMechHeading: 'Freshness & spoilage',
 	gameInfoFoodMechBody:
-		'<strong>Perish time</strong> is the time before a food item becomes <strong>Rot</strong>. <strong>Halfway</strong> through this period, it will go <strong>stale</strong>, and give <strong><span id="stalehealth"></span> health</strong> and <strong><span id="stalehunger"></span> hunger</strong>, as well as <strong>no sanity</strong>. Food <strong>spoils</strong> at <strong>three quarters</strong>, giving only <strong><span id="spoiledhunger"></span> hunger</strong> and <strong>no longer giving any health</strong>. Eating spoiled food will decrease sanity by <strong><span id="spoiledsanity"></span></strong>. Food <strong>dropped on the ground</strong> will <strong>perish</strong> at a rate of <strong><span id="perishground"></span></strong> (or <strong><span id="perishwinter"></span></strong> in <strong>Winter</strong>, <strong><span id="perishsummer"></span></strong> in <strong>Summer</strong>), while keeping it in the <strong>Ice Box</strong> will reduce the rate to <strong><span id="perishfridge"></span></strong>.',
+		'Perish time is the time before food turns to Rot. Freshness changes what you get from eating it.',
 	gameInfoWarmth:
 		'Foods that provide <strong>warmth</strong> or <strong>cooling</strong> work like a thermal stone; when eaten, they provide a heat source at a particular temperature for a period of time. Eating another heating/cooling food within this period will replace the earlier effect.',
 	gameInfoPriority:
@@ -520,11 +560,8 @@ export type LocaleDict = Partial<Omit<typeof defaultStrings, 'tags' | 'notes'>> 
 	tags?: Record<string, string>;
 	notes?: Record<string, string>;
 };
-/** Bundled locales translate every UI label and note; shared theme icons can fall back. */
-export type BundledLocaleDict = Record<
-	Exclude<StringKey, 'themeToggleToDark' | 'themeToggleToLight'>,
-	string
-> & {
+/** Bundled locales translate every UI label and note. */
+export type BundledLocaleDict = Record<StringKey, string> & {
 	tags: Record<keyof typeof defaultStrings.tags, string>;
 	notes: Record<keyof typeof defaultStrings.notes, string>;
 };

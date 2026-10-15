@@ -97,8 +97,10 @@ use **Share** to include a snapshot of your pot or inventory. A shared inventory
 opens as a new named copy. Ordinary addresses do not include ingredient selections.
 Back and Forward navigate between sections.
 
-**Share** and **My data** sit beside the section tabs on wider screens and beside
-the title on smaller screens.
+**Share** and **Options** sit beside the section tabs on wider screens and beside
+the title on smaller screens. On compact portrait layouts, a Food Guide mark
+and icon buttons keep the header short; the language menu still shows full
+language names when opened.
 
 Discovery supports multiple named inventories: create, rename, duplicate, or delete
 an inventory using its controls. Inventories persist between sessions and synchronize
@@ -111,8 +113,10 @@ Choose four pot ingredients and select **Save dish** to keep the combination in
 **My cookbook**, with its game and character settings. Loading a dish restores those
 settings and its ingredients. Cookbook cards show ingredient icons and recalculate
 the possible recipes using the saved settings, even when a dish has a custom name.
-**My data** exports all inventories and dishes as a
-JSON backup or imports additional copies without replacing existing entries.
+**Options** includes language and Light/Dark/Device theme settings as well as
+backup controls. The header language picker and quick theme toggle remain available.
+Export all inventories and dishes as a
+JSON backup, or import additional copies without replacing existing entries.
 Backups support transferring data to another browser or the desktop app. Personal
 data stays on your device and is not sent to a server.
 

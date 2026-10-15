@@ -13,6 +13,46 @@
 import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
+	// Dialogs, options, and information pages
+	personalShareTitle: '分享当前视图',
+	personalSnapshotHelp: '接收者会获得一份副本。对方的更改不会影响你的锅或库存。',
+	optionsAppearance: '语言与外观',
+	optionsLanguageHelp: '对所有标签页生效。食物、配方和角色名称仍使用英文。',
+	optionsTheme: '颜色主题',
+	themeAuto: '跟随设备',
+	themeLight: '浅色',
+	themeDark: '深色',
+	optionsThemeHelp: '“跟随设备”使用系统主题。页眉按钮可快速切换。',
+	optionsDataHeading: '库存与食谱集',
+	optionsExportHeading: '保存备份',
+	optionsExportHelp: '将保存的库存和菜品下载为 JSON 文件。',
+	optionsImportHeading: '导入备份',
+	optionsImportHelp: '从 Food Guide JSON 文件中添加副本（不超过 2 MB），保留现有数据。',
+	optionsPrivacy: '仅保存在此设备上，不会上传你的数据。',
+	personalDone: '完成',
+	personalExported: '备份已准备好，可以保存。',
+	personalImporting: '正在导入 {name}…',
+	aboutEyebrow: '有计划地烹饪',
+	gameInfoHeading: '食物与烹饪基础',
+	gameInfoIntro: '快速了解新鲜度、烹饪锅规则和角色的食物机制。',
+	gameInfoContents: '跳转到主题',
+	gameInfoFreshHeading: '新鲜',
+	gameInfoFreshBody: '在保鲜时间过半之前食用，可获得标示的食物收益。',
+	gameInfoStaleHeading: '不新鲜 · 50%',
+	gameInfoStaleBody:
+		'提供 <strong><span id="stalehealth"></span> 的生命值</strong>和 <strong><span id="stalehunger"></span> 的饥饿值</strong>，但<strong>不提供理智值</strong>。',
+	gameInfoSpoiledHeading: '变质 · 75%',
+	gameInfoSpoiledBody:
+		'提供 <strong><span id="spoiledhunger"></span> 的饥饿值</strong>，不提供生命值。食用会扣除 <strong><span id="spoiledsanity"></span> 点理智值</strong>。',
+	gameInfoStorageHeading: '储存与季节',
+	gameInfoStorageBody:
+		'放在地上的食物以正常速度的 <strong><span id="perishground"></span></strong> 腐烂：冬季为 <strong><span id="perishwinter"></span></strong>，夏季为 <strong><span id="perishsummer"></span></strong>。Ice Box 会将腐烂速度降至 <strong><span id="perishfridge"></span></strong>。',
+	gameInfoCookingHeading: '烹饪锅规则',
+	gameInfoPriorityHeading: '最高优先级胜出',
+	gameInfoWarmthHeading: '保暖与降温',
+	gameInfoCookedHeading: '生食还是熟食？',
+	favoritesNone: '无最爱食物',
+
 	// Personal inventories, cookbook, sharing, and backups
 	inventoryLabel: '库存',
 	inventoryDefault: '我的库存',
@@ -46,16 +86,14 @@ export const dict = {
 	personalDeletePrompt: '删除“{name}”？这也会从其他打开的标签页中删除该项目。',
 	personalCancel: '取消',
 	personalShare: '分享',
-	personalShareHelp:
-		'创建快照链接以分享给他人。普通页面地址只包含导航和游戏设置。分享的库存会作为新副本打开。',
-	personalShareSnapshot: '包含当前烹饪锅或库存',
+	personalShareHelp: '分享当前页面和游戏设置，不包含主题和语言。',
+	personalShareSnapshot: '包含我的锅或库存',
 	personalShareLink: '分享链接',
 	personalCopyLink: '复制链接',
 	personalLinkCopied: '链接已复制。',
 	personalCopyManually: '链接已选中。请使用浏览器或键盘复制。',
-	personalData: '我的数据',
-	personalDataHelp:
-		'将所有库存和食谱集菜品导出为 JSON 备份。导入会添加新副本，不会替换现有数据。个人数据保存在此设备上；只有主动分享或导出时才会生成副本。',
+	personalData: '选项',
+	personalDataHelp: '保存你的库存和菜品，或将它们转移到其他浏览器。',
 	personalExport: '导出备份',
 	personalImport: '导入备份',
 	personalImported: '已导入{inventories}个库存和{dishes}道菜品。',
@@ -329,7 +367,7 @@ export const dict = {
 	tableHealthGainHint: '相较于食材获得的生命增益',
 	tableHungerGainHint: '相较于食材获得的饥饿增益',
 
-	aboutHeading: '关于本食物指南',
+	aboutHeading: '关于本指南',
 	aboutIntro:
 		'这是一个非官方工具,帮助你在 <a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">Don\'t Starve</a> 中避免饿死。这是一款由 <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a> 制作的、充满科学与魔法、毫不留情的荒野生存游戏。',
 	aboutBrowser:
@@ -338,24 +376,24 @@ export const dict = {
 		'开源,作为社区项目维护于 GitHub:<a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">github.com/bluehexagons/foodguide</a>。',
 	aboutChangelog:
 		'最新更改请查看 <a href="https://github.com/bluehexagons/foodguide/commits/main" target="_blank" rel="noopener">提交历史</a>。',
-	aboutSectionsHeading: '各部分说明',
+	aboutSectionsHeading: '选择合适的工具',
 	aboutSimulatorHeading: '模拟器',
 	aboutSimulatorBody:
-		'模拟器的运作方式与烹饪锅相同:加入物品后会告诉你将做出何种食物。请注意,实际烹饪时只有最高优先级的配方才会成为候选。顶部的合计反映加入的食材,腐败时间取最短者。结果下方的建议显示在已加入食材的基础上再加入不同物品可制作的其他配方。',
+		'在锅中放入最多四份食材，查看最高优先级的菜肴。锅未装满时，建议会显示补全食材后可以制作的菜肴。',
 	aboutDiscoveryHeading: '发现',
 	aboutDiscoveryBody:
-		'发现标签页根据一组食材查找可制作的配方。它不考虑物品数量,而是假设每种你都有四个。你也可以计算使用现有食材的高效配方,以便在烹饪锅中烹饪时获得最大的生命或饥饿收益。其工作方式与统计分析器相同,但仅限于你的背包。',
+		'创建命名库存，根据现有食材查找配方。不考虑实际数量：指南假设每种食材都有四份。',
 	aboutFoodRecipeListsHeading: '食物列表与配方列表',
 	aboutFoodRecipeListsBody:
-		"浏览所选游戏版本中可用的全部食物和烹饪锅配方。使用顶部的版本选择器在 Don't Starve Together、Don't Starve 和 Hamlet 之间切换。",
+		'比较所选游戏和角色可用的食物与烹饪锅配方。可按属性排序，也可使用 # 链接分享高亮条目。',
 	aboutStatisticsHeading: '统计分析器',
 	aboutStatisticsBody:
-		'使用可放入烹饪锅的代表性食材，探索当前游戏和角色的食材组合。可按配方或食材筛选，按名称排序以集中浏览同一配方，或按属性排序比较收益。展开分组可翻页查看组合；分页栏可分别调整两级分页的每页数量。计算可能需要一些时间。刷新结果即可查看最新进展，无需暂停；计算完成后，表格会自动刷新。',
+		'比较四份食材的组合，按配方或食材筛选。展开配方组可浏览其中的组合；计算过程中可以暂停或刷新结果。',
 	linkToItem: '链接到{name}',
-	aboutNavigationHeading: '分享与多个标签页',
+	aboutNavigationHeading: '保存与分享',
 	aboutNavigationBody:
-		'复制地址可以链接到页面和游戏。使用“分享”可包含当前烹饪锅或库存的快照。命名库存和食谱集菜品会跨会话保存并在标签页之间同步；每个标签页可以选择自己的库存。分享的库存链接会创建新副本。烹饪锅选择和食材选择器显示设置各自保留在每个标签页中。“我的数据”可导入或导出备份。主题和语言会应用到所有标签页。',
-	aboutAdvancedHeading: '高级用法(JavaScript 全局变量)',
+		'分享当前页面和游戏设置，也可附带锅或库存的快照。库存和收藏的菜肴会保存在此浏览器中，并在其标签页之间同步。每个标签页保留各自的锅和工作视图。打开“选项”可设置语言、主题并管理备份。',
+	aboutAdvancedHeading: '高级：JavaScript 控制台',
 	aboutAdvancedBody1:
 		'本食物指南会向 <code>window</code> 添加几个属性:<code>food</code>、<code>recipes</code> 和 <code>matchingNames</code>。统计分析器将其结果写入 <code>analysis</code> 和 <code>recipeCrunchData</code>。每个标签页的工作状态保存在 <code>sessionStorage.foodGuideState</code> 中；<code>localStorage.foodGuideState</code> 为新标签页提供上次保存的设置。',
 	aboutAdvancedBody2:
@@ -366,9 +404,8 @@ export const dict = {
 	linkOfficialSite: "Don't Starve 官方网站",
 	linkWiki: "Don't Starve Wiki",
 
-	gameInfoFoodMechHeading: '食物机制',
-	gameInfoFoodMechBody:
-		'<strong>腐败时间</strong>是食物变为<strong>腐烂物</strong>之前的时间。在该时间的<strong>一半</strong>处,食物会变<strong>不新鲜</strong>,只提供 <strong><span id="stalehealth"></span> 的生命</strong>和 <strong><span id="stalehunger"></span> 的饥饿</strong>,且<strong>不提供理智</strong>。食物在<strong>四分之三</strong>处<strong>变质</strong>,只提供 <strong><span id="spoiledhunger"></span> 的饥饿</strong>且<strong>不再提供生命</strong>。食用变质食物会使理智下降 <strong><span id="spoiledsanity"></span></strong>。<strong>掉在地上</strong>的食物的<strong>腐败速率</strong>为 <strong><span id="perishground"></span></strong>(<strong>冬季</strong>为 <strong><span id="perishwinter"></span></strong>,<strong>夏季</strong>为 <strong><span id="perishsummer"></span></strong>),而存放在<strong>冰箱</strong>中可将速率降至 <strong><span id="perishfridge"></span></strong>。',
+	gameInfoFoodMechHeading: '新鲜度与腐烂',
+	gameInfoFoodMechBody: '保鲜时间是食物变成 Rot 之前的时长。新鲜度会影响食用后的收益。',
 	gameInfoWarmth:
 		'提供<strong>取暖</strong>或<strong>降温</strong>的食物的作用类似于热能石:食用后,会在一段时间内以特定温度作为热源。在该时段内再食用其他取暖/降温食物会替换之前的效果。',
 	gameInfoPriority:

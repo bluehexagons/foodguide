@@ -7,6 +7,7 @@
 }
 
 html {
+	color-scheme: light;
 	/* Default colors - light mode */
 	--bg-primary: #e8e8e6;
 	--bg-secondary: #f2f2f0;
@@ -113,6 +114,7 @@ body {
 
 /* Dark mode - activated via data-theme="dark" attribute */
 html[data-theme='dark'] {
+	color-scheme: dark;
 	--bg-primary: #1a1a1a;
 	--bg-secondary: #242424;
 	--fg-primary: #e0e0e0;
@@ -271,62 +273,6 @@ strong {
 	margin-bottom: 12px;
 	line-height: 1.5;
 	color: var(--fg-primary);
-}
-
-#about,
-#gameinfo {
-	max-width: 900px;
-	line-height: 1.6;
-}
-
-#about h2,
-#gameinfo h2 {
-	margin-top: 24px;
-	padding-left: 0;
-	border-bottom: 1px solid var(--border-color);
-	padding-bottom: 8px;
-}
-
-#about h3,
-#gameinfo h3 {
-	margin-top: 18px;
-	padding-left: 0;
-}
-
-#about p,
-#gameinfo p {
-	margin-bottom: 16px;
-}
-
-#about ul,
-#gameinfo ul {
-	margin-bottom: 16px;
-}
-
-#about li,
-#gameinfo li {
-	margin-bottom: 8px;
-}
-
-#help-favorite-foods {
-	border-collapse: collapse;
-	margin-bottom: 16px;
-	max-width: 600px;
-}
-
-#help-favorite-foods th,
-#help-favorite-foods td {
-	padding: 6px 16px 6px 0;
-	text-align: left;
-	border-bottom: 1px solid var(--border-color);
-}
-
-#help-favorite-foods tr:hover td {
-	background: var(--table-hover);
-}
-
-#help-favorite-foods th {
-	font-weight: bold;
 }
 
 #footer {

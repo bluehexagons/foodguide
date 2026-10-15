@@ -1,0 +1,346 @@
+/* Shared native dialogs and the Options screen. */
+.ui-icon {
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	vertical-align: middle;
+}
+html:has(.personal-dialog[open]) {
+	overflow: hidden;
+}
+.personal-dialog {
+	width: min(620px, calc(100% - 32px));
+	max-width: none;
+	max-height: calc(100dvh - 32px);
+	margin: auto;
+	padding: 0;
+	border: 1px solid var(--border-color);
+	border-radius: 14px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	box-shadow: 0 24px 80px rgb(0 0 0 / 35%);
+}
+.personal-dialog[open] {
+	display: flex;
+	flex-direction: column;
+}
+.personal-dialog::backdrop {
+	background: rgb(0 0 0 / 60%);
+	backdrop-filter: blur(3px);
+}
+.personal-dialog-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--border-color);
+	flex-shrink: 0;
+}
+.personal-dialog-title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+.personal-dialog-title > .ui-icon {
+	width: 22px;
+	height: 22px;
+	color: var(--focus-color);
+}
+.personal-dialog h2 {
+	padding: 0;
+	margin: 0;
+	font-size: 1.2rem;
+	line-height: 1.35;
+}
+.personal-dialog button.personal-dialog-close {
+	display: grid;
+	place-items: center;
+	width: 36px;
+	min-height: 36px;
+	padding: 8px;
+	flex-shrink: 0;
+	border-color: transparent;
+	background: transparent;
+}
+.personal-dialog-body {
+	padding: 20px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	min-height: 0;
+	font-size: 14px;
+	line-height: 1.6;
+}
+.personal-dialog p {
+	margin: 0 0 16px;
+	line-height: 1.6;
+}
+.personal-dialog .dialog-intro,
+.personal-dialog .option-help,
+.backup-card p {
+	color: var(--fg-secondary);
+}
+.personal-dialog label {
+	margin: 0;
+	font-size: 14px;
+}
+.personal-dialog-body > label {
+	display: block;
+	margin: 18px 0 8px;
+	font-weight: 600;
+}
+.personal-dialog input[type='text'],
+.personal-dialog select {
+	width: 100%;
+	min-width: 0;
+	min-height: 42px;
+	padding: 10px 12px;
+	border: 1px solid var(--border-color);
+	border-radius: 7px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	font: inherit;
+}
+.personal-dialog button,
+.info-actions button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 40px;
+	max-width: 100%;
+	padding: 9px 13px;
+	border: 1px solid var(--border-color);
+	border-radius: 7px;
+	background: var(--bg-secondary);
+	color: var(--fg-primary);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.4;
+	cursor: pointer;
+}
+.personal-dialog button:disabled {
+	opacity: 0.6;
+	cursor: wait;
+}
+.personal-dialog .button-primary {
+	background: var(--focus-color);
+	border-color: var(--focus-color);
+	color: var(--bg-secondary);
+}
+.personal-dialog .button-primary:enabled:hover {
+	background: var(--focus-color);
+	filter: brightness(1.1);
+}
+.personal-dialog .button-danger {
+	border-color: var(--excluded-border);
+	color: var(--fg-primary);
+	background: var(--excluded-bg);
+}
+.personal-dialog-body > .share-snapshot {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 14px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--bg-primary);
+	cursor: pointer;
+	font-weight: 400;
+}
+.share-snapshot input {
+	min-height: 0;
+	margin: 4px 0 0;
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	accent-color: var(--focus-color);
+}
+.share-snapshot strong,
+.share-snapshot small {
+	display: block;
+}
+.share-snapshot small {
+	margin-top: 4px;
+	color: var(--fg-secondary);
+	font-size: 12px;
+	line-height: 1.5;
+}
+.share-link-field {
+	display: flex;
+	gap: 8px;
+}
+.share-link-field input {
+	flex: 1;
+	font-family: monospace !important;
+	font-size: 12px !important;
+}
+.share-link-field button {
+	flex-shrink: 0;
+}
+.personal-dialog .dialog-status {
+	min-height: 1.6em;
+	margin: 12px 0 0;
+	font-size: 13px;
+	overflow-wrap: anywhere;
+}
+.dialog-status[data-tone='error']:not(:empty) {
+	padding: 12px;
+	border-inline-start: 3px solid var(--excluded-border);
+	background: var(--excluded-bg);
+}
+.options-section + .options-section {
+	margin-top: 20px;
+	padding-top: 20px;
+	border-top: 1px solid var(--border-color);
+}
+.options-section h3 {
+	padding: 0;
+	margin: 0 0 14px;
+	font-size: 16px;
+}
+.personal-dialog .option-label {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	align-items: center;
+	font-weight: 600;
+}
+.personal-dialog .option-help {
+	font-size: 12px;
+	margin: 8px 0 12px;
+}
+.theme-options {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+	padding: 0;
+	margin: 20px 0 0;
+	border: 0;
+}
+.theme-options legend {
+	font-weight: 600;
+	padding: 0;
+	margin-bottom: 10px;
+}
+.theme-options label {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 7px;
+	padding: 16px 8px 12px;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	background: var(--bg-primary);
+	text-align: center;
+	cursor: pointer;
+	font-size: 12px;
+}
+.theme-options label:has(:checked) {
+	background: var(--picked-bg);
+	border-color: var(--focus-color);
+}
+.theme-options input {
+	min-height: 0;
+	position: absolute;
+	inset-block-start: 6px;
+	inset-inline-end: 6px;
+	margin: 0;
+	width: 13px;
+	height: 13px;
+	accent-color: var(--focus-color);
+}
+.theme-options .ui-icon {
+	width: 24px;
+	height: 24px;
+}
+.backup-cards {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+.backup-card {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	border: 1px solid var(--border-color);
+	border-radius: 9px;
+	background: var(--bg-primary);
+}
+.backup-card h4 {
+	margin: 0;
+	font-size: 14px;
+}
+.personal-dialog .backup-card p {
+	font-size: 12px;
+	margin: 0;
+}
+.backup-card button {
+	margin-top: auto;
+}
+.personal-dialog .options-privacy {
+	display: flex;
+	align-items: flex-start;
+	gap: 9px;
+	margin: 20px 0;
+	color: var(--fg-secondary);
+	font-size: 12px;
+}
+.options-privacy .ui-icon {
+	margin-top: 2px;
+}
+.dialog-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 20px;
+}
+@media (max-width: 480px) {
+	.personal-dialog {
+		width: calc(100% - 24px);
+		max-height: calc(100dvh - 24px);
+	}
+	.personal-dialog-heading,
+	.personal-dialog-body {
+		padding: 16px;
+	}
+	.backup-cards {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	.share-link-field {
+		flex-wrap: wrap;
+	}
+	.share-link-field input {
+		flex-basis: 100%;
+	}
+	.share-link-field button {
+		margin-inline-start: auto;
+	}
+}
+@media (any-pointer: coarse) {
+	.personal-dialog button,
+	.info-actions button {
+		min-height: 44px;
+	}
+}
+
+.options-dialog .dialog-status:empty {
+	display: none;
+}
+.theme-options label:focus-within {
+	outline: 2px solid var(--focus-color);
+	outline-offset: 2px;
+}
+
+@media (any-pointer: coarse) {
+	.personal-dialog select {
+		min-height: 44px;
+	}
+	.personal-dialog button.personal-dialog-close {
+		width: 44px;
+	}
+}

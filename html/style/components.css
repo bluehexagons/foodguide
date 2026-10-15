@@ -63,38 +63,6 @@
 	font-size: 0.85rem;
 	color: var(--fg-secondary);
 }
-.personal-dialog {
-	width: min(640px, calc(100% - 32px));
-	max-height: calc(100% - 32px);
-	overflow: auto;
-	padding: 20px;
-	border: 1px solid var(--border-color);
-	border-radius: 10px;
-	background: var(--bg-primary);
-	color: var(--fg-primary);
-}
-.personal-dialog::backdrop {
-	background: rgb(0 0 0 / 45%);
-}
-.personal-dialog h2 {
-	margin-top: 0;
-}
-.personal-dialog label {
-	margin: 12px 0;
-	flex-wrap: wrap;
-}
-.personal-dialog input[type='text'] {
-	width: 100%;
-}
-.personal-dialog-heading {
-	display: flex;
-	align-items: start;
-	justify-content: space-between;
-	gap: 12px;
-}
-.personal-dialog-close {
-	flex-shrink: 0;
-}
 #personal-cookbook summary {
 	cursor: pointer;
 	min-height: 32px;

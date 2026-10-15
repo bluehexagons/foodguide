@@ -93,6 +93,7 @@ import { sortIngredients } from './ingredient-sort.js';
 import { groupIngredients } from './ingredient-groups.js';
 import { filterCookingIngredients } from './ingredient-cooking.js';
 import { createThemeController } from './theme-controller.js';
+import { initializeInformationPages } from './ui-icons.js';
 import { createSortableTableFactory } from './sortable-table.js';
 import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
 import { makeImage, makeElement } from './utils.js';
@@ -212,6 +213,7 @@ import './locales/index.js';
 		toggleButton: document.getElementById('theme-toggle'),
 		translate: t,
 	});
+	initializeInformationPages();
 
 	// Initialise the i18n layer: pick a locale (storage > navigator > en),
 	// populate the language picker, and apply translations to the static HTML.
@@ -3011,6 +3013,9 @@ import './locales/index.js';
 	versionLabel.className = 'mode-label';
 	versionLabel.setAttribute('data-i18n', 'modeLabelGame');
 	versionLabel.textContent = t('modeLabelGame');
+	versionLabel.id = 'versionSection-label';
+	versionSection.setAttribute('role', 'group');
+	versionSection.setAttribute('aria-labelledby', versionLabel.id);
 	versionSection.appendChild(versionLabel);
 
 	for (const name in gameVersions) {
@@ -3046,6 +3051,9 @@ import './locales/index.js';
 	dlcLabel.className = 'mode-label';
 	dlcLabel.setAttribute('data-i18n', 'modeLabelDlc');
 	dlcLabel.textContent = t('modeLabelDlc');
+	dlcLabel.id = 'dlcSection-label';
+	dlcSection.setAttribute('role', 'group');
+	dlcSection.setAttribute('aria-labelledby', dlcLabel.id);
 	dlcSection.appendChild(dlcLabel);
 
 	for (const name in dlcOptions) {
@@ -3081,6 +3089,9 @@ import './locales/index.js';
 	charLabel.className = 'mode-label';
 	charLabel.setAttribute('data-i18n', 'modeLabelCharacter');
 	charLabel.textContent = t('modeLabelCharacter');
+	charLabel.id = 'charSection-label';
+	charSection.setAttribute('role', 'group');
+	charSection.setAttribute('aria-labelledby', charLabel.id);
 	charSection.appendChild(charLabel);
 
 	for (const name in characters) {
@@ -3155,6 +3166,9 @@ import './locales/index.js';
 		for (const link of navbar.querySelectorAll<HTMLAnchorElement>('a[data-tab]')) {
 			link.href = routeFor(guideTab(link.dataset.tab));
 		}
+		for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-guide-tab]')) {
+			link.href = routeFor(guideTab(link.dataset.guideTab));
+		}
 		document.title = `${requireElement(`tab-${activeTabId}`).textContent!.trim()} — Don't Starve Food Guide`;
 	};
 	const restoreLocation = () => {
@@ -3216,6 +3230,7 @@ import './locales/index.js';
 		highlightRecipes(initialRoute.highlight);
 	}
 	personalUI = createPersonalDataUI({
+		theme: themeController,
 		getTabStorage: () => tabStorage,
 		legacyInventory: (savedState.pickers?.[1] ?? [])
 			.map(id => (id ? getSavedFood(food, id)?.key : undefined))

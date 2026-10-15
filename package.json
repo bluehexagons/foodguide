@@ -80,7 +80,7 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"dev": "npm run build && npm run generate-sprites && http-server html -p 8080 -o /index.htm -a 127.0.0.1 -i false -c -1 -g",
+		"dev": "npm run build && npm run generate-sprites && http-server html -p 8080 -o / -a 127.0.0.1 -c -1 -g",
 		"lint": "oxlint --deny-warnings",
 		"lint:fix": "oxlint --fix --deny-warnings",
 		"format": "oxfmt",

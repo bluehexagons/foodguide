@@ -1,7 +1,7 @@
 /**
  * Default entry point when this package is imported as a library.
  *
- * The Food Guide is primarily a static web app served from `html/index.htm`,
+ * The Food Guide is primarily a static web app served from `html/index.html`,
  * but its data tables and helpers can be reused by other tools (mod
  * companion sites, calculators, bots, etc). This module re-exports the
  * pure-data and pure-logic surface so consumers can do:

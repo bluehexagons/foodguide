@@ -23,7 +23,7 @@ const createDeployment = async t => {
 	await git(['config', 'user.name', 'Deployment Test']);
 	await git(['config', 'user.email', 'deployment-test@example.invalid']);
 	await mkdir(join(origin, 'html'));
-	await writeFile(join(origin, 'html', 'index.htm'), 'current guide');
+	await writeFile(join(origin, 'html', 'index.html'), 'current guide');
 	await writeFile(
 		join(origin, 'generate.mjs'),
 		`import { mkdir, writeFile } from 'node:fs/promises';
@@ -58,7 +58,7 @@ await writeFile('html/img/sprites/sprites.json', '{"generated":true}');
 	await git(['add', '.']);
 	await git(['commit', '-m', 'Deployment fixture']);
 	await exec('git', ['clone', origin, checkout]);
-	await writeFile(join(serving, 'index.htm'), 'previous guide');
+	await writeFile(join(serving, 'index.html'), 'previous guide');
 	await writeFile(join(serving, 'obsolete.txt'), 'obsolete asset');
 	return {
 		serving,
@@ -78,7 +78,7 @@ test(
 	async t => {
 		const { serving, deploy } = await createDeployment(t);
 		await deploy();
-		assert.equal(await readFile(join(serving, 'index.htm'), 'utf8'), 'current guide');
+		assert.equal(await readFile(join(serving, 'index.html'), 'utf8'), 'current guide');
 		assert.deepEqual(
 			JSON.parse(await readFile(join(serving, 'img/sprites/sprites.json'), 'utf8')),
 			{
@@ -100,7 +100,7 @@ test(
 			deploy({ FOODGUIDE_TEST_FAIL_BUILD: '1' }),
 			/Sprite generation failed/,
 		);
-		assert.equal(await readFile(join(serving, 'index.htm'), 'utf8'), 'previous guide');
+		assert.equal(await readFile(join(serving, 'index.html'), 'utf8'), 'previous guide');
 		assert.equal(await readFile(join(serving, 'obsolete.txt'), 'utf8'), 'obsolete asset');
 	},
 );

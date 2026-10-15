@@ -11,8 +11,11 @@ npm run generate-sprites
 ```
 
 Use Node.js 24 or newer and include development dependencies; Sharp is required to generate
-the sprite assets. Both `index.html` and `index.htm` must be served. Relative URLs
-allow the site to work under the GitHub Pages repository path.
+the sprite assets. Serve `index.html` as the directory index so the guide opens
+without a filename, for example `https://foodguide.bluehexagons.com/#discovery?game=together`.
+Keep `index.htm` and `entry-redirect.js` available for legacy links; the redirect
+preserves query strings and fragments. Relative URLs also support subpaths such as
+`/foodguide/` on GitHub Pages and the portfolio domain.
 
 ## Basaltwater
 

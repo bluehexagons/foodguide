@@ -3274,9 +3274,10 @@ import './locales/index.js';
 		shareUrl: snapshot => {
 			const url = new URL(
 				window.location.protocol === 'file:'
-					? 'https://foodguide.bluehexagons.com/index.htm'
+					? 'https://foodguide.bluehexagons.com/'
 					: window.location.href,
 			);
+			url.pathname = url.pathname.replace(/\/index\.html?$/, '/');
 			url.hash = routeFor(activeTabId, snapshot);
 			return url.href;
 		},

@@ -25,7 +25,9 @@ test('packed library works outside the checkout with runtime and declaration exp
 	const [packed] = JSON.parse(stdout);
 	assert(packed.files.some(file => file.path === 'html/models.d.ts'));
 	assert(
-		!packed.files.some(file => file.path.startsWith('src/') || file.path === 'html/index.htm'),
+		!packed.files.some(
+			file => file.path.startsWith('src/') || /^html\/index\.html?$/.test(file.path),
+		),
 	);
 
 	const consumer = join(directory, 'consumer');

@@ -59,32 +59,32 @@ Go is unavailable; the application itself does not require Go.
 
 ## Layout
 
-| Path                                                                  | Responsibility                                                |
-| --------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `html/index.htm`                                                      | Main application document; `index.html` redirects here.       |
-| `src/foodguide.ts`                                                    | Page state, tabs, ingredient pickers, and UI wiring.          |
-| `src/food.ts`, `src/recipes.ts`                                       | Food and recipe data and initialization.                      |
-| `src/constants.ts`, `src/mode-utils.ts`, `src/functions.ts`           | Game constants, mode/character logic, and recipe predicates.  |
-| `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.    |
-| `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                           |
-| `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.   |
-| `src/ingredient-sort.ts`, `src/ingredient-groups.ts`                  | Picker relevance, explicit sorting, and disjoint groups.      |
-| `src/ingredient-cooking.ts`                                           | Curated cooking views and recipe specialty preservation.      |
-| `src/number-format.ts`                                                | Signed value formatting with fraction glyphs.                 |
-| `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access. |
-| `src/navigation.ts`, `src/entry-redirect.ts`                          | Shareable fragment routes and entry-link preservation.        |
-| `src/tab-storage.ts`                                                  | Tab-local working snapshots and last-used defaults.           |
-| `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.    |
-| `src/analysis-filters.ts`                                             | Analyzer filter states and result matching without DOM state. |
-| `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                  |
-| `html/style/`, `html/img/`                                            | Styles and original icon assets.                              |
-| `tools/generate-sprites.ts`                                           | Sprite sheet generator using Sharp.                           |
-| `tests/`                                                              | Unit, regression, deployment, and browser smoke tests.        |
-| `.github/workflows/`                                                  | Shared checks, CI, and deployment.                            |
+| Path                                                                  | Responsibility                                                 |
+| --------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `html/index.html`                                                     | Main application document, served at the site root.            |
+| `src/foodguide.ts`                                                    | Page state, tabs, ingredient pickers, and UI wiring.           |
+| `src/food.ts`, `src/recipes.ts`                                       | Food and recipe data and initialization.                       |
+| `src/constants.ts`, `src/mode-utils.ts`, `src/functions.ts`           | Game constants, mode/character logic, and recipe predicates.   |
+| `src/recipe-calculator.ts`, `src/recipe-analyzer.ts`                  | Search, recipe matching, and batched combination analysis.     |
+| `src/dropdown.ts`, `src/sortable-table.ts`, `src/theme-controller.ts` | Shared UI controls.                                            |
+| `src/table-sort.ts`                                                   | Shared name comparison and table sorting without DOM state.    |
+| `src/ingredient-sort.ts`, `src/ingredient-groups.ts`                  | Picker relevance, explicit sorting, and disjoint groups.       |
+| `src/ingredient-cooking.ts`                                           | Curated cooking views and recipe specialty preservation.       |
+| `src/number-format.ts`                                                | Signed value formatting with fraction glyphs.                  |
+| `src/preferences.ts`                                                  | Saved-state validation, legacy migration, and storage access.  |
+| `src/navigation.ts`, `src/entry-redirect.ts`                          | Shareable fragment routes and legacy `.htm` link preservation. |
+| `src/tab-storage.ts`                                                  | Tab-local working snapshots and last-used defaults.            |
+| `src/food-selection.ts`                                               | Ingredient variants for saved selections and game changes.     |
+| `src/analysis-filters.ts`                                             | Analyzer filter states and result matching without DOM state.  |
+| `src/strings.ts`, `src/locales/`                                      | Translation helpers and locale dictionaries.                   |
+| `html/style/`, `html/img/`                                            | Styles and original icon assets.                               |
+| `tools/generate-sprites.ts`                                           | Sprite sheet generator using Sharp.                            |
+| `tests/`                                                              | Unit, regression, deployment, and browser smoke tests.         |
+| `.github/workflows/`                                                  | Shared checks, CI, and deployment.                             |
 
 TypeScript sources live in `src/`; `npm run build` writes ignored JavaScript and
 declarations to `html/`, retaining the existing module URLs. Edit the source files,
-then rebuild before opening `html/index.htm` or importing the library.
+then rebuild before opening `html/index.html` or importing the library.
 `npm run build:watch` recompiles browser sources while you edit. Node build tools
 live in `tools/` and compile to `scripts/`. `npm ci --ignore-scripts` requires an
 explicit build; normal installs and package creation run it automatically.

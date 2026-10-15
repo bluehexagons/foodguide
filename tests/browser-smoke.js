@@ -41,10 +41,10 @@ const colorContrast = (first, second) => {
 	return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 };
 
-const startServer = () => {
+const startServer = (directory = 'html') => {
 	const server = spawn(
 		process.execPath,
-		[HTTP_SERVER, 'html', '-p', '0', '-a', '127.0.0.1', '-i', 'false', '-c', '-1'],
+		[HTTP_SERVER, directory, '-p', '0', '-a', '127.0.0.1', '-c', '-1'],
 		{
 			cwd: ROOT_DIR,
 			stdio: ['ignore', 'pipe', 'pipe'],
@@ -108,8 +108,8 @@ const stopServer = async server => {
 	await closed;
 };
 
-const createBrowserFixture = async t => {
-	const { server, ready } = startServer();
+const createBrowserFixture = async (t, directory) => {
+	const { server, ready } = startServer(directory);
 	t.after(() => stopServer(server));
 	const baseUrl = await ready;
 	const browser = await browserType.launch({
@@ -173,7 +173,7 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	});
 	const diagnostics = trackDiagnostics(page);
 	page.setDefaultTimeout(10_000);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.keyboard.press('Tab');
 	assert.equal(
 		await page
@@ -365,7 +365,7 @@ test('selection indicators survive forced colors and track modes, menus, columns
 		pickers: [['meat', 'berries', 'berries', 'berries'], []],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.evaluate(axe.source);
 	const indicatorVisible = (locator, pseudo = '::after') =>
 		locator.evaluate((element, pseudo) => {
@@ -518,7 +518,7 @@ test('matched table rows keep aligned, contrasting edges through hover, focus, a
 		pickers: [['fig', 'carrot', 'carrot', 'ice'], []],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.evaluate(axe.source);
 	const match = page.locator('#results tr.highlighted').first();
 	const name = match.locator('.name-cell a').first();
@@ -652,7 +652,7 @@ test('full-pot errors remain readable with reduced motion and release temporary 
 		window.animationListenerCount = element => listeners.get(element)?.size || 0;
 	});
 	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	const panel = page.locator('#simulator');
 	const search = panel.locator('.ingredientpicker');
@@ -705,7 +705,7 @@ test('ingredient errors explain recovery in every language and clear on a new se
 		pickers: [['meat', 'berries', 'berries', 'berries'], []],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const messages = {
 		en: [
 			'The pot is full. Remove an ingredient before adding Carrot.',
@@ -765,7 +765,7 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 		pickers: [['meat', 'meat'], ['meat']],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.evaluate(axe.source);
 	for (const tab of ['simulator', 'discovery']) {
 		await page.locator(`#tab-${tab}`).click();
@@ -891,7 +891,7 @@ test('picker shortcuts remove one or all copies without changing input focus or 
 		],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	for (const [tab, container] of [
 		['simulator', '#ingredients'],
 		['discovery', '#inventory'],
@@ -1007,7 +1007,7 @@ test('picker errors occupy reserved space above the selection without moving slo
 		{ reducedMotion: 'reduce' },
 	);
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	for (const width of [320, 768, 1280]) {
 		await page.setViewportSize({ width, height: 900 });
 		for (const locale of ['en', 'es', 'zh']) {
@@ -1117,7 +1117,7 @@ test('search feedback covers empty results, localization, composition, and actio
 	});
 	const diagnostics = trackDiagnostics(page);
 	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	for (const locale of ['en', 'es', 'zh']) {
 		await page.locator('#language-picker').selectOption(locale);
@@ -1225,7 +1225,7 @@ test('wide tables have localized names and keyboard scrolling only while overflo
 		{ viewport: { width: 320, height: 812 } },
 	);
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.locator('#tab-crockpot').click();
 	const table = page.getByRole('table', { name: 'Recipe List', exact: true });
 	const wrapper = page.getByRole('region', { name: 'Recipe List', exact: true });
@@ -1304,7 +1304,7 @@ test('manual column choices override automatic hiding and retain the visible lay
 		},
 	);
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.locator('#tab-crockpot').click();
 	const columns = page.locator('#recipes .column-toggle-bar');
 	assert.equal(await columns.getAttribute('role'), 'group');
@@ -1364,7 +1364,7 @@ test('responsive column hiding moves focus to a visible control without disrupti
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(browser, baseUrl, { version: 'together' });
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.locator('#tab-crockpot').click();
 	const header = page.locator('#recipes th[data-sort=cooktime]');
 	await header.locator('button').focus();
@@ -1402,7 +1402,7 @@ test('analyzer clear controls keep readable hover and focus states in both theme
 		{ hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } },
 	);
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.locator('#makable .makablebutton').click();
 	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
 	const clear = page.locator('#makable .deleteButton');
@@ -1449,7 +1449,7 @@ test('paused analysis exposes its current results and explains empty filters', a
 	});
 	const diagnostics = trackDiagnostics(page);
 	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	await page.locator('#makable .makablebutton').click();
 	const pause = page.locator('#makable .pauseButton');
@@ -1557,7 +1557,7 @@ test('analysis that finishes during resume retains its completion message', asyn
 	});
 	const diagnostics = trackDiagnostics(page);
 	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	await page.locator('#makable .makablebutton').click();
 	const filters = await page.locator('#makable .foodFilter .analysis-filter').count();
@@ -1636,7 +1636,7 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 			options,
 		);
 		page.setDefaultTimeout(15_000);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		await page.evaluate(axe.source);
 		const audit = async context => {
 			await page.waitForFunction(() =>
@@ -1852,7 +1852,7 @@ for (const { tab, slots } of [
 		);
 		page.setDefaultTimeout(10_000);
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		const session = await page.context().newCDPSession(page);
 		const search = page.locator(`#${tab} .ingredientpicker`);
 		const meat = page.locator(`#${tab}`).getByRole('option', { name: /^Meat(?: \d)?$/ });
@@ -1976,7 +1976,7 @@ test('grouped ingredient results retain relevance, keyboard navigation, localiza
 		},
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	assert.equal(await page.locator('#simulator .sortingredients').textContent(), 'Sort: Auto');
 	assert.equal(await page.locator('#discovery .sortingredients').textContent(), 'Sort: Name');
 	for (const tab of ['simulator', 'discovery']) {
@@ -2084,7 +2084,7 @@ test('group cards use available width across displays and densities without chan
 			{ hasTouch, viewport: { width: 1280, height: 800 } },
 		);
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		for (const tab of ['simulator', 'discovery']) {
 			await page.locator(`#tab-${tab}`).click();
 			const panel = page.locator(`#${tab}`);
@@ -2263,7 +2263,7 @@ test('cooking views preserve selections, support keyboard and touch, and persist
 			touch ? { hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } } : {},
 		);
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		const selectCooking = async (panel, value) => {
 			const button = panel.locator('.cookingingredients');
 			if (touch) {
@@ -2387,7 +2387,7 @@ test('hidden search matches offer localized keyboard and touch recovery without 
 			touch ? { hasTouch: true, isMobile: true, viewport: { width: 320, height: 812 } } : {},
 		);
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		await page.locator('#tab-discovery').click();
 		await page.locator('#discovery .cookingingredients').click();
 		await page.locator('#discovery [role=menuitemradio][data-value="practical"]').click();
@@ -2492,7 +2492,7 @@ test('picker badges keep the checkbox anchored, larger hit areas, and an unobstr
 			{ hasTouch, viewport: { width: 1280, height: 812 } },
 		);
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		const panel = page.locator('#simulator');
 		await panel.locator('.ingredientpicker').fill('Meat');
 		const meat = panel.locator('[role=option][data-id="meat_cooked@together"]');
@@ -2775,7 +2775,7 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 	);
 	page.setDefaultTimeout(10_000);
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	assert.equal(await page.evaluate(() => matchMedia('(any-pointer: coarse)').matches), true);
 	const checkTargets = async context => {
 		const issues = await page
@@ -2953,7 +2953,7 @@ test('touch scrolling of recipe tables and analyzer filters does not activate th
 	);
 	page.setDefaultTimeout(10_000);
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const session = await page.context().newCDPSession(page);
 	const wrapper = page.locator('#foodlist .table-scroll-wrapper');
 	assert.equal(await wrapper.evaluate(e => e.scrollWidth > e.clientWidth), true);
@@ -3002,7 +3002,7 @@ for (const { tab, slots, limited } of [
 			pickers: [[], []],
 		});
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		const search = page.locator(`#${tab} .ingredientpicker`);
 		const meat = page.locator(`#${tab}`).getByRole('option', { name: /^Meat(?: \d)?$/ });
 		const selectedKeys = () =>
@@ -3077,7 +3077,7 @@ test('nested control contents preserve mode changes, slot removal, table sorting
 	});
 	const diagnostics = trackDiagnostics(page);
 	page.setDefaultTimeout(5000);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	for (const name of ["Don't Starve", 'Reign of Giants', 'Webber', "Don't Starve Together"]) {
 		const button = page.getByRole('button', { name, exact: true });
 		await nestControlContents(button);
@@ -3155,7 +3155,7 @@ test('analyzer filter clicks preserve other exclusions and match the displayed r
 		pickers: [[], ['meat', 'carrot', 'berries', 'honey']],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.locator('#makable .makablebutton').click();
 	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
 	const names = () => page.locator('#makable td:nth-child(2)').allTextContents();
@@ -3209,7 +3209,7 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 			{ hasTouch, viewport: { width: 1280, height: 800 } },
 		);
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		await page.locator('#makable .makablebutton').click();
 		await page.waitForFunction(
 			() => !document.querySelector('#makable .makablebutton').disabled,
@@ -3416,7 +3416,7 @@ test('analysis reports zero-baseline gains accurately and its new controls remai
 	const diagnostics = trackDiagnostics(page);
 	await page.emulateMedia({ reducedMotion: 'reduce' });
 	page.setDefaultTimeout(15_000);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.locator('#makable .makablebutton').click();
 	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
 	const total = await page.evaluate(() => window.analysis.made.length);
@@ -3485,7 +3485,7 @@ test('statistics default exclusions keep visible sprites and recalculation follo
 		version: 'dontstarve',
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	for (const [version, meatKey] of [
 		['dontstarve', 'meat'],
 		['together', 'meat@together'],
@@ -3577,7 +3577,7 @@ test('changing analyzer inputs cancels pending work and releases translation lis
 		};
 		window.controlAudit = () => ({ pending: pending.size, listeners: listeners.size });
 	});
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const baseline = await page.evaluate(() => window.controlAudit());
 	assert.equal(baseline.pending, 0);
 	await page.locator('#statistics .makablebutton').click();
@@ -3603,21 +3603,57 @@ test('changing analyzer inputs cancels pending work and releases translation lis
 	assert.deepEqual(diagnostics, []);
 });
 
+test('entry points preserve routes and generate file-free share links at root and subpaths', async t => {
+	for (const [directory, mount] of [
+		['html', '/'],
+		['.', '/html/'],
+	]) {
+		await t.test(mount, async t => {
+			const { baseUrl, browser } = await createBrowserFixture(t, directory);
+			for (const entry of ['', 'index.html', 'index.htm']) {
+				const page = await browser.newPage();
+				const diagnostics = trackDiagnostics(page);
+				await page.goto(
+					`${baseUrl}${mount}${entry}?ref=old%20link#discovery?game=together`,
+					{
+						waitUntil: 'networkidle',
+					},
+				);
+				assert.equal(
+					new URL(page.url()).pathname,
+					mount + (entry === 'index.htm' ? '' : entry),
+				);
+				assert.equal(new URL(page.url()).search, '?ref=old%20link');
+				assert.equal(new URL(page.url()).hash, '#discovery?game=together');
+				assert.equal(
+					await page.locator('#tab-discovery').getAttribute('aria-selected'),
+					'true',
+				);
+				assert.equal(
+					await page.locator('.version-btn.selected').getAttribute('data-version'),
+					'together',
+				);
+				await page.getByRole('button', { name: 'Share', exact: true }).click();
+				const sharedUrl = new URL(await page.locator('#personal-share-link').inputValue());
+				assert.equal(sharedUrl.pathname, mount);
+				assert.equal(sharedUrl.search, '?ref=old%20link');
+				assert.match(sharedUrl.hash, /^#discovery\?game=together/);
+				assert.deepEqual(diagnostics, []);
+				await page.close();
+			}
+		});
+	}
+});
+
 test('loads the guide, assets, translations, and a rendered food table', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
 	const pageErrors = [];
 	page.on('pageerror', error => pageErrors.push(error));
 
-	// Firefox can finish the entry redirect before goto returns its response.
-	const [response] = await Promise.all([
-		page.waitForResponse(`${baseUrl}/index.html`),
-		page.goto(`${baseUrl}/index.html`, { waitUntil: 'domcontentloaded' }),
-	]);
+	const response = await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
 	assert.equal(response.status(), 200);
-	await page.waitForURL(url => url.pathname.endsWith('/index.htm'), {
-		waitUntil: 'domcontentloaded',
-	});
+	assert.equal(new URL(page.url()).pathname, '/');
 	await page.locator('#navbar [role=tab]').first().waitFor();
 	assert.equal(await page.title(), "Simulator — Don't Starve Food Guide");
 	assert.equal(await page.locator('#navbar [data-tab]').count(), 7);
@@ -3724,7 +3760,7 @@ test('recovers from stale or reserved names in saved preferences', async t => {
 				],
 			},
 		);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		assert.deepEqual(errors, []);
 		assert.equal(await page.locator('html').getAttribute('lang'), 'en');
 		assert.equal(
@@ -3762,7 +3798,7 @@ test('legacy settings and both ingredient pickers survive migration and reload',
 	});
 	const errors = [];
 	page.on('pageerror', error => errors.push(error.message));
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	assert.equal(
 		await page.locator('#navbar [data-tab="about"]').getAttribute('aria-selected'),
 		'true',
@@ -3799,7 +3835,7 @@ test('current selections persist before unload and recover after an interrupted 
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const stored = async () => {
 		await page.evaluate(() => navigator.locks.request('foodGuidePersonalData', () => {}));
 		return page.evaluate(() => {
@@ -3850,7 +3886,7 @@ test('current selections persist before unload and recover after an interrupted 
 	});
 	t.after(() => recovery.close());
 	const restored = await recovery.newPage();
-	await restored.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await restored.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	assert.equal(await restored.locator('#tab-discovery').getAttribute('aria-selected'), 'true');
 	assert.equal(await restored.locator('#ingredients [data-id="meat"]').count(), 1);
 	assert.equal(await restored.locator('#inventory [data-id="carrot"]').count(), 1);
@@ -3888,7 +3924,7 @@ test('completed analysis pages the full sorted dataset and preserves detail page
 		],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.locator('#makable .makablebutton').click();
 	await page.waitForFunction(() => !document.querySelector('#makable .makablebutton').disabled);
 	const rows = page.locator('#makable tbody tr[data-recipe]');
@@ -4033,7 +4069,7 @@ test('food and recipe columns sort by displayed character stats in both directio
 			pickers: [[], []],
 		});
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		for (const [tab, table] of [
 			['#tab-foodlist', '#food'],
 			['#tab-crockpot', '#recipes'],
@@ -4084,7 +4120,7 @@ test('character analysis outcomes and ingredient baselines agree with the Simula
 			pickers: [[], [ingredient]],
 		});
 		const diagnostics = trackDiagnostics(page);
-		await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 		await page.locator('#makable .makablebutton').click();
 		await page.waitForFunction(
 			() => !document.querySelector('#makable .makablebutton').disabled,
@@ -4143,7 +4179,7 @@ test('Warly food tables show negative fractional changes without an extra whole 
 		pickers: [[], []],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const greenCap = page.locator('#food tbody tr').filter({
 		has: page.getByRole('link', { name: 'Green Cap', exact: true }),
 	});
@@ -4182,7 +4218,7 @@ test('tables retain sorting, pinned summaries, column visibility, and linked hig
 	});
 	const errors = [];
 	page.on('pageerror', error => errors.push(error.message));
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const cooking = page.locator('#results table').first();
 	const names = () => cooking.locator('td:nth-child(2)').allTextContents();
 	await cooking.locator('th[data-sort="health"]').click();
@@ -4263,7 +4299,7 @@ test('table controls support keyboard sorting, toggles, and linked highlights wi
 		pickers: [['honey@together', 'meat@together', 'meat@together', 'ice@together'], []],
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const cooking = page.locator('#results table').first();
 	const healthHeader = cooking.locator('th[data-sort="health"]');
 	const health = healthHeader.getByRole('button', { name: 'Health', exact: true });
@@ -4399,7 +4435,7 @@ test('repeated picker edits release replaced tables immediately', async t => {
 		});
 	});
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const assertReleased = async () => {
 		const audit = await page.evaluate(() => window.tableAudit());
 		assert.equal(audit.observers.count, audit.live, JSON.stringify(audit));
@@ -4438,7 +4474,7 @@ test('repeated picker edits release replaced tables immediately', async t => {
 test('table updates honor highlight scrolling and cancel restoration on disposal', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const result = await page.evaluate(async () => {
 		const { createSortableTableFactory } = await import('./sortable-table.js');
 		const localeTables = new Set();
@@ -4521,7 +4557,7 @@ test('table updates honor highlight scrolling and cancel restoration on disposal
 test('picker controls and tables fit narrow screens in every locale and game', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage({ viewport: { width: 320, height: 720 } });
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	for (const width of [320, 375]) {
 		await page.setViewportSize({ width, height: 720 });
 		for (const locale of ['en', 'es', 'zh']) {
@@ -4563,7 +4599,7 @@ test('keyboard mode controls update ingredient variants, analysis, and saved sel
 	});
 	const errors = [];
 	page.on('pageerror', error => errors.push(error.message));
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const selectedKeys = selector =>
 		page
 			.locator(`${selector} .ingredient[data-id]`)
@@ -4612,7 +4648,7 @@ test('restored DLC ingredients remain available during initial picker creation',
 		dlc: { giants: true, shipwrecked: false },
 		pickers: [['mole'], ['mole']],
 	});
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	assert.equal(await page.locator('#ingredients [data-id="mole"]').count(), 1);
 	assert.equal(await page.locator('#inventory [data-id="mole"]').count(), 1);
 	assert.equal(
@@ -4632,7 +4668,7 @@ test('large recipe groups allow direct browsing without rendering the whole data
 		{ hasTouch: true, viewport: { width: 375, height: 812 } },
 	);
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.evaluate(async () => {
 		const { createSortableTableFactory } = await import('./sortable-table.js');
 		const { t } = await import('./strings.js');
@@ -4969,7 +5005,7 @@ test('running analysis refreshes without pausing and reloads its final results w
 	});
 	const diagnostics = trackDiagnostics(page);
 	await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	await page.locator('#makable .makablebutton').click();
 	const overview = page.locator('#makable .table-group-pagination').first();
@@ -5044,7 +5080,7 @@ test('section URLs restore game and ingredients, support history, and open nativ
 	const page = await context.newPage();
 	const diagnostics = trackDiagnostics(page);
 	await page.goto(
-		`${baseUrl}/index.htm#simulator?game=dontstarve&dlc=giants,shipwrecked&character=warly&ingredients=meat,meat,carrot,honey`,
+		`${baseUrl}/#simulator?game=dontstarve&dlc=giants,shipwrecked&character=warly&ingredients=meat,meat,carrot,honey`,
 		{ waitUntil: 'networkidle' },
 	);
 	const pot = target =>
@@ -5100,10 +5136,10 @@ test('shared-origin tabs isolate ingredients and picker views across reloads whi
 	const first = await context.newPage();
 	const second = await context.newPage();
 	const diagnostics = [trackDiagnostics(first), trackDiagnostics(second)];
-	await first.goto(`${baseUrl}/index.htm#simulator?game=together&ingredients=meat%40together`, {
+	await first.goto(`${baseUrl}/#simulator?game=together&ingredients=meat%40together`, {
 		waitUntil: 'networkidle',
 	});
-	await second.goto(`${baseUrl}/index.htm#discovery?game=hamlet&inventory=carrot`, {
+	await second.goto(`${baseUrl}/#discovery?game=hamlet&inventory=carrot`, {
 		waitUntil: 'networkidle',
 	});
 	// First keeps its untouched Compact default while Second saves Cozy.
@@ -5150,7 +5186,7 @@ test('manual URL navigation validates inputs and restores food and recipe highli
 	const page = await browser.newPage();
 	t.after(() => page.close());
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm#foodlist?game=together&highlight=*Carrot`, {
+	await page.goto(`${baseUrl}/#foodlist?game=together&highlight=*Carrot`, {
 		waitUntil: 'networkidle',
 	});
 	assert.equal(await page.locator('#food tr.highlighted').count(), 1);
@@ -5211,8 +5247,8 @@ test('personal inventories synchronize edits while tabs choose inventories indep
 		second = await context.newPage();
 	const diagnostics = [trackDiagnostics(first), trackDiagnostics(second)];
 	await Promise.all([
-		first.goto(`${baseUrl}/index.htm#discovery`, { waitUntil: 'networkidle' }),
-		second.goto(`${baseUrl}/index.htm#discovery`, { waitUntil: 'networkidle' }),
+		first.goto(`${baseUrl}/#discovery`, { waitUntil: 'networkidle' }),
+		second.goto(`${baseUrl}/#discovery`, { waitUntil: 'networkidle' }),
 	]);
 	const pick = async (page, food) => {
 		await page.locator('#discovery .ingredientpicker').fill(food);
@@ -5281,7 +5317,7 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 	const page = await browser.newPage();
 	const diagnostics = trackDiagnostics(page);
 	await page.goto(
-		`${baseUrl}/index.htm#simulator?game=together&character=warly&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
+		`${baseUrl}/#simulator?game=together&character=warly&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
 		{ waitUntil: 'networkidle' },
 	);
 	await page.locator('#cookbook-save').waitFor();
@@ -5422,7 +5458,7 @@ test('cookbook cards predict saved recipes independently and supporting sections
 	});
 	const page = await context.newPage();
 	const diagnostics = trackDiagnostics(page);
-	await page.goto(`${baseUrl}/index.htm#simulator?game=hamlet`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/#simulator?game=hamlet`, { waitUntil: 'networkidle' });
 	await page.locator('#personal-cookbook summary').click();
 	const cards = page.locator('.cookbook-card');
 	assert.equal(await cards.count(), 3);
@@ -5458,7 +5494,7 @@ test('cookbook cards predict saved recipes independently and supporting sections
 	await cards.first().locator('.cookbook-load').focus();
 	const otherWindow = await page.context().newPage();
 	await otherWindow.goto(
-		`${baseUrl}/index.htm#simulator?game=together&ingredients=fig,asparagus,asparagus,asparagus`,
+		`${baseUrl}/#simulator?game=together&ingredients=fig,asparagus,asparagus,asparagus`,
 		{ waitUntil: 'networkidle' },
 	);
 	await otherWindow.locator('#cookbook-dish-name').fill('Other window supper');
@@ -5566,7 +5602,7 @@ test('personal inventory, cookbook and sharing dialogs remain accessible on touc
 		viewport: { width: 320, height: 812 },
 	});
 	await page.goto(
-		`${baseUrl}/index.htm#simulator?game=together&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
+		`${baseUrl}/#simulator?game=together&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
 		{ waitUntil: 'networkidle' },
 	);
 	await page.locator('#cookbook-save').waitFor();
@@ -5616,7 +5652,7 @@ test('personal inventory, cookbook and sharing dialogs remain accessible on touc
 test('header actions fit existing bars and retain keyboard focus when changing screen size', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-	await page.goto(`${baseUrl}/index.htm`, { waitUntil: 'networkidle' });
+	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	const share = page.locator('#personal-share-button');
 	await share.waitFor();
 	const placement = () =>
@@ -5669,10 +5705,9 @@ test('header actions fit existing bars and retain keyboard focus when changing s
 test('personal storage failures remain visible while using the cookbook and allow exporting unsaved data', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
-	await page.goto(
-		`${baseUrl}/index.htm#simulator?game=together&ingredients=meat,meat,carrot,honey`,
-		{ waitUntil: 'networkidle' },
-	);
+	await page.goto(`${baseUrl}/#simulator?game=together&ingredients=meat,meat,carrot,honey`, {
+		waitUntil: 'networkidle',
+	});
 	await page.locator('#cookbook-save').waitFor();
 	await page.evaluate(async () => {
 		await navigator.locks.request('foodGuidePersonalData', () => {});

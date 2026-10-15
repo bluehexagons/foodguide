@@ -20,7 +20,7 @@ npm ci --ignore-scripts
 npm run dev
 ```
 
-Open [127.0.0.1:8080/index.htm](http://127.0.0.1:8080/index.htm). The development
+Open [127.0.0.1:8080/](http://127.0.0.1:8080/). The development
 command generates the icon sprites, serves `html/` on loopback, and opens a browser.
 Serve the guide over HTTP; opening the HTML directly with `file://` prevents module
 loading in most browsers. Local use needs no internet connection after dependencies

@@ -163,9 +163,7 @@ export const createRecipeCalculator = ({
 		exclude?: CalculatorRow[] | null,
 		itemComplete = false,
 	) => {
-		/** @type {Record<string, number>} */
 		const names: IngredientNames = {};
-		/** @type {Record<string, number>} */
 		const tags: IngredientTags = {};
 
 		recipeList.length = 0;
@@ -204,9 +202,7 @@ export const createRecipeCalculator = ({
 
 	const recipeList: Recipe[] = [];
 	const getRecipes = (items: (GuideItem | null)[]): CalculatorRow[] => {
-		/** @type {Record<string, number>} */
 		const names: IngredientNames = {};
-		/** @type {Record<string, number>} */
 		const tags: IngredientTags = {};
 
 		recipeList.length = 0;

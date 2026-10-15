@@ -6,10 +6,10 @@ each checkout.
 
 ```bash
 npm ci --ignore-scripts
-npm run build
 npm run generate-sprites
 ```
 
+`generate-sprites` compiles the TypeScript modules before generating the artwork.
 Use Node.js 24 or newer and include development dependencies; Sharp is required to generate
 the sprite assets. Serve `index.html` as the directory index so the guide opens
 without a filename, for example `https://foodguide.bluehexagons.com/#discovery?game=together`.

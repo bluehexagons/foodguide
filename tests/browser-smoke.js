@@ -1780,6 +1780,14 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 					if (tab === 'statistics') {
 						await page.locator('#statistics .deleteButton').click();
 					}
+					const display = options.hasTouch
+						? 'touch'
+						: options.forcedColors
+							? 'forced colors'
+							: 'desktop';
+					console.info(
+						`Accessibility: ${display}, ${theme}, ${locale}, ${tab}; ${scans} scans complete`,
+					);
 				}
 			}
 		}

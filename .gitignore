@@ -2,6 +2,7 @@ node_modules/
 dist/
 build/
 *.log
+.playwright-mcp/
 Desktop.ini
 .DS_Store
 Thumbs.db

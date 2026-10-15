@@ -4,11 +4,14 @@ permissions:
     contents: read
 
 on:
-    push:
-        branches: [main, feature/typescript-migration]
     pull_request:
         branches: [main]
     workflow_dispatch:
+
+# Main pushes are checked by deploy.yml before publication.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
     check:

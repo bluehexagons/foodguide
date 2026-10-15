@@ -90,9 +90,7 @@ export const createRecipeAnalyzer = ({
 		const callback = (combination: number[]) => {
 			checked++;
 			const ingredients = combination.map(index => items[index]);
-			/** @type {Record<string, number>} */
 			const names: IngredientNames = {};
-			/** @type {Record<string, number>} */
 			const tags: IngredientTags = {};
 
 			accumulateIngredients(ingredients, names, tags, statMultipliers, {

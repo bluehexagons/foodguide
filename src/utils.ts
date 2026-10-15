@@ -24,13 +24,10 @@ import { perish_preserved } from './constants.js';
  * @returns {HTMLSpanElement} Icon element
  */
 export const makeImage = (() => {
-	/** @type {null | {cellSize: number, columns: number, rows: number[], sheets: string[], images: Record<string, {sheet: number, col: number, row: number}>}} */
 	let manifest: SpriteManifest | null = null;
 
-	/** @type {boolean} */
 	let manifestLoaded = false;
 
-	/** @type {Array<{el: HTMLSpanElement, url: string}>} */
 	const pending: { el: HTMLSpanElement; url: string }[] = [];
 
 	/**

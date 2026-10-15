@@ -19,10 +19,8 @@ import type { SpriteManifest } from '../html/models.js';
 import sharp from 'sharp';
 import { readdir, mkdir, writeFile } from 'node:fs/promises';
 import { join, extname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const IMG_DIR = join(__dirname, '..', 'html', 'img');
+const IMG_DIR = join(import.meta.dirname, '..', 'html', 'img');
 const SPRITES_DIR = join(IMG_DIR, 'sprites');
 
 /** Size of each cell in the sprite sheet */
@@ -34,7 +32,7 @@ const COLUMNS = 20;
 /**
  * Maximum number of images per sprite sheet.
  * At 20 columns x 20 rows = 400 images per 1280x1280 sheet.
- * We have ~334 images so one sheet suffices, but this allows growth.
+ * Additional sheets are generated automatically as the icon set grows.
  */
 const MAX_PER_SHEET = COLUMNS * 20;
 
@@ -72,10 +70,8 @@ async function main() {
 	// Ensure output directory exists
 	await mkdir(SPRITES_DIR, { recursive: true });
 
-	/** @type {Record<string, {sheet: number, col: number, row: number}>} */
 	const manifest: SpriteManifest['images'] = {};
 
-	/** @type {number[]} */
 	const sheetRows: number[] = [];
 
 	// Process in sheet-sized chunks
@@ -95,7 +91,6 @@ async function main() {
 		);
 
 		// Prepare all image buffers in parallel
-		/** @type {Array<{input: Buffer, left: number, top: number}>} */
 		const composites: { input: Buffer; left: number; top: number }[] = [];
 
 		const results = await Promise.all(
@@ -167,7 +162,7 @@ async function main() {
 	}
 
 	// Write manifest
-	const manifestData = {
+	const manifestData: SpriteManifest = {
 		cellSize: CELL_SIZE,
 		columns: COLUMNS,
 		// Store each sheet's row count so background positioning remains correct

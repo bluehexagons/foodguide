@@ -1,7 +1,6 @@
 import type { ModeDefinition, CharacterDefinition, StatMultipliers } from './models.js';
 /**
  * Game constants for Don't Starve food calculations
- * @type {number}
  */
 
 export const seg_time = 30;

@@ -26,6 +26,8 @@ Serve the guide over HTTP; opening the HTML directly with `file://` prevents mod
 loading in most browsers. Local use needs no internet connection after dependencies
 are installed, apart from external links to the game and wiki.
 
+## Using the guide
+
 In the Simulator, choose a game version and character, filter ingredients, and add
 up to four items to the pot. Discovery accepts an inventory of ingredients and shows
 possible recipes. Food List and Recipe List provide sortable reference tables.
@@ -128,7 +130,7 @@ checks require both browsers. On Linux, deployment tests also require Git, Bash,
 `flock`, and `rsync`.
 
 - [Development guide](docs/development.md): commands, module layout, tests, and assets.
-- [Deployment guide](docs/deployment.md): GitHub Pages and the optional server webhook.
+- [Deployment guide](docs/deployment.md): Basaltwater, GitHub Pages, and the optional server webhook.
 - [Data and library guide](docs/data.md): package exports, data shape, and mode filtering.
 
 Bug reports and pull requests are welcome, especially when the food data differs

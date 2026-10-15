@@ -25,8 +25,8 @@ import type { TextParams } from './models.js';
 const STORAGE_KEY = 'foodGuideLocale';
 
 /**
- * Default English string table. New keys must be added here; locale files
- * may then provide partial overrides. Anything missing falls back to English.
+ * Default English string table. Bundled locales cover every key; custom locales
+ * may provide partial overrides. Missing custom translations fall back to English.
  */
 const defaultStrings = {
 	// Personal inventories, cookbook, sharing, and backups

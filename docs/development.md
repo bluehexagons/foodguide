@@ -13,7 +13,7 @@ dependencies; this may require administrator access. After upgrading Playwright,
 | ------------------------------------------- | ----------------------------------------------------------------------- |
 | `npm run dev`                               | Build modules, generate sprites, and serve `html/` at `127.0.0.1:8080`. |
 | `npm run build`                             | Compile browser modules to `html/` and build tools to `scripts/`.       |
-| `npm run generate-sprites`                  | Rebuild ignored sprite sheets and their manifest.                       |
+| `npm run generate-sprites`                  | Compile modules and regenerate sprite sheets and their manifest.        |
 | `npm run check`                             | Run all formatting, lint, type, unit, and browser checks.               |
 | `npm test`                                  | Run Node's tests, including deployment tests on Linux.                  |
 | `npm run test:browser`                      | Generate sprites and run the Chromium smoke test.                       |
@@ -37,6 +37,20 @@ visible test browser in a graphical session; for example:
 ```bash
 npm run test:browser -- --browser=firefox --headed
 ```
+
+For a focused browser check, compile and generate the assets first, then use Node's
+built-in name filter. Set `PLAYWRIGHT_BROWSER=firefox` to run the same selection
+in Firefox:
+
+```bash
+npm run generate-sprites
+node --test --test-name-pattern='entry points|section URLs' tests/browser-smoke.js
+PLAYWRIGHT_BROWSER=firefox node --test --test-name-pattern='entry points|section URLs' tests/browser-smoke.js
+```
+
+The full suite includes an extensive accessibility audit and can take several
+minutes. It reports progress after each panel, including theme, locale, viewport
+mode, and completed scan count. A focused check supplements the full CI suite.
 
 `PLAYWRIGHT_EXECUTABLE_PATH` selects an existing Chromium executable and is ignored
 for Firefox. Firefox automation uses Playwright's patched build, installed by the
@@ -89,11 +103,15 @@ then rebuild before opening `html/index.html` or importing the library.
 live in `tools/` and compile to `scripts/`. `npm ci --ignore-scripts` requires an
 explicit build; normal installs and package creation run it automatically.
 
+## State, storage, and navigation
+
 `preferences.ts` validates JSON and migrates historical game settings.
 `tab-storage.ts` stores the pot, game context, active section, and picker views in
 `sessionStorage`, seeded from durable last-used defaults for a new tab. A memory
 snapshot preserves the tab's choices when storage is unavailable. Theme and language
 remain shared preferences.
+
+### Personal data
 
 `personal-data.ts` owns the versioned `localStorage.foodGuidePersonalData` document:
 named inventories and cookbook dishes, each with a stable ID. Inventory ingredients
@@ -121,6 +139,8 @@ is not overwritten automatically. Imports validate the entire JSON file, includi
 names, ingredient availability for dishes, and game context, before adding copies with
 new IDs. Limits are 2 MB, 200 inventories, 2,000 dishes, and 1,024 items per inventory.
 
+### URLs and history
+
 `navigation.ts` parses and formats fragment routes for static subpaths and the desktop's
 `file:` entry point. Ordinary URLs contain the section, `game`, optional `dlc`/`character`,
 and reference `highlight`. Only **Share** adds `ingredients` (Simulator) or `inventory`
@@ -140,6 +160,8 @@ Ingredient selections resolve to an available variant by base ID. Pot selections
 items unavailable in the chosen game; inventories preserve them in storage and display
 only those currently available. Discovery keeps one of each ingredient while the pot
 preserves quantities in four slots.
+
+## Tables and analyses
 
 Sortable tables take a `TableOptions<T>` object with a required localized caption.
 Overflowing wrappers become named, focusable regions so keyboard users can scroll
@@ -199,6 +221,8 @@ in place, preserving calculations, filters, and column choices. Browser
 regressions cover nested labels, mouse and keyboard entry, filter cycles, and
 calculation cleanup.
 
+### Cooking views
+
 Cooking views filter search results before sorting and grouping, independently
 of selected slots and analyzer exclusions. `ingredient-cooking.ts` contains the
 explicit substitute and uncommon-input lists; keep these choices auditable and
@@ -219,6 +243,8 @@ hidden matches from no matches, including partially filtered searches. Show all
 restores that picker's view and returns focus to the search, preserving the query
 and selection. Each picker saves
 its view under `foodGuideCookingPreference`.
+
+## Input and accessibility
 
 The tabs use one Tab stop with Left/Right, Home, and End navigation. Ingredient
 slots are native buttons: Enter or Space removes a selected item or focuses the
@@ -256,6 +282,8 @@ selection unchanged. Every filter state is available by ordinary taps, without
 requiring a long press. Do not move selection changes into press handlers or
 cancel touch events needed for native scrolling and zooming.
 
+### Touch layouts
+
 `html/style/touch.css` uses `any-pointer: coarse` to provide at least 44-pixel
 button and picker targets on touchscreens, including computers with a mouse.
 The optional membership shortcuts appear only for picked ingredients. They overlay
@@ -281,6 +309,8 @@ The viewport allows browser zoom. These choices follow the W3C guidance on
 [pointer cancellation](https://www.w3.org/WAI/WCAG22/Understanding/pointer-cancellation)
 and [larger targets](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced).
 
+### Visual states
+
 `html/style/accessibility.css` provides drawn checkmarks for selected game modes,
 menu choices, picked ingredients, visible columns, and highlighted table rows.
 Picked ingredients also have a distinct background and repeated pot ingredients
@@ -302,6 +332,8 @@ user's system palette through explicit system-color variables, remove the slot
 texture, and preserve selection outlines
 and filter badges. Keep this stylesheet last so it can adjust the shared styles.
 
+### Picker sorting and grouping
+
 Auto sorting gives exact names priority, then search relevance, while preserving
 related preparation order when browsing. Stat-tag searches use character-adjusted
 values. It never reorders in response to membership changes; explicit sorts stay
@@ -321,6 +353,8 @@ cards. Each card stays in one column; groups fill columns top to bottom, then le
 to right, avoiding gaps beneath shorter cards while preserving reading order.
 A single matching group uses the full available width.
 Resizing and zooming change layout without rebuilding options or focus.
+
+## Analyzer results and scheduling
 
 Statistics and Discovery efficiency tables collapse consecutive results for the
 same recipe after sorting and filtering, before pagination. Each collapsed row
@@ -397,6 +431,8 @@ captured at the start, including a copy of mutable multipliers. Cancellation fro
 callbacks cannot enqueue another batch or invoke completion; a paused run leaves
 no scheduled work behind.
 
+## Browser coverage
+
 The browser suite runs axe-core over all seven panels in both themes and all
 three languages, including open picker menus, completed discovery results, and
 paused statistics results, empty filtered tables, empty searches, and full-pot
@@ -431,10 +467,13 @@ keys and cross-references as described in the [data guide](data.md).
 ## Dependency maintenance
 
 Use `npm outdated` and `npm audit` to review direct and transitive dependencies.
-Update `package.json` and the lockfile together, reinstall Playwright's browser
-after a version change, and run `npm run check` before committing. Review major
+Update `package.json` and the lockfile together. Keep `@types/node` aligned with
+the supported Node 24 baseline. After a Playwright update, reinstall both matching
+browser binaries and run `npm run check` plus the Firefox suite before committing. Review major
 version changes against upstream release notes. GitHub Actions are pinned to
 full commit SHAs; update the version comment with each pin.
 
-CI runs dependency audits and checks on pushes and pull requests targeting `main`, and on the migration feature branch.
-The deployment workflow also runs the shared checks before publishing.
+Pull requests targeting `main` and manual CI runs use the shared checks. Pushes
+to `main` run them once through the deployment workflow, which requires both
+browsers to pass before publishing. Superseded pull-request runs are canceled;
+deployments are serialized without canceling an active publication.

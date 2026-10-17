@@ -3325,7 +3325,7 @@ test('nested control contents preserve mode changes, slot removal, table sorting
 	page.setDefaultTimeout(5000);
 	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	for (const name of ["Don't Starve", 'Reign of Giants', 'Webber', "Don't Starve Together"]) {
-		const button = page.getByRole('button', { name, exact: true });
+		const button = page.locator('.header-top').getByRole('button', { name, exact: true });
 		await nestControlContents(button);
 		await button.locator('.test-control-content').click();
 		assert.equal(await button.getAttribute('aria-pressed'), 'true');
@@ -3695,12 +3695,22 @@ test('analysis reports zero-baseline gains accurately and its new controls remai
 				`Grupos de recetas 1–${groups} de ${groups}; ${total} combinaciones coincidentes.`,
 			],
 			['zh', '重置筛选', `配方分组 1–${groups}，共 ${groups} 组；${total} 个匹配组合。`],
+			[
+				'ru',
+				'Сбросить фильтры',
+				`Группы рецептов 1–${groups} из ${groups}; подходящих сочетаний: ${total}.`,
+			],
+			[
+				'pt-BR',
+				'Redefinir filtros',
+				`Grupos de receitas 1–${groups} de ${groups}; combinações correspondentes: ${total}.`,
+			],
 		]) {
 			await page.locator('#language-picker').selectOption(locale);
 			const reset = page.locator('#makable .resetAnalysisFiltersButton');
 			const progress = page.locator('#makable progress');
 			assert.equal(await progress.evaluate(e => e.value === e.max), true);
-			assert.match(await progress.getAttribute('aria-valuetext'), /\(100%\)/);
+			assert.match(await progress.getAttribute('aria-valuetext'), /[(（]100%[)）]/);
 			assert.equal(await reset.textContent(), label);
 			await page.locator('#makable .foodFilter button').first().tap();
 			await reset.tap();

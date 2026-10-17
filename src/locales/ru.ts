@@ -369,6 +369,12 @@ export const dict = {
 	notePlayerCannotEatBeefaloOnly: 'Игрок не может это съесть; можно только скормить бифало',
 	noteDustMothsOnly: 'Еда для пыльных мотыльков; игроку несъедобна',
 	notes: {
+		"The player's health and sanity percentage values are swapped":
+			'Меняет местами процентные значения здоровья и рассудка игрока',
+		"Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.":
+			'Добавляет электрический урон: множитель урона — 1,5 по сухим существам и 2,5 по мокрым. Не действует на оружие, которое уже наносит электрический урон.',
+		"Sets the player's wetness to 0 and grants the player wetness immunity for 5 minutes":
+			'Снижает влажность игрока до 0 и защищает от намокания на 5 минут',
 		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
 			'Уменьшает тепло на 3 и в течение 30 секунд снижает влажность на 1/с и даёт +2 к скорости (+33%)',
 		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
@@ -482,6 +488,8 @@ export const dict = {
 		meat: 'мясо',
 		egg: 'яйцо',
 		fish: 'рыба',
+		frozen: 'замороженное',
+		seed: 'семена',
 		magic: 'магия',
 		decoration: 'украшение',
 		inedible: 'несъедобное',

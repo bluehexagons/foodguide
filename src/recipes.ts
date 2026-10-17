@@ -1,6 +1,7 @@
 import type { Food, Recipe, RecipeDefinition, RecipeCollection } from './models.js';
 import { initializeCollection } from './collection.js';
 import {
+	buff_food_temp_duration,
 	calories_huge,
 	calories_large,
 	calories_med,
@@ -2768,9 +2769,9 @@ const definitions: Record<string, RecipeDefinition> = {
 		hunger: calories_med,
 		sanity: sanity_small,
 		temperature: hot_food_bonus_temp,
+		temperatureduration: buff_food_temp_duration,
 		perish: perish_slow,
 		cooktime: 0.75,
-		note: "Increases and keeps the player's temperature to 40 below ambient for 5 minutes",
 		mode: 'warlydst',
 	},
 	gazpacho: {
@@ -2789,9 +2790,9 @@ const definitions: Record<string, RecipeDefinition> = {
 		hunger: calories_med,
 		sanity: sanity_small,
 		temperature: cold_food_bonus_temp,
+		temperatureduration: buff_food_temp_duration,
 		perish: perish_slow,
 		cooktime: 0.5,
-		note: "Decreases and keeps the player's temperature to 20 below ambient for 5 minutes",
 		mode: 'warlydst',
 	},
 	potatosouffle: {

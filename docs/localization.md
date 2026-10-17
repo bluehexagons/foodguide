@@ -120,3 +120,13 @@ Run `npm run check:ci` and the Chromium/Firefox browser suites described in
 entry to be covered and verify English data stability, translated searches,
 requirement link identities, and sorting. Browser coverage includes live locale
 changes, the cookbook, reference links, and favorite foods.
+
+Register every one-off food or recipe note in `strings.notes` and every recipe
+requirement tag in `strings.tags`, then translate it in each bundled locale.
+Coverage tests check the data entries as well as the dictionaries, so adding a
+raw note or tag cannot silently bypass translation. Prefer existing parameterized
+notes for shared effects. The Warly heating and cooling foods use the signed
+temperature bonuses and five-minute duration from the same Together snapshot's
+[`preparedfoods_warly.lua`](https://github.com/taichunmin/dont-starve-together-game-scripts/blob/0dea2f76e0321ecc6c9faa8e1e5bdd80a5fc1b64/preparedfoods_warly.lua)
+and
+[`tuning.lua`](https://github.com/taichunmin/dont-starve-together-game-scripts/blob/0dea2f76e0321ecc6c9faa8e1e5bdd80a5fc1b64/tuning.lua).

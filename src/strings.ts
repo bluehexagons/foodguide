@@ -395,7 +395,7 @@ const defaultStrings = {
 		'Recipe produces {count}; heals {health} health over {minutes} minutes',
 	noteIncreasesTemperatureByDegreesInSeconds:
 		'Increases temperature by {degrees} degrees in {seconds} seconds.',
-	noteRestoresSanityOverMinutes: 'Restores {sanity} sanity over {minutes} minutes',
+	noteRestoresSanityOverMinutes: 'Restores {sanity} sanity over {minutes} min',
 	noteLowersTemperatureByDegreesOverSeconds:
 		'Lowers temperature by {degrees} degrees over {seconds} seconds',
 	noteRaisesTemperatureByDegreesOverSeconds:
@@ -411,6 +411,12 @@ const defaultStrings = {
 	 * Repeated note patterns should prefer stable `noteKey` templates above.
 	 */
 	notes: {
+		"The player's health and sanity percentage values are swapped":
+			"The player's health and sanity percentage values are swapped",
+		"Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.":
+			"Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.",
+		"Sets the player's wetness to 0 and grants the player wetness immunity for 5 minutes":
+			"Sets the player's wetness to 0 and grants the player wetness immunity for 5 minutes",
 		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
 			'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)',
 		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
@@ -552,6 +558,8 @@ const defaultStrings = {
 		meat: 'meat',
 		egg: 'egg',
 		fish: 'fish',
+		frozen: 'frozen',
+		seed: 'seed',
 		magic: 'magic',
 		decoration: 'decoration',
 		inedible: 'inedible',

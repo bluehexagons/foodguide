@@ -256,9 +256,13 @@ describe('recipe requirements match test functions (wiki-verified)', () => {
 	});
 });
 
-it('temperature descriptions omit a generated duration when the data has none', () => {
-	for (const recipe of [recipes.dragonchilisalad, recipes.gazpacho]) {
-		assert.doesNotMatch(recipe.note, /undefined|for 0 secs/);
-		assert.match(recipe.note, /5 minutes/);
+it('Warly temperature foods describe their signed heat bonus for the full five minutes', () => {
+	for (const [recipe, heat] of [
+		[recipes.dragonchilisalad, 40],
+		[recipes.gazpacho, -40],
+	]) {
+		assert.strictEqual(recipe.temperature, heat);
+		assert.strictEqual(recipe.temperatureduration, 300);
+		assert.strictEqual(recipe.note, `Provides ${heat} heat for 300 secs`);
 	}
 });

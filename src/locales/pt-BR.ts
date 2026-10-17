@@ -88,7 +88,7 @@ export const dict = {
 		'Os inventários são salvos e sincronizados entre abas. Cada aba pode mostrar um inventário diferente. Os itens indisponíveis neste jogo continuam salvos.',
 	cookbookHelp:
 		'As receitas são recalculadas usando as configurações salvas de cada prato. Selecione um prato para carregar os ingredientes na panela.',
-	cookbookMakes: 'Prepara',
+	cookbookMakes: 'Rende',
 	cookbookPossibleResults: 'Resultados possíveis',
 	cookbookUnavailable: 'Nenhuma receita disponível com estas configurações',
 	cookbookDishDescription: 'Resultados: {recipes}. Ingredientes: {ingredients}.',
@@ -367,7 +367,7 @@ export const dict = {
 		'A receita produz {count}; recupera {health} de vida ao longo de {minutes} minutos',
 	noteIncreasesTemperatureByDegreesInSeconds:
 		'Aumenta a temperatura em {degrees} graus em {seconds} segundos.',
-	noteRestoresSanityOverMinutes: 'Recupera {sanity} de sanidade ao longo de {minutes} minutos',
+	noteRestoresSanityOverMinutes: 'Recupera {sanity} de sanidade ao longo de {minutes} min',
 	noteLowersTemperatureByDegreesOverSeconds:
 		'Diminui a temperatura em {degrees} graus ao longo de {seconds} segundos',
 	noteRaisesTemperatureByDegreesOverSeconds:
@@ -376,6 +376,12 @@ export const dict = {
 	notePlayerCannotEatBeefaloOnly: 'O jogador não pode comer; apenas oferecer ao Beefalo',
 	noteDustMothsOnly: 'Serve de alimento para Maripoeira; o jogador não pode comer',
 	notes: {
+		"The player's health and sanity percentage values are swapped":
+			'Troca entre si os valores percentuais de vida e sanidade do jogador',
+		"Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.":
+			'Concede o modificador de dano elétrico. O dano é multiplicado por 1,5 contra criaturas secas e por 2,5 contra criaturas molhadas. Não se aplica a armas que já causam dano elétrico.',
+		"Sets the player's wetness to 0 and grants the player wetness immunity for 5 minutes":
+			'Reduz a umidade do jogador a 0 e impede que se molhe por 5 minutos',
 		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
 			'Remove 3 de calor e, por 30 segundos, seca 1/s e concede 2 de velocidade extra (+33%)',
 		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
@@ -489,6 +495,8 @@ export const dict = {
 		meat: 'carne',
 		egg: 'ovo',
 		fish: 'peixe',
+		frozen: 'congelado',
+		seed: 'semente',
 		magic: 'magia',
 		decoration: 'decoração',
 		inedible: 'não comestível',

@@ -390,7 +390,7 @@ export const dict = {
 		'La receta produce {count}; cura {health} de salud en {minutes} minutos',
 	noteIncreasesTemperatureByDegreesInSeconds:
 		'Aumenta la temperatura en {degrees} grados en {seconds} segundos.',
-	noteRestoresSanityOverMinutes: 'Restaura {sanity} de cordura en {minutes} minuto',
+	noteRestoresSanityOverMinutes: 'Restaura {sanity} de cordura en {minutes} min',
 	noteLowersTemperatureByDegreesOverSeconds:
 		'Baja la temperatura {degrees} grados en {seconds} segundos',
 	noteRaisesTemperatureByDegreesOverSeconds:
@@ -399,6 +399,12 @@ export const dict = {
 	notePlayerCannotEatBeefaloOnly: 'No puede comerlo el jugador; solo puede darse a los Beefalo',
 	noteDustMothsOnly: 'Se usa para alimentar a las polvolillas; el jugador no puede comerlo',
 	notes: {
+		"The player's health and sanity percentage values are swapped":
+			'Se intercambian los porcentajes de salud y cordura del jugador',
+		"Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.":
+			'Otorga el modificador de daño eléctrico. El daño se multiplica por 1,5 contra criaturas secas y por 2,5 contra criaturas mojadas. No se aplica a las armas que ya infligen daño eléctrico.',
+		"Sets the player's wetness to 0 and grants the player wetness immunity for 5 minutes":
+			'Reduce la humedad del jugador a 0 y evita que se moje durante 5 minutos',
 		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
 			'Quita 3 de calor y, durante 30 segundos, seca 1/s y añade 2 de velocidad adicional (+33%)',
 		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
@@ -519,6 +525,8 @@ export const dict = {
 		meat: 'carne',
 		egg: 'huevo',
 		fish: 'pescado',
+		frozen: 'congelado',
+		seed: 'semilla',
 		magic: 'magia',
 		decoration: 'decoración',
 		inedible: 'no comestible',

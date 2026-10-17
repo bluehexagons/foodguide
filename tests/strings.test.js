@@ -136,6 +136,41 @@ describe('strings locale behavior', () => {
 		delete globalThis.localStorage;
 	});
 
+	it('every one-off food and recipe note is registered for translation', async () => {
+		const { strings } = await import('../html/strings.js');
+		const { food } = await import('../html/food.js');
+		const { recipes } = await import('../html/recipes.js');
+		for (const item of [...Array.from(food), ...Array.from(recipes)]) {
+			const note = 'baseNote' in item ? item.baseNote : item.note;
+			if (note && !item.noteKey) {
+				assert.ok(Object.hasOwn(strings.notes, note), `Unregistered note: ${item.name}`);
+			}
+		}
+	});
+
+	it('every recipe requirement tag is registered for translation', async () => {
+		const { strings } = await import('../html/strings.js');
+		const { recipes } = await import('../html/recipes.js');
+		const check = (requirement, recipe) => {
+			if (requirement.tag) {
+				assert.ok(
+					Object.hasOwn(strings.tags, requirement.tag),
+					`Unregistered tag: ${recipe.name}: ${requirement.tag}`,
+				);
+			}
+			for (const child of [requirement.item, requirement.item1, requirement.item2]) {
+				if (child) {
+					check(child, recipe);
+				}
+			}
+		};
+		for (const recipe of Array.from(recipes)) {
+			for (const requirement of recipe.requirements) {
+				check(requirement, recipe);
+			}
+		}
+	});
+
 	it('bundled locales preserve interpolation parameters and dynamic HTML hooks', async () => {
 		const { strings } = await import('../html/strings.js');
 		const locales = await Promise.all([

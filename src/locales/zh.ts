@@ -352,6 +352,12 @@ export const dict = {
 	notePlayerCannotEatBeefaloOnly: '玩家不能食用，只能喂给皮弗娄牛',
 	noteDustMothsOnly: '用于喂食尘蛾，玩家不能食用',
 	notes: {
+		"The player's health and sanity percentage values are swapped":
+			'交换玩家生命值和理智值的百分比',
+		"Gain the electrical damage modifier. Deal 1.5x more damage to non-wet mobs; deal 2.5x more damage to wet mobs. Doesn't apply to existing electrical weapons.":
+			'获得电击伤害效果：对干燥生物造成1.5倍伤害，对潮湿生物造成2.5倍伤害。不影响原本就带有电击效果的武器。',
+		"Sets the player's wetness to 0 and grants the player wetness immunity for 5 minutes":
+			'将玩家的潮湿度降至0，并在5分钟内免疫潮湿',
 		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
 			'移除3点热量，并在30秒内提供每秒1点干燥效果和2点移速加成（+33%）',
 		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
@@ -468,6 +474,8 @@ export const dict = {
 		meat: '肉',
 		egg: '蛋',
 		fish: '鱼',
+		frozen: '冰冻',
+		seed: '种子',
 		magic: '魔法',
 		decoration: '装饰',
 		inedible: '不可食用',

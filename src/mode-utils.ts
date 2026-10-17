@@ -8,7 +8,7 @@ import type {
 } from './models.js';
 
 import { TOGETHER, healing_tiny, healing_small } from './constants.js';
-import { t } from './strings.js';
+import { t, itemName } from './strings.js';
 
 /**
  * Mode System Utilities
@@ -107,7 +107,7 @@ export function getModeName(mask: number, modes: Record<string, ModeDefinition>)
 	// Check for exact match first
 	for (const key in modes) {
 		if (modes[key].mask === mask) {
-			return modes[key].name;
+			return itemName(modes[key]);
 		}
 	}
 
@@ -115,7 +115,7 @@ export function getModeName(mask: number, modes: Record<string, ModeDefinition>)
 	const parts = [];
 	for (const key in modes) {
 		if ((mask & modes[key].bit) !== 0) {
-			parts.push(modes[key].name);
+			parts.push(itemName(modes[key]));
 		}
 	}
 	return parts.join(' + ');

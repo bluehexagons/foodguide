@@ -1,5 +1,5 @@
 import { food } from './food.js';
-import { tagLabel } from './strings.js';
+import { tagLabel, itemName, t } from './strings.js';
 import type { IngredientNames, IngredientTags, Requirement, Quantity } from './models.js';
 export type { IngredientNames, IngredientTags, Requirement } from './models.js';
 
@@ -59,24 +59,24 @@ const TAGTest = function (
 	return tags[this.tag];
 };
 const ANDString = function (this: { item1: Requirement; item2: Requirement }) {
-	return `${this.item1} and ${this.item2}`;
+	return `${this.item1} ${t('requirementAnd')} ${this.item2}`;
 };
 const ORString = function (this: { item1: Requirement; item2: Requirement }) {
-	return `${this.item1} or ${this.item2}`;
+	return `${this.item1} ${t('requirementOr')} ${this.item2}`;
 };
 const COMPAREString = function (this: CompareQty) {
 	return this.op + this.qty;
 };
 const NAMEString = function (this: { name: string; qty?: Quantity }) {
 	const item = food[this.name];
-	return `[*${item.name}|${item.img} ${item.name}]${item.cook ? `[*${item.cook.name}|${item.cook.img}]` : ''}${item.raw ? `[*${item.raw.name}|${item.raw.img}]` : ''}${this.qty ? this.qty : ''}`;
+	return `[*${item.name}|${item.img} ${itemName(item)}]${item.cook ? `[*${item.cook.name}|${item.cook.img}]` : ''}${item.raw ? `[*${item.raw.name}|${item.raw.img}]` : ''}${this.qty ? this.qty : ''}`;
 };
 const NOTString = function (this: { item: Requirement }) {
 	return `${this.item.toString().substring(0, this.item.toString().length - 1)}|strike]`;
 };
 const SPECIFICString = function (this: { name: string; qty?: Quantity }) {
 	const item = food[this.name];
-	return `[*${item.name}|${item.img} ${item.name}]${this.qty ? this.qty : ''}`;
+	return `[*${item.name}|${item.img} ${itemName(item)}]${this.qty ? this.qty : ''}`;
 };
 const TAGString = function (this: { tag: string; qty?: Quantity }) {
 	return `[tag:${this.tag}|${tagLabel(this.tag)}]${this.qty ? this.qty : ''}`;

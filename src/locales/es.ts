@@ -6,13 +6,17 @@
  * Don't Starve player. Treat strings as a starting point — corrections
  * via PR are welcome.
  *
- * Names of foods, recipes, characters, and DLCs are intentionally left
- * untranslated for now: those should be sourced from the game itself.
+ * Game names and source information are in the sibling names module.
  */
 
+import { names } from './es-names.js';
 import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
+	siteTitle: "Guía de alimentos de Don't Starve",
+	names,
+	requirementAnd: 'y',
+	requirementOr: 'o',
 	// Dialogs, options, and information pages
 	shareDestination: 'Enlace a',
 	shareCurrentSite: 'Este sitio web',
@@ -41,7 +45,7 @@ export const dict = {
 		'La otra persona recibe una copia. Sus cambios no afectarán a tu olla ni a tu inventario.',
 	optionsAppearance: 'Idioma y apariencia',
 	optionsLanguageHelp:
-		'Se aplica a todas tus pestañas. Los nombres de alimentos, recetas y personajes se mantienen en inglés.',
+		'Se aplica a todas tus pestañas, incluidos los nombres de alimentos y recetas. También puedes buscar en inglés.',
 	optionsTheme: 'Tema de color',
 	themeAuto: 'Dispositivo',
 	themeLight: 'Claro',
@@ -73,7 +77,7 @@ export const dict = {
 		'Aporta <strong><span id="spoiledhunger"></span> de hambre</strong> y nada de salud. Comerlo resta <strong><span id="spoiledsanity"></span> de cordura</strong>.',
 	gameInfoStorageHeading: 'Almacenamiento y estaciones',
 	gameInfoStorageBody:
-		'En el suelo, los alimentos se deterioran al <strong><span id="perishground"></span></strong> de su ritmo normal: <strong><span id="perishwinter"></span></strong> en invierno y <strong><span id="perishsummer"></span></strong> en verano. La Ice Box reduce el ritmo al <strong><span id="perishfridge"></span></strong>.',
+		'En el suelo, los alimentos se deterioran al <strong><span id="perishground"></span></strong> de su ritmo normal: <strong><span id="perishwinter"></span></strong> en invierno y <strong><span id="perishsummer"></span></strong> en verano. La caja de hielo reduce el ritmo al <strong><span id="perishfridge"></span></strong>.',
 	gameInfoCookingHeading: 'Reglas de la olla',
 	gameInfoPriorityHeading: 'Gana la prioridad más alta',
 	gameInfoWarmthHeading: 'Calentar y enfriar',
@@ -184,7 +188,7 @@ export const dict = {
 	filterLabel: '{name}: {state}',
 	languagePickerTitle: 'Cambiar idioma',
 	languageNote:
-		'Las traducciones fueron generadas por Anthropic Claude Opus y pueden requerir revisión de la comunidad.',
+		'Los nombres de alimentos usan las traducciones del juego cuando están disponibles. Las traducciones de la guía pueden necesitar revisión de la comunidad.',
 
 	modeLabelGame: 'Juego',
 	modeLabelDlc: 'DLC',
@@ -485,7 +489,7 @@ export const dict = {
 	gameInfoWebber:
 		'<strong>Webber</strong> es un híbrido humano-araña jugable en todas las versiones. Puede comer Comida de Monstruo sin efectos negativos, y come Carne Cruda como si estuviera cocinada (con toda la salud y sin penalización de cordura). Es además el único personaje que puede entablar amistad de forma natural con las Arañas.',
 	gameInfoWigfrid:
-		'<strong>Wigfrid</strong> es un personaje de Reign of Giants disponible en Don\'t Starve Together. Es una intérprete teatral que solo come carne. En Don\'t Starve Together también puede comer "golosinas" como Caramelos, Gominolas y Volt Goat Chaud-Froid.',
+		'<strong>Wigfrid</strong> es un personaje de Reign of Giants disponible en Don\'t Starve Together. Es una intérprete teatral que solo come carne. En Don\'t Starve Together también puede comer "golosinas" como Caramelo masticable, Gominolas y Gelatina de cabra eléctrica.',
 	gameInfoFavoritesHeading: 'Comidas favoritas (DST)',
 	gameInfoFavoritesBody:
 		"En Don't Starve Together, cada personaje gana 15 de Hambre extra al comer su comida favorita. La bonificación se ve afectada por la frescura.",

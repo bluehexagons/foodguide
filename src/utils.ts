@@ -8,7 +8,8 @@ import type {
 	BestStat,
 	ModifyItem,
 } from './models.js';
-import { perish_preserved } from './constants.js';
+import { localizedName } from './strings.js';
+import { perish_preserved, modes } from './constants.js';
 
 /**
  * Creates icon elements using a pre-generated sprite sheet for efficient
@@ -199,10 +200,19 @@ export const makeLinkable = (() => {
 						const url = results[i + 1].split(' ')[0];
 						const image = makeImage(url);
 
-						image.title = (
+						const canonical = results[i].replace(
+							/^(?:\*|~|recipe:|ingredient:|tag:)/,
+							'',
+						);
+						const name = modes[canonical]?.name || canonical;
+						const fallback = (
 							url.substr(4, 1).toUpperCase() +
 							url.substr(5).replace(titleCase, toTitleCase)
 						).split('.')[0];
+						image.title =
+							localizedName(name) !== name
+								? localizedName(name)
+								: localizedName(fallback);
 						span.appendChild(image);
 					} else {
 						span.appendChild(

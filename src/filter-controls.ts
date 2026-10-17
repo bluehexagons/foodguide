@@ -1,5 +1,5 @@
 import type { FilterState } from './analysis-filters.js';
-import { t } from './strings.js';
+import { t, localizedName } from './strings.js';
 import { bindActivation } from './activation.js';
 
 /** A compact filter toolbar: one Tab stop, native activation, and named three-state controls. */
@@ -7,6 +7,7 @@ export const createFilterControls = (container: HTMLElement, helpId: string) => 
 	const controls: {
 		button: HTMLButtonElement;
 		icon: HTMLElement;
+		label: HTMLElement;
 		name: string;
 		state: FilterState;
 	}[] = [];
@@ -20,12 +21,14 @@ export const createFilterControls = (container: HTMLElement, helpId: string) => 
 	const update = (button: HTMLButtonElement, state: FilterState) => {
 		const control = controls.find(control => control.button === button)!;
 		control.state = state;
+		control.label.textContent = localizedName(control.name);
+		control.icon.title = localizedName(control.name);
 		control.icon.classList.toggle('selected', state === 'required');
 		control.icon.classList.toggle('excluded', state === 'excluded');
 		button.setAttribute(
 			'aria-label',
 			t('filterLabel', {
-				name: control.name,
+				name: localizedName(control.name),
 				state: t(
 					state === 'required'
 						? 'filterRequired'
@@ -49,7 +52,7 @@ export const createFilterControls = (container: HTMLElement, helpId: string) => 
 			label.textContent = name;
 			label.setAttribute('aria-hidden', 'true');
 			button.appendChild(label);
-			controls.push({ button, icon, name, state: 'normal' });
+			controls.push({ button, icon, label, name, state: 'normal' });
 			button.addEventListener('focus', () => setCurrent(button));
 			bindActivation(
 				button,

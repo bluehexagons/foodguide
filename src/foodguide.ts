@@ -110,6 +110,8 @@ import {
 } from './mode-utils.js';
 import {
 	t,
+	itemName,
+	localizedName,
 	applyTranslations,
 	formatDuration,
 	durationUnit,
@@ -706,8 +708,8 @@ import './locales/index.js';
 
 		return cells(
 			'td',
-			item.img ? `${item.img}:${item.name}` : '',
-			fandomHref(item.name),
+			item.img ? `${item.img}:${itemName(item)}` : '',
+			fandomHref(item.name, itemName(item)),
 			health,
 			hunger,
 			sanity,
@@ -748,8 +750,8 @@ import './locales/index.js';
 
 		return cells(
 			'td',
-			item.img ? `${item.img}:${item.name}` : '',
-			fandomHref(item.name),
+			item.img ? `${item.img}:${itemName(item)}` : '',
+			fandomHref(item.name, itemName(item)),
 			formatSignedValue(ihealth) + pct(health, ihealth),
 			formatSignedValue(ihunger) + pct(hunger, ihunger),
 			isNaN(isanity) ? '' : formatSignedValue(isanity) + pct(sanity, isanity),
@@ -833,8 +835,8 @@ import './locales/index.js';
 			highlight: `*${item.name}`,
 		});
 		link.textContent = '#';
-		link.setAttribute('aria-label', t('linkToItem', { name: item.name }));
-		link.title = t('linkToItem', { name: item.name });
+		link.setAttribute('aria-label', t('linkToItem', { name: itemName(item) }));
+		link.title = t('linkToItem', { name: itemName(item) });
 		const nameCell = row.children[1];
 		const name = document.createElement('span');
 		name.className = 'reference-name';
@@ -1136,16 +1138,16 @@ import './locales/index.js';
 						combination.setAttribute(
 							'aria-label',
 							t('analysisTryCombination', {
-								name: item.name,
+								name: itemName(item),
 								ingredients: data.ingredients
-									.map(ingredient => ingredient.name)
+									.map(ingredient => itemName(ingredient))
 									.join(', '),
 							}),
 						);
 						for (const ingredient of data.ingredients) {
 							const icon = makeImage(ingredient.img);
 							icon.dataset.id = ingredient.key;
-							icon.title = ingredient.name;
+							icon.title = itemName(ingredient);
 							icon.setAttribute('aria-hidden', 'true');
 							combination.appendChild(icon);
 						}
@@ -1161,7 +1163,7 @@ import './locales/index.js';
 						const row = cells(
 							'td',
 							item.img ? item.img : '',
-							item.name,
+							itemName(item),
 							formatSignedValue(data.health),
 							formatStatGain(data.healthpls, data.healthpct),
 							formatSignedValue(data.hunger),
@@ -1182,7 +1184,7 @@ import './locales/index.js';
 						key: data => data.recipe.id,
 						toggleLabel: (data, count, expanded) =>
 							t(expanded ? 'analysisHideCombinations' : 'analysisShowCombinations', {
-								name: data.recipe.name,
+								name: itemName(data.recipe),
 								count,
 							}),
 						description: () => t('analysisGroupingHelp'),
@@ -1279,7 +1281,7 @@ import './locales/index.js';
 					});
 					ingredientFilterControls.update(button, filters.ingredientState(item.key));
 					ingredientControls.set(item.key, button);
-					img.title = item.name;
+					img.title = itemName(item);
 					makableFilter.appendChild(button);
 				});
 
@@ -1344,7 +1346,7 @@ import './locales/index.js';
 							);
 							recipeControls.set(recipeId, button);
 							recipeFilterControls.update(button, filters.recipeState(recipeId));
-							img.title = data.recipe.name;
+							img.title = itemName(data.recipe);
 
 							if (i < makableRecipe.childNodes.length) {
 								makableRecipe.insertBefore(button, makableRecipe.childNodes[i]);
@@ -1528,21 +1530,21 @@ import './locales/index.js';
 
 		if (item !== null) {
 			const img = makeImage(item.img);
-			img.title = item.name;
+			img.title = itemName(item);
 			img.setAttribute('aria-hidden', 'true');
 			const name = document.createElement('span');
 			name.className = 'ingredient-name';
-			name.textContent = item.name;
+			name.textContent = itemName(item);
 			name.setAttribute('aria-hidden', 'true');
 			slotElement.replaceChildren(img, name);
 		} else {
 			slotElement.replaceChildren();
 		}
 
-		slotElement.title = item ? item.name : '';
+		slotElement.title = item ? itemName(item) : '';
 		slotElement.setAttribute(
 			'aria-label',
-			item ? t('removeIngredient', { name: item.name }) : t('addIngredient'),
+			item ? t('removeIngredient', { name: itemName(item) }) : t('addIngredient'),
 		);
 	};
 
@@ -1645,9 +1647,9 @@ import './locales/index.js';
 				const samples = [t('ingredientSlotEmpty')];
 				for (const item of Array.from(from).filter(testmode)) {
 					if (fixedSlots.length) {
-						samples.push(t('ingredientPotFull', { name: item.name }));
+						samples.push(t('ingredientPotFull', { name: itemName(item) }));
 					}
-					samples.push(t('ingredientNotSelected', { name: item.name }));
+					samples.push(t('ingredientNotSelected', { name: itemName(item) }));
 				}
 				feedbackSizing.replaceChildren(
 					...samples.map(message => {
@@ -1758,7 +1760,7 @@ import './locales/index.js';
 			) => {
 				const item = id ? getCollectionItem(from, id) : undefined;
 				if (item) {
-					announcePicker(t(key, { name: item.name }));
+					announcePicker(t(key, { name: itemName(item) }));
 				}
 			};
 
@@ -1775,7 +1777,7 @@ import './locales/index.js';
 					return;
 				}
 				pickerError = { key, params };
-				announcePicker(t(key, params), true);
+				announcePicker(t(key, { ...params, name: localizedName(params.name || '') }), true);
 
 				window.clearTimeout(ingredientActionTimers.get(target));
 				target.classList.remove('ingredient-action-error');
@@ -1864,7 +1866,7 @@ import './locales/index.js';
 				if (removeSlotById(id, true) === -1) {
 					flashIngredientActionError(target, 'ingredientNotSelected', { name });
 				} else {
-					announcePicker(t('ingredientAllRemoved', { name }));
+					announcePicker(t('ingredientAllRemoved', { name: localizedName(name) }));
 				}
 			};
 
@@ -1951,7 +1953,7 @@ import './locales/index.js';
 				const img = makeImage(item.img);
 				img.setAttribute('aria-hidden', 'true');
 
-				img.title = item.name;
+				img.title = itemName(item);
 
 				const li = document.createElement('span');
 				li.classList.add('item');
@@ -1959,7 +1961,7 @@ import './locales/index.js';
 
 				const name = document.createElement('span');
 				name.classList.add('text');
-				name.appendChild(document.createTextNode(item.name));
+				name.appendChild(document.createTextNode(itemName(item)));
 				li.appendChild(name);
 				li.appendChild(document.createTextNode(' '));
 				// These are pointer shortcuts within one atomic listbox option. Keyboard
@@ -1989,7 +1991,7 @@ import './locales/index.js';
 				li.dataset.id = item.key;
 				li.id = `ingredient-result-${index}-${pickerOptions.length}`;
 				li.setAttribute('role', 'option');
-				li.setAttribute('aria-label', item.name);
+				li.setAttribute('aria-label', itemName(item));
 				li.setAttribute('aria-selected', 'false');
 
 				bindActivation(
@@ -2012,7 +2014,7 @@ import './locales/index.js';
 					() => pickItem(item.key, li, true),
 				);
 				this.appendChild(li);
-				pickerOptions.push({ element: li, key: item.key, name: item.name });
+				pickerOptions.push({ element: li, key: item.key, name: itemName(item) });
 			};
 
 			const updateSelectionIndicators = () => {
@@ -2949,6 +2951,11 @@ import './locales/index.js';
 			);
 			document.addEventListener('foodguide:localechange', () => {
 				const error = pickerError;
+				const wasHidden = dropdown.hidden;
+				refreshSelection();
+				refreshPicker(false);
+				dropdown.hidden = wasHidden;
+				picker.setAttribute('aria-expanded', String(!wasHidden));
 				updateSortHelp();
 				updateCookingHelp();
 				updateGroupLabels();
@@ -2957,13 +2964,19 @@ import './locales/index.js';
 				updateSearchFeedback();
 				if (error) {
 					pickerError = error;
-					announcePicker(t(error.key, error.params), true);
+					announcePicker(
+						t(error.key, {
+							...error.params,
+							name: localizedName(error.params.name || ''),
+						}),
+						true,
+					);
 				}
 				for (const slot of parent.querySelectorAll<HTMLElement>('.ingredient')) {
 					const item = getSlot(slot);
 					slot.setAttribute(
 						'aria-label',
-						item ? t('removeIngredient', { name: item.name }) : t('addIngredient'),
+						item ? t('removeIngredient', { name: itemName(item) }) : t('addIngredient'),
 					);
 				}
 			});
@@ -3021,12 +3034,30 @@ import './locales/index.js';
 	const modePanel = headerTop; // mode buttons are injected directly into header-top
 
 	const updateModeButtonTitles = () => {
+		for (const [selector, field, definitions] of [
+			['.version-btn', 'version', gameVersions],
+			['.dlc-btn', 'dlc', dlcOptions],
+			['.char-btn', 'character', characters],
+		] as const) {
+			for (const btn of modePanel.querySelectorAll<HTMLElement>(selector)) {
+				const definition = definitions[btn.dataset[field] || ''];
+				if (!definition) {
+					continue;
+				}
+				const label = itemName(definition);
+				btn.setAttribute('aria-label', label);
+				btn.title = label;
+				for (const icon of btn.querySelectorAll<HTMLElement>('.icon')) {
+					icon.title = label;
+				}
+			}
+		}
 		for (const btn of modePanel.querySelectorAll<HTMLElement>('.dlc-btn')) {
 			const dlcKey = btn.dataset.dlc;
 			if (!dlcKey || !dlcOptions[dlcKey]) {
 				continue;
 			}
-			btn.title = `${dlcOptions[dlcKey].name}\n${t('dlcToggleHint')}`;
+			btn.title = `${itemName(dlcOptions[dlcKey])}\n${t('dlcToggleHint')}`;
 		}
 
 		for (const btn of modePanel.querySelectorAll<HTMLElement>('.char-btn')) {
@@ -3036,7 +3067,7 @@ import './locales/index.js';
 			}
 			const charAbilities = getCharacterAbilities(charName, characters);
 			const abilityText = charAbilities.length > 0 ? `\n${charAbilities.join('\n')}` : '';
-			btn.title = `${characters[charName].name}\n${t('characterToggleHint')}${abilityText}`;
+			btn.title = `${itemName(characters[charName])}\n${t('characterToggleHint')}${abilityText}`;
 		}
 	};
 	document.addEventListener('foodguide:localechange', updateModeButtonTitles);
@@ -3057,15 +3088,15 @@ import './locales/index.js';
 	for (const name in gameVersions) {
 		const btn = document.createElement('button');
 		btn.type = 'button';
-		btn.setAttribute('aria-label', gameVersions[name].name);
+		btn.setAttribute('aria-label', itemName(gameVersions[name]));
 		btn.className = 'mode-btn version-btn';
 		btn.dataset.version = name;
 		btn.addEventListener('click', () => selectVersion(name), false);
-		btn.title = gameVersions[name].name;
+		btn.title = itemName(gameVersions[name]);
 
 		const img = makeImage(`img/${gameVersions[name].img}`);
 		img.setAttribute('aria-hidden', 'true');
-		img.title = gameVersions[name].name;
+		img.title = itemName(gameVersions[name]);
 		img.dataset.version = name;
 		btn.appendChild(img);
 
@@ -3095,15 +3126,15 @@ import './locales/index.js';
 	for (const name in dlcOptions) {
 		const btn = document.createElement('button');
 		btn.type = 'button';
-		btn.setAttribute('aria-label', dlcOptions[name].name);
+		btn.setAttribute('aria-label', itemName(dlcOptions[name]));
 		btn.className = 'mode-btn dlc-btn';
 		btn.dataset.dlc = name;
 		btn.addEventListener('click', () => toggleDlc(name), false);
-		btn.title = `${dlcOptions[name].name}\n${t('dlcToggleHint')}`;
+		btn.title = `${itemName(dlcOptions[name])}\n${t('dlcToggleHint')}`;
 
 		const img = makeImage(`img/${dlcOptions[name].img}`);
 		img.setAttribute('aria-hidden', 'true');
-		img.title = dlcOptions[name].name;
+		img.title = itemName(dlcOptions[name]);
 		img.dataset.dlc = name;
 		btn.appendChild(img);
 
@@ -3133,13 +3164,13 @@ import './locales/index.js';
 	for (const name in characters) {
 		const btn = document.createElement('button');
 		btn.type = 'button';
-		btn.setAttribute('aria-label', characters[name].name);
+		btn.setAttribute('aria-label', itemName(characters[name]));
 		btn.className = 'mode-btn char-btn';
 		btn.dataset.character = name;
 		btn.addEventListener('click', () => selectCharacter(name), false);
 		const charAbilities = getCharacterAbilities(name, characters);
 		const abilityText = charAbilities.length > 0 ? `\n${charAbilities.join('\n')}` : '';
-		btn.title = `${characters[name].name}\n${t('characterToggleHint')}${abilityText}`;
+		btn.title = `${itemName(characters[name])}\n${t('characterToggleHint')}${abilityText}`;
 
 		const img = makeImage(`img/${characters[name].img}`);
 		img.setAttribute('aria-hidden', 'true');
@@ -3207,7 +3238,7 @@ import './locales/index.js';
 		for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-guide-tab]')) {
 			link.href = routeFor(guideTab(link.dataset.guideTab));
 		}
-		document.title = `${requireElement(`tab-${activeTabId}`).textContent!.trim()} — Don't Starve Food Guide`;
+		document.title = `${requireElement(`tab-${activeTabId}`).textContent!.trim()} — ${t('siteTitle')}`;
 	};
 	const restoreLocation = () => {
 		if (window.location.hash === lastRouteHash) {
@@ -3310,7 +3341,7 @@ import './locales/index.js';
 			const priority = highestPriority(results);
 			return results
 				.filter(row => row.priority === priority)
-				.map(row => row.name)
+				.map(row => itemName(row))
 				.join(' / ');
 		},
 		loadDish: dish => {

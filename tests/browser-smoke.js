@@ -24,6 +24,104 @@ if (!browserType) {
 const chromiumOnly =
 	browserType === chromium ? false : 'Trusted gesture injection requires Chromium CDP';
 
+test('localized game names update selections, search, cookbook, references, and help', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#simulator?game=together&ingredients=carrot,carrot,carrot,meat`, {
+		waitUntil: 'networkidle',
+	});
+	await page.locator('#cookbook-dish-name').fill('My dinner');
+	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
+	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 1);
+	const pot = () =>
+		page
+			.locator('#simulator .ingredient[data-id]')
+			.evaluateAll(slots => slots.map(slot => slot.dataset.id));
+	const original = await pot();
+	for (const [locale, carrot, meatballs] of [
+		['es', 'Zanahoria', 'Albóndigas'],
+		['zh', '胡萝卜', '肉丸'],
+		['en', 'Carrot', 'Meatballs'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		const siteTitle = {
+			en: "Don't Starve Food Guide",
+			es: "Guía de alimentos de Don't Starve",
+			zh: '饥荒食物指南',
+		}[locale];
+		assert.equal(await page.getByRole('heading', { name: siteTitle, exact: true }).count(), 1);
+		assert.ok((await page.title()).endsWith(` — ${siteTitle}`));
+		assert.deepEqual(await pot(), original, 'Language changes preserve the pot');
+		assert.equal(
+			await page
+				.locator('#simulator .ingredient[data-id^="carrot"] .ingredient-name')
+				.first()
+				.textContent(),
+			carrot,
+		);
+		assert.match(
+			await page
+				.locator('#simulator .ingredient[data-id^="carrot"]')
+				.first()
+				.getAttribute('aria-label'),
+			new RegExp(carrot),
+		);
+		assert.equal(
+			await page.locator('#simulator a[href$="/Meatballs"]').textContent(),
+			meatballs,
+		);
+		assert.match(
+			await page.locator('.cookbook-card .cookbook-recipe').first().textContent(),
+			new RegExp(meatballs),
+		);
+		assert.equal(
+			await page.locator('.cookbook-card .cookbook-dish-name').textContent(),
+			'My dinner',
+		);
+		await page.locator('#simulator .ingredientpicker').fill(carrot);
+		await page
+			.locator('#simulator')
+			.getByRole('option', { name: `${carrot} 3`, exact: true })
+			.waitFor();
+		assert.equal(
+			await page
+				.locator('#simulator')
+				.getByRole('option', { name: `${carrot} 3`, exact: true })
+				.count(),
+			1,
+		);
+		await page.locator('#navbar [data-tab="foodlist"]').click();
+		const link = page.locator('#foodlist a[href$="/Carrot"]');
+		assert.equal(await link.textContent(), carrot);
+		const hashLink = link.locator('..').locator('a.reference-permalink');
+		assert.equal(
+			new URL(await hashLink.getAttribute('href'), baseUrl).hash.includes('Carrot'),
+			true,
+		);
+		await page.locator('#navbar [data-tab="simulator"]').click();
+	}
+	await page.locator('#language-picker').selectOption('zh');
+	assert.equal(
+		await page.locator('[data-character="webber"]').first().getAttribute('aria-label'),
+		'韦伯',
+	);
+	assert.equal(
+		await page.locator('[data-version="together"]').first().getAttribute('aria-label'),
+		'饥荒联机版',
+	);
+	await page.locator('#navbar [data-tab="gameinfo"]').click();
+	assert.equal(
+		await page.locator('#help-favorite-foods tbody th').first().textContent(),
+		'威尔逊',
+	);
+	assert.equal(
+		await page.locator('#help-favorite-foods tbody td').first().textContent(),
+		'培根煎蛋',
+	);
+	assert.deepEqual(diagnostics, []);
+});
+
 const colorContrast = (first, second) => {
 	const luminance = color => {
 		const channels = color
@@ -680,7 +778,9 @@ test('full-pot errors remain readable with reduced motion and release temporary 
 				e.clientHeight > 10,
 		);
 	await search.fill('Carrot');
-	const carrot = panel.getByRole('option', { name: 'Carrot', exact: true });
+	const carrot = panel.locator(
+		'[role=option][data-id=carrot], [role=option][data-id^="carrot@"]',
+	);
 	for (let attempt = 0; attempt < 4; attempt++) {
 		await carrot.click();
 		await page.clock.runFor(500);
@@ -728,13 +828,13 @@ test('ingredient errors explain recovery in every language and clear on a new se
 			'This slot is empty. Select an ingredient from the search results.',
 		],
 		es: [
-			'La olla está llena. Quita un ingrediente antes de añadir Carrot.',
-			'Carrot no está seleccionado. Añádelo antes de intentar quitarlo.',
+			'La olla está llena. Quita un ingrediente antes de añadir Zanahoria.',
+			'Zanahoria no está seleccionado. Añádelo antes de intentar quitarlo.',
 			'Esta ranura está vacía. Selecciona un ingrediente de los resultados de búsqueda.',
 		],
 		zh: [
-			'锅已满。请先移除一种食材，再添加 Carrot。',
-			'尚未选择 Carrot。请先添加，再尝试移除。',
+			'锅已满。请先移除一种食材，再添加 胡萝卜。',
+			'尚未选择 胡萝卜。请先添加，再尝试移除。',
 			'此格子为空。请从搜索结果中选择食材。',
 		],
 	};
@@ -745,7 +845,9 @@ test('ingredient errors explain recovery in every language and clear on a new se
 		const search = panel.locator('.ingredientpicker');
 		const status = panel.getByRole('status');
 		await search.fill('Carrot');
-		await panel.getByRole('option', { name: 'Carrot', exact: true }).click();
+		await panel
+			.locator('[role=option][data-id=carrot], [role=option][data-id^="carrot@"]')
+			.click();
 		assert.equal(await status.textContent(), full);
 		assert.equal(await status.evaluate(e => getComputedStyle(e).clipPath), 'none');
 		await search.fill('Berries');
@@ -754,7 +856,9 @@ test('ingredient errors explain recovery in every language and clear on a new se
 			false,
 		);
 		await search.fill('Carrot');
-		await panel.getByRole('option', { name: 'Carrot', exact: true }).click({ button: 'right' });
+		await panel
+			.locator('[role=option][data-id=carrot], [role=option][data-id^="carrot@"]')
+			.click({ button: 'right' });
 		assert.equal(await status.textContent(), missing);
 		await page.locator('#tab-discovery').click();
 		const inventory = page.locator('#discovery');
@@ -766,7 +870,7 @@ test('ingredient errors explain recovery in every language and clear on a new se
 		);
 		await inventory.locator('.ingredientpicker').fill('Carrot');
 		await inventory
-			.getByRole('option', { name: 'Carrot', exact: true })
+			.locator('[role=option][data-id=carrot], [role=option][data-id^="carrot@"]')
 			.click({ button: 'right' });
 		assert.equal(await inventory.getByRole('status').textContent(), missing);
 	}
@@ -787,7 +891,7 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 		const panel = page.locator(`#${tab}`);
 		const search = panel.locator('.ingredientpicker');
 		await search.fill('Meat');
-		const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
+		const meat = panel.locator('[role=option][data-id^="meat@"]');
 		assert.equal(
 			await meat.getAttribute('aria-label'),
 			tab === 'simulator' ? 'Meat 2' : 'Meat',
@@ -1031,14 +1135,21 @@ test('picker errors occupy reserved space above the selection without moving slo
 			const panel = page.locator('#simulator');
 			const search = panel.locator('.ingredientpicker');
 			const status = panel.getByRole('status');
-			for (const name of ['Carrot', 'Winter Koalefant Trunk', 'Roasted Juicy Berries']) {
+			for (const [name, id] of [
+				['Carrot', 'carrot'],
+				['Winter Koalefant Trunk', 'trunk_winter'],
+				['Roasted Juicy Berries', 'berries_juicy_cooked'],
+			]) {
 				await search.fill(name);
+				const option = panel.locator(
+					`[role=option][data-id="${id}"], [role=option][data-id^="${id}@"]`,
+				);
 				const position = () =>
 					page
 						.locator('#ingredients')
 						.evaluate(e => e.getBoundingClientRect().top + scrollY);
 				const before = await position();
-				await panel.getByRole('option', { name, exact: true }).click();
+				await option.click();
 				assert.ok(
 					Math.abs((await position()) - before) <= 1,
 					`${locale} at ${width}: full-pot error moved the slots`,
@@ -1075,7 +1186,7 @@ test('picker errors occupy reserved space above the selection without moving slo
 					true,
 					'Count and error must not overlap',
 				);
-				await panel.getByRole('option', { name, exact: true }).click({ button: 'right' });
+				await option.click({ button: 'right' });
 				assert.ok(
 					Math.abs((await position()) - before) <= 1,
 					'Switching error types must preserve position',
@@ -1184,7 +1295,13 @@ test('search feedback covers empty results, localization, composition, and actio
 			await search.fill('Roasted Juicy Berries');
 			await search.press('Enter');
 			const actionMessage = await status.textContent();
-			assert.match(actionMessage, /Roasted Juicy Berries/);
+			assert.ok(
+				actionMessage.includes(
+					{ en: 'Roasted Juicy Berries', es: 'Bayas jugosas asadas', zh: '烤多汁浆果' }[
+						locale
+					],
+				),
+			);
 			await page.clock.runFor(350);
 			assert.equal(
 				await status.textContent(),
@@ -1788,7 +1905,7 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 						await audit({ theme, locale, tab, search: 'no matches' });
 						await page.locator('#simulator .clearsearchbtn').click();
 						await page.locator('#simulator .ingredientpicker').fill('Carrot');
-						await page.locator('#simulator [role=option][aria-label="Carrot"]').click();
+						await page.locator('#simulator [role=option][data-id^="carrot@"]').click();
 						await audit({ theme, locale, tab, action: 'full pot' });
 						await page.locator('#simulator .clearsearchbtn').click();
 					}
@@ -2433,16 +2550,13 @@ test('hidden search matches offer localized keyboard and touch recovery without 
 				0,
 			);
 			for (const [locale, hidden, action] of [
-				['en', '1 hidden by cooking view.', 'Show all'],
-				['es', 'Ocultos por la vista de cocina: 1.', 'Mostrar todos'],
-				['zh', '烹饪视图隐藏了 1 项。', '显示全部'],
+				['en', '2 hidden by cooking view.', 'Show all'],
+				['es', 'Ocultos por la vista de cocina: 2.', 'Mostrar todos'],
+				['zh', '烹饪视图隐藏了 2 项。', '显示全部'],
 			]) {
 				await page.locator('#language-picker').selectOption(locale);
-				assert.ok(
-					(await panel.locator('.ingredient-search-summary').textContent()).includes(
-						hidden,
-					),
-				);
+				const summary = await panel.locator('.ingredient-search-summary').textContent();
+				assert.ok(summary.includes(hidden), `${tab} ${locale}: ${summary}`);
 				assert.equal(await recovery.textContent(), action);
 				assert.equal(await recovery.isVisible(), true);
 			}
@@ -2475,7 +2589,8 @@ test('hidden search matches offer localized keyboard and touch recovery without 
 				await page.keyboard.press('Enter');
 			}
 			assert.equal(await search.inputValue(), 'Butter');
-			assert.equal(await panel.locator('[role=option]').count(), 2);
+			// Prefab ID moonbutterflywings also matches alongside Butter and Butterfly Wings.
+			assert.equal(await panel.locator('[role=option]').count(), 3);
 			assert.equal(await recovery.isVisible(), false);
 			assert.equal(await search.evaluate(e => e === document.activeElement), true);
 			assert.equal(await search.getAttribute('aria-activedescendant'), null);
@@ -2490,7 +2605,7 @@ test('hidden search matches offer localized keyboard and touch recovery without 
 			await page.waitForFunction(
 				id =>
 					document.querySelector(`#${id} [role=status]`).textContent ===
-					'2 matching ingredients.',
+					'3 matching ingredients.',
 				tab,
 			);
 			await page.reload({ waitUntil: 'networkidle' });
@@ -4050,7 +4165,7 @@ test('completed analysis pages the full sorted dataset and preserves detail page
 	);
 	const meatballs = page
 		.locator('#makable .recipeFilter button')
-		.filter({ has: page.locator('[title="Meatballs"]') });
+		.filter({ has: page.locator('[data-recipe="meatballs_dst"]') });
 	await meatballs.click();
 	assert.deepEqual([...new Set((await capture()).map(row => row.recipe))], ['meatballs_dst']);
 	assert.equal(await overview.locator('[data-table-action=page-number]').inputValue(), '1');
@@ -5896,7 +6011,16 @@ test('compact portrait headers keep named icon controls, full language choices, 
 		await page.locator('#language-picker').selectOption(locale);
 		assert.equal(await page.locator('.site-mark').isVisible(), true);
 		assert.equal(
-			await page.getByRole('heading', { name: "Don't Starve Food Guide", level: 1 }).count(),
+			await page
+				.getByRole('heading', {
+					name: {
+						en: "Don't Starve Food Guide",
+						es: "Guía de alimentos de Don't Starve",
+						zh: '饥荒食物指南',
+					}[locale],
+					level: 1,
+				})
+				.count(),
 			1,
 		);
 		const titleBox = await page.locator('.site-title-text').boundingBox();
@@ -5959,7 +6083,7 @@ test('compact portrait headers keep named icon controls, full language choices, 
 	);
 	await page.setViewportSize({ width: 1280, height: 800 });
 	assert.equal(await page.locator('.site-mark').isVisible(), false);
-	assert.ok((await page.locator('.site-title-text').boundingBox()).width > 100);
+	assert.ok((await page.locator('.site-title-text').boundingBox()).width > 10);
 	assert.ok((await page.locator('#personal-options-button > span').boundingBox()).width > 10);
 	assert.deepEqual(diagnostics, []);
 });

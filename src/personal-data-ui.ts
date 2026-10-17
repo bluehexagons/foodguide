@@ -14,7 +14,15 @@ import {
 	type CookbookDish,
 	type Inventory,
 } from './personal-data.js';
-import { t, getLocale, listLocales, localeName, setLocale, type StringKey } from './strings.js';
+import {
+	t,
+	itemName,
+	getLocale,
+	listLocales,
+	localeName,
+	setLocale,
+	type StringKey,
+} from './strings.js';
 import { createIcon, type IconName } from './ui-icons.js';
 import type { createThemeController, ThemePreference } from './theme-controller.js';
 
@@ -417,7 +425,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 					result.className = 'cookbook-recipe';
 					const icon = makeImage(recipe.img);
 					icon.setAttribute('aria-hidden', 'true');
-					result.append(icon, document.createTextNode(recipe.name));
+					result.append(icon, document.createTextNode(itemName(recipe)));
 				}
 				if (!preview.recipes.length) {
 					element('span', outcomes).textContent = t('cookbookUnavailable');
@@ -426,7 +434,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 				ingredients.className = 'cookbook-ingredients';
 				for (const item of preview.ingredients) {
 					const icon = makeImage(item.img);
-					icon.title = item.name;
+					icon.title = itemName(item);
 					icon.setAttribute('aria-hidden', 'true');
 					ingredients.append(icon);
 				}
@@ -435,9 +443,9 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 				description.id = `cookbook-description-${index}`;
 				description.textContent = t('cookbookDishDescription', {
 					recipes:
-						preview.recipes.map(recipe => recipe.name).join(' / ') ||
+						preview.recipes.map(recipe => itemName(recipe)).join(' / ') ||
 						t('cookbookUnavailable'),
-					ingredients: preview.ingredients.map(item => item.name).join(', '),
+					ingredients: preview.ingredients.map(item => itemName(item)).join(', '),
 				});
 				const footer = element('div', row);
 				footer.className = 'cookbook-card-footer';
@@ -469,16 +477,16 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		updatePot();
 	};
 	const gameName = (selection: GameSelection) => {
-		const names = [gameVersions[selection.version].name];
+		const names = [itemName(gameVersions[selection.version])];
 		if (selection.version === 'dontstarve') {
 			for (const key of ['giants', 'shipwrecked']) {
 				if (selection.dlc[key]) {
-					names.push(dlcOptions[key].name);
+					names.push(itemName(dlcOptions[key]));
 				}
 			}
 		}
 		if (selection.character) {
-			names.push(characters[selection.character].name);
+			names.push(itemName(characters[selection.character]));
 		}
 		return names.join(' / ');
 	};

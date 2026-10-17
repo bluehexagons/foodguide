@@ -6,13 +6,17 @@
  * Don't Starve player. Treat strings as a starting point — corrections
  * via PR are welcome.
  *
- * Names of foods, recipes, characters, and DLCs are intentionally left
- * untranslated for now: those should be sourced from the game itself.
+ * Game names and source information are in the sibling names module.
  */
 
+import { names } from './zh-names.js';
 import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
+	siteTitle: '饥荒食物指南',
+	names,
+	requirementAnd: '且',
+	requirementOr: '或',
 	// Dialogs, options, and information pages
 	shareDestination: '链接目标',
 	shareCurrentSite: '当前网站',
@@ -36,7 +40,7 @@ export const dict = {
 	personalShareTitle: '分享链接',
 	personalSnapshotHelp: '接收者会获得一份副本。对方的更改不会影响你的锅或库存。',
 	optionsAppearance: '语言与外观',
-	optionsLanguageHelp: '对所有标签页生效。食物、配方和角色名称仍使用英文。',
+	optionsLanguageHelp: '对所有标签页生效，包括食物和配方名称。也可用英文搜索。',
 	optionsTheme: '颜色主题',
 	themeAuto: '跟随设备',
 	themeLight: '浅色',
@@ -46,7 +50,7 @@ export const dict = {
 	optionsExportHeading: '保存备份',
 	optionsExportHelp: '将保存的库存和菜品下载为 JSON 文件。',
 	optionsImportHeading: '导入备份',
-	optionsImportHelp: '从 Food Guide JSON 文件中添加副本（不超过 2 MB），保留现有数据。',
+	optionsImportHelp: '从食物指南 JSON 文件中添加副本（不超过 2 MB），保留现有数据。',
 	optionsPrivacy: '仅保存在此设备上，不会上传你的数据。',
 	personalDone: '完成',
 	personalExported: '备份已准备好，可以保存。',
@@ -64,7 +68,7 @@ export const dict = {
 		'提供 <strong><span id="spoiledhunger"></span> 的饥饿值</strong>，不提供生命值。食用会扣除 <strong><span id="spoiledsanity"></span> 点理智值</strong>。',
 	gameInfoStorageHeading: '储存与季节',
 	gameInfoStorageBody:
-		'放在地上的食物以正常速度的 <strong><span id="perishground"></span></strong> 腐烂：冬季为 <strong><span id="perishwinter"></span></strong>，夏季为 <strong><span id="perishsummer"></span></strong>。Ice Box 会将腐烂速度降至 <strong><span id="perishfridge"></span></strong>。',
+		'放在地上的食物以正常速度的 <strong><span id="perishground"></span></strong> 腐烂：冬季为 <strong><span id="perishwinter"></span></strong>，夏季为 <strong><span id="perishsummer"></span></strong>。冰箱会将腐烂速度降至 <strong><span id="perishfridge"></span></strong>。',
 	gameInfoCookingHeading: '烹饪锅规则',
 	gameInfoPriorityHeading: '最高优先级胜出',
 	gameInfoWarmthHeading: '保暖与降温',
@@ -163,7 +167,7 @@ export const dict = {
 	filterExcluded: '排除',
 	filterLabel: '{name}：{state}',
 	languagePickerTitle: '更改语言',
-	languageNote: '翻译由 Anthropic Claude Opus 生成,可能需要社区校对。',
+	languageNote: '食物名称优先采用游戏译名。指南译文仍需社区审校。',
 
 	modeLabelGame: '游戏',
 	modeLabelDlc: 'DLC',
@@ -189,7 +193,7 @@ export const dict = {
 	tabAbout: '关于',
 	tabAboutTitle: '关于本工具及其使用方法',
 	tabGameInfo: '游戏信息',
-	tabGameInfoTitle: "Don't Starve 游戏机制参考",
+	tabGameInfoTitle: '饥荒游戏机制参考',
 
 	noscriptMessage: '抱歉,本食物指南需要 JavaScript 和现代浏览器。',
 	simulatorHeading: '烹饪锅模拟器',
@@ -386,7 +390,7 @@ export const dict = {
 
 	aboutHeading: '关于本指南',
 	aboutIntro:
-		'这是一个非官方工具,帮助你在 <a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">Don\'t Starve</a> 中避免饿死。这是一款由 <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a> 制作的、充满科学与魔法、毫不留情的荒野生存游戏。',
+		'这是一个非官方工具,帮助你在 <a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">饥荒</a> 中避免饿死。这是一款由 <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a> 制作的、充满科学与魔法、毫不留情的荒野生存游戏。',
 	aboutBrowser:
 		'本页面需要现代浏览器(较新版本的 Firefox、Chrome、Edge 或 Safari),并通过 JavaScript 在本地运行。',
 	aboutSource:
@@ -418,11 +422,11 @@ export const dict = {
 	aboutLinksHeading: '链接',
 	linkChangelog: '本指南更新日志',
 	linkBugReports: '反馈本指南的错误 / 问题',
-	linkOfficialSite: "Don't Starve 官方网站",
-	linkWiki: "Don't Starve Wiki",
+	linkOfficialSite: '饥荒官方网站',
+	linkWiki: '饥荒 Wiki',
 
 	gameInfoFoodMechHeading: '新鲜度与腐烂',
-	gameInfoFoodMechBody: '保鲜时间是食物变成 Rot 之前的时长。新鲜度会影响食用后的收益。',
+	gameInfoFoodMechBody: '保鲜时间是食物变成腐烂物之前的时长。新鲜度会影响食用后的收益。',
 	gameInfoWarmth:
 		'提供<strong>取暖</strong>或<strong>降温</strong>的食物的作用类似于热能石:食用后,会在一段时间内以特定温度作为热源。在该时段内再食用其他取暖/降温食物会替换之前的效果。',
 	gameInfoPriority:
@@ -430,17 +434,17 @@ export const dict = {
 	gameInfoCooked: '配方需求中,通常不区分熟食与生食。如有区别,只会列出可用的形态。',
 	gameInfoVersionsHeading: '游戏版本与 DLC',
 	gameInfoVersionsBody:
-		"顶部的游戏版本选择器可在 Don't Starve Together (DST)、Don't Starve (DS) 和 Hamlet 之间切换。选中 Don't Starve 时,可启用或禁用 Reign of Giants 和 Shipwrecked DLC,以控制显示的食物和配方。也可以选择 Warly 或 Webber 等角色,查看其专属配方和食物机制。",
+		'顶部的游戏版本选择器可在饥荒联机版 (DST)、饥荒 (DS) 和哈姆雷特之间切换。选中饥荒时,可启用或禁用巨人国和海难 DLC,以控制显示的食物和配方。也可以选择沃利或韦伯等角色,查看其专属配方和食物机制。',
 	gameInfoCharactersHeading: '角色食物机制',
 	gameInfoWarly:
-		'<strong>Warly</strong> 是一名厨师角色,只能在 Shipwrecked、Hamlet 和 DST 中游玩。在 Shipwrecked 中,他制作配方时菜肴更具饱腹感,而生吃、晒干或简单烹饪时效果较弱。他还有其他角色无法使用的独特配方。',
+		'<strong>沃利</strong> 是一名厨师角色,只能在海难、哈姆雷特和 DST 中游玩。在海难中,他制作配方时菜肴更具饱腹感,而生吃、晒干或简单烹饪时效果较弱。他还有其他角色无法使用的独特配方。',
 	gameInfoWebber:
-		'<strong>Webber</strong> 是人蛛混血角色,在所有游戏版本中均可游玩。他可以安全食用怪物食物,不会受到不良影响,并且可以将生肉视为熟肉(获得全部生命且无理智惩罚)。他也是唯一可以自然与蜘蛛结成同伴的角色。',
+		'<strong>韦伯</strong> 是人蛛混血角色,在所有游戏版本中均可游玩。他可以安全食用怪物食物,不会受到不良影响,并且可以将生肉视为熟肉(获得全部生命且无理智惩罚)。他也是唯一可以自然与蜘蛛结成同伴的角色。',
 	gameInfoWigfrid:
-		'<strong>Wigfrid</strong> 来自 Reign of Giants,在 Don\'t Starve Together 中可玩。她是一名舞台演员,只吃肉类。在 Don\'t Starve Together 中她还能吃"甜食",如太妃糖、软心豆粒糖和伏特山羊酥煎。',
+		'<strong>薇格弗德</strong> 来自巨人国,在饥荒联机版中可玩。她是一名舞台演员,只吃肉类。在饥荒联机版中她还能吃"甜食",如太妃糖、彩虹糖豆和伏特羊肉冻。',
 	gameInfoFavoritesHeading: '最爱食物 (DST)',
 	gameInfoFavoritesBody:
-		"在 Don't Starve Together 中,每个角色食用其最爱食物时可额外获得 15 点饥饿值。该加成受新鲜度影响。",
+		'在饥荒联机版中,每个角色食用其最爱食物时可额外获得 15 点饥饿值。该加成受新鲜度影响。',
 	favoritesHeaderCharacter: '角色',
 	favoritesHeaderFavorite: '最爱食物',
 	gameInfoWikiHeading: '实用 Wiki 页面',
@@ -450,7 +454,7 @@ export const dict = {
 	wikiFarming: '农作',
 
 	footerCopyrightLicense:
-		'<a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">Don\'t Starve</a> &copy; <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a>。非官方食物指南,<a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">源代码</a>以 <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a> 协议发布。',
+		'<a href="https://www.klei.com/games/dont-starve" target="_blank" rel="noopener">饥荒</a> &copy; <a href="https://klei.com/" target="_blank" rel="noopener">Klei Entertainment</a>。非官方食物指南,<a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">源代码</a>以 <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a> 协议发布。',
 	footerLinks:
 		'<a href="https://github.com/bluehexagons/foodguide" target="_blank" rel="noopener">GitHub 上的源代码</a> | <a href="https://github.com/bluehexagons/foodguide/issues" target="_blank" rel="noopener">错误与功能反馈</a>',
 

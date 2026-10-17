@@ -9,6 +9,7 @@ import {
 import type { ConsecutiveGroup } from './table-pagination.js';
 import type { StringKey } from './strings.js';
 import type { SortRow, TableSortKey } from './table-sort.js';
+import { itemName } from './strings.js';
 import { sortTableRows } from './table-sort.js';
 import { makeImage } from './utils.js';
 
@@ -134,7 +135,7 @@ export const createSortableTableFactory = ({
 		return row;
 	};
 
-	const fandomHref = (name: string) => {
+	const fandomHref = (name: string, label = name) => {
 		if (name && name.startsWith('Sum:')) {
 			return translateSummaryLabel(name.slice(name.indexOf(':') + 1));
 		}
@@ -143,7 +144,7 @@ export const createSortableTableFactory = ({
 		link.target = '_blank';
 		link.rel = 'noopener';
 		link.href = `https://dontstarve.wiki.gg/wiki/${name.replace(/\s/g, '_')}`;
-		link.appendChild(document.createTextNode(name));
+		link.appendChild(document.createTextNode(label));
 		return link;
 	};
 
@@ -590,7 +591,9 @@ export const createSortableTableFactory = ({
 					pager.update(
 						range.page,
 						range.pages,
-						translate('paginationCombinations', { name: group.item.name ?? group.key }),
+						translate('paginationCombinations', {
+							name: itemName(group.item) || group.key,
+						}),
 						translate('paginationCombinationRange', {
 							first: range.start + 1,
 							last: range.end,

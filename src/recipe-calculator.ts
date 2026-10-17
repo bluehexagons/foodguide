@@ -14,8 +14,13 @@ import { food } from './food.js';
 import { recipes } from './recipes.js';
 import { excludesMode, matchesMode } from './mode-utils.js';
 import { accumulateIngredients, numericTags } from './utils.js';
+import { itemName } from './strings.js';
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const normalizeName = (value: string) =>
+	value.toLowerCase().replaceAll('_', ' ').normalize('NFD').replace(/\p{M}/gu, '');
+const searchNames = (item: GuideItem) => [item.name, itemName(item), item.id].map(normalizeName);
+const hasName = (item: GuideItem, name: string) => searchNames(item).includes(name);
 
 const compareByMatch = (a: GuideItem, b: GuideItem) => b.match - a.match || compareItemNames(a, b);
 
@@ -77,7 +82,9 @@ export const createRecipeCalculator = ({
 					return searchType === 'tag' ? element.match : !element.match;
 				});
 			} else if (searchType === 'recipe') {
-				const recipe = recipes.byName(value);
+				const recipe =
+					recipes.byName(value) ||
+					recipes.filter(item => hasName(item, normalizeName(value))).at(-1);
 				if (!recipe) {
 					return [];
 				}
@@ -90,7 +97,9 @@ export const createRecipeCalculator = ({
 					return element.match;
 				});
 			} else {
-				const ingredient = food.byName(value);
+				const ingredient =
+					food.byName(value) ||
+					food.filter(item => hasName(item, normalizeName(value))).at(-1);
 				if (!ingredient) {
 					return [];
 				}
@@ -107,11 +116,12 @@ export const createRecipeCalculator = ({
 			return matches.sort(compareByMatch);
 		}
 
+		name = normalizeName(name);
 		if (name.startsWith('*')) {
 			name = name.slice(1);
 			return matches
 				.filter(element => {
-					element.match = element.lowerName === name ? 1 : 0;
+					element.match = hasName(element, name) ? 1 : 0;
 					return element.match;
 				})
 				.sort(compareByMatch);
@@ -122,9 +132,9 @@ export const createRecipeCalculator = ({
 			return matches
 				.filter(element => {
 					element.match =
-						element.lowerName === name ||
-						('raw' in element && element.raw && element.raw.lowerName === name) ||
-						('cook' in element && element.cook && element.cook.lowerName === name)
+						hasName(element, name) ||
+						('raw' in element && element.raw && hasName(element.raw, name)) ||
+						('cook' in element && element.cook && hasName(element.cook, name))
 							? 1
 							: 0;
 					return element.match;
@@ -132,22 +142,25 @@ export const createRecipeCalculator = ({
 				.sort(compareByMatch);
 		}
 
-		name = name.replaceAll('_', ' ');
 		const escapedName = escapeRegExp(name);
-		const wordStarts = new RegExp(`\\b${escapedName}.*`);
-		const anywhere = new RegExp(`\\b${[...name].map(escapeRegExp).join('.*')}.*`);
+		const wordStarts = new RegExp(`(?:^|[^\\p{L}\\p{N}])${escapedName}`, 'u');
+		const anywhere = new RegExp([...name].map(escapeRegExp).join('.*'), 'u');
 
 		return matches
 			.filter(element => {
-				const alias = element.id?.replaceAll('_', ' ') || '';
-				if (
-					element.lowerName.startsWith(name) ||
-					('raw' in element && element.raw && element.raw.lowerName.startsWith(name))
+				const labels = searchNames(element);
+				if (hasName(element, name)) {
+					element.match = 4;
+				} else if (
+					labels.some(label => label.startsWith(name)) ||
+					('raw' in element &&
+						element.raw &&
+						searchNames(element.raw).some(label => label.startsWith(name)))
 				) {
 					element.match = 3;
-				} else if (wordStarts.test(element.lowerName) || wordStarts.test(alias)) {
+				} else if (labels.some(label => wordStarts.test(label) || label.includes(name))) {
 					element.match = 2;
-				} else if (anywhere.test(element.lowerName) || anywhere.test(alias)) {
+				} else if (labels.some(label => anywhere.test(label))) {
 					element.match = 1;
 				} else {
 					element.match = 0;

@@ -1,5 +1,6 @@
+import { itemName } from './strings.js';
 import type { GuideItem, Stat, StatMultipliers, ModifyItem } from './models.js';
-import { compareItemNames } from './table-sort.js';
+import { compareItemNames, compareLocalizedNames } from './table-sort.js';
 const statValue = (
 	item: GuideItem,
 	stat: Stat,
@@ -34,7 +35,7 @@ export const sortIngredients = <T extends GuideItem>(
 	},
 ): T[] => {
 	const sorted = [...items];
-	const byName = (a: T, b: T) => a.name.localeCompare(b.name);
+	const byName = (a: T, b: T) => compareLocalizedNames(itemName(a), itemName(b));
 
 	switch (sortType) {
 		case 'auto': {
@@ -48,8 +49,14 @@ export const sortIngredients = <T extends GuideItem>(
 				: query.replace(/^[*~]/, '').replaceAll('_', ' ');
 			return sorted.sort(
 				(a, b) =>
-					Number(Boolean(name) && b.lowerName === name) -
-						Number(Boolean(name) && a.lowerName === name) ||
+					Number(
+						Boolean(name) &&
+							(b.lowerName === name || itemName(b).toLowerCase() === name),
+					) -
+						Number(
+							Boolean(name) &&
+								(a.lowerName === name || itemName(a).toLowerCase() === name),
+						) ||
 					(query ? (b.match ?? 0) - (a.match ?? 0) : 0) ||
 					compareItemNames(a, b),
 			);

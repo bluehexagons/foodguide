@@ -24,6 +24,8 @@ export { food } from './food.js';
 export { recipes, updateFoodRecipes } from './recipes.js';
 export {
 	t,
+	itemName,
+	localizedName,
 	setLocale,
 	registerLocale,
 	getLocale,

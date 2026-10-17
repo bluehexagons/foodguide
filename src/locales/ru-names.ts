@@ -305,7 +305,7 @@ export const names: Record<string, string> = {
 	Wortox: 'Вортокс',
 	Wurt: 'Вурт',
 
-	// Guide translations and product labels without a populated catalog entry.
+	// Guide translations, catalog corrections, and composite or unchanged product labels.
 	Aloe: 'Алоэ',
 	'Bean Bugs': 'Бобовые жуки',
 	'Blooming Tuber': 'Цветущий клубень',

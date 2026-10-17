@@ -2618,17 +2618,21 @@ import './locales/index.js';
 						placeholderKey: 'searchPlaceholderRecipe',
 					},
 				];
+			const setSearchPlaceholder = (key: StringKey) => {
+				picker.setAttribute('data-i18n-attr-placeholder', key);
+				picker.placeholder = t(key);
+			};
 			const baseSearchControls = createDropdown({
 				labelKey: 'pickerSearchType',
 				items: searchTypeKeys,
 				initialValue: 'name',
 				buttonClass: 'searchselector',
 				onSelect: item => {
-					picker.placeholder = t(item.placeholderKey);
+					setSearchPlaceholder(item.placeholderKey);
 					refreshPicker();
 				},
 			});
-			picker.placeholder = t(
+			setSearchPlaceholder(
 				(
 					searchTypeKeys.find(k => k.value === baseSearchControls.getValue()) ||
 					searchTypeKeys[0]
@@ -2646,13 +2650,14 @@ import './locales/index.js';
 					const found = searchTypeKeys.find(k => k.prefix === tag);
 					if (found) {
 						baseSearchControls.setValue(found.value);
+						setSearchPlaceholder(found.placeholderKey);
 						picker.value = name;
 					}
 				}
 			};
 			const setSearchType = (idx: number) => {
 				baseSearchControls.setValue(searchTypeKeys[idx].value);
-				picker.placeholder = t(searchTypeKeys[idx].placeholderKey);
+				setSearchPlaceholder(searchTypeKeys[idx].placeholderKey);
 			};
 
 			const searchSelectorControls = Object.assign(baseSearchControls, {

@@ -3007,6 +3007,9 @@ const buildFoodTagsInfo = (f: Food) => {
 export const updateFoodRecipes = (includedRecipes: Recipe[] | RecipeCollection) => {
 	for (let i = 0; i < food.length; i++) {
 		const f = food[i];
+		if (f.mode) {
+			f.modeNode = makeLinkable(`[tag:${f.mode}|img/${modes[f.mode].img}]`);
+		}
 
 		const info = buildFoodTagsInfo(f);
 		f.cooked && f.raw && info.push(`${t('foodInfoFrom')} [*${f.raw.name}|${f.raw.img}]`);

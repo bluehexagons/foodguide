@@ -204,15 +204,16 @@ export const makeLinkable = (() => {
 							/^(?:\*|~|recipe:|ingredient:|tag:)/,
 							'',
 						);
-						const name = modes[canonical]?.name || canonical;
 						const fallback = (
 							url.substr(4, 1).toUpperCase() +
 							url.substr(5).replace(titleCase, toTitleCase)
 						).split('.')[0];
-						image.title =
-							localizedName(name) !== name
-								? localizedName(name)
-								: localizedName(fallback);
+						const name =
+							modes[canonical]?.name ||
+							(canonical && /^(?:\*|~|recipe:|ingredient:)/.test(results[i])
+								? canonical
+								: fallback);
+						image.title = localizedName(name);
 						span.appendChild(image);
 					} else {
 						span.appendChild(

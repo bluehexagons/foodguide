@@ -94,6 +94,14 @@ test('localized game names update selections, search, cookbook, references, and 
 		await page.locator('#navbar [data-tab="foodlist"]').click();
 		const link = page.locator('#foodlist a[href$="/Carrot"]');
 		assert.equal(await link.textContent(), carrot);
+		assert.equal(
+			await page
+				.locator('#foodlist [data-link="tag:together"] .icon')
+				.first()
+				.getAttribute('title'),
+			locale === 'zh' ? '饥荒联机版' : "Don't Starve Together",
+			'Mode icon titles retain the full name even when it is unchanged by translation',
+		);
 		const hashLink = link.locator('..').locator('a.reference-permalink');
 		assert.equal(
 			new URL(await hashLink.getAttribute('href'), baseUrl).hash.includes('Carrot'),
@@ -119,6 +127,45 @@ test('localized game names update selections, search, cookbook, references, and 
 		await page.locator('#help-favorite-foods tbody td').first().textContent(),
 		'培根煎蛋',
 	);
+	assert.deepEqual(diagnostics, []);
+});
+
+test('picker search prompts follow the selected search type across languages', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#simulator?game=together`, { waitUntil: 'networkidle' });
+	for (const tab of ['simulator', 'discovery']) {
+		await page.locator(`#tab-${tab}`).click();
+		const panel = page.locator(`#${tab}`);
+		const picker = panel.locator('.ingredientpicker');
+		for (const [type, label, query] of [
+			['tag', 'tag', 'meat'],
+			['recipe', 'recipe', 'meatballs'],
+		]) {
+			await page.locator('#language-picker').selectOption('en');
+			await panel.locator('.searchselector').click();
+			await panel.getByRole('menuitemradio', { name: label, exact: true }).click();
+			await picker.fill(query);
+			const results = await panel.locator('[role=option]').count();
+			assert.ok(results > 0);
+			for (const locale of ['es', 'zh', 'en']) {
+				await page.locator('#language-picker').selectOption(locale);
+				const prompt = await picker.getAttribute('placeholder');
+				if (type === 'tag') {
+					assert.match(prompt, /meat/i);
+					assert.match(prompt, { es: /inglés/, zh: /英文/, en: /[Mm]eat/ }[locale]);
+				} else {
+					assert.match(prompt, { es: /receta/, zh: /配方/, en: /recipe/ }[locale]);
+				}
+				assert.equal(await panel.locator('[role=option]').count(), results);
+			}
+		}
+		await picker.fill('tag:meat');
+		assert.match(await picker.getAttribute('placeholder'), /[Mm]eat/);
+		await page.locator('#language-picker').selectOption('es');
+		assert.match(await picker.getAttribute('placeholder'), /inglés.*meat/);
+	}
 	assert.deepEqual(diagnostics, []);
 });
 
@@ -829,11 +876,11 @@ test('ingredient errors explain recovery in every language and clear on a new se
 		],
 		es: [
 			'La olla está llena. Quita un ingrediente antes de añadir Zanahoria.',
-			'Zanahoria no está seleccionado. Añádelo antes de intentar quitarlo.',
+			'No has seleccionado este ingrediente: Zanahoria. Añade una unidad antes de intentar quitarla.',
 			'Esta ranura está vacía. Selecciona un ingrediente de los resultados de búsqueda.',
 		],
 		zh: [
-			'锅已满。请先移除一种食材，再添加 胡萝卜。',
+			'锅已满。请先移除一份食材，再添加 胡萝卜。',
 			'尚未选择 胡萝卜。请先添加，再尝试移除。',
 			'此格子为空。请从搜索结果中选择食材。',
 		],
@@ -1207,7 +1254,7 @@ test('picker errors occupy reserved space above the selection without moving slo
 				);
 				assert.match(
 					await status.textContent(),
-					locale === 'es' ? /not selected/ : /no está seleccionado/,
+					locale === 'es' ? /not selected/ : /No has seleccionado/,
 				);
 				await page.locator('#language-picker').selectOption(locale);
 				await panel.locator('.clearsearchbtn').click();

@@ -197,6 +197,30 @@ describe('strings locale behavior', () => {
 		assert.equal(root.textContent, 'Name');
 	});
 
+	it('icon titles use canonical names even when a translation is unchanged', async () => {
+		setupDom();
+		const { setLocale } = await import('../html/strings.js');
+		const { makeLinkable } = await import('../html/utils.js');
+		await import('../html/locales/es.js');
+		await import('../html/locales/zh.js');
+		const title = text => makeLinkable(text).children[0].children[1].children[1].title;
+		try {
+			for (const locale of ['en', 'es', 'zh']) {
+				setLocale(locale);
+				assert.equal(
+					title('[tag:warlydst|img/warly.png]'),
+					locale === 'zh' ? '沃利（联机版）' : 'Warly (DST)',
+				);
+			}
+			setLocale('en');
+			assert.equal(title('[*Raw Fish|img/fish_meat.png]'), 'Raw Fish');
+			assert.equal(title("[recipe:Chef's Dish|img/other.png]"), "Chef's Dish");
+			assert.equal(title('[unknown|img/rare_food.png]'), 'Rare Food');
+		} finally {
+			setLocale('en');
+		}
+	});
+
 	it('updates document lang and dispatches localechange', async () => {
 		const { document, html } = setupDom();
 		const strings = await import('../html/strings.js');

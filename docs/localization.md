@@ -16,10 +16,12 @@ User-authored inventory and dish names are shown as saved.
 Search accepts the active language, canonical English, and prefab IDs. Spanish
 name searches ignore accents; Chinese names support substring searches. The
 `recipe:` and `ingredient:` prefixes accept translated names, while `tag:` values
-and link payloads retain their internal identifiers. Name sorts use the active
-language, keeping preparation families together in Auto mode. Existing analysis
-snapshots retain their ordering and pages when the language changes; choosing a
-name sort or refreshing the snapshot applies the current language's ordering.
+and link payloads retain their internal identifiers. Tag-search examples must use
+accepted identifiers such as `meat` and `veggie`, even in translated placeholders.
+Name sorts use the active language, keeping preparation families together in Auto
+mode. Existing analysis snapshots retain their ordering and pages when the language
+changes; choosing a name sort or refreshing the snapshot applies the current
+language's ordering.
 
 ## Game name sources
 
@@ -53,6 +55,10 @@ guide uses an alias. Strip the guide-only `_dst` suffix from recipe IDs, includi
 Red Cap / Red Mushroom, Fish Meat / Raw Fish, and Wobster / Lobster. The static
 favorite-food aliases Cave Banana, Cooked Cave Banana, and Pomegranates use the
 Banana, Cooked Banana, and Pomegranate translations.
+
+Keep item references in guide prose and recipe notes consistent with those names.
+The same Together snapshot supplies `DUSTMOTH` (Spanish Polvolilla) and `HEATROCK`
+(Chinese 暖石) for terms used in the guide.
 
 ## Guide translations and remaining review
 

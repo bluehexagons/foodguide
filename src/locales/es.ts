@@ -57,7 +57,7 @@ export const dict = {
 	optionsExportHelp: 'Descarga tus inventarios y platos guardados en un archivo JSON.',
 	optionsImportHeading: 'Importar una copia',
 	optionsImportHelp:
-		'Añade copias desde un archivo JSON de Food Guide (hasta 2 MB). Se conservan los datos actuales.',
+		'Añade copias desde un archivo JSON de la Guía de alimentos (hasta 2 MB). Se conservan los datos actuales.',
 	optionsPrivacy: 'Se guarda en este dispositivo. Tus datos nunca se suben a un servidor.',
 	personalDone: 'Listo',
 	personalExported: 'Tu copia de seguridad está lista para guardar.',
@@ -132,7 +132,7 @@ export const dict = {
 	personalImport: 'Importar copia de seguridad',
 	personalImported: 'Se importaron {inventories} inventarios y {dishes} platos.',
 	personalImportError:
-		'No se pudo importar el archivo. Usa una copia JSON de la Guía de Comida con ingredientes, nombres y ajustes válidos (hasta 2 MB). Los datos existentes no se han reemplazado.',
+		'No se pudo importar el archivo. Usa una copia JSON de la Guía de alimentos con ingredientes, nombres y ajustes válidos (hasta 2 MB). Los datos existentes no se han reemplazado.',
 	personalStorageError:
 		'Los cambios están disponibles en esta pestaña, pero no se pudieron guardar. Exporta una copia antes de cerrarla.',
 	personalLimitError:
@@ -146,8 +146,8 @@ export const dict = {
 	skipToContent: 'Saltar al contenido',
 	addIngredient: 'Añadir un ingrediente',
 	removeIngredient: 'Quitar {name}',
-	ingredientAdded: '{name} añadido.',
-	ingredientRemoved: '{name} quitado.',
+	ingredientAdded: 'Has añadido {name}.',
+	ingredientRemoved: 'Has quitado {name}.',
 	ingredientAllRemoved: 'Todas las unidades de {name} quitadas.',
 	addNamedIngredient: 'Añadir {name}',
 	removeAllIngredient: 'Quitar todas las unidades de {name}',
@@ -162,7 +162,8 @@ export const dict = {
 	ingredientDiscoverySearchHelp:
 		'Usa Arriba y Abajo para explorar resultados, Intro para añadir o quitar, Mayús+Intro para quitar una unidad, Ctrl o Comando+Intro para quitar todas y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
 	ingredientPotFull: 'La olla está llena. Quita un ingrediente antes de añadir {name}.',
-	ingredientNotSelected: '{name} no está seleccionado. Añádelo antes de intentar quitarlo.',
+	ingredientNotSelected:
+		'No has seleccionado este ingrediente: {name}. Añade una unidad antes de intentar quitarla.',
 	ingredientSlotEmpty:
 		'Esta ranura está vacía. Selecciona un ingrediente de los resultados de búsqueda.',
 	ingredientsCleared: 'Todos los ingredientes eliminados.',
@@ -217,7 +218,8 @@ export const dict = {
 	tabGameInfo: 'Info del juego',
 	tabGameInfoTitle: "Referencia de las mecánicas de Don't Starve",
 
-	noscriptMessage: 'Lo sentimos, esta Guía de Comida requiere JavaScript y un navegador moderno.',
+	noscriptMessage:
+		'Lo sentimos, esta Guía de alimentos requiere JavaScript y un navegador moderno.',
 	simulatorHeading: 'Simulador de Olla',
 	simulatorBody:
 		'Haz clic para añadir ingredientes. Desmarca para quitar todas las unidades; usa − o una ranura de la olla para quitar una.',
@@ -303,7 +305,7 @@ export const dict = {
 	searchTypeTag: 'etiqueta',
 	searchTypeRecipe: 'receta',
 	searchPlaceholderName: 'Filtrar ingredientes',
-	searchPlaceholderTag: 'Carne, verdura, fruta, huevo, monstruo...',
+	searchPlaceholderTag: 'En inglés: meat, veggie, fruit, egg, monster…',
 	searchPlaceholderRecipe: 'Buscar ingredientes usados en una receta',
 
 	calculateRecipes: 'Calcular recetas eficientes (puede tardar)',
@@ -393,16 +395,16 @@ export const dict = {
 		'Baja la temperatura {degrees} grados en {seconds} segundos',
 	noteRaisesTemperatureByDegreesOverSeconds:
 		'Sube la temperatura {degrees} grados en {seconds} segundos',
-	noteRequiresUncookedTallbirdEgg: 'Requiere Huevo de Tallbird sin cocinar',
+	noteRequiresUncookedTallbirdEgg: 'Requiere un huevo de pájaro alto sin cocinar',
 	notePlayerCannotEatBeefaloOnly: 'No puede comerlo el jugador; solo puede darse a los Beefalo',
-	noteDustMothsOnly: 'Se usa para alimentar a las Dust Moths; el jugador no puede comerlo',
+	noteDustMothsOnly: 'Se usa para alimentar a las polvolillas; el jugador no puede comerlo',
 	notes: {
 		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
 			'Quita 3 de calor y, durante 30 segundos, seca 1/s y añade 2 de velocidad adicional (+33%)',
 		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
 			'Mientras se lleva puesto, restaura 3.9 de Hambre cada 5 segundos (187.5 en total, durante 4 minutos), mientras reduce la Cordura en 1.33 por minuto (Wurt gana +1.33 cordura/min, Wigfrid se niega a llevarlo)',
 		'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry':
-			'Da a quien lo come 16 minutos de luz que se desvanece de forma similar a la de comer una glowberry',
+			'Da a quien lo come 16 minutos de luz que se desvanece como la de una baya brillante',
 	},
 
 	columns: 'Columnas',
@@ -473,7 +475,7 @@ export const dict = {
 
 	gameInfoFoodMechHeading: 'Frescura y deterioro',
 	gameInfoFoodMechBody:
-		'El tiempo de conservación indica cuánto tarda un alimento en convertirse en Rot. Su frescura cambia los beneficios al comerlo.',
+		'El tiempo de conservación indica cuánto tarda un alimento en convertirse en podredumbre. Su frescura cambia los beneficios al comerlo.',
 	gameInfoWarmth:
 		'Las comidas que dan <strong>calor</strong> o <strong>frescor</strong> funcionan como una piedra térmica: al comerlas, proporcionan una fuente de calor a cierta temperatura durante un tiempo. Comer otro alimento que caliente o enfríe durante ese periodo reemplaza el efecto anterior.',
 	gameInfoPriority:

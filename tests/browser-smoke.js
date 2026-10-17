@@ -4862,17 +4862,17 @@ test('keyboard mode controls update ingredient variants, analysis, and saved sel
 	]);
 	assert.deepEqual(await selectedKeys('#inventory'), ['meat@together', 'batnose']);
 
-	const dontStarve = page.getByRole('button', { name: "Don't Starve", exact: true });
+	const dontStarve = page.locator('.version-btn[data-version="dontstarve"]');
 	await dontStarve.focus();
 	await dontStarve.press('Enter');
 	assert.equal(await dontStarve.getAttribute('aria-pressed'), 'true');
 	assert.deepEqual(await selectedKeys('#ingredients'), ['meat', 'meat', 'honey', 'carrot']);
 	assert.deepEqual(await selectedKeys('#inventory'), ['meat']);
-	const giants = page.getByRole('button', { name: 'Reign of Giants', exact: true });
+	const giants = page.locator('.dlc-btn[data-dlc="giants"]');
 	await giants.focus();
 	await giants.press('Space');
 	assert.equal(await giants.getAttribute('aria-pressed'), 'true');
-	const webber = page.getByRole('button', { name: 'Webber', exact: true });
+	const webber = page.locator('.char-btn[data-character="webber"]');
 	await webber.focus();
 	await webber.press('Enter');
 	assert.equal(await webber.getAttribute('aria-pressed'), 'true');
@@ -4902,9 +4902,7 @@ test('restored DLC ingredients remain available during initial picker creation',
 	assert.equal(await page.locator('#ingredients [data-id="mole"]').count(), 1);
 	assert.equal(await page.locator('#inventory [data-id="mole"]').count(), 1);
 	assert.equal(
-		await page
-			.getByRole('button', { name: 'Reign of Giants', exact: true })
-			.getAttribute('aria-pressed'),
+		await page.locator('.dlc-btn[data-dlc="giants"]').getAttribute('aria-pressed'),
 		'true',
 	);
 });

@@ -13,6 +13,8 @@ import {
 } from '../html/foodguide-data.js';
 import { dict as spanish } from '../html/locales/es.js';
 import { dict as chinese } from '../html/locales/zh.js';
+import { dict as russian } from '../html/locales/ru.js';
+import { dict as brazilian } from '../html/locales/pt-BR.js';
 import { createRecipeCalculator } from '../html/recipe-calculator.js';
 import { sortIngredients } from '../html/ingredient-sort.js';
 import { compareItemNames } from '../html/table-sort.js';
@@ -31,6 +33,8 @@ test('bundled name dictionaries cover every food, recipe, and static game name',
 	for (const [locale, dict] of [
 		['es', spanish],
 		['zh', chinese],
+		['ru', russian],
+		['pt-BR', brazilian],
 	]) {
 		for (const name of names) {
 			assert.ok(Object.hasOwn(dict.names, name), `${locale}: missing ${name}`);
@@ -55,6 +59,17 @@ test('game names translate at display time while canonical data stays stable', (
 	assert.equal(itemName(recipes.pumpkincookie_dst), '南瓜饼干');
 	assert.equal(localizedName('Webber'), '韦伯');
 	assert.equal(localizedName('Shipwrecked'), '海难');
+	setLocale('ru');
+	assert.equal(itemName(food.carrot), 'Морковь');
+	assert.equal(itemName(recipes.meatballs), 'Тефтели');
+	assert.equal(itemName(recipes.pumpkincookie_dst), 'Тыквенные печеньки');
+	assert.equal(itemName(food.fish), 'Рыба');
+	assert.equal(localizedName('Warly (DST)'), 'Варли (DST)');
+	setLocale('pt-BR');
+	assert.equal(itemName(food.carrot), 'Cenoura');
+	assert.equal(itemName(recipes.meatballs), 'Almôndegas');
+	assert.equal(itemName(recipes.pumpkincookie_dst), 'Biscoitinhos de abóbora');
+	assert.equal(itemName(food.fish), 'Peixe');
 	assert.deepEqual(canonical(), before);
 	setLocale('en');
 	assert.equal(itemName(food.carrot), 'Carrot');
@@ -105,6 +120,25 @@ test('localized searches accept accents, Chinese substrings, English, and prefab
 	assert.ok(matchingNames(food, 'red_mushroom').some(item => item.id === 'red_mushroom'));
 	assert.ok(matchingNames(food, 'tag:meat').every(item => item.meat));
 	assert.deepEqual(matchingNames(food, '['), []);
+	setLocale('ru');
+	assert.equal(matchingNames(food, '*морковь')[0].id, 'carrot');
+	assert.equal(matchingNames(recipes, '*тефтели')[0].id, 'meatballs_dst');
+	assert.ok(matchingNames(recipes, 'ingredient:морковь').length > 0);
+	assert.ok(
+		matchingNames(food, 'recipe:маффин из бабочки').some(item => item.id === 'butterflywings'),
+	);
+	assert.equal(matchingNames(food, '*carrot')[0].id, 'carrot');
+	setLocale('pt-BR');
+	assert.equal(matchingNames(food, '*cenoura')[0].id, 'carrot');
+	assert.equal(matchingNames(recipes, '*almondegas')[0].id, 'meatballs_dst');
+	assert.equal(matchingNames(food, '*abobora')[0].id, 'pumpkin');
+	assert.ok(matchingNames(recipes, 'ingredient:cenoura').length > 0);
+	assert.ok(
+		matchingNames(food, 'recipe:bolinho de manteiga').some(
+			item => item.id === 'butterflywings',
+		),
+	);
+	assert.equal(matchingNames(food, '*carrot')[0].id, 'carrot');
 });
 
 test('localized name sorting and requirements retain canonical link payloads', () => {
@@ -123,4 +157,10 @@ test('localized name sorting and requirements retain canonical link payloads', (
 	assert.match(requirement, / y /);
 	setLocale('zh');
 	assert.match(String(NAME('carrot')), /\[\*Carrot\|img\/carrot\.png 胡萝卜\]/);
+	setLocale('ru');
+	assert.match(String(NAME('carrot')), /\[\*Carrot\|img\/carrot\.png Морковь\]/);
+	assert.ok(compareItemNames(food.carrot, food.meat) < 0);
+	setLocale('pt-BR');
+	assert.match(String(NAME('carrot')), /\[\*Carrot\|img\/carrot\.png Cenoura\]/);
+	assert.ok(compareItemNames(food.meat, food.carrot) < 0);
 });

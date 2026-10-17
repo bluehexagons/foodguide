@@ -10,3 +10,5 @@
 
 import './es.js';
 import './zh.js';
+import './ru.js';
+import './pt-BR.js';

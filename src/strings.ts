@@ -698,8 +698,9 @@ export function initLocale() {
 		const nav = navigator.language.toLowerCase();
 		const candidates = [nav, nav.split('-')[0]];
 		for (const c of candidates) {
-			if (Object.hasOwn(locales, c)) {
-				code = c;
+			const match = listLocales().find(locale => locale.toLowerCase() === c);
+			if (match) {
+				code = match;
 				break;
 			}
 		}
@@ -744,6 +745,13 @@ export function durationUnit(kind: string, count: number) {
 		if (activeLocale === 'es') {
 			return count === 1 ? 'día' : 'días';
 		}
+		if (activeLocale === 'pt-BR') {
+			return count === 1 ? 'dia' : 'dias';
+		}
+		if (activeLocale === 'ru') {
+			const form = new Intl.PluralRules('ru').select(count);
+			return form === 'one' ? 'день' : form === 'many' ? 'дней' : 'дня';
+		}
 		return count === 1 ? 'day' : 'days';
 	}
 	if (kind === 'sec') {
@@ -752,6 +760,12 @@ export function durationUnit(kind: string, count: number) {
 		}
 		if (activeLocale === 'es') {
 			return count === 1 ? 'seg' : 'segs';
+		}
+		if (activeLocale === 'pt-BR') {
+			return 's';
+		}
+		if (activeLocale === 'ru') {
+			return 'сек.';
 		}
 		return count === 1 ? 'sec' : 'secs';
 	}

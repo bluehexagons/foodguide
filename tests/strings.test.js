@@ -141,13 +141,15 @@ describe('strings locale behavior', () => {
 		const locales = await Promise.all([
 			import('../html/locales/es.js'),
 			import('../html/locales/zh.js'),
+			import('../html/locales/ru.js'),
+			import('../html/locales/pt-BR.js'),
 		]);
 		const placeholders = text => [...text.matchAll(/\{(\w+)\}/g)].map(match => match[1]).sort();
 		const htmlIds = text =>
 			[...text.matchAll(/\bid=["']([^"']+)["']/g)].map(match => match[1]).sort();
 		for (const [index, { dict }] of locales.entries()) {
 			const compare = (key, english, translated) => {
-				const context = `${['es', 'zh'][index]}: ${key}`;
+				const context = `${['es', 'zh', 'ru', 'pt-BR'][index]}: ${key}`;
 				assert.ok(translated?.trim(), `Empty translation: ${context}`);
 				assert.deepEqual(
 					placeholders(translated),
@@ -260,10 +262,75 @@ describe('strings locale behavior', () => {
 	it('package entrypoint registers bundled locales', async () => {
 		const data = await import(`../html/foodguide-data.js?locales=${Date.now()}`);
 
-		assert.ok(data.listLocales().includes('es'));
+		for (const code of ['es', 'zh', 'ru', 'pt-BR']) {
+			assert.ok(data.listLocales().includes(code));
+		}
 		data.setLocale('es');
 		assert.equal(data.t('tableName'), 'Nombre');
 		data.setLocale('en');
+	});
+
+	it('browser locale detection matches regional codes without losing a saved choice', async t => {
+		const strings = await import('../html/strings.js');
+		await import('../html/locales/index.js');
+		const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+		t.after(() => {
+			if (original) {
+				Object.defineProperty(globalThis, 'navigator', original);
+			} else {
+				delete globalThis.navigator;
+			}
+			strings.setLocale('en');
+		});
+		for (const [language, expected] of [
+			['pt-BR', 'pt-BR'],
+			['pt-br', 'pt-BR'],
+			['ru-RU', 'ru'],
+			['es-MX', 'es'],
+			['unknown', 'en'],
+		]) {
+			const { html } = setupDom();
+			Object.defineProperty(globalThis, 'navigator', {
+				value: { language },
+				configurable: true,
+			});
+			strings.initLocale();
+			assert.equal(strings.getLocale(), expected, language);
+			assert.equal(html.getAttribute('lang'), expected, language);
+		}
+		setupDom();
+		localStorage.setItem('foodGuideLocale', 'pt-BR');
+		strings.initLocale();
+		assert.equal(strings.getLocale(), 'pt-BR');
+	});
+
+	it('Russian and Brazilian Portuguese duration labels handle singular, plural, and fractions', async () => {
+		const strings = await import('../html/strings.js');
+		await import('../html/locales/index.js');
+		try {
+			strings.setLocale('ru');
+			for (const [count, unit] of [
+				[0, 'дней'],
+				[1, 'день'],
+				[2, 'дня'],
+				[5, 'дней'],
+				[11, 'дней'],
+				[21, 'день'],
+				[22, 'дня'],
+				[25, 'дней'],
+				[1.5, 'дня'],
+			]) {
+				assert.equal(strings.formatDuration('day', count), `${count} ${unit}`);
+			}
+			assert.equal(strings.formatDuration('sec', 90), '90 сек.');
+			strings.setLocale('pt-BR');
+			assert.equal(strings.formatDuration('day', 1), '1 dia');
+			assert.equal(strings.formatDuration('day', 2), '2 dias');
+			assert.equal(strings.formatDuration('day', 1.5), '1.5 dias');
+			assert.equal(strings.formatDuration('sec', 90), '90 s');
+		} finally {
+			strings.setLocale('en');
+		}
 	});
 
 	it('resolveNote prefers stable keyed notes over raw-note wording', async () => {

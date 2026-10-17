@@ -241,7 +241,13 @@ import './locales/index.js';
 
 	const langPicker = document.querySelector<HTMLSelectElement>('#language-picker');
 	if (langPicker) {
-		const localeFlags: Record<string, string> = { en: '🇺🇸', es: '🇪🇸', zh: '🇨🇳' };
+		const localeFlags: Record<string, string> = {
+			en: '🇺🇸',
+			es: '🇪🇸',
+			zh: '🇨🇳',
+			ru: '🇷🇺',
+			'pt-BR': '🇧🇷',
+		};
 		const codes = listLocales();
 		for (const code of codes) {
 			const opt = document.createElement('option');

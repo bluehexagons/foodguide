@@ -42,6 +42,8 @@ test('localized game names update selections, search, cookbook, references, and 
 	for (const [locale, carrot, meatballs] of [
 		['es', 'Zanahoria', 'Albóndigas'],
 		['zh', '胡萝卜', '肉丸'],
+		['ru', 'Морковь', 'Тефтели'],
+		['pt-BR', 'Cenoura', 'Almôndegas'],
 		['en', 'Carrot', 'Meatballs'],
 	]) {
 		await page.locator('#language-picker').selectOption(locale);
@@ -49,6 +51,8 @@ test('localized game names update selections, search, cookbook, references, and 
 			en: "Don't Starve Food Guide",
 			es: "Guía de alimentos de Don't Starve",
 			zh: '饥荒食物指南',
+			ru: "Справочник по еде Don't Starve",
+			'pt-BR': "Guia de comida de Don't Starve",
 		}[locale];
 		assert.equal(await page.getByRole('heading', { name: siteTitle, exact: true }).count(), 1);
 		assert.ok((await page.title()).endsWith(` — ${siteTitle}`));
@@ -130,6 +134,45 @@ test('localized game names update selections, search, cookbook, references, and 
 	assert.deepEqual(diagnostics, []);
 });
 
+test('regional browser languages initialize, synchronize, and persist the new locales', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	for (const [language, locale, other] of [
+		['ru-RU', 'ru', 'pt-BR'],
+		['pt-BR', 'pt-BR', 'ru'],
+	]) {
+		const context = await browser.newContext({ locale: language });
+		t.after(() => context.close());
+		const first = await context.newPage();
+		const second = await context.newPage();
+		const diagnostics = [trackDiagnostics(first), trackDiagnostics(second)];
+		await first.goto(`${baseUrl}/#simulator?game=together&ingredients=carrot`, {
+			waitUntil: 'networkidle',
+		});
+		await second.goto(`${baseUrl}/#simulator?game=together&ingredients=meat`, {
+			waitUntil: 'networkidle',
+		});
+		for (const page of [first, second]) {
+			assert.equal(await page.locator('html').getAttribute('lang'), locale);
+			assert.equal(await page.locator('#language-picker').inputValue(), locale);
+			assert.equal(
+				await page.locator('#language-picker option[value=ru]').textContent(),
+				'🇷🇺 Русский',
+			);
+			assert.equal(
+				await page.locator('#language-picker option[value="pt-BR"]').textContent(),
+				'🇧🇷 Português (Brasil)',
+			);
+		}
+		await first.locator('#language-picker').selectOption(other);
+		await second.waitForFunction(code => document.documentElement.lang === code, other);
+		await second.reload({ waitUntil: 'networkidle' });
+		assert.equal(await second.locator('html').getAttribute('lang'), other);
+		assert.equal(await first.locator('#ingredients [data-id="carrot@together"]').count(), 1);
+		assert.equal(await second.locator('#ingredients [data-id="meat@together"]').count(), 1);
+		assert.deepEqual(diagnostics, [[], []]);
+	}
+});
+
 test('picker search prompts follow the selected search type across languages', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
@@ -149,14 +192,32 @@ test('picker search prompts follow the selected search type across languages', a
 			await picker.fill(query);
 			const results = await panel.locator('[role=option]').count();
 			assert.ok(results > 0);
-			for (const locale of ['es', 'zh', 'en']) {
+			for (const locale of ['es', 'zh', 'ru', 'pt-BR', 'en']) {
 				await page.locator('#language-picker').selectOption(locale);
 				const prompt = await picker.getAttribute('placeholder');
 				if (type === 'tag') {
 					assert.match(prompt, /meat/i);
-					assert.match(prompt, { es: /inglés/, zh: /英文/, en: /[Mm]eat/ }[locale]);
+					assert.match(
+						prompt,
+						{
+							es: /inglés/,
+							zh: /英文/,
+							ru: /английск/,
+							'pt-BR': /inglês/,
+							en: /[Mm]eat/,
+						}[locale],
+					);
 				} else {
-					assert.match(prompt, { es: /receta/, zh: /配方/, en: /recipe/ }[locale]);
+					assert.match(
+						prompt,
+						{
+							es: /receta/,
+							zh: /配方/,
+							ru: /рецепт/,
+							'pt-BR': /receita/,
+							en: /recipe/,
+						}[locale],
+					);
 				}
 				assert.equal(await panel.locator('[role=option]').count(), results);
 			}
@@ -542,8 +603,8 @@ test('selection indicators survive forced colors and track modes, menus, columns
 		if ((await page.locator('html').getAttribute('data-theme')) !== theme) {
 			await page.locator('#theme-toggle').click();
 		}
-		const together = page.getByRole('button', { name: "Don't Starve Together", exact: true });
-		const solo = page.getByRole('button', { name: "Don't Starve", exact: true });
+		const together = page.locator('.version-btn[data-version="together"]');
+		const solo = page.locator('.version-btn[data-version="dontstarve"]');
 		assert.equal(
 			await indicatorVisible(together),
 			true,
@@ -1176,7 +1237,7 @@ test('picker errors occupy reserved space above the selection without moving slo
 	await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
 	for (const width of [320, 768, 1280]) {
 		await page.setViewportSize({ width, height: 900 });
-		for (const locale of ['en', 'es', 'zh']) {
+		for (const locale of ['en', 'es', 'zh', 'ru', 'pt-BR']) {
 			await page.locator('#language-picker').selectOption(locale);
 			await page.locator('#tab-simulator').click();
 			const panel = page.locator('#simulator');
@@ -1858,7 +1919,7 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 			}
 			for (const locale of options.hasTouch || options.forcedColors
 				? ['en']
-				: ['en', 'es', 'zh']) {
+				: ['en', 'es', 'zh', 'ru', 'pt-BR']) {
 				await page.locator('#language-picker').selectOption(locale);
 				for (const tab of [
 					'simulator',
@@ -3034,7 +3095,7 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 	};
 	for (const width of [320, 375, 768, 1280]) {
 		await page.setViewportSize({ width, height: 812 });
-		for (const locale of ['en', 'es', 'zh']) {
+		for (const locale of ['en', 'es', 'zh', 'ru', 'pt-BR']) {
 			await page.locator('#language-picker').selectOption(locale);
 			for (const tab of [
 				'simulator',
@@ -3083,7 +3144,7 @@ test('touch layouts keep controls reachable across widths, languages, and picker
 		p { margin-bottom: 2em !important; }
 	`,
 	});
-	for (const locale of ['en', 'es', 'zh']) {
+	for (const locale of ['en', 'es', 'zh', 'ru', 'pt-BR']) {
 		await page.locator('#language-picker').selectOption(locale);
 		for (const tab of [
 			'simulator',
@@ -6054,7 +6115,7 @@ test('compact portrait headers keep named icon controls, full language choices, 
 	const diagnostics = trackDiagnostics(page);
 	await page.goto(`${baseUrl}/#simulator?game=together`, { waitUntil: 'networkidle' });
 	await page.evaluate(axe.source);
-	for (const locale of ['en', 'es', 'zh']) {
+	for (const locale of ['en', 'es', 'zh', 'ru', 'pt-BR']) {
 		await page.locator('#language-picker').selectOption(locale);
 		assert.equal(await page.locator('.site-mark').isVisible(), true);
 		assert.equal(
@@ -6064,6 +6125,8 @@ test('compact portrait headers keep named icon controls, full language choices, 
 						en: "Don't Starve Food Guide",
 						es: "Guía de alimentos de Don't Starve",
 						zh: '饥荒食物指南',
+						ru: "Справочник по еде Don't Starve",
+						'pt-BR': "Guia de comida de Don't Starve",
 					}[locale],
 					level: 1,
 				})
@@ -6105,7 +6168,7 @@ test('compact portrait headers keep named icon controls, full language choices, 
 			`${locale}: Together controls fit two compact rows (${headerHeight}px)`,
 		);
 		const choices = await page.locator('#language-picker option').allTextContents();
-		for (const name of ['English', 'Español', '简体中文']) {
+		for (const name of ['English', 'Español', '简体中文', 'Русский', 'Português (Brasil)']) {
 			assert.ok(choices.some(choice => choice.includes(name)));
 		}
 		await page.locator('#personal-options-button').tap();

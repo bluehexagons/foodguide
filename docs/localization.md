@@ -1,10 +1,11 @@
 # Localization
 
-The guide bundles English, Spanish (`es`), and Simplified Chinese (`zh`). UI copy
-lives in `src/strings.ts` and `src/locales/{es,zh}.ts`. Display names live in the
-sibling `es-names.ts` and `zh-names.ts` dictionaries, keyed by the guide's canonical
-English name. Every food, recipe, character in the favorite-food table, and game
-selector has a name entry. Proper names can remain identical in Spanish.
+The guide bundles English, Spanish (`es`), Simplified Chinese (`zh`), Russian
+(`ru`), and Brazilian Portuguese (`pt-BR`). UI copy lives in `src/strings.ts` and
+`src/locales/{es,zh,ru,pt-BR}.ts`. Display names live in the sibling `*-names.ts`
+dictionaries, keyed by the guide's canonical English name. Every food, recipe,
+character in the favorite-food table, and game selector has a name entry. Proper
+names can remain identical across languages.
 
 Use `itemName(item)` or `localizedName(englishName)` for display. These helpers
 leave `name`, `lowerName`, prefab IDs, collection keys, image paths, wiki URLs,
@@ -13,15 +14,19 @@ and saved data unchanged. Static HTML names use `data-i18n-name="Wilson"`;
 Custom locales can provide a partial `names` dictionary with English fallback.
 User-authored inventory and dish names are shown as saved.
 
-Search accepts the active language, canonical English, and prefab IDs. Spanish
-name searches ignore accents; Chinese names support substring searches. The
+Search accepts the active language, canonical English, and prefab IDs. Accented
+name searches, including Spanish and Portuguese, ignore accents; Chinese names
+support substring searches. The
 `recipe:` and `ingredient:` prefixes accept translated names, while `tag:` values
 and link payloads retain their internal identifiers. Tag-search examples must use
 accepted identifiers such as `meat` and `veggie`, even in translated placeholders.
 Name sorts use the active language, keeping preparation families together in Auto
 mode. Existing analysis snapshots retain their ordering and pages when the language
 changes; choosing a name sort or refreshing the snapshot applies the current
-language's ordering.
+language's ordering. Browser language detection matches regional codes without
+case sensitivity, including `pt-BR`, and falls back from `ru-RU` to `ru`. A saved
+choice takes precedence. Russian day labels use the language's plural forms;
+Portuguese day labels distinguish `dia` and `dias`.
 
 ## Game name sources
 
@@ -30,15 +35,19 @@ snapshots of the game-script translation catalogs:
 
 - Don't Starve Together: [game scripts at
   `0dea2f76e0321ecc6c9faa8e1e5bdd80a5fc1b64`](https://github.com/taichunmin/dont-starve-together-game-scripts/tree/0dea2f76e0321ecc6c9faa8e1e5bdd80a5fc1b64/languages)
-  (snapshot committed 2024-09-09), `spanish.po` and `chinese_s.po`.
+  (snapshot committed 2024-09-09), `spanish.po`, `chinese_s.po`, `russian.po`, and
+  `portuguese_br.po`.
 - Don't Starve, including Shipwrecked and Hamlet: [game scripts at
   `a4e5cb267f7ec0bb6c740d2b1bba391881eeb4d7`](https://github.com/taichunmin/dont-starve-game-scripts/tree/a4e5cb267f7ec0bb6c740d2b1bba391881eeb4d7/languages)
-  (snapshot committed 2019-07-28), `spanish.po` and `chinese_s.po`.
+  (snapshot committed 2019-07-28), `spanish.po`, `chinese_s.po`, `russian.po`, and
+  `portuguese_br.po`.
 
 These are public third-party mirrors of game files, rather than Klei-hosted
 downloads or a verification against a current local game installation. The
 publisher's [Steam listing](https://store.steampowered.com/app/322330/Dont_Starve_Together/)
-confirms Spanish and Chinese language support. Keep the snapshot distinction
+confirms Spanish, Chinese, and Russian language support. The Portuguese source
+is specifically `portuguese_br.po`, rather than the Portugal locale listed on
+Steam. Keep the snapshot distinction
 when describing the names' provenance; the guide is unofficial and these older
 catalogs can differ from current game builds.
 
@@ -46,7 +55,8 @@ The Spanish baseline is `spanish.po` (Spain), consistent with the guide's existi
 Spanish locale. `spanish_mex.po` was also examined and had less name coverage in
 these snapshots. Shared names prefer the Together catalog, falling back to the
 single-player catalog for DLC content. Preserve the catalog's spelling, including
-unusual names, rather than silently replacing it with a new translation.
+unusual names, rather than silently replacing it with a new translation. Document
+any correction to a demonstrably incorrect catalog entry, as with Fish below.
 
 Resolve names by prefab ID first, then by the catalog's English `msgid` where the
 guide uses an alias. Strip the guide-only `_dst` suffix from recipe IDs, including
@@ -56,6 +66,11 @@ Red Cap / Red Mushroom, Fish Meat / Raw Fish, and Wobster / Lobster. The static
 favorite-food aliases Cave Banana, Cooked Cave Banana, and Pomegranates use the
 Banana, Cooked Banana, and Pomegranate translations.
 
+Character labels also use `STRINGS.CHARACTER_NAMES.*` where needed. The localized
+Shipwrecked labels in Russian and Portuguese come from the single-player catalog's
+game-selection UI. Warly's mode-specific labels retain their `(DST)` and
+`(Shipwrecked)` suffixes for clarity.
+
 Keep item references in guide prose and recipe notes consistent with those names.
 The same Together snapshot supplies `DUSTMOTH` (Spanish Polvolilla) and `HEATROCK`
 (Chinese 暖石) for terms used in the guide.
@@ -63,8 +78,9 @@ The same Together snapshot supplies `DUSTMOTH` (Spanish Polvolilla) and `HEATROC
 ## Guide translations and remaining review
 
 The final block in each names module separates guide translations from extracted
-catalog names. Game/version labels are guide translations or unchanged product
-names. The following food and recipe names had no populated entry in either
+catalog names. Game/version labels use game UI translations where available,
+guide translations, or unchanged product names. The following food and recipe
+names had no populated entry in either
 Spanish snapshot and use editorial Spanish translations:
 
 `radish`, `radish_cooked`, `aloe`, `aloe_cooked`, `jellybug`, `jellybug_cooked`,
@@ -75,6 +91,13 @@ Spanish snapshot and use editorial Spanish translations:
 `bramble_bulb`, `froglegs_poison`, `froglegs_poison_cooked`, `meated_nettle`,
 `nettlelosange`, `snakebonesoup`, `tea`, `icedtea`, `spicyvegstinger`, `feijoada`,
 `steamedhamsandwich`, `hardshell_tacos`, and `gummy_cake`.
+
+Russian and Brazilian Portuguese use guide translations for the same 37 Hamlet
+food and recipe names listed above. The populated Bunnyman personal-name entry
+for Radish is not treated as a verified food-name translation. Both languages
+also override `STRINGS.NAMES.FISH`: these snapshots use the verb “to fish”
+(`Рыбачить` / `Pescar`) as the food label. The guide uses the nouns `Рыба` and
+`Peixe`, marked as guide translations. Other catalog spellings are retained.
 
 Chinese uses an editorial translation for `meated_nettle` (Meated Nettles).
 These exceptions are not claimed as official game translations. Replace them

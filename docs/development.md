@@ -472,7 +472,7 @@ no scheduled work behind.
 ## Browser coverage
 
 The browser suite runs axe-core over all seven panels in both themes and all
-three languages, including open picker menus, completed discovery results, and
+five languages, including open picker menus, completed discovery results, and
 paused statistics results, empty filtered tables, empty searches, and full-pot
 feedback. English small-screen and forced-color scans repeat both themes. It also
 exercises keyboard flows, horizontal table scrolling, search feedback,
@@ -482,7 +482,7 @@ gestures and picker/table scrolling through CDP; those three tests report explic
 skips in Firefox, where CDP is unavailable. Firefox still exercises emulated touch
 taps and mobile viewport layouts. Touch layout
 checks cover 320, 375, 768, and 1280-pixel
-viewports in all three languages, plus every picker display/density combination.
+viewports in all five languages, plus every picker display/density combination.
 Narrow-screen checks also apply the [increased text spacing](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing)
 values and verify that selected ingredient names remain unclipped.
 Automated scans do not replace testing with screen readers; review spoken names,

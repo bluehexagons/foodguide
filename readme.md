@@ -173,11 +173,12 @@ shared mutable objects with keyed lookups and array-like helpers; see the
 
 UI strings live in `src/strings.ts`. Static HTML uses `data-i18n="key"`,
 `data-i18n-html="key"`, and `data-i18n-attr-NAME="key"` attributes. English is the
-fallback; bundled Spanish and Chinese dictionaries live in `src/locales/` and are
+fallback; bundled Spanish, Simplified Chinese, Russian, and Brazilian Portuguese
+dictionaries live in `src/locales/` and are
 registered by the package entry point.
 
 Food and recipe names, character labels, and game information are also localized.
-Names use the game's Spanish and Chinese catalogs where available, with guide
+Names use the game's translation catalogs where available, with guide
 translations for gaps in the older source snapshots. English names and prefab IDs
 remain searchable, and saved data and links retain their canonical identifiers.
 See [localization sources and editorial exceptions](docs/localization.md).

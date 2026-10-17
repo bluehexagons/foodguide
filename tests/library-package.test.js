@@ -87,9 +87,13 @@ assert(recipes.length > 130);
 assert.equal(recipes.byName('meatballs').name, 'Meatballs');
 assert.equal(recipes.meatballs.name, 'Meatballs');
 assert(listLocales().includes('es'));
+assert(listLocales().includes('ru'));
+assert(listLocales().includes('pt-BR'));
 for (const entryPoint of ${JSON.stringify(entryPoints)}) await import(entryPoint);
 await import('foodguide/locales/es');
 await import('foodguide/locales/zh');
+await import('foodguide/locales/ru');
+await import('foodguide/locales/pt-BR');
 `,
 	);
 	await run(process.execPath, ['runtime.mjs'], { cwd: consumer });

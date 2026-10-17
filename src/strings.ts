@@ -18,7 +18,8 @@ import type { TextParams } from './models.js';
  *     where NAME may be e.g. `title`, `placeholder`, `aria-label`.
  *
  * Interpolation: `t('key', { name: 'Wilson' })` substitutes `{name}`
- * occurrences in the resolved string.
+ * occurrences in the resolved string. Numeric parameters use the active
+ * locale's decimal separator; string parameters are preserved as supplied.
  */
 
 const STORAGE_KEY = 'foodGuideLocale';
@@ -608,6 +609,7 @@ const locales: Record<string, LocaleEntry> = {
 };
 
 let activeLocale = 'en';
+const numberFormatters = new Map<string, Intl.NumberFormat>();
 
 /**
  * Register a translation dictionary. Missing keys fall back to English.
@@ -689,7 +691,7 @@ export function setLocale(code: string, persist = true) {
 
 /**
  * Initialise the locale: read from localStorage if set, otherwise
- * pick the first registered locale that matches `navigator.language`,
+ * pick the first registered locale that matches the browser's language preferences,
  * otherwise English. Safe to call before `applyTranslations`.
  */
 export function initLocale() {
@@ -702,11 +704,19 @@ export function initLocale() {
 	} catch {
 		/* ignore */
 	}
-	if (!code && typeof navigator !== 'undefined' && navigator.language) {
-		const nav = navigator.language.toLowerCase();
-		const candidates = [nav, nav.split('-')[0]];
-		for (const c of candidates) {
-			const match = listLocales().find(locale => locale.toLowerCase() === c);
+	if (!code && typeof navigator !== 'undefined') {
+		const preferences = [...(navigator.languages || []), navigator.language];
+		const registered = listLocales();
+		for (const preference of preferences) {
+			if (!preference) {
+				continue;
+			}
+			const requested = preference.toLowerCase();
+			const language = requested.split('-')[0];
+			const match =
+				registered.find(locale => locale.toLowerCase() === requested) ||
+				registered.find(locale => locale.toLowerCase() === language) ||
+				registered.find(locale => locale.toLowerCase().split('-')[0] === language);
 			if (match) {
 				code = match;
 				break;
@@ -718,6 +728,25 @@ export function initLocale() {
 	} else {
 		setLocale('en');
 	}
+}
+
+/** Keep numeric prose compact without changing identifiers or preformatted strings. */
+function localizedNumber(value: number): string {
+	if (!Number.isFinite(value)) {
+		return String(value);
+	}
+	let formatter = numberFormatters.get(activeLocale);
+	if (!formatter) {
+		const options = { useGrouping: false, maximumFractionDigits: 20 };
+		try {
+			formatter = new Intl.NumberFormat(activeLocale, options);
+		} catch {
+			// Custom dictionary codes need not be valid Intl locale identifiers.
+			formatter = new Intl.NumberFormat('en', options);
+		}
+		numberFormatters.set(activeLocale, formatter);
+	}
+	return formatter.format(value);
 }
 
 /**
@@ -738,9 +767,13 @@ export function t(key: StringKey, params?: TextParams) {
 		return String(key);
 	}
 	if (params) {
-		return String(value).replace(/\{(\w+)\}/g, (_, name) =>
-			Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : `{${name}}`,
-		);
+		return String(value).replace(/\{(\w+)\}/g, (_, name) => {
+			if (!Object.prototype.hasOwnProperty.call(params, name)) {
+				return `{${name}}`;
+			}
+			const param = params[name];
+			return typeof param === 'number' ? localizedNumber(param) : String(param);
+		});
 	}
 	return value;
 }

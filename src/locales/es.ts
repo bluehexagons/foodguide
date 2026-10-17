@@ -408,7 +408,7 @@ export const dict = {
 		'Removes 3 heat, and for 30 seconds, dries 1/s and adds 2 bonus speed (+33%)':
 			'Quita 3 de calor y, durante 30 segundos, seca 1/s y añade 2 de velocidad adicional (+33%)',
 		'While worn, restores 3.9 Hunger every 5 seconds (187.5 in total, over 4 minutes), while reducing Sanity by 1.33 per minute (Wurt gains +1.33 sanity/min, Wigfrid refuses to wear this)':
-			'Mientras se lleva puesto, restaura 3.9 de Hambre cada 5 segundos (187.5 en total, durante 4 minutos), mientras reduce la Cordura en 1.33 por minuto (Wurt gana +1.33 cordura/min, Wigfrid se niega a llevarlo)',
+			'Mientras se lleva puesto, restaura 3,9 de Hambre cada 5 segundos (187,5 en total, durante 4 minutos), mientras reduce la Cordura en 1,33 por minuto (Wurt gana +1,33 cordura/min, Wigfrid se niega a llevarlo)',
 		'Gives those that eat this 16 minutes of light that fades in a similar fashion after eating a glowberry':
 			'Da a quien lo come 16 minutos de luz que se desvanece como la de una baya brillante',
 	},

@@ -23,10 +23,14 @@ accepted identifiers such as `meat` and `veggie`, even in translated placeholder
 Name sorts use the active language, keeping preparation families together in Auto
 mode. Existing analysis snapshots retain their ordering and pages when the language
 changes; choosing a name sort or refreshing the snapshot applies the current
-language's ordering. Browser language detection matches regional codes without
-case sensitivity, including `pt-BR`, and falls back from `ru-RU` to `ru`. A saved
-choice takes precedence. Russian day labels use the language's plural forms;
-Portuguese day labels distinguish `dia` and `dias`.
+language's ordering. Browser language detection checks the preferred languages
+in order and matches regional codes without case sensitivity, including `pt-BR`.
+It falls back from `ru-RU` to `ru` and from a generic Portuguese preference to the
+available `pt-BR` locale. A saved choice takes precedence. Russian day labels use
+the language's plural forms; Portuguese day labels distinguish `dia` and `dias`.
+Numeric interpolation parameters use the active locale's decimal separator and
+omit digit grouping to keep compact controls readable. String parameters,
+canonical data values, identifiers, and search syntax are unchanged.
 
 ## Game name sources
 

@@ -139,6 +139,7 @@ test('regional browser languages initialize, synchronize, and persist the new lo
 	for (const [language, locale, other] of [
 		['ru-RU', 'ru', 'pt-BR'],
 		['pt-BR', 'pt-BR', 'ru'],
+		['pt', 'pt-BR', 'ru'],
 	]) {
 		const context = await browser.newContext({ locale: language });
 		t.after(() => context.close());
@@ -171,6 +172,47 @@ test('regional browser languages initialize, synchronize, and persist the new lo
 		assert.equal(await second.locator('#ingredients [data-id="meat@together"]').count(), 1);
 		assert.deepEqual(diagnostics, [[], []]);
 	}
+});
+
+test('browser preference fallback and decimal notes follow the active locale', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext({ locale: 'fr-FR' });
+	t.after(() => context.close());
+	await context.addInitScript(() => {
+		Object.defineProperty(navigator, 'languages', { get: () => ['fr-FR', 'ru-RU'] });
+	});
+	const page = await context.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#crockpot?game=dontstarve&dlc=shipwrecked&highlight=*Coffee`, {
+		waitUntil: 'networkidle',
+	});
+	assert.equal(await page.locator('html').getAttribute('lang'), 'ru');
+	for (const [locale, decimal] of [
+		['es', '0,5'],
+		['ru', '0,5'],
+		['pt-BR', '0,5'],
+		['zh', '0.5'],
+		['en', '0.5'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.ok((await page.locator('#recipes tr.highlighted').textContent()).includes(decimal));
+	}
+	await page.goto(`${baseUrl}/#foodlist?game=together&highlight=*Lesser%20Glow%20Berry`, {
+		waitUntil: 'networkidle',
+	});
+	for (const [locale, decimal] of [
+		['es', '22,5'],
+		['ru', '22,5'],
+		['pt-BR', '22,5'],
+		['zh', '22.5'],
+		['en', '22.5'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		assert.ok((await page.locator('#food tr.highlighted').textContent()).includes(decimal));
+	}
+	await page.reload({ waitUntil: 'networkidle' });
+	assert.equal(await page.locator('html').getAttribute('lang'), 'en', 'Saved choices win');
+	assert.deepEqual(diagnostics, []);
 });
 
 test('picker search prompts follow the selected search type across languages', async t => {

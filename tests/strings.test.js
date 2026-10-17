@@ -320,6 +320,7 @@ describe('strings locale behavior', () => {
 		for (const [language, expected] of [
 			['pt-BR', 'pt-BR'],
 			['pt-br', 'pt-BR'],
+			['pt', 'pt-BR'],
 			['ru-RU', 'ru'],
 			['es-MX', 'es'],
 			['unknown', 'en'],
@@ -339,6 +340,63 @@ describe('strings locale behavior', () => {
 		assert.equal(strings.getLocale(), 'pt-BR');
 	});
 
+	it('browser locale detection follows the supported language preference order', async t => {
+		const strings = await import('../html/strings.js');
+		await import('../html/locales/index.js');
+		const original = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+		t.after(() => {
+			if (original) {
+				Object.defineProperty(globalThis, 'navigator', original);
+			} else {
+				delete globalThis.navigator;
+			}
+			strings.setLocale('en');
+		});
+		for (const [languages, expected] of [
+			[['fr-FR', 'ru-RU', 'es'], 'ru'],
+			[['fr-FR', 'pt'], 'pt-BR'],
+			[['en-US', 'pt-BR'], 'en'],
+			[['es-MX', 'ru-RU'], 'es'],
+			[['fr-FR'], 'en'],
+		]) {
+			setupDom();
+			Object.defineProperty(globalThis, 'navigator', {
+				value: { language: languages[0], languages },
+				configurable: true,
+			});
+			strings.initLocale();
+			assert.equal(strings.getLocale(), expected, languages.join(', '));
+			localStorage.setItem('foodGuideLocale', 'zh');
+			strings.initLocale();
+			assert.equal(strings.getLocale(), 'zh', 'A saved choice takes precedence');
+		}
+	});
+
+	it('numeric interpolation localizes decimals while preserving string parameters', async () => {
+		const strings = await import('../html/strings.js');
+		await import('../html/locales/index.js');
+		try {
+			for (const [locale, expected] of [
+				['en', '-1234.56789'],
+				['es', '-1234,56789'],
+				['zh', '-1234.56789'],
+				['ru', '-1234,56789'],
+				['pt-BR', '-1234,56789'],
+			]) {
+				strings.setLocale(locale);
+				assert.ok(strings.t('noteHeatDelta', { heat: -1234.56789 }).includes(expected));
+				assert.ok(
+					strings.t('removeIngredient', { name: 'My item 1.5' }).includes('My item 1.5'),
+				);
+			}
+			strings.registerLocale('x-number-test', 'Number test', { noteHeatDelta: '{heat}' });
+			strings.setLocale('x-number-test');
+			assert.equal(strings.t('noteHeatDelta', { heat: 0.5 }), '0.5');
+		} finally {
+			strings.setLocale('en');
+		}
+	});
+
 	it('Russian and Brazilian Portuguese duration labels handle singular, plural, and fractions', async () => {
 		const strings = await import('../html/strings.js');
 		await import('../html/locales/index.js');
@@ -355,13 +413,14 @@ describe('strings locale behavior', () => {
 				[25, 'дней'],
 				[1.5, 'дня'],
 			]) {
-				assert.equal(strings.formatDuration('day', count), `${count} ${unit}`);
+				const number = count === 1.5 ? '1,5' : String(count);
+				assert.equal(strings.formatDuration('day', count), `${number} ${unit}`);
 			}
 			assert.equal(strings.formatDuration('sec', 90), '90 сек.');
 			strings.setLocale('pt-BR');
 			assert.equal(strings.formatDuration('day', 1), '1 dia');
 			assert.equal(strings.formatDuration('day', 2), '2 dias');
-			assert.equal(strings.formatDuration('day', 1.5), '1.5 dias');
+			assert.equal(strings.formatDuration('day', 1.5), '1,5 dias');
 			assert.equal(strings.formatDuration('sec', 90), '90 s');
 		} finally {
 			strings.setLocale('en');

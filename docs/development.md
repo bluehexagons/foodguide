@@ -17,6 +17,7 @@ dependencies; this may require administrator access. After upgrading Playwright,
 | `npm run check`                             | Run fast checks and the full Chromium browser/accessibility suite.         |
 | `npm run check:ci`                          | Run formatting, lint, types, and unit tests without a browser.             |
 | `npm run test:browser:smoke`                | Build sprites and run four fast Chromium smoke scenarios.                  |
+| `npm run test:browser:localization`         | Build sprites and run ten focused localization scenarios.                  |
 | `npm test`                                  | Run Node's tests, including deployment tests on Linux.                     |
 | `npm run test:browser`                      | Generate sprites and run the full Chromium regression/accessibility suite. |
 | `npm run test:browser -- --browser=firefox` | Run the shared browser suite in Firefox.                                   |
@@ -57,18 +58,38 @@ a 60-second test timeout. It does not run accessibility audits or the full brows
 regression suite. The workflow installs only Chromium's headless shell and has a
 10-minute job limit.
 
-Developers should run the full Chromium and Firefox suites for browser/UI changes:
+Choose validation to match the change. For translation text, catalog names, or
+display-only number formatting, run `npm run check:ci` and the focused localization
+scenarios in both browsers:
+
+```bash
+npm run check:ci
+npm run test:browser:localization
+PLAYWRIGHT_BROWSER=firefox npm run test:browser:localization
+```
+
+These ten scenarios cover translated item names across views, browser language
+fallback and persistence, locale decimals, picker prompts and groups, errors,
+search feedback, table labels, and the Options language control. Add focused tests
+for the specific behavior being changed. This selection omits the exhaustive
+accessibility and layout matrices; run those when changing text that may affect
+layout or accessible names beyond these scenarios.
+
+Run the full Chromium and Firefox suites for shared markup, styles, interaction,
+or browser dependency changes, and for broad localization changes such as adding
+a language:
 
 ```bash
 npm run check
 npm run test:browser -- --browser=firefox
 ```
 
-The full suite includes an extensive accessibility audit and can take several
-minutes. It reports progress after each panel, including theme, locale, viewport
-mode, and completed scan count. Use focused checks while editing, then run the full
-suites before submitting browser/UI changes. Keep CI smoke scenarios small; broad
-coverage belongs in the developer-run suite.
+The full suite includes 294 accessibility scans per browser plus layout and
+interaction matrices. It can take tens of minutes on a busy VM. It reports
+progress after each panel, including theme, locale, viewport mode, and completed
+scan count. Use focused checks while editing and avoid rerunning
+successful suites unless a later change affects their coverage. Keep CI smoke
+scenarios small; broad coverage belongs in the developer-run suite.
 
 `PLAYWRIGHT_EXECUTABLE_PATH` selects an existing Chromium executable and is ignored
 for Firefox. Firefox automation uses Playwright's patched build, installed by the

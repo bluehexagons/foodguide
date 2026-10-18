@@ -96,7 +96,8 @@
 		"prepack": "npm run build",
 		"build:watch": "tsc --watch",
 		"check:ci": "npm run format:check && npm run lint && npm run typecheck && npm test",
-		"test:browser:smoke": "npm run generate-sprites && node --test --test-timeout=60000 --test-name-pattern=\"^CI smoke:\" tests/browser-smoke.js"
+		"test:browser:smoke": "npm run generate-sprites && node --test --test-timeout=60000 --test-name-pattern=\"^CI smoke:\" tests/browser-smoke.js",
+		"test:browser:localization": "npm run generate-sprites && node --test --test-name-pattern=\"^(localized game names|regional browser languages|browser preference fallback|fractional recipe requirements|picker search prompts|ingredient errors explain recovery|search feedback covers|wide tables have localized names|grouped ingredient results|Options synchronizes)\" tests/browser-smoke.js"
 	},
 	"keywords": [
 		"dont-starve",

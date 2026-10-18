@@ -18,7 +18,9 @@ import { dict as brazilian } from '../html/locales/pt-BR.js';
 import { createRecipeCalculator } from '../html/recipe-calculator.js';
 import { sortIngredients } from '../html/ingredient-sort.js';
 import { compareItemNames } from '../html/table-sort.js';
-import { AND, NAME, SPECIFIC } from '../html/functions.js';
+import { AND, COMPARE, NAME, SPECIFIC, TAG } from '../html/functions.js';
+import { updateFoodRecipes, updateRecipeText } from '../html/recipes.js';
+import { tagLabel } from '../html/strings.js';
 
 afterEach(() => setLocale('en'));
 
@@ -163,4 +165,42 @@ test('localized name sorting and requirements retain canonical link payloads', (
 	setLocale('pt-BR');
 	assert.match(String(NAME('carrot')), /\[\*Carrot\|img\/carrot\.png Cenoura\]/);
 	assert.ok(compareItemNames(food.meat, food.carrot) < 0);
+});
+
+test('fractional requirements and ingredient tag weights use locale decimals without changing data', () => {
+	const threshold = COMPARE('>', 1.5);
+	try {
+		for (const [locale, decimal] of [
+			['en', '.'],
+			['es', ','],
+			['zh', '.'],
+			['ru', ','],
+			['pt-BR', ','],
+		]) {
+			setLocale(locale);
+			updateRecipeText();
+			updateFoodRecipes(recipes);
+			const meat = `[tag:meat|${tagLabel('meat')}]`;
+			assert.equal(String(TAG('meat', threshold)), `${meat}>1${decimal}5`);
+			assert.equal(String(COMPARE('<=', 0.5)), `<=0${decimal}5`);
+			assert.ok(recipes.honeyham.requires.includes(`${meat}>1${decimal}5`));
+			for (const [id, tag, weight] of [
+				['morsel', 'meat', `0${decimal}5`],
+				['berries', 'fruit', `0${decimal}5`],
+				['red_mushroom', 'veggie', `0${decimal}5`],
+				['limpets', 'fish', `0${decimal}5`],
+				['tallbirdegg', 'egg', '4'],
+			]) {
+				assert.ok(food[id].info.includes(`[tag:${tag}|${tagLabel(tag)}]×${weight}`));
+			}
+			assert.equal(threshold.qty, 1.5);
+			assert.equal(threshold.test(1.5), false);
+			assert.equal(threshold.test(2), true);
+			assert.equal(food.morsel.meat, 0.5);
+		}
+	} finally {
+		setLocale('en');
+		updateRecipeText();
+		updateFoodRecipes(recipes);
+	}
 });

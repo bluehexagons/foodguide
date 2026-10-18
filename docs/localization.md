@@ -29,7 +29,8 @@ It falls back from `ru-RU` to `ru` and from a generic Portuguese preference to t
 available `pt-BR` locale. A saved choice takes precedence. Russian day labels use
 the language's plural forms; Portuguese day labels distinguish `dia` and `dias`.
 Numeric interpolation parameters use the active locale's decimal separator and
-omit digit grouping to keep compact controls readable. String parameters,
+omit digit grouping to keep compact controls readable. Recipe requirement thresholds
+and ingredient tag weights use the same `formatNumber()` helper. String parameters,
 canonical data values, identifiers, and search syntax are unchanged.
 
 ## Game name sources

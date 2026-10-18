@@ -215,6 +215,43 @@ test('browser preference fallback and decimal notes follow the active locale', a
 	assert.deepEqual(diagnostics, []);
 });
 
+test('fractional recipe requirements and ingredient weights follow locale changes', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(`${baseUrl}/#crockpot?game=together&highlight=*Honey%20Ham`, {
+		waitUntil: 'networkidle',
+	});
+	for (const [locale, decimal] of [
+		['es', ','],
+		['ru', ','],
+		['pt-BR', ','],
+		['zh', '.'],
+		['en', '.'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		const requirement = page.locator('#recipes tr.highlighted');
+		assert.ok((await requirement.textContent()).includes(`>1${decimal}5`));
+		assert.equal(await requirement.locator('[data-link="tag:meat"]').count(), 1);
+	}
+	await page.goto(`${baseUrl}/#foodlist?game=together&highlight=*Morsel`, {
+		waitUntil: 'networkidle',
+	});
+	for (const [locale, decimal] of [
+		['es', ','],
+		['ru', ','],
+		['pt-BR', ','],
+		['zh', '.'],
+		['en', '.'],
+	]) {
+		await page.locator('#language-picker').selectOption(locale);
+		const ingredient = page.locator('#food tr.highlighted');
+		assert.ok((await ingredient.textContent()).includes(`×0${decimal}5`));
+		assert.equal(await ingredient.locator('[data-link="tag:meat"]').count(), 1);
+	}
+	assert.deepEqual(diagnostics, []);
+});
+
 test('picker search prompts follow the selected search type across languages', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();

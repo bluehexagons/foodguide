@@ -43,7 +43,7 @@ import {
 import { food } from './food.js';
 import { AND, COMPARE, NAME, NOT, OR, SPECIFIC, TAG } from './functions.js';
 import { applyModeMetadata } from './mode-utils.js';
-import { formatDuration, resolveNote, t, tagLabel } from './strings.js';
+import { formatDuration, formatNumber, resolveNote, t, tagLabel } from './strings.js';
 import { makeLinkable, numericTags } from './utils.js';
 
 const definitions: Record<string, RecipeDefinition> = {
@@ -2983,12 +2983,15 @@ const taggify = (tag: string, name?: string) => {
 
 const buildFoodTagsInfo = (f: Food) => {
 	const info = [];
-	f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : `\xd7${f.fruit}`));
+	f.fruit && info.push(taggify('fruit') + (f.fruit === 1 ? '' : `\xd7${formatNumber(f.fruit)}`));
 	f.veggie &&
-		info.push(taggify('veggie', 'vegetable') + (f.veggie === 1 ? '' : `\xd7${f.veggie}`));
-	f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : `\xd7${f.meat}`));
-	f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : `\xd7${f.egg}`));
-	f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : `\xd7${f.fish}`));
+		info.push(
+			taggify('veggie', 'vegetable') +
+				(f.veggie === 1 ? '' : `\xd7${formatNumber(f.veggie)}`),
+		);
+	f.meat && info.push(taggify('meat') + (f.meat === 1 ? '' : `\xd7${formatNumber(f.meat)}`));
+	f.egg && info.push(taggify('egg') + (f.egg === 1 ? '' : `\xd7${formatNumber(f.egg)}`));
+	f.fish && info.push(taggify('fish') + (f.fish === 1 ? '' : `\xd7${formatNumber(f.fish)}`));
 	f.magic && info.push(taggify('magic'));
 	f.decoration && info.push(taggify('decoration'));
 	f.inedible && info.push(taggify('inedible'));

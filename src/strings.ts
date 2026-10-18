@@ -730,8 +730,8 @@ export function initLocale() {
 	}
 }
 
-/** Keep numeric prose compact without changing identifiers or preformatted strings. */
-function localizedNumber(value: number): string {
+/** Format display values with locale decimals and no grouping. */
+export function formatNumber(value: number): string {
 	if (!Number.isFinite(value)) {
 		return String(value);
 	}
@@ -772,7 +772,7 @@ export function t(key: StringKey, params?: TextParams) {
 				return `{${name}}`;
 			}
 			const param = params[name];
-			return typeof param === 'number' ? localizedNumber(param) : String(param);
+			return typeof param === 'number' ? formatNumber(param) : String(param);
 		});
 	}
 	return value;

@@ -1,5 +1,5 @@
 import { food } from './food.js';
-import { tagLabel, itemName, t } from './strings.js';
+import { tagLabel, itemName, t, formatNumber } from './strings.js';
 import type { IngredientNames, IngredientTags, Requirement, Quantity } from './models.js';
 export type { IngredientNames, IngredientTags, Requirement } from './models.js';
 
@@ -65,7 +65,7 @@ const ORString = function (this: { item1: Requirement; item2: Requirement }) {
 	return `${this.item1} ${t('requirementOr')} ${this.item2}`;
 };
 const COMPAREString = function (this: CompareQty) {
-	return this.op + this.qty;
+	return this.op + formatNumber(this.qty);
 };
 const NAMEString = function (this: { name: string; qty?: Quantity }) {
 	const item = food[this.name];

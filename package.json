@@ -120,14 +120,14 @@
 		"@types/node": "^26.6.5",
 		"axe-core": "^4.14.0",
 		"http-server": "^14.1.1",
-		"oxfmt": "^0.73.0",
-		"oxlint": "^1.88.0",
+		"oxfmt": "^0.74.0",
+		"oxlint": "^1.89.0",
 		"playwright": "^1.64.1",
 		"sharp": "^0.35.5",
 		"typescript": "^7.0.2"
 	},
 	"engines": {
-		"node": ">=24"
+		"node": "^24.22.1 || ^26.12.1"
 	},
 	"types": "html/foodguide-data.d.ts"
 }

@@ -22,7 +22,8 @@ test('packed library works outside the checkout with runtime and declaration exp
 		['pack', '--ignore-scripts', '--json', '--pack-destination', directory],
 		root,
 	);
-	const [packed] = JSON.parse(stdout);
+	// npm 11 returns an array; npm 12 keys pack results by package name.
+	const [packed] = Object.values(JSON.parse(stdout));
 	assert(packed.files.some(file => file.path === 'html/models.d.ts'));
 	assert(
 		!packed.files.some(

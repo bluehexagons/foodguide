@@ -11,7 +11,9 @@ try {
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'ignore'],
 	}).trim();
-	if (realpathSync(top) !== realpathSync(root)) throw new Error('Not a guide checkout');
+	if (realpathSync(top) !== realpathSync(root)) {
+		throw new Error('Not a guide checkout');
+	}
 	commit = execFileSync('git', ['rev-parse', '--verify', 'HEAD'], {
 		cwd: root,
 		encoding: 'utf8',

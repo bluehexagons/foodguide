@@ -1,6 +1,6 @@
 {
 	"name": "foodguide",
-	"version": "1.2.6",
+	"version": "1.2.7",
 	"description": "Unofficial Don't Starve food guide and recipe calculator",
 	"main": "html/foodguide-data.js",
 	"module": "html/foodguide-data.js",

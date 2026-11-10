@@ -135,3 +135,19 @@ temperature bonuses and five-minute duration from the same Together snapshot's
 [`preparedfoods_warly.lua`](https://github.com/taichunmin/dont-starve-together-game-scripts/blob/0dea2f76e0321ecc6c9faa8e1e5bdd80a5fc1b64/preparedfoods_warly.lua)
 and
 [`tuning.lua`](https://github.com/taichunmin/dont-starve-together-game-scripts/blob/0dea2f76e0321ecc6c9faa8e1e5bdd80a5fc1b64/tuning.lua).
+
+## Adding translations
+
+UI strings live in `src/strings.ts`. Static HTML uses `data-i18n`,
+`data-i18n-html`, and `data-i18n-attr-NAME` attributes. English is the fallback.
+For a bundled locale, register its module in `src/locales/index.ts`; its dictionary
+must satisfy `BundledLocaleDict`. Custom locales can provide partial dictionaries:
+
+```js
+import { registerLocale, setLocale } from 'foodguide';
+
+registerLocale('fr', 'Français', { pause: 'Pause', resume: 'Reprendre' });
+setLocale('fr');
+```
+
+Native-speaking players' corrections are welcome.

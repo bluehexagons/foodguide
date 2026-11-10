@@ -17,6 +17,7 @@ About; source archives without Git metadata display `unknown` for the commit.
 Unreleased builds can share a version, so use the commit to identify the build.
 
 The desktop wrapper should embed the corresponding guide release and use the same
-major.minor.patch. For a desktop-only fix use a SemVer prerelease suffix such as
-`1.2.6-app.1`, with a matching `v1.2.6-app.1` tag in the app repository. Bump
-the suffix for subsequent app-only fixes. A new guide release resets it.
+major.minor.patch. The first desktop build for a guide release uses a SemVer suffix such as
+`1.2.7-app.0`; desktop-only fixes increment it to `1.2.7-app.1`, and so on.
+Tag the app commit with the full version, for example `v1.2.7-app.1`. This
+keeps fixes ordered above the initial app build and below the next guide patch.

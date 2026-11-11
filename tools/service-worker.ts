@@ -72,6 +72,11 @@ function download() {
 			if (failed?.status === 'rejected') {
 				throw failed.reason;
 			}
+			// A timer can fire after fetch has finished, while digesting or storing a file.
+			// In that case all runners can settle successfully despite skipping queued assets.
+			if (controller.signal.aborted || pending.length) {
+				throw new Error('Offline download aborted before completion');
+			}
 			await cache.put(completeURL, new Response(config.id));
 		} catch (error) {
 			// All writers have settled; a failed build must never become usable.
@@ -156,20 +161,23 @@ worker.addEventListener('fetch', event => {
 	}
 	event.respondWith(
 		(async () => {
-			const cache = await caches.open(cacheName);
-			// An evicted cache must not trap the site behind a permanently broken worker.
-			// Use the network for the entire page until a complete build is restored.
-			const complete =
-				event.request.mode === 'navigate'
-					? await isReady()
-					: !!(await cache.match(completeURL));
-			if (!complete) {
+			try {
+				const cache = await caches.open(cacheName);
+				// An evicted cache must not trap the site behind a permanently broken worker.
+				const complete =
+					event.request.mode === 'navigate'
+						? await isReady()
+						: !!(await cache.match(completeURL));
+				if (complete) {
+					const response = await cache.match(absolute(key));
+					// A missing member of a complete build must not mix in a newer server asset.
+					return response ?? Response.error();
+				}
 				await cache.delete(completeURL);
-				return fetch(event.request);
+			} catch {
+				// Cache Storage can become unavailable independently of the network.
 			}
-			const response = await cache.match(absolute(key));
-			// Never mix a newer server asset into this build if browser storage was cleared.
-			return response ?? Response.error();
+			return fetch(event.request);
 		})(),
 	);
 });

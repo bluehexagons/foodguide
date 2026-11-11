@@ -547,9 +547,13 @@ canceled; publication alone is serialized without canceling an active deployment
 root and `/foodguide/` hosting. They cover closing and reopening offline, shared
 links, saved cookbook data, localized ingredient search, every cached runtime
 asset, failed first downloads and retries, cache loss and restoration, rejected
-updates, cache cleanup, multiple tabs and user-chosen upgrades. Run the same cases
-in Playwright Firefox with `PLAYWRIGHT_BROWSER=firefox npm run test:offline`.
-These scenarios also run in `test:browser:smoke` and `npm run check`.
+updates, cache cleanup, multiple tabs and user-chosen upgrades. A separate case
+closes the browser process and reopens its disk profile offline, checking saved
+dishes, calculations, translations and sprites. Worker unit tests also cover
+storage errors, aborts during cache writes and concurrent restore requests. Run the
+same cases in Playwright Firefox with `PLAYWRIGHT_BROWSER=firefox npm run test:offline`.
+The two CI smoke scenarios run in `test:browser:smoke`; `npm run check` also runs
+the cold-restart case.
 The worker is strict TypeScript compiled separately with Web Worker APIs.
 `scripts/generate-offline.mjs` assembles its build-specific verified asset list.
 PWA icons reuse the existing guide artwork, enlarged with nearest-neighbor scaling.

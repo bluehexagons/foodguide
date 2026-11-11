@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import httpServer from 'http-server';
 import { createHash } from 'node:crypto';
 import { chromium, firefox } from 'playwright';
 
@@ -278,3 +282,53 @@ for (const scope of ['/', '/foodguide/']) {
 		);
 	});
 }
+
+test('offline data and assets survive a full browser restart', { timeout: 60000 }, async t => {
+	const profile = await mkdtemp(join(tmpdir(), 'foodguide-offline-profile-'));
+	const server = httpServer.createServer({ root: fileURLToPath(root), cache: -1 });
+	let context;
+	t.after(async () => {
+		await context?.close();
+		await new Promise(resolve => server.server.close(resolve));
+		await rm(profile, { recursive: true, force: true });
+	});
+	await new Promise((resolve, reject) => {
+		server.server.once('error', reject);
+		server.listen(0, '127.0.0.1', resolve);
+	});
+	const url = `http://127.0.0.1:${server.server.address().port}/#simulator?game=together&ingredients=carrot,carrot,carrot,meat`;
+	context = await browserType.launchPersistentContext(profile, { headless: true });
+	let page = context.pages()[0] ?? (await context.newPage());
+	await page.goto(url);
+	await page.waitForFunction(
+		() => document.querySelector('#offline-status').textContent === 'Ready to use offline.',
+	);
+	await page.locator('#cookbook-dish-name').fill('Dinner after restart');
+	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
+	await page.waitForFunction(
+		() => document.querySelector('.cookbook-dish-name')?.textContent === 'Dinner after restart',
+	);
+	await context.close();
+	// This launches a new browser process using only the saved on-disk profile.
+	context = await browserType.launchPersistentContext(profile, { headless: true });
+	await context.setOffline(true);
+	page = context.pages()[0] ?? (await context.newPage());
+	await page.goto(url);
+	await page.waitForFunction(
+		() => document.querySelector('#offline-status').textContent === 'Ready to use offline.',
+	);
+	assert.equal(await page.locator('.cookbook-dish-name').textContent(), 'Dinner after restart');
+	assert.match(await page.locator('#results').textContent(), /Meatballs/);
+	await page.locator('#language-picker').selectOption('ru');
+	assert.equal(
+		await page
+			.locator('#simulator .ingredient[data-id^="carrot"] .ingredient-name')
+			.first()
+			.textContent(),
+		'Морковь',
+	);
+	assert.equal(
+		await page.evaluate(async () => (await fetch('img/sprites/sprites.json')).ok),
+		true,
+	);
+});

@@ -1,13 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { spawn } from 'node:child_process';
+import httpServer from 'http-server';
 import { parseArgs } from 'node:util';
 import { chromium, firefox } from 'playwright';
 import axe from 'axe-core';
 
 const ROOT_DIR = join(import.meta.dirname, '..');
-const HTTP_SERVER = join(ROOT_DIR, 'node_modules/http-server/bin/http-server');
 const { values: browserOptions } = parseArgs({
 	options: {
 		browser: { type: 'string', default: process.env.PLAYWRIGHT_BROWSER || 'chromium' },
@@ -326,77 +325,19 @@ const colorContrast = (first, second) => {
 	return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 };
 
-const startServer = (directory = 'html') => {
-	const server = spawn(
-		process.execPath,
-		[HTTP_SERVER, directory, '-p', '0', '-a', '127.0.0.1', '-c', '-1'],
-		{
-			cwd: ROOT_DIR,
-			stdio: ['ignore', 'pipe', 'pipe'],
-		},
+const createBrowserFixture = async (t, directory = 'html') => {
+	const server = httpServer.createServer({ root: join(ROOT_DIR, directory), cache: -1 });
+	await new Promise((resolve, reject) => {
+		server.server.once('error', reject);
+		server.listen(0, '127.0.0.1', resolve);
+	});
+	t.after(
+		() =>
+			new Promise((resolve, reject) =>
+				server.server.close(error => (error ? reject(error) : resolve())),
+			),
 	);
-
-	const output = [];
-	let settled = false;
-	let resolveReady;
-	let rejectReady;
-	const ready = new Promise((resolve, reject) => {
-		resolveReady = resolve;
-		rejectReady = reject;
-	});
-
-	const timeout = setTimeout(() => {
-		if (!settled) {
-			settled = true;
-			server.kill();
-			rejectReady(new Error(`http-server did not become ready: ${output.join('')}`));
-		}
-	}, 20_000);
-	timeout.unref();
-
-	const handleOutput = chunk => {
-		output.push(chunk.toString());
-		const match = output.join('').match(/http:\/\/127\.0\.0\.1:(\d+)/);
-		if (!settled && match) {
-			settled = true;
-			clearTimeout(timeout);
-			resolveReady(`http://127.0.0.1:${match[1]}`);
-		}
-	};
-
-	server.stdout.on('data', handleOutput);
-	server.stderr.on('data', handleOutput);
-	server.once('error', error => {
-		if (!settled) {
-			settled = true;
-			clearTimeout(timeout);
-			rejectReady(error);
-		}
-	});
-	server.once('exit', code => {
-		if (!settled) {
-			settled = true;
-			clearTimeout(timeout);
-			rejectReady(new Error(`http-server exited before becoming ready (code ${code})`));
-		}
-	});
-
-	return { server, ready };
-};
-
-const stopServer = async server => {
-	if (!server.pid || server.exitCode !== null || server.signalCode !== null) {
-		return;
-	}
-	const closed = new Promise(resolve => server.once('close', resolve));
-	server.kill();
-	await closed;
-};
-
-const createBrowserFixture = async (t, directory) => {
-	const { server, ready } = startServer(directory);
-	t.after(() => stopServer(server));
-	const baseUrl = await ready;
+	const baseUrl = `http://127.0.0.1:${server.server.address().port}`;
 	const browser = await browserType.launch({
 		headless: !browserOptions.headed,
 		...(browserType === chromium && process.env.PLAYWRIGHT_EXECUTABLE_PATH

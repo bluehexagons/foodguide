@@ -40,14 +40,9 @@ jobs:
 
             - name: Install Chromium headless shell
               timeout-minutes: 4
-              run: |
-                  # Bound package downloads so an unreachable mirror cannot consume the job.
-                  sudo tee /etc/apt/apt.conf.d/80-browser-install-network >/dev/null <<'EOF'
-                  Acquire::Retries "2";
-                  Acquire::http::Timeout "15";
-                  Acquire::https::Timeout "15";
-                  EOF
-                  npx playwright install --with-deps --only-shell chromium
+              # The pinned hosted runner already supplies Chromium's runtime libraries.
+              # Avoid apt mirror access for extra fonts; browser launch is checked below.
+              run: npx playwright install --only-shell chromium
 
             - name: Run Chromium smoke checks
               run: npm run test:browser:smoke

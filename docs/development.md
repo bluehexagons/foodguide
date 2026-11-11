@@ -57,9 +57,10 @@ section history and shared snapshots, link-sharing choices, and offline/update
 checks at root and subpath. Each scenario has
 a 60-second test timeout. It does not run accessibility audits or the full browser
 regression suite. Checks use Ubuntu 24.04 to keep the runner OS stable. The
-workflow installs only Chromium's headless shell, bounds package-network retries
-and timeouts, and allows four minutes for browser installation within the
-10-minute job limit. Offline restart tests wait for cookbook writes to reach
+workflow downloads only Chromium's headless shell and uses the hosted runner's
+existing runtime libraries, avoiding unconditional system-package downloads.
+The smoke tests verify that Chromium launches successfully. Browser installation
+has a four-minute limit within the 10-minute job limit. Offline restart tests wait for cookbook writes to reach
 local storage before closing the page or browser; rendered cookbook cards can
 appear before the queued write completes.
 

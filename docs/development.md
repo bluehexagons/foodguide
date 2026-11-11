@@ -56,8 +56,12 @@ CI runs `check:ci` plus `test:browser:smoke`. The smoke command selects six
 section history and shared snapshots, link-sharing choices, and offline/update
 checks at root and subpath. Each scenario has
 a 60-second test timeout. It does not run accessibility audits or the full browser
-regression suite. The workflow installs only Chromium's headless shell and has a
-10-minute job limit.
+regression suite. Checks use Ubuntu 24.04 to keep the runner OS stable. The
+workflow installs only Chromium's headless shell, bounds package-network retries
+and timeouts, and allows four minutes for browser installation within the
+10-minute job limit. Offline restart tests wait for cookbook writes to reach
+local storage before closing the page or browser; rendered cookbook cards can
+appear before the queued write completes.
 
 Choose validation to match the change. For translation text, catalog names, or
 display-only number formatting, run `npm run check:ci` and the focused localization

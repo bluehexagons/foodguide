@@ -17,6 +17,16 @@ const newline = originalWorker.indexOf('\n');
 const originalConfig = JSON.parse(originalWorker.slice('const config = '.length, newline - 1));
 const digest = data => createHash('sha256').update(data).digest('hex');
 
+// Cookbook rendering is optimistic; wait for the queued storage write before closing a page.
+const waitForSavedDish = (page, name) =>
+	page.waitForFunction(
+		name =>
+			JSON.parse(localStorage.getItem('foodGuidePersonalData') ?? 'null')?.dishes.some(
+				dish => dish.name === name,
+			),
+		name,
+	);
+
 for (const scope of ['/', '/foodguide/']) {
 	test(`CI smoke: offline guide and safe updates at ${scope}`, { timeout: 60000 }, async t => {
 		let worker = originalWorker;
@@ -113,6 +123,7 @@ for (const scope of ['/', '/foodguide/']) {
 		await page.locator('#cookbook-dish-name').fill('Offline dinner');
 		await page.getByRole('button', { name: 'Save dish', exact: true }).click();
 		await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 1);
+		await waitForSavedDish(page, 'Offline dinner');
 		await context.setOffline(true);
 		await page.close();
 		page = await context.newPage();
@@ -308,6 +319,7 @@ test('offline data and assets survive a full browser restart', { timeout: 60000 
 	await page.waitForFunction(
 		() => document.querySelector('.cookbook-dish-name')?.textContent === 'Dinner after restart',
 	);
+	await waitForSavedDish(page, 'Dinner after restart');
 	await context.close();
 	// This launches a new browser process using only the saved on-disk profile.
 	context = await browserType.launchPersistentContext(profile, { headless: true });

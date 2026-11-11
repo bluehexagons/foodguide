@@ -14,7 +14,7 @@ concurrency:
 jobs:
     check:
         name: Check
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-24.04
         timeout-minutes: 10
 
         steps:
@@ -39,7 +39,15 @@ jobs:
               run: npm run check:ci
 
             - name: Install Chromium headless shell
-              run: npx playwright install --with-deps --only-shell chromium
+              timeout-minutes: 4
+              run: |
+                  # Bound package downloads so an unreachable mirror cannot consume the job.
+                  sudo tee /etc/apt/apt.conf.d/80-browser-install-network >/dev/null <<'EOF'
+                  Acquire::Retries "2";
+                  Acquire::http::Timeout "15";
+                  Acquire::https::Timeout "15";
+                  EOF
+                  npx playwright install --with-deps --only-shell chromium
 
             - name: Run Chromium smoke checks
               run: npm run test:browser:smoke

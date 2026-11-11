@@ -14,6 +14,9 @@
 		<link rel="modulepreload" href="strings.js" />
 		<link rel="modulepreload" href="utils.js" />
 
+		<link rel="manifest" href="manifest.webmanifest" />
+		<meta name="theme-color" content="#43392e" />
+		<link rel="apple-touch-icon" href="img/pwa/icon-192.png" />
 		<link rel="shortcut icon" href="icon.png" />
 		<meta charset="utf-8" />
 		<link rel="stylesheet" href="style/main.css" />
@@ -384,6 +387,31 @@
 								</li>
 							</ul>
 						</div>
+						<section id="offline-panel" class="info-card" hidden>
+							<h2 data-i18n="offlineHeading"></h2>
+							<p id="offline-status" role="status"></p>
+							<button
+								id="offline-update"
+								type="button"
+								hidden
+								data-i18n="offlineUpdate"
+							></button>
+							<button
+								id="offline-retry"
+								type="button"
+								hidden
+								data-i18n="offlineRetry"
+							></button>
+							<p data-i18n="offlineInstall"></p>
+							<p data-i18n="offlinePrivacy"></p>
+							<button
+								id="offline-persist"
+								type="button"
+								hidden
+								data-i18n="offlinePersist"
+							></button>
+							<p id="offline-storage-status" role="status"></p>
+						</section>
 						<p class="info-footnote" id="build-version"></p>
 						<p class="info-footnote" data-i18n="aboutBrowser"></p>
 					</section>
@@ -668,6 +696,7 @@
 
 		<script type="module" src="version.js"></script>
 		<script type="module" src="foodguide.js"></script>
+		<script type="module" src="offline.js"></script>
 		<script nomodule src="legacy-browser-warning.js"></script>
 	</body>
 </html>

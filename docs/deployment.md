@@ -99,3 +99,24 @@ The hook deploys the latest `origin/main` when it runs; the notification payload
 SHA is informational. Webhook acceptance does not confirm deployment completion.
 Inspect the server logs and verify the served page and sprite manifest after a
 deployment.
+
+## Offline build
+
+`npm run generate-sprites` also generates `html/sw.js` after compilation and
+sprite generation. Publish the complete `html/` directory together. The worker's
+identity hashes the actual runtime files and worker code; each download verifies
+every file's SHA-256 before the build can activate. Declarations and source maps
+are excluded from the download. Both root and subdirectory hosting are supported.
+Do not generate the worker before changing any deployed asset. This also protects
+against files changing during publication: a mixed download fails rather than
+replacing the previous offline copy.
+
+Serve over HTTPS (localhost is allowed for development), with JavaScript MIME
+types for `sw.js` and `application/manifest+json` for `manifest.webmanifest`. Avoid
+long cache lifetimes for `sw.js` and HTML. Registration bypasses the HTTP cache
+when checking the worker. No root-level service-worker scope header is needed.
+The worker only handles its own directory, and caches are isolated by scope.
+
+For local development, unregister the worker and clear its Cache Storage in
+browser developer tools when you need to see unbuilt edits immediately. Build
+and reload to test the normal offline update flow.

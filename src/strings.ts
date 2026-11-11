@@ -29,6 +29,25 @@ const STORAGE_KEY = 'foodGuideLocale';
  * may provide partial overrides. Missing custom translations fall back to English.
  */
 const defaultStrings = {
+	offlineHeading: 'Offline & installation',
+	offlineDownloading: 'Downloading the guide for offline use…',
+	offlineReady: 'Ready to use offline.',
+	offlineUpdateReady: 'An update is ready. Your current guide remains available offline.',
+	offlineUpdate: 'Update guide and reload',
+	offlineRetry: 'Retry download',
+	offlineFailed: 'Offline download failed. Connect to the internet and retry.',
+	offlineUpdateFailed: 'Update download failed. Your previous offline guide is still available.',
+	offlineUnsupported:
+		'Offline installation requires HTTPS and a browser with service worker support.',
+	offlineCloseTabs: 'Close other guide tabs and windows, then try the update again.',
+	offlineInstall:
+		'Android Chrome: menu → Add to Home screen / Install app. Android Firefox: menu → Install. iPhone or iPad Safari: Share → Add to Home Screen. Visit online first and wait for offline readiness; installing an icon does not finish the download.',
+	offlinePrivacy:
+		'Inventories, cookbook and preferences stay on this device. Keep exported backups: browsers can clear saved data and offline files. Each website address (including GitHub Pages) stores a separate copy. External links require internet.',
+	offlinePersist: 'Request persistent storage',
+	offlinePersisted: 'Persistent storage granted. You can still clear site data; keep backups.',
+	offlineNotPersisted: 'Persistent storage was not granted. Keep exported backups.',
+
 	siteTitle: "Don't Starve Food Guide",
 	// Dialogs, options, and information pages
 	shareDestination: 'Link to',

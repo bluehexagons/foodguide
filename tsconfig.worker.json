@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"strict": true,
+		"target": "es2022",
+		"module": "es2022",
+		"lib": ["es2022", "webworker"],
+		"types": [],
+		"outDir": "build/worker",
+		"noEmitOnError": true,
+		"rootDir": "tools",
+		"moduleDetection": "legacy"
+	},
+	"include": ["tools/service-worker.ts"]
+}

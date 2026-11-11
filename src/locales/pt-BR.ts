@@ -7,6 +7,26 @@ import { names } from './pt-BR-names.js';
 import { registerLocale, type BundledLocaleDict } from '../strings.js';
 
 export const dict = {
+	offlineHeading: 'Uso offline e instalação',
+	offlineDownloading: 'Baixando o guia para uso offline…',
+	offlineReady: 'Pronto para usar offline.',
+	offlineUpdateReady: 'Uma atualização está pronta. O guia atual continua disponível offline.',
+	offlineUpdate: 'Atualizar guia e recarregar',
+	offlineRetry: 'Tentar baixar novamente',
+	offlineFailed: 'Falha no download. Conecte-se à internet e tente novamente.',
+	offlineUpdateFailed: 'Falha na atualização. O guia offline anterior continua disponível.',
+	offlineUnsupported:
+		'A instalação offline exige HTTPS e um navegador com suporte a service workers.',
+	offlineCloseTabs: 'Feche as outras abas e janelas do guia e tente atualizar novamente.',
+	offlineInstall:
+		'Chrome no Android: menu → Adicionar à tela inicial / Instalar app. Firefox no Android: menu → Instalar. Safari no iPhone ou iPad: Compartilhar → Adicionar à Tela de Início. Visite online e espere ficar pronto; instalar o ícone não conclui o download.',
+	offlinePrivacy:
+		'Inventários, livro de receitas e preferências ficam neste dispositivo. Exporte backups: navegadores podem apagar dados e arquivos offline. Cada endereço (incluindo GitHub Pages) guarda uma cópia separada. Links externos exigem internet.',
+	offlinePersist: 'Solicitar armazenamento persistente',
+	offlinePersisted:
+		'Armazenamento persistente concedido. Ainda é possível apagar os dados do site; mantenha backups.',
+	offlineNotPersisted: 'Armazenamento persistente não concedido. Mantenha backups exportados.',
+
 	siteTitle: "Guia de comida de Don't Starve",
 	names,
 	requirementAnd: 'e',

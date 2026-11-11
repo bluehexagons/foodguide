@@ -95,3 +95,28 @@ Export all inventories and dishes as a
 JSON backup, or import additional copies without replacing existing entries.
 Backups support transferring data to another browser or the desktop app. Personal
 data stays on your device and is not sent to a server.
+
+## Offline use and installation
+
+Visit the website online, open **About → Offline & installation**, and wait for
+**Ready to use offline** before disconnecting. This downloads the complete guide,
+including every language and image. Recipes, search, shared fragment links,
+inventories, cookbook entries and preferences then work without a connection.
+External wiki and game links still need internet.
+
+On Android Chrome, use the browser menu's **Add to Home screen / Install app**;
+on Android Firefox use **Install**. In Safari on iPhone or iPad, choose
+**Share → Add to Home Screen**. Installation options vary by browser. Installing
+an icon alone does not guarantee that the offline download has finished.
+
+A complete new build downloads in the background. **Update guide and reload**
+appears in the header when it is ready. Finish editing before choosing it. Close
+other guide tabs or installed-app windows first; they are never forcibly reloaded.
+Closing all guide windows also lets a waiting update take over on the next visit.
+An interrupted download leaves the previous offline guide available.
+
+**Request persistent storage** asks the browser to protect saved data and offline
+files from automatic eviction. It may decline. You can still clear site data, so
+keep JSON backups from **Options**. Different origins, including the main site
+and GitHub Pages, have separate saved data and offline copies. The desktop app
+already includes the guide and does not show browser installation controls.

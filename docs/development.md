@@ -16,7 +16,7 @@ dependencies; this may require administrator access. After upgrading Playwright,
 | `npm run generate-sprites`                  | Compile modules and regenerate sprite sheets and their manifest.           |
 | `npm run check`                             | Run fast checks and the full Chromium browser/accessibility suite.         |
 | `npm run check:ci`                          | Run formatting, lint, types, and unit tests without a browser.             |
-| `npm run test:browser:smoke`                | Build sprites and run four fast Chromium smoke scenarios.                  |
+| `npm run test:browser:smoke`                | Build sprites and run six fast Chromium smoke scenarios.                   |
 | `npm run test:browser:localization`         | Build sprites and run ten focused localization scenarios.                  |
 | `npm test`                                  | Run Node's tests, including deployment tests on Linux.                     |
 | `npm run test:browser`                      | Generate sprites and run the full Chromium regression/accessibility suite. |
@@ -51,9 +51,10 @@ node --test --test-name-pattern='entry points|section URLs' tests/browser-smoke.
 PLAYWRIGHT_BROWSER=firefox node --test --test-name-pattern='entry points|section URLs' tests/browser-smoke.js
 ```
 
-CI runs `check:ci` plus `test:browser:smoke`. The smoke command selects the four
+CI runs `check:ci` plus `test:browser:smoke`. The smoke command selects six
 `CI smoke:` scenarios: startup/assets/calculation, root and subpath entry links,
-section history and shared snapshots, and link-sharing choices. Each scenario has
+section history and shared snapshots, link-sharing choices, and offline/update
+checks at root and subpath. Each scenario has
 a 60-second test timeout. It does not run accessibility audits or the full browser
 regression suite. The workflow installs only Chromium's headless shell and has a
 10-minute job limit.
@@ -536,6 +537,21 @@ full commit SHAs; update the version comment with each pin.
 
 Pull requests targeting `main` and manual CI runs use the shared checks. Pushes
 to `main` run them once through the deployment workflow. Formatting, lint, types,
-unit tests, dependency auditing, and four Chromium smoke scenarios gate publication.
+unit tests, dependency auditing, and six Chromium smoke scenarios gate publication.
 Full browser and accessibility suites are developer-run. Superseded checks are
 canceled; publication alone is serialized without canceling an active deployment.
+
+## Offline regression checks
+
+`npm run test:offline` builds the full website and runs Chromium scenarios for
+root and `/foodguide/` hosting. They cover closing and reopening offline, shared
+links, saved cookbook data, localized ingredient search, every cached runtime
+asset, failed downloads, cache cleanup, multiple tabs and user-chosen upgrades.
+These scenarios also run in `test:browser:smoke` and `npm run check`.
+The worker is strict TypeScript compiled separately with Web Worker APIs.
+`scripts/generate-offline.mjs` assembles its build-specific verified asset list.
+PWA icons reuse the existing guide artwork, enlarged with nearest-neighbor scaling.
+
+Before a mobile release, check installation, offline relaunch and touch controls
+on physical Android Chrome/Firefox and iOS Safari devices. Automated Chromium
+coverage does not establish installation behavior on those devices.

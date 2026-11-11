@@ -16,7 +16,7 @@ export const dict = {
 	offlineHeading: '离线使用与安装',
 	offlineDownloading: '正在下载指南以供离线使用…',
 	offlineReady: '已可离线使用。',
-	offlineUpdateReady: '更新已准备好。当前指南仍可离线使用。',
+	offlineUpdateReady: '更新已准备好。准备使用时请重新加载。',
 	offlineUpdate: '更新指南并重新加载',
 	offlineRetry: '重试下载',
 	offlineFailed: '离线下载失败。请连接网络后重试。',
@@ -26,7 +26,7 @@ export const dict = {
 	offlineInstall:
 		'Android Chrome：菜单 → 添加到主屏幕 / 安装应用。Android Firefox：菜单 → 安装。iPhone 或 iPad Safari：分享 → 添加到主屏幕。请先联网访问并等待离线准备完成；安装图标并不代表下载完成。',
 	offlinePrivacy:
-		'物品栏、食谱集和偏好设置保存在此设备上。请导出备份：浏览器可能清除保存的数据和离线文件。每个网站地址（包括 GitHub Pages）都存储独立的副本。外部链接需要网络连接。',
+		'物品栏、食谱集和偏好设置保存在此设备上。请导出备份：浏览器可能清除保存的数据和离线文件。主网站和 GitHub Pages 存储各自独立的副本。外部链接需要网络连接。',
 	offlinePersist: '请求持久存储',
 	offlinePersisted: '已获准使用持久存储。仍可手动清除网站数据；请保留备份。',
 	offlineNotPersisted: '未获准使用持久存储。请保留导出的备份。',

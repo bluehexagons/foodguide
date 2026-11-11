@@ -16,8 +16,7 @@ export const dict = {
 	offlineHeading: 'Sin conexión e instalación',
 	offlineDownloading: 'Descargando la guía para usarla sin conexión…',
 	offlineReady: 'Lista para usar sin conexión.',
-	offlineUpdateReady:
-		'Hay una actualización lista. La guía actual sigue disponible sin conexión.',
+	offlineUpdateReady: 'Hay una actualización lista. Recarga cuando quieras usarla.',
 	offlineUpdate: 'Actualizar la guía y recargar',
 	offlineRetry: 'Reintentar descarga',
 	offlineFailed: 'Falló la descarga. Conéctate a internet y vuelve a intentarlo.',
@@ -28,7 +27,7 @@ export const dict = {
 	offlineInstall:
 		'Chrome en Android: menú → Añadir a pantalla de inicio / Instalar aplicación. Firefox en Android: menú → Instalar. Safari en iPhone o iPad: Compartir → Añadir a pantalla de inicio. Visita la guía con conexión y espera a que esté lista; instalar el icono no completa la descarga.',
 	offlinePrivacy:
-		'El inventario, recetario y preferencias se guardan en este dispositivo. Exporta copias de seguridad: el navegador puede borrar datos y archivos sin conexión. Cada dirección web (incluido GitHub Pages) guarda una copia independiente. Los enlaces externos requieren internet.',
+		'El inventario, recetario y preferencias se guardan en este dispositivo. Exporta copias de seguridad: el navegador puede borrar datos y archivos sin conexión. El sitio principal y GitHub Pages guardan copias independientes. Los enlaces externos requieren internet.',
 	offlinePersist: 'Solicitar almacenamiento persistente',
 	offlinePersisted:
 		'Almacenamiento persistente concedido. Aún puedes borrar los datos del sitio; conserva copias de seguridad.',

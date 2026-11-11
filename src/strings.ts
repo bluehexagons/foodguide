@@ -32,7 +32,7 @@ const defaultStrings = {
 	offlineHeading: 'Offline & installation',
 	offlineDownloading: 'Downloading the guide for offline use…',
 	offlineReady: 'Ready to use offline.',
-	offlineUpdateReady: 'An update is ready. Your current guide remains available offline.',
+	offlineUpdateReady: 'An update is ready. Reload when you’re ready to use it.',
 	offlineUpdate: 'Update guide and reload',
 	offlineRetry: 'Retry download',
 	offlineFailed: 'Offline download failed. Connect to the internet and retry.',
@@ -43,7 +43,7 @@ const defaultStrings = {
 	offlineInstall:
 		'Android Chrome: menu → Add to Home screen / Install app. Android Firefox: menu → Install. iPhone or iPad Safari: Share → Add to Home Screen. Visit online first and wait for offline readiness; installing an icon does not finish the download.',
 	offlinePrivacy:
-		'Inventories, cookbook and preferences stay on this device. Keep exported backups: browsers can clear saved data and offline files. Each website address (including GitHub Pages) stores a separate copy. External links require internet.',
+		'Inventories, cookbook and preferences stay on this device. Keep exported backups: browsers can clear saved data and offline files. The main website and GitHub Pages store separate copies. External links require internet.',
 	offlinePersist: 'Request persistent storage',
 	offlinePersisted: 'Persistent storage granted. You can still clear site data; keep backups.',
 	offlineNotPersisted: 'Persistent storage was not granted. Keep exported backups.',

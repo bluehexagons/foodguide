@@ -113,7 +113,10 @@ A complete new build downloads in the background. **Update guide and reload**
 appears in the header when it is ready. Finish editing before choosing it. Close
 other guide tabs or installed-app windows first; they are never forcibly reloaded.
 Closing all guide windows also lets a waiting update take over on the next visit.
-An interrupted download leaves the previous offline guide available.
+An interrupted download leaves the previous offline guide available. If cached
+files are cleared while saved data remains, reconnect and choose **Retry download**
+in About to restore the complete offline copy. The readiness message checks that
+the cached files are present.
 
 **Request persistent storage** asks the browser to protect saved data and offline
 files from automatic eviction. It may decline. You can still clear site data, so

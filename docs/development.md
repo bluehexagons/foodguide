@@ -546,7 +546,9 @@ canceled; publication alone is serialized without canceling an active deployment
 `npm run test:offline` builds the full website and runs Chromium scenarios for
 root and `/foodguide/` hosting. They cover closing and reopening offline, shared
 links, saved cookbook data, localized ingredient search, every cached runtime
-asset, failed downloads, cache cleanup, multiple tabs and user-chosen upgrades.
+asset, failed first downloads and retries, cache loss and restoration, rejected
+updates, cache cleanup, multiple tabs and user-chosen upgrades. Run the same cases
+in Playwright Firefox with `PLAYWRIGHT_BROWSER=firefox npm run test:offline`.
 These scenarios also run in `test:browser:smoke` and `npm run check`.
 The worker is strict TypeScript compiled separately with Web Worker APIs.
 `scripts/generate-offline.mjs` assembles its build-specific verified asset list.

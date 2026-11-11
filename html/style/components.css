@@ -43,7 +43,8 @@
 }
 .personal-controls button,
 .personal-dialog button,
-.cookbook-list button {
+.cookbook-list button,
+.offline-button {
 	min-height: 32px;
 	padding: 6px 10px;
 	border: 1px solid var(--border-color);
@@ -53,7 +54,12 @@
 	font: inherit;
 	cursor: pointer;
 }
-.personal-controls button:disabled {
+.offline-button {
+	min-height: 44px;
+	max-width: 100%;
+}
+.personal-controls button:disabled,
+.offline-button:disabled {
 	opacity: 0.6;
 	cursor: default;
 }

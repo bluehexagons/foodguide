@@ -120,3 +120,10 @@ The worker only handles its own directory, and caches are isolated by scope.
 For local development, unregister the worker and clear its Cache Storage in
 browser developer tools when you need to see unbuilt edits immediately. Build
 and reload to test the normal offline update flow.
+
+A completion marker is written only after all files verify. Status checks validate
+the full asset list, including before a waiting update activates. If Cache Storage
+is cleared while the worker survives, navigation falls back to the network until
+**Retry download** restores a verified copy. This does not clear inventories or
+cookbook data. Downloads cancel sibling requests after a failure and time out a
+stalled file after 30 seconds.

@@ -6,49 +6,86 @@ const cacheName = prefix + config.id;
 const absolute = (path: string) => new URL(path, worker.registration.scope).href;
 const assetURLs = new Set(config.assets.map(asset => absolute(asset.path)));
 
-worker.addEventListener('install', event => {
-	event.waitUntil(
-		(async () => {
-			const cache = await caches.open(cacheName);
-			try {
-				// Bound concurrency so a full guide download also works on mobile connections.
-				const pending = [...config.assets];
-				const results = await Promise.allSettled(
-					Array.from({ length: 6 }, async () => {
-						while (pending.length) {
+const completeURL = absolute('__offline_complete__');
+let downloading: Promise<void> | undefined;
+
+async function isReady() {
+	if (!(await caches.has(cacheName))) {
+		return false;
+	}
+	const cache = await caches.open(cacheName);
+	if ((await cache.match(completeURL)) === undefined) {
+		return false;
+	}
+	const stored = new Set((await cache.keys()).map(request => request.url));
+	return [...assetURLs].every(url => stored.has(url));
+}
+
+function download() {
+	if (downloading) {
+		return downloading;
+	}
+	downloading = (async () => {
+		const cache = await caches.open(cacheName);
+		const controller = new AbortController();
+		await cache.delete(completeURL);
+		try {
+			const pending = [...config.assets];
+			const results = await Promise.allSettled(
+				Array.from({ length: 6 }, async () => {
+					try {
+						while (pending.length && !controller.signal.aborted) {
 							const asset = pending.pop()!;
-							const response = await fetch(absolute(asset.path), {
-								cache: 'no-store',
-								redirect: 'error',
-							});
-							if (!response.ok) {
-								throw new Error(`Download failed: ${asset.path}`);
+							// A stalled file must not leave installation or retry hanging indefinitely.
+							const timer = setTimeout(() => controller.abort(), 30000);
+							try {
+								const response = await fetch(absolute(asset.path), {
+									cache: 'no-store',
+									redirect: 'error',
+									signal: controller.signal,
+								});
+								if (!response.ok) {
+									throw new Error(`Download failed: ${asset.path}`);
+								}
+								const digest = await crypto.subtle.digest(
+									'SHA-256',
+									await response.clone().arrayBuffer(),
+								);
+								const hash = Array.from(new Uint8Array(digest), b =>
+									b.toString(16).padStart(2, '0'),
+								).join('');
+								if (hash !== asset.hash) {
+									throw new Error(`Build changed: ${asset.path}`);
+								}
+								await cache.put(absolute(asset.path), response);
+							} finally {
+								clearTimeout(timer);
 							}
-							const digest = await crypto.subtle.digest(
-								'SHA-256',
-								await response.clone().arrayBuffer(),
-							);
-							const hash = Array.from(new Uint8Array(digest), b =>
-								b.toString(16).padStart(2, '0'),
-							).join('');
-							if (hash !== asset.hash) {
-								throw new Error(`Build changed: ${asset.path}`);
-							}
-							await cache.put(absolute(asset.path), response);
 						}
-					}),
-				);
-				const failed = results.find(result => result.status === 'rejected');
-				if (failed?.status === 'rejected') {
-					throw failed.reason;
-				}
-			} catch (error) {
-				// All writers have settled; a failed build must never become usable.
-				await caches.delete(cacheName);
-				throw error;
+					} catch (error) {
+						controller.abort();
+						throw error;
+					}
+				}),
+			);
+			const failed = results.find(result => result.status === 'rejected');
+			if (failed?.status === 'rejected') {
+				throw failed.reason;
 			}
-		})(),
-	);
+			await cache.put(completeURL, new Response(config.id));
+		} catch (error) {
+			// All writers have settled; a failed build must never become usable.
+			await caches.delete(cacheName);
+			throw error;
+		}
+	})().finally(() => {
+		downloading = undefined;
+	});
+	return downloading;
+}
+
+worker.addEventListener('install', event => {
+	event.waitUntil(download());
 });
 
 worker.addEventListener('activate', event => {
@@ -65,11 +102,26 @@ worker.addEventListener('activate', event => {
 });
 
 worker.addEventListener('message', event => {
-	if (event.data?.type !== 'ACTIVATE') {
+	if (!['ACTIVATE', 'STATUS', 'RESTORE'].includes(event.data?.type)) {
 		return;
 	}
 	event.waitUntil(
 		(async () => {
+			if (event.data.type === 'STATUS' || event.data.type === 'RESTORE') {
+				try {
+					if (event.data.type === 'RESTORE' && !(await isReady())) {
+						await download();
+					}
+					event.ports[0]?.postMessage((await isReady()) ? 'READY' : 'MISSING');
+				} catch {
+					event.ports[0]?.postMessage('MISSING');
+				}
+				return;
+			}
+			if (!(await isReady())) {
+				event.ports[0]?.postMessage('MISSING');
+				return;
+			}
 			const clients = (
 				await worker.clients.matchAll({ type: 'window', includeUncontrolled: true })
 			).filter(client => client.url.startsWith(worker.registration.scope));
@@ -88,10 +140,12 @@ worker.addEventListener('fetch', event => {
 		return;
 	}
 	const url = new URL(event.request.url);
+	url.hash = '';
+	url.search = '';
 	if (!url.href.startsWith(worker.registration.scope)) {
 		return;
 	}
-	const path = url.href.slice(worker.registration.scope.length).split('?')[0];
+	const path = url.href.slice(worker.registration.scope.length);
 	// Fragment routes and query parameters share the same entry document.
 	const key =
 		event.request.mode === 'navigate' && (path === '' || path === 'index.html')
@@ -102,7 +156,18 @@ worker.addEventListener('fetch', event => {
 	}
 	event.respondWith(
 		(async () => {
-			const response = await (await caches.open(cacheName)).match(absolute(key));
+			const cache = await caches.open(cacheName);
+			// An evicted cache must not trap the site behind a permanently broken worker.
+			// Use the network for the entire page until a complete build is restored.
+			const complete =
+				event.request.mode === 'navigate'
+					? await isReady()
+					: !!(await cache.match(completeURL));
+			if (!complete) {
+				await cache.delete(completeURL);
+				return fetch(event.request);
+			}
+			const response = await cache.match(absolute(key));
 			// Never mix a newer server asset into this build if browser storage was cleared.
 			return response ?? Response.error();
 		})(),

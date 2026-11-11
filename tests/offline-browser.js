@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { chromium } from 'playwright';
+import { chromium, firefox } from 'playwright';
+
+const browserType = process.env.PLAYWRIGHT_BROWSER === 'firefox' ? firefox : chromium;
 
 const root = new URL('../html/', import.meta.url);
 const originalWorker = await readFile(new URL('sw.js', root), 'utf8');
@@ -15,7 +17,7 @@ for (const scope of ['/', '/foodguide/']) {
 	test(`CI smoke: offline guide and safe updates at ${scope}`, { timeout: 60000 }, async t => {
 		let worker = originalWorker;
 		let version = await readFile(new URL('version.js', root));
-		let broken = false;
+		let broken = true;
 		const server = createServer(async (request, response) => {
 			try {
 				const path = new URL(request.url, 'http://localhost').pathname;
@@ -59,15 +61,29 @@ for (const scope of ['/', '/foodguide/']) {
 		});
 		await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 		t.after(() => new Promise(resolve => server.close(resolve)));
-		const browser = await chromium.launch({ headless: true });
+		const browser = await browserType.launch({ headless: true });
 		t.after(() => browser.close());
 		const context = await browser.newContext();
 		const url = `http://127.0.0.1:${server.address().port}${scope}`;
 		let page = await context.newPage();
 		await page.goto(url + '#simulator?game=together&ingredients=carrot,carrot,carrot,meat');
+		await page.waitForFunction(() =>
+			document
+				.querySelector('#offline-status')
+				.textContent.includes('Offline download failed'),
+		);
+		assert.equal(
+			await page.evaluate(() => caches.keys().then(keys => keys.length)),
+			0,
+			'A failed first download leaves no usable cache',
+		);
+		broken = false;
+		await page.goto(url + '#about');
+		await page.locator('#offline-retry').click();
 		await page.waitForFunction(
 			() => document.querySelector('#offline-status').textContent === 'Ready to use offline.',
 		);
+		await page.goto(url + '#simulator?game=together&ingredients=carrot,carrot,carrot,meat');
 		await page.evaluate(() =>
 			navigator.serviceWorker.ready.then(
 				() =>
@@ -132,6 +148,30 @@ for (const scope of ['/', '/foodguide/']) {
 		assert.equal(assets, null, 'Every deployed asset is available offline');
 		await page.locator('#language-picker').selectOption('en');
 		await context.setOffline(false);
+		// A registration can outlive manually cleared or evicted cached assets.
+		await page.evaluate(async () => {
+			for (const key of await caches.keys()) {
+				await caches.delete(key);
+			}
+		});
+		await page.reload();
+		await page.waitForFunction(() =>
+			document
+				.querySelector('#offline-status')
+				.textContent.includes('Offline download failed'),
+		);
+		assert.equal(await page.locator('.cookbook-dish-name').textContent(), 'Offline dinner');
+		await page.goto(url + '#about');
+		await page.locator('#offline-retry').click();
+		await page.waitForFunction(
+			() => document.querySelector('#offline-status').textContent === 'Ready to use offline.',
+		);
+		await context.setOffline(true);
+		await page.reload();
+		await page.waitForFunction(
+			() => document.querySelector('#offline-status').textContent === 'Ready to use offline.',
+		);
+		await context.setOffline(false);
 		const nextBuild = () => {
 			version = Buffer.from(
 				`document.getElementById('build-version').textContent = 'Test upgrade';\n`,
@@ -147,15 +187,14 @@ for (const scope of ['/', '/foodguide/']) {
 			const registration = await navigator.serviceWorker.getRegistration();
 			await registration.update();
 		});
-		await page.waitForFunction(() =>
-			document
-				.querySelector('#offline-status')
-				.textContent.includes('Update download failed'),
-		);
-		assert.equal(
-			await page.evaluate(() => caches.keys().then(keys => keys.length)),
-			1,
-			'Incomplete cache is removed',
+		await page.waitForFunction(
+			async () =>
+				document
+					.querySelector('#offline-status')
+					.textContent.includes('Update download failed') &&
+				!(await navigator.serviceWorker.getRegistration()).installing &&
+				(await caches.keys()).length === 1 &&
+				!(await navigator.serviceWorker.getRegistration()).waiting,
 		);
 		await context.setOffline(true);
 		await page.reload();
@@ -165,18 +204,46 @@ for (const scope of ['/', '/foodguide/']) {
 		await context.setOffline(false);
 		broken = 'mismatch';
 		await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
-		await page.waitForFunction(() =>
-			document
-				.querySelector('#offline-status')
-				.textContent.includes('Update download failed'),
-		);
-		assert.equal(
-			await page.evaluate(() => caches.keys().then(keys => keys.length)),
-			1,
-			'A successful response with wrong content is rejected',
+		await page.waitForFunction(
+			async () =>
+				document
+					.querySelector('#offline-status')
+					.textContent.includes('Update download failed') &&
+				!(await navigator.serviceWorker.getRegistration()).installing &&
+				(await caches.keys()).length === 1 &&
+				!(await navigator.serviceWorker.getRegistration()).waiting,
 		);
 		broken = false;
 		await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
+		await page.waitForFunction(() => !document.querySelector('#offline-update').hidden);
+		// An evicted waiting build cannot be activated until it is restored.
+		await page.evaluate(() =>
+			caches.delete(`foodguide:${location.origin}${location.pathname}:test-upgrade`),
+		);
+		assert.equal(
+			await page.evaluate(async () => {
+				const registration = await navigator.serviceWorker.getRegistration();
+				const channel = new MessageChannel();
+				return new Promise(resolve => {
+					channel.port1.onmessage = event => {
+						channel.port1.close();
+						resolve(event.data);
+					};
+					registration.waiting.postMessage({ type: 'ACTIVATE' }, [channel.port2]);
+				});
+			}),
+			'MISSING',
+		);
+		await page.reload();
+		await page.waitForFunction(
+			async () =>
+				document
+					.querySelector('#offline-status')
+					.textContent.includes('Update download failed') &&
+				!(await navigator.serviceWorker.getRegistration()).installing,
+		);
+		await page.goto(url + '#about');
+		await page.locator('#offline-retry').click();
 		await page.waitForFunction(() => !document.querySelector('#offline-update').hidden);
 		const second = await context.newPage();
 		await second.goto(url);
@@ -186,6 +253,17 @@ for (const scope of ['/', '/foodguide/']) {
 				.querySelector('#offline-status')
 				.textContent.startsWith('Close other guide tabs'),
 		);
+		await page.setViewportSize({ width: 320, height: 812 });
+		for (const locale of ['en', 'es', 'pt-BR', 'ru', 'zh']) {
+			await page.locator('#language-picker').selectOption(locale);
+			assert.equal(
+				await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+				true,
+				`${locale}: update notice fits a narrow screen`,
+			);
+			assert.ok((await page.locator('#offline-update').textContent()).trim());
+		}
+		await page.locator('#language-picker').selectOption('en');
 		await second.close();
 		await page.locator('#offline-update').click();
 		await page.waitForFunction(

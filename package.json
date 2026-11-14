@@ -123,7 +123,7 @@
 		"http-server": "^14.1.1",
 		"oxfmt": "^0.78.0",
 		"oxlint": "^1.93.0",
-		"playwright": "^1.65.0",
+		"playwright": "^1.65.1",
 		"sharp": "^0.35.5",
 		"typescript": "^7.0.2"
 	},

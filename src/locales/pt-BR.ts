@@ -248,6 +248,8 @@ export const dict = {
 	tableRecipeSuggestions: 'Sugestões de receitas',
 	tableEfficientRecipes: 'Receitas eficientes',
 	tableScrollHelp: 'Tabela rolável. Use as setas esquerda e direita para rolar.',
+	referenceFilterLabel: 'Filtrar por nome',
+	referenceMatchCount: 'Resultados: {count}',
 	tableEmpty: 'Nenhum resultado correspondente.',
 	analysisNoResultsYet: 'Nenhuma combinação correspondente encontrada até agora.',
 	analysisNoMatchingResults:

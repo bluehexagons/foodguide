@@ -5558,6 +5558,45 @@ test('shared-origin tabs isolate ingredients and picker views across reloads whi
 	assert.deepEqual(diagnostics, [[], []]);
 });
 
+test('reference name filters follow the locale, sorting, and linked highlights', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({ hasTouch: true, viewport: { width: 320, height: 780 } });
+	await page.goto(baseUrl + '/#foodlist?game=together', { waitUntil: 'networkidle' });
+	const foodSearch = page.locator('#food-search');
+	await foodSearch.fill('CaRRot');
+	const names = page.locator('#food tbody .name-cell');
+	assert.ok((await names.count()) > 1);
+	assert.ok((await names.allTextContents()).every(name => /carrot/i.test(name)));
+	assert.ok(
+		await names.first().evaluate(cell => cell.getBoundingClientRect().height < innerHeight / 2),
+		'Filtered carrot rows should fit more than one result on a phone screen',
+	);
+	await page.locator('#food th[data-sort="health"] button').click();
+	assert.equal(await foodSearch.inputValue(), 'CaRRot');
+	await page.locator('#language-picker').selectOption('es');
+	assert.ok((await names.allTextContents()).some(name => /Zanahoria/.test(name)));
+	await foodSearch.fill('zanahoria');
+	assert.equal(
+		await page.locator('#food-matches').textContent(),
+		'Coincidencias: ' + (await names.count()),
+	);
+	await page.locator('#tab-crockpot').click();
+	const recipeSearch = page.locator('#recipes-search');
+	await recipeSearch.fill('Figatoni');
+	assert.equal(await page.locator('#recipes tbody .name-cell').count(), 1);
+	await recipeSearch.fill('no-such-dish');
+	assert.equal(await page.locator('#recipes .table-empty-row').count(), 1);
+	await recipeSearch.press('Escape');
+	assert.ok((await page.locator('#recipes tbody .name-cell').count()) > 1);
+	await page.locator('#tab-foodlist').click();
+	assert.equal(await foodSearch.inputValue(), 'zanahoria');
+	await page.evaluate(() => {
+		location.hash = 'foodlist?game=together&highlight=*Asparagus';
+	});
+	await page.locator('#food tbody tr.highlighted').first().waitFor();
+	assert.equal(await foodSearch.inputValue(), '');
+});
+
 test('manual URL navigation validates inputs and restores food and recipe highlights', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();

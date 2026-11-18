@@ -1,5 +1,34 @@
 /* Table styling: data tables, sorting, highlighting, linked controls */
 
+.reference-filter {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 10px;
+	margin-block: 8px 12px;
+	font-size: 0.875rem;
+	color: var(--fg-secondary);
+}
+
+.reference-filter input {
+	width: 18rem;
+	max-width: 100%;
+	min-width: 0;
+	padding: 6px 8px;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	background: var(--bg-primary);
+	color: var(--fg-primary);
+	font: inherit;
+}
+
+@media (any-pointer: coarse) {
+	.reference-filter input {
+		min-height: 44px;
+		font-size: 16px;
+	}
+}
+
 /* Sticky-scroll wrapper: keeps a horizontal scrollbar visible at the viewport bottom */
 .table-scroll-wrapper {
 	overflow-x: auto;
@@ -45,6 +74,13 @@ table .icon-cell {
 	white-space: nowrap;
 	text-align: center;
 	padding: 6px 4px;
+}
+
+@media (max-width: 767px) {
+	/* Give food details room for several recipe links per line in the scrollable table. */
+	#food td:has(.cellRow + .cellRow) {
+		min-width: min(26rem, calc(100vw - 32px));
+	}
 }
 
 td .cellRow:nth-child(n + 2) {

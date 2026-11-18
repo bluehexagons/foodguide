@@ -197,6 +197,8 @@ export const dict = {
 	tableRecipeSuggestions: 'Sugerencias de recetas',
 	tableEfficientRecipes: 'Recetas eficientes',
 	tableScrollHelp: 'Tabla desplazable. Usa Izquierda y Derecha para desplazarte.',
+	referenceFilterLabel: 'Filtrar por nombre',
+	referenceMatchCount: 'Coincidencias: {count}',
 	tableEmpty: 'No hay resultados coincidentes.',
 	analysisNoResultsYet: 'Aún no se han encontrado combinaciones coincidentes.',
 	analysisNoMatchingResults:

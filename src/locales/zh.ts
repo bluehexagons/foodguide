@@ -174,6 +174,8 @@ export const dict = {
 	tableRecipeSuggestions: '配方建议',
 	tableEfficientRecipes: '高效配方',
 	tableScrollHelp: '可滚动表格。使用左、右方向键滚动。',
+	referenceFilterLabel: '按名称筛选',
+	referenceMatchCount: '匹配数：{count}',
 	tableEmpty: '没有匹配的结果。',
 	analysisNoResultsYet: '目前尚未找到匹配的组合。',
 	analysisNoMatchingResults: '没有组合符合这些筛选条件。请尝试调整食材或配方筛选条件。',

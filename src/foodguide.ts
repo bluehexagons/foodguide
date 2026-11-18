@@ -88,7 +88,7 @@ import {
 import { food } from './food.js';
 import { createDropdownFactory } from './dropdown.js';
 import { createFilterControls } from './filter-controls.js';
-import { createRecipeCalculator } from './recipe-calculator.js';
+import { createRecipeCalculator, matchesNameFragment } from './recipe-calculator.js';
 import { previewCookbookDish } from './cookbook-preview.js';
 import { createRecipeAnalyzer } from './recipe-analyzer.js';
 import { sortIngredients } from './ingredient-sort.js';
@@ -776,6 +776,11 @@ import './locales/index.js';
 	let foodHighlighted: Food[] = [];
 	let recipeHighlighted: Recipe[] = [];
 
+	const foodSearch = document.querySelector<HTMLInputElement>('#food-search')!;
+	const recipeSearch = document.querySelector<HTMLInputElement>('#recipes-search')!;
+	const foodMatches = requireElement('food-matches');
+	const recipeMatches = requireElement('recipes-matches');
+
 	const highlightFoods = (name: string, { toggle = false } = {}) => {
 		if (toggle && foodHighlight === name) {
 			foodHighlight = '';
@@ -784,6 +789,12 @@ import './locales/index.js';
 			foodHighlight = name;
 			foodHighlighted = name ? matchingNames(food, name, true) : [];
 		}
+		if (
+			foodSearch.value &&
+			foodHighlighted.some(item => !matchesNameFragment(item, foodSearch.value))
+		) {
+			foodSearch.value = '';
+		}
 		foodTable.update(true);
 		saveState();
 	};
@@ -791,6 +802,12 @@ import './locales/index.js';
 	const highlightRecipes = (name: string) => {
 		recipeHighlight = name;
 		recipeHighlighted = name ? matchingNames(recipes, name) : [];
+		if (
+			recipeSearch.value &&
+			recipeHighlighted.some(item => !matchesNameFragment(item, recipeSearch.value))
+		) {
+			recipeSearch.value = '';
+		}
 		recipeTable.update(true);
 		saveState();
 	};
@@ -869,7 +886,12 @@ import './locales/index.js';
 		defaultSort: 'name',
 		linkCallback: setFoodHighlight,
 		highlightCallback: testFoodHighlight,
-		filterCallback: testmode,
+		filterCallback: item => testmode(item) && matchesNameFragment(item, foodSearch.value),
+		onRender: ({ total }) => {
+			foodMatches.textContent = foodSearch.value.trim()
+				? t('referenceMatchCount', { count: total })
+				: '';
+		},
 		columnConfig: {
 			toggleable: true,
 			columns: ['Health', 'Hunger', 'Sanity', 'Perish', 'Info', 'Mode'],
@@ -899,7 +921,12 @@ import './locales/index.js';
 		defaultSort: 'name',
 		linkCallback: setRecipeHighlight,
 		highlightCallback: testRecipeHighlight,
-		filterCallback: testmode,
+		filterCallback: item => testmode(item) && matchesNameFragment(item, recipeSearch.value),
+		onRender: ({ total }) => {
+			recipeMatches.textContent = recipeSearch.value.trim()
+				? t('referenceMatchCount', { count: total })
+				: '';
+		},
 		columnConfig: {
 			toggleable: true,
 			columns: [
@@ -915,6 +942,20 @@ import './locales/index.js';
 			autoHide: getAutoHideColumns(['Sanity', 'Cook Time', 'Notes']),
 		},
 	});
+
+	for (const [input, table] of [
+		[foodSearch, foodTable],
+		[recipeSearch, recipeTable],
+	] as const) {
+		input.addEventListener('input', () => table.update());
+		input.addEventListener('keydown', event => {
+			if (event.key === 'Escape' && !event.isComposing && input.value) {
+				event.preventDefault();
+				input.value = '';
+				table.update();
+			}
+		});
+	}
 
 	foodElement.appendChild(foodTable);
 	recipesElement.appendChild(recipeTable);

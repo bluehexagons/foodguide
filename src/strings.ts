@@ -275,6 +275,8 @@ const defaultStrings = {
 	tableRecipeSuggestions: 'Recipe suggestions',
 	tableEfficientRecipes: 'Efficient recipes',
 	tableScrollHelp: 'Scrollable table. Use Left and Right to scroll.',
+	referenceFilterLabel: 'Filter by name',
+	referenceMatchCount: 'Matches: {count}',
 	tableEmpty: 'No matching results.',
 	analysisNoResultsYet: 'No matching combinations found so far.',
 	analysisNoMatchingResults:

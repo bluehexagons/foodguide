@@ -227,11 +227,25 @@
 
 				<div id="foodlist">
 					<h2 class="tool-heading" data-i18n="tabFoodList">Food List</h2>
+					<div class="reference-filter">
+						<label for="food-search" data-i18n="referenceFilterLabel"
+							>Filter by name</label
+						>
+						<input type="search" id="food-search" aria-controls="food" />
+						<span id="food-matches" role="status"></span>
+					</div>
 					<div id="food"></div>
 				</div>
 
 				<div id="crockpot">
 					<h2 class="tool-heading" data-i18n="tabRecipeList">Recipe List</h2>
+					<div class="reference-filter">
+						<label for="recipes-search" data-i18n="referenceFilterLabel"
+							>Filter by name</label
+						>
+						<input type="search" id="recipes-search" aria-controls="recipes" />
+						<span id="recipes-matches" role="status"></span>
+					</div>
 					<div id="recipes"></div>
 				</div>
 

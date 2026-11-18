@@ -20,6 +20,10 @@ const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\
 const normalizeName = (value: string) =>
 	value.toLowerCase().replaceAll('_', ' ').normalize('NFD').replace(/\p{M}/gu, '');
 const searchNames = (item: GuideItem) => [item.name, itemName(item), item.id].map(normalizeName);
+export const matchesNameFragment = (item: GuideItem, query: string) => {
+	const fragment = normalizeName(query.trim());
+	return !fragment || searchNames(item).some(name => name.includes(fragment));
+};
 const hasName = (item: GuideItem, name: string) => searchNames(item).includes(name);
 
 function findActiveName<T extends GuideItem>(

@@ -244,6 +244,8 @@ export const dict = {
 	tableRecipeSuggestions: 'Предложения рецептов',
 	tableEfficientRecipes: 'Эффективные рецепты',
 	tableScrollHelp: 'Таблицу можно прокручивать. Используйте стрелки влево и вправо.',
+	referenceFilterLabel: 'Фильтр по названию',
+	referenceMatchCount: 'Совпадений: {count}',
 	tableEmpty: 'Совпадений нет.',
 	analysisNoResultsYet: 'Подходящие сочетания пока не найдены.',
 	analysisNoMatchingResults:

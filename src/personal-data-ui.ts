@@ -44,6 +44,24 @@ interface PersonalUIOptions {
 	getShareRoute: () => GuideRoute;
 }
 
+function availableInventoryName(
+	inventories: Inventory[],
+	title: string,
+	suffixFor = (number: number) => (number === 1 ? '' : ` ${number}`),
+	firstNumber = 1,
+) {
+	const names = new Set(inventories.map(item => item.name));
+	for (let number = firstNumber; ; number++) {
+		const suffix = suffixFor(number);
+		// Reserve space for the suffix without splitting a UTF-16 character.
+		const prefix = title.slice(0, 150 - suffix.length).replace(/[\uD800-\uDBFF]$/, '');
+		const candidate = prefix + suffix;
+		if (!names.has(candidate)) {
+			return candidate;
+		}
+	}
+}
+
 export function createPersonalDataUI(options: PersonalUIOptions) {
 	const element = <K extends keyof HTMLElementTagNameMap>(tag: K, parent?: HTMLElement) => {
 		const node = document.createElement(tag);
@@ -177,29 +195,44 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			}
 		});
 	});
-	const addInventory = (ingredients: string[], title: string) => {
+	const addInventory = (
+		ingredients: string[],
+		title: string,
+		suffixFor?: (number: number) => string,
+		firstNumber = 1,
+	) => {
 		if (store.get().inventories.length >= 200) {
 			announce('personalLimitError');
 			return;
 		}
-		const inventory: Inventory = { id: id(), name: title.slice(0, 150), ingredients };
-		activeId = inventory.id;
+		const inventoryId = id();
+		activeId = inventoryId;
 		persistActive();
 		void store.update(data => {
-			if (!data.inventories.some(item => item.id === inventory.id)) {
-				data.inventories.push(inventory);
+			if (data.inventories.some(item => item.id === inventoryId)) {
+				return;
 			}
+			const name = availableInventoryName(data.inventories, title, suffixFor, firstNumber);
+			data.inventories.push({ id: inventoryId, name, ingredients });
 		});
 	};
 	button(inventoryControls, 'inventoryNew', () => {
-		addInventory([], `${t('inventoryNewName')} ${store.get().inventories.length + 1}`);
+		addInventory(
+			[],
+			t('inventoryNewName'),
+			number => ` ${number}`,
+			store.get().inventories.length + 1,
+		);
 		name.focus();
 		name.select();
 	}).id = 'inventory-new';
 	button(inventoryControls, 'inventoryDuplicate', () => {
 		const current = store.get().inventories.find(item => item.id === activeId);
 		if (current) {
-			addInventory([...current.ingredients], `${current.name} (${t('personalCopy')})`);
+			const copy = t('personalCopy');
+			addInventory([...current.ingredients], current.name, number =>
+				number === 1 ? ` (${copy})` : ` (${copy} ${number})`,
+			);
 		}
 	});
 	const withIcon = <T extends HTMLElement>(node: T, name: IconName) => {
@@ -830,7 +863,12 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 						return;
 					}
 					const ids = new Set([...data.inventories, ...data.dishes].map(item => item.id));
-					data.inventories.push(...inventories.filter(item => !ids.has(item.id)));
+					for (const item of inventories) {
+						if (!ids.has(item.id)) {
+							item.name = availableInventoryName(data.inventories, item.name);
+							data.inventories.push(item);
+						}
+					}
 					data.dishes.push(...dishes.filter(item => !ids.has(item.id)));
 				});
 				if (!applied) {

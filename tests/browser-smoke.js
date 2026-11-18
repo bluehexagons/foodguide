@@ -5616,6 +5616,23 @@ test('manual URL navigation validates inputs and restores food and recipe highli
 	assert.deepEqual(diagnostics, []);
 });
 
+test('duplicate inventories keep distinct names at the name length limit', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(baseUrl + '/#discovery', { waitUntil: 'networkidle' });
+	const select = page.locator('#inventory-select');
+	const original = await select.inputValue();
+	const name = page.locator('#inventory-name');
+	const title = 'x'.repeat(150);
+	await name.fill(title);
+	await name.press('Enter');
+	for (const suffix of [' (copy)', ' (copy 2)']) {
+		await select.selectOption(original);
+		await page.getByRole('button', { name: 'Duplicate', exact: true }).click();
+		assert.equal(await name.inputValue(), title.slice(0, 150 - suffix.length) + suffix);
+	}
+});
+
 test('personal inventories synchronize edits while tabs choose inventories independently', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const context = await browser.newContext();
@@ -5825,6 +5842,10 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 		.waitFor();
 	const restored = await page.evaluate(() =>
 		JSON.parse(localStorage.getItem('foodGuidePersonalData')),
+	);
+	assert.deepEqual(
+		restored.inventories.map(item => item.name),
+		[parsed.inventories[0].name, parsed.inventories[0].name + ' 2'],
 	);
 	assert.equal(restored.dishes.length, 2);
 	assert.equal(new Set(restored.dishes.map(d => d.id)).size, 2);

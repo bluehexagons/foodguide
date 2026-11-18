@@ -91,10 +91,11 @@ settings and its ingredients. Cookbook cards show ingredient icons and recalcula
 the possible recipes using the saved settings, even when a dish has a custom name.
 **Options** includes language and Light/Dark/Device theme settings as well as
 backup controls. The header language picker and quick theme toggle remain available.
-Export all inventories and dishes as a
-JSON backup, or import additional copies without replacing existing entries.
-Backups support transferring data to another browser or the desktop app. Personal
-data stays on your device and is not sent to a server.
+Export all inventories and dishes as a JSON backup. Importing into a profile
+with only the unused starter inventory restores the backup in its place.
+Importing into a profile with saved data adds copies, subject to the storage
+limits. Backups support transferring data to another browser or the desktop app.
+Personal data stays on your device and is not sent to a server.
 
 ## Offline use and installation
 

@@ -163,6 +163,7 @@ const defaultStrings = {
 	personalImported: 'Imported {inventories} inventories and {dishes} dishes.',
 	personalImportError:
 		'Could not import this file. Use a Food Guide JSON backup with valid ingredients, names, and game settings (up to 2 MB). Existing data has not been replaced.',
+	personalImportChanged: 'Your saved data changed during import. Review it and try again.',
 	personalStorageError:
 		'Changes are available in this tab, but could not be saved. Export a backup before closing it.',
 	personalLimitError:
@@ -654,6 +655,11 @@ export function registerLocale(
  */
 export function listLocales() {
 	return Object.keys(locales);
+}
+
+/** Recognize a stored label even if it was created in a different language. */
+export function matchesTranslation(key: StringKey, value: string) {
+	return Object.values(locales).some(({ dict }) => (dict[key] ?? defaultStrings[key]) === value);
 }
 
 /**

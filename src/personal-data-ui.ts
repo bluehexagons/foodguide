@@ -13,6 +13,7 @@ import {
 	personalDataKey,
 	type CookbookDish,
 	type Inventory,
+	type PersonalData,
 } from './personal-data.js';
 import {
 	t,
@@ -20,6 +21,7 @@ import {
 	getLocale,
 	listLocales,
 	localeName,
+	matchesTranslation,
 	setLocale,
 	type StringKey,
 } from './strings.js';
@@ -114,6 +116,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			byte.toString(16).padStart(2, '0'),
 		).join('');
 	const activeKey = 'foodGuideActiveInventory';
+	const starterInventoryId = 'default';
 	let activeId = '';
 	try {
 		activeId = options.getTabStorage().getItem(activeKey) ?? '';
@@ -134,7 +137,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		void store.update(data => {
 			if (!data.inventories.length) {
 				data.inventories.push({
-					id: 'default',
+					id: starterInventoryId,
 					name: t('inventoryDefault'),
 					ingredients: [
 						...new Set(options.legacyInventory.filter(options.validIngredient)),
@@ -746,7 +749,12 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	const showDataStatus = (key?: StringKey, params?: Record<string, string | number>) => {
 		dataFeedback = key ? { key, params } : undefined;
 		dataStatus.textContent = key ? t(key, params) : '';
-		dataStatus.dataset.tone = key === 'personalImportError' ? 'error' : 'success';
+		dataStatus.dataset.tone =
+			key === 'personalImportError' ||
+			key === 'personalLimitError' ||
+			key === 'personalImportChanged'
+				? 'error'
+				: 'success';
 	};
 	labels.push(() => showDataStatus(dataFeedback?.key, dataFeedback?.params));
 	withIcon(
@@ -776,6 +784,16 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	file.accept = '.json,application/json';
 	file.id = 'personal-import';
 	file.hidden = true;
+	const hasOnlyStarterInventory = ({ inventories, dishes }: PersonalData) => {
+		const [starter] = inventories;
+		return (
+			!dishes.length &&
+			inventories.length === 1 &&
+			starter.id === starterInventoryId &&
+			!starter.ingredients.length &&
+			matchesTranslation('inventoryDefault', starter.name)
+		);
+	};
 	file.addEventListener('change', () => {
 		void (async () => {
 			try {
@@ -793,31 +811,31 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 					options.validIngredient,
 					options.validDish,
 				);
-				for (const item of [...imported.inventories, ...imported.dishes]) {
-					item.id = id();
+				const restore =
+					imported.inventories.length > 0 && hasOnlyStarterInventory(store.get());
+				if (!restore) {
+					for (const item of [...imported.inventories, ...imported.dishes]) {
+						item.id = id();
+					}
 				}
-				const preview = store.get();
-				preview.inventories.push(...imported.inventories);
-				preview.dishes.push(...imported.dishes);
-				parsePersonalData(
-					JSON.stringify(preview),
-					options.validIngredient,
-					options.validDish,
-				);
 				const applied = await store.update(data => {
-					for (const inventory of imported.inventories) {
-						if (!data.inventories.some(item => item.id === inventory.id)) {
-							data.inventories.push(inventory);
+					const { inventories, dishes } = structuredClone(imported);
+					if (restore) {
+						// Recheck under the storage lock before replacing the starter.
+						if (!hasOnlyStarterInventory(data)) {
+							return false;
 						}
+						data.inventories = inventories;
+						data.dishes = dishes;
+						return;
 					}
-					for (const dish of imported.dishes) {
-						if (!data.dishes.some(item => item.id === dish.id)) {
-							data.dishes.push(dish);
-						}
-					}
+					const ids = new Set([...data.inventories, ...data.dishes].map(item => item.id));
+					data.inventories.push(...inventories.filter(item => !ids.has(item.id)));
+					data.dishes.push(...dishes.filter(item => !ids.has(item.id)));
 				});
 				if (!applied) {
-					throw new Error('Import could not be applied');
+					showDataStatus(restore ? 'personalImportChanged' : 'personalLimitError');
+					return;
 				}
 				showDataStatus('personalImported', {
 					inventories: imported.inventories.length,

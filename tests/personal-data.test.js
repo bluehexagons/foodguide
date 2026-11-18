@@ -235,6 +235,34 @@ test('a failed storage read keeps the last valid snapshot when a concurrent edit
 	assert.deepEqual(store.get(), saved);
 });
 
+test('a guarded change preserves a newer saved edit when its precondition no longer holds', async () => {
+	let saved = data();
+	const { promise: gate, resolve: release } = Promise.withResolvers();
+	const store = createPersonalDataStore({
+		getStorage: () => ({
+			getItem: () => JSON.stringify(saved),
+			setItem: () => assert.fail('The newer data must be preserved'),
+		}),
+		validIngredient: valid,
+		withLock: async commit => {
+			await gate;
+			await commit();
+		},
+	});
+	const pending = store.update(value => {
+		if (value.inventories[0].name !== inventory.name) {
+			return false;
+		}
+		value.inventories = [{ id: 'restored', name: 'Restored inventory', ingredients: [] }];
+	});
+	assert.equal(store.get().inventories[0].id, 'restored');
+	saved = data();
+	saved.inventories[0].name = 'Renamed in another tab';
+	release();
+	assert.equal(await pending, false);
+	assert.deepEqual(store.get(), saved);
+});
+
 test('an unavailable Web Lock keeps validated local edits available for export', async () => {
 	const store = createPersonalDataStore({
 		getStorage: () => ({

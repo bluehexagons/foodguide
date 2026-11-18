@@ -138,6 +138,7 @@ export const dict = {
 	personalImported: '已导入{inventories}个库存和{dishes}道菜品。',
 	personalImportError:
 		'无法导入此文件。请使用包含有效食材、名称和游戏设置的食物指南 JSON 备份（最大 2 MB）。现有数据未被替换。',
+	personalImportChanged: '导入期间，已保存的数据发生了变化。请检查数据后重试。',
 	personalStorageError: '此标签页中可以使用更改，但无法保存。关闭前请导出备份。',
 	personalLimitError: '已达到保存数据上限。请先导出备份并删除不用的项目。',
 

@@ -143,6 +143,8 @@ export const dict = {
 	personalImported: 'Inventários importados: {inventories}. Pratos importados: {dishes}.',
 	personalImportError:
 		'Não foi possível importar este arquivo. Use um backup JSON do Guia de comida com ingredientes, nomes e configurações de jogo válidos (até 2 MB). Os dados existentes não foram substituídos.',
+	personalImportChanged:
+		'Seus dados salvos mudaram durante a importação. Confira os dados e tente novamente.',
 	personalStorageError:
 		'As alterações estão disponíveis nesta aba, mas não puderam ser salvas. Exporte um backup antes de fechá-la.',
 	personalLimitError:

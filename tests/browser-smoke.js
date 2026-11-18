@@ -5683,6 +5683,45 @@ test('personal inventories synchronize edits while tabs choose inventories indep
 	assert.deepEqual(diagnostics, [[], []]);
 });
 
+test('a full inventory backup restores over an unused starter created in another language', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage({ locale: 'es-ES' });
+	await page.goto(`${baseUrl}/#discovery`, { waitUntil: 'networkidle' });
+	await page.waitForFunction(
+		() =>
+			JSON.parse(localStorage.getItem('foodGuidePersonalData') ?? 'null')?.inventories[0]
+				?.name === 'Mi inventario',
+	);
+	await page.locator('#language-picker').selectOption('en');
+	const backup = {
+		format: 'foodguide-personal-data',
+		version: 1,
+		inventories: Array.from({ length: 200 }, (_, index) => ({
+			id: `saved-${index}`,
+			name: `Inventory ${index + 1}`,
+			ingredients: ['carrot@together'],
+		})),
+		dishes: [],
+	};
+	await page.getByRole('button', { name: 'Options', exact: true }).click();
+	const file = page.locator('#personal-import');
+	const payload = {
+		name: 'backup.json',
+		mimeType: 'application/json',
+		buffer: Buffer.from(JSON.stringify(backup)),
+	};
+	const status = page.getByRole('dialog').getByRole('status');
+	const savedData = () =>
+		page.evaluate(() => JSON.parse(localStorage.getItem('foodGuidePersonalData')));
+	await file.setInputFiles(payload);
+	await status.filter({ hasText: 'Imported 200 inventories' }).waitFor();
+	assert.deepEqual(await savedData(), backup);
+	assert.equal(await page.locator('#inventory-select').inputValue(), 'saved-0');
+	await file.setInputFiles(payload);
+	await status.filter({ hasText: 'The saved-data limit has been reached.' }).waitFor();
+	assert.deepEqual(await savedData(), backup);
+});
+
 test('personal cookbook and backups support loading, explicit sharing, import validation and keyboard dialogs', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();

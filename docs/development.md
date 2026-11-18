@@ -181,8 +181,11 @@ storage and visibility events refresh the view without writing it back. Browsers
 Web Locks fall back to queued writes within a tab, with no cross-tab locking guarantee.
 Storage failures retain edits in memory and show an export reminder. Invalid stored data
 is not overwritten automatically. Imports validate the entire JSON file, including IDs,
-names, ingredient availability for dishes, and game context, before adding copies with
-new IDs. Limits are 2 MB, 200 inventories, 2,000 dishes, and 1,024 items per inventory.
+names, ingredient availability for dishes, and game context. In a profile with only
+the unused starter inventory, imports with inventories restore the backup's original
+records and IDs. The store checks again under the lock before replacing the starter.
+Other imports add copies with new IDs. Limits are 2 MB, 200 inventories, 2,000 dishes,
+and 1,024 items per inventory.
 
 ### Dialogs and appearance
 

@@ -138,7 +138,8 @@ export function parsePersonalData(
 }
 
 type DataStorage = Pick<Storage, 'getItem' | 'setItem'>;
-type Change = (data: PersonalData) => void;
+/** Return false before making any changes if the edit's precondition no longer holds. */
+type Change = (data: PersonalData) => false | void;
 interface StoreOptions {
 	getStorage: () => DataStorage;
 	validIngredient: (id: string) => boolean;
@@ -193,7 +194,9 @@ export function createPersonalDataStore({
 	const refresh = () => showPending(read());
 	const update = (change: Change) => {
 		const preview = structuredClone(memory);
-		change(preview);
+		if (change(preview) === false) {
+			return Promise.resolve(false);
+		}
 		try {
 			parsePersonalData(JSON.stringify(preview), validIngredient, validDish);
 		} catch {
@@ -206,7 +209,12 @@ export function createPersonalDataStore({
 		let applied = true;
 		const commit = async () => {
 			const latest = read();
-			change(latest);
+			if (change(latest) === false) {
+				applied = false;
+				pending.shift();
+				showPending(structuredClone(committed));
+				return;
+			}
 			const text = JSON.stringify(latest);
 			try {
 				parsePersonalData(text, validIngredient, validDish);

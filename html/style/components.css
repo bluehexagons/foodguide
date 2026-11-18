@@ -865,6 +865,7 @@ button.makablebutton:disabled:hover {
 	margin-right: 4px;
 }
 .ingredientdropdown.density-compact .item .text {
+	flex: 1;
 	font-size: 12px;
 }
 .ingredientdropdown.hidetext.density-compact .ingredient-options {

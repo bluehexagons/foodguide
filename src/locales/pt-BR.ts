@@ -185,7 +185,7 @@ export const dict = {
 		'Clique nos ingredientes para adicionar. Desmarque para remover todas as unidades; use − ou um espaço da panela para remover uma.',
 	discoveryHeading: 'Descoberta pelo inventário',
 	discoveryBody:
-		'Adicione abaixo todos os itens do seu inventário para ver quais receitas pode preparar. Clique em + para adicionar mais itens.',
+		'Selecione uma vez cada ingrediente que você tem. As receitas consideram que há porções suficientes de cada um.',
 	discoveryFoodStatsHeading: 'Estatísticas dos ingredientes',
 	discoveryRecipesHeading: 'Receitas disponíveis',
 	discoveryEfficientHeading: 'Eficiência das receitas',

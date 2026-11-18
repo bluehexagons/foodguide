@@ -4204,6 +4204,7 @@ test('current selections persist before unload and recover after an interrupted 
 		await search.fill(name);
 		await search.press('Enter');
 	};
+	assert.equal(await page.locator('#results table').count(), 0);
 	await pick('#simulator', 'Meat');
 	assert.deepEqual((await stored()).pickers[0], ['meat@together', null, null, null]);
 	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
@@ -4229,7 +4230,9 @@ test('current selections persist before unload and recover after an interrupted 
 	await page.locator('#ingredients [data-id="meat"]').click();
 	assert.deepEqual((await stored()).pickers[0], [null, null, null, null]);
 	await pick('#simulator', 'Berries');
+	assert.ok(await page.locator('#results table').count());
 	await page.locator('#simulator .clearingredientsbtn').click();
+	assert.equal(await page.locator('#results table').count(), 0);
 	assert.deepEqual((await stored()).pickers[0], [null, null, null, null]);
 	await pick('#simulator', 'Meat');
 	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();

@@ -218,7 +218,7 @@ export const dict = {
 	simulatorHeading: '烹饪锅模拟器',
 	simulatorBody: '点击食材添加。取消勾选可移除所有同类食材；点击 − 或锅中的格子可移除一个。',
 	discoveryHeading: '背包发现',
-	discoveryBody: '在下方添加你背包中的所有物品，查看可制作的配方。点击 + 添加更多物品。',
+	discoveryBody: '每种已有的食材只需选择一次。查找食谱时，默认每种所选食材的数量都足够。',
 	discoveryFoodStatsHeading: '食材属性',
 	discoveryRecipesHeading: '可制作的配方',
 	discoveryEfficientHeading: '配方效率',

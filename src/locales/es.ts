@@ -247,7 +247,7 @@ export const dict = {
 		'Haz clic para añadir ingredientes. Desmarca para quitar todas las unidades; usa − o una ranura de la olla para quitar una.',
 	discoveryHeading: 'Descubrimiento de Inventario',
 	discoveryBody:
-		'Añade abajo todos los objetos de tu inventario para ver qué recetas puedes preparar. Haz clic en + para añadir más.',
+		'Selecciona una vez cada ingrediente que tengas. Las recetas suponen que tienes suficientes unidades de cada uno.',
 	discoveryFoodStatsHeading: 'Estadísticas de los ingredientes',
 	discoveryRecipesHeading: 'Recetas disponibles',
 	discoveryEfficientHeading: 'Eficiencia de las recetas',

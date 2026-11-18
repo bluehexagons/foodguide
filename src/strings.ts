@@ -216,7 +216,7 @@ const defaultStrings = {
 		'Click ingredients to add. Uncheck to remove all copies; use − or a pot slot to remove one.',
 	discoveryHeading: 'Inventory Discovery',
 	discoveryBody:
-		'Add all items in your inventory below to see what recipes you can make. Click the + to add more items.',
+		'Select each ingredient you have once. Recipes assume you have enough portions of each selected ingredient.',
 	discoveryFoodStatsHeading: 'Ingredient stats',
 	discoveryRecipesHeading: 'Available recipes',
 	discoveryEfficientHeading: 'Recipe efficiency',

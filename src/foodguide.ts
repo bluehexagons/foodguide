@@ -2251,6 +2251,12 @@ import './locales/index.js';
 						return item && 'nameObject' in item ? item : null;
 					});
 
+					results.replaceChildren();
+					updateSelectionIndicators();
+					if (ingredients.every(item => item === null)) {
+						return;
+					}
+
 					const cooking = getRecipes(ingredients);
 					const health = cooking[0].health;
 					const hunger = cooking[0].hunger;
@@ -2299,10 +2305,6 @@ import './locales/index.js';
 						},
 					});
 
-					while (results.firstChild) {
-						results.removeChild(results.firstChild);
-					}
-
 					const outcomeSection = makeElement('section');
 					outcomeSection.className = 'tool-section';
 					outcomeSection.append(makeElement('h2', t('tableCookingResults')));
@@ -2311,7 +2313,6 @@ import './locales/index.js';
 					outcomeSection.append(outcomeNote, table);
 					results.append(outcomeSection);
 					pickerTables.push(table);
-					simulatorLocaleRefresh = updateRecipes;
 
 					if (ingredients[0] !== null) {
 						getSuggestions(suggestions, ingredients, cooking);
@@ -2368,9 +2369,8 @@ import './locales/index.js';
 							pickerTables.push(table);
 						}
 					}
-
-					updateSelectionIndicators();
 				};
+				simulatorLocaleRefresh = updateRecipes;
 			} else if (parent.id === 'inventory') {
 				//discovery
 				let discoveryGrinder: ReturnType<typeof makeRecipeGrinder> | undefined;

@@ -22,6 +22,22 @@ const normalizeName = (value: string) =>
 const searchNames = (item: GuideItem) => [item.name, itemName(item), item.id].map(normalizeName);
 const hasName = (item: GuideItem, name: string) => searchNames(item).includes(name);
 
+function findActiveName<T extends GuideItem>(
+	collection: { filter: (predicate: (item: T) => unknown) => T[] },
+	name: string,
+	modeMask: number,
+	charMask: number,
+): T | undefined {
+	const available = collection
+		.filter(item => matchesMode(item.modeMask, modeMask, item.charMask, charMask))
+		.reverse();
+	const normalized = normalizeName(name);
+	return (
+		available.find(item => item.lowerName === name) ??
+		available.find(item => hasName(item, normalized))
+	);
+}
+
 const compareByMatch = (a: GuideItem, b: GuideItem) => b.match - a.match || compareItemNames(a, b);
 
 const requirementMatchesItem = (requirements: Requirement[], item: Food) => {
@@ -82,9 +98,7 @@ export const createRecipeCalculator = ({
 					return searchType === 'tag' ? element.match : !element.match;
 				});
 			} else if (searchType === 'recipe') {
-				const recipe =
-					recipes.byName(value) ||
-					recipes.filter(item => hasName(item, normalizeName(value))).at(-1);
+				const recipe = findActiveName(recipes, value, modeMask, charMask);
 				if (!recipe) {
 					return [];
 				}
@@ -97,9 +111,7 @@ export const createRecipeCalculator = ({
 					return element.match;
 				});
 			} else {
-				const ingredient =
-					food.byName(value) ||
-					food.filter(item => hasName(item, normalizeName(value))).at(-1);
+				const ingredient = findActiveName(food, value, modeMask, charMask);
 				if (!ingredient) {
 					return [];
 				}

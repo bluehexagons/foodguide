@@ -1,9 +1,17 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 
-import { defaultStatMultipliers, TOGETHER, characters } from '../html/constants.js';
+import {
+	defaultStatMultipliers,
+	SHIPWRECKED,
+	TOGETHER,
+	VANILLA,
+	WARLY,
+	characters,
+} from '../html/constants.js';
 import { getCharacterFoodModifiers } from '../html/mode-utils.js';
 import { food } from '../html/food.js';
+import { recipes } from '../html/recipes.js';
 import {
 	combinationGenerator,
 	countCombinations,
@@ -57,6 +65,28 @@ describe('recipe calculator', () => {
 			matchingNames(food, 'recipe:butter muffin').some(
 				item => item.key === 'butterflywings@together',
 			),
+		);
+	});
+
+	it('looks up recipe and ingredient search terms in the active game and character', () => {
+		let mode = VANILLA | SHIPWRECKED;
+		let character = 0;
+		const { matchingNames } = createRecipeCalculator({
+			getModeMask: () => mode,
+			getCharMask: () => character,
+			getStatMultipliers: () => defaultStatMultipliers,
+		});
+		assert.ok(matchingNames(food, 'recipe:California Roll').includes(food.seaweed));
+		assert.deepStrictEqual(matchingNames(recipes, 'ingredient:Kelp Fronds'), []);
+		assert.deepStrictEqual(matchingNames(food, 'recipe:Fresh Fruit Crepes'), []);
+
+		mode = TOGETHER;
+		assert.ok(matchingNames(food, 'recipe:California Roll').includes(food.kelp));
+		assert.deepStrictEqual(matchingNames(recipes, 'ingredient:Seaweed'), []);
+		assert.deepStrictEqual(matchingNames(food, 'recipe:Fresh Fruit Crepes'), []);
+		character = WARLY;
+		assert.ok(
+			matchingNames(food, 'recipe:Fresh Fruit Crepes').includes(food['butter@together']),
 		);
 	});
 

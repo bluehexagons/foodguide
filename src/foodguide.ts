@@ -920,6 +920,8 @@ import './locales/index.js';
 	recipesElement.appendChild(recipeTable);
 
 	modeRefreshers.push(() => {
+		foodHighlighted = foodHighlight ? matchingNames(food, foodHighlight, true) : [];
+		recipeHighlighted = recipeHighlight ? matchingNames(recipes, recipeHighlight) : [];
 		foodTable.update();
 		recipeTable.update();
 		// Update auto-hide columns based on new mode
@@ -2932,7 +2934,8 @@ import './locales/index.js';
 
 			const refreshSelection = () => {
 				if (limited) {
-					for (const slot of fixedSlots) {
+					// Clearing a slot shifts later ingredients left. Check those slots first.
+					for (const slot of [...fixedSlots].reverse()) {
 						const item = getSlot(slot);
 						if (item && 'nameObject' in item) {
 							setSlot(slot, resolveIngredient(item.key, modeMask, charMask) ?? null);

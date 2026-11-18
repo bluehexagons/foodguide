@@ -23,6 +23,37 @@ if (!browserType) {
 const chromiumOnly =
 	browserType === chromium ? false : 'Trusted gesture injection requires Chromium CDP';
 
+test('Simulator removes consecutive unavailable pot ingredients on a game change', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(`${baseUrl}/#simulator?game=together&ingredients=kelp,kelp,carrot`, {
+		waitUntil: 'networkidle',
+	});
+	const ingredients = page.locator('#ingredients .ingredient[data-id]');
+	assert.deepEqual(await ingredients.evaluateAll(slots => slots.map(slot => slot.dataset.id)), [
+		'kelp',
+		'kelp',
+		'carrot@together',
+	]);
+	await page.locator('button[data-version="dontstarve"]').click();
+	assert.deepEqual(await ingredients.evaluateAll(slots => slots.map(slot => slot.dataset.id)), [
+		'carrot',
+	]);
+});
+
+test('reference highlights follow the selected game variant', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(`${baseUrl}/#foodlist?game=together&highlight=*Carrot`, {
+		waitUntil: 'networkidle',
+	});
+	const carrot = page.locator('#food tr.highlighted');
+	assert.match(await carrot.textContent(), /Carrot/);
+	await page.locator('button[data-version="dontstarve"]').click();
+	assert.equal(await carrot.count(), 1);
+	assert.match(await carrot.textContent(), /Carrot/);
+});
+
 test('localized game names update selections, search, cookbook, references, and help', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();

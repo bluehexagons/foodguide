@@ -95,7 +95,7 @@ import { sortIngredients } from './ingredient-sort.js';
 import { groupIngredients } from './ingredient-groups.js';
 import { filterCookingIngredients } from './ingredient-cooking.js';
 import { createThemeController } from './theme-controller.js';
-import { initializeInformationPages } from './ui-icons.js';
+import { createIcon, initializeInformationPages } from './ui-icons.js';
 import { createSortableTableFactory } from './sortable-table.js';
 import { recipes, updateFoodRecipes, updateRecipeText } from './recipes.js';
 import { makeImage, makeElement } from './utils.js';
@@ -1584,6 +1584,7 @@ import './locales/index.js';
 				throw new Error('Ingredient list not found for picker');
 			}
 			const parent = list;
+			const clearIngredientsBtn = document.createElement('button');
 			if (!parent.parentElement!.classList.contains('selectionpanel')) {
 				const panel = document.createElement('div');
 				panel.className = 'selectionpanel';
@@ -1604,8 +1605,13 @@ import './locales/index.js';
 						: 'discoverySelectedIngredients',
 				);
 				parent.parentElement!.insertBefore(panel, parent);
-				panel.appendChild(title);
+				const headingRow = document.createElement('div');
+				headingRow.className = 'selectionpanel-heading';
+				headingRow.append(title, clearIngredientsBtn);
+				panel.appendChild(headingRow);
 				panel.appendChild(parent);
+			} else {
+				parent.before(clearIngredientsBtn);
 			}
 			const fixedSlots = Array.from(parent.querySelectorAll<HTMLElement>('.ingredient'));
 			const slots: string[] = [];
@@ -1639,7 +1645,6 @@ import './locales/index.js';
 			const discover = requireElement('discover');
 			const makable = requireElement('makable');
 			const clearSearchBtn = document.createElement('button');
-			const clearIngredientsBtn = document.createElement('button');
 			const pickerStatus = document.createElement('div');
 			pickerStatus.className = 'sr-only';
 			pickerStatus.setAttribute('role', 'status');
@@ -2716,14 +2721,14 @@ import './locales/index.js';
 
 			refreshPicker();
 
-			clearSearchBtn.className = 'clearingredients clearsearchbtn';
+			clearSearchBtn.className = 'clearsearchbtn';
 			clearSearchBtn.type = 'button';
 			clearSearchBtn.setAttribute('data-i18n-attr-aria-label', 'clearSearch');
 			clearSearchBtn.setAttribute('aria-label', t('clearSearch'));
 			clearSearchBtn.setAttribute('data-i18n-attr-title', 'clearSearch');
 			clearSearchBtn.title = t('clearSearch');
-			// Use an inline SVG for clear search or just an X
-			clearSearchBtn.innerHTML = '<span>×</span>';
+			clearSearchBtn.append(createIcon('close'));
+			searchInputGroup.append(clearSearchBtn);
 
 			clearSearchBtn.addEventListener('click', () => {
 				picker.value = '';
@@ -2732,14 +2737,11 @@ import './locales/index.js';
 				picker.focus();
 			});
 
-			clearIngredientsBtn.className = 'clearingredients clearingredientsbtn';
+			clearIngredientsBtn.className = 'clearingredientsbtn';
 			clearIngredientsBtn.type = 'button';
-			clearIngredientsBtn.setAttribute('data-i18n-attr-aria-label', 'clearIngredients');
-			clearIngredientsBtn.setAttribute('aria-label', t('clearIngredients'));
-			clearIngredientsBtn.setAttribute('data-i18n-attr-title', 'clearIngredients');
-			clearIngredientsBtn.title = t('clearIngredients');
-			// Use a trash can icon or similar
-			clearIngredientsBtn.innerHTML = '<span>🗑</span>'; // Using a trash emoji, or we can use SVG
+			const clearLabel = makeElement('span', t('clearIngredients'));
+			clearLabel.dataset.i18n = 'clearIngredients';
+			clearIngredientsBtn.append(createIcon('trash'), clearLabel);
 
 			clearIngredientsBtn.addEventListener('click', () => {
 				// Check if there are any ingredients to clear
@@ -2837,25 +2839,15 @@ import './locales/index.js';
 			const controlsGroup = document.createElement('div');
 			controlsGroup.className = 'ingredient-search-controls';
 
-			const controlsLeft = document.createElement('div');
-			controlsLeft.className = 'ingredient-search-controls-left';
-
-			const controlsRight = document.createElement('div');
-			controlsRight.className = 'ingredient-search-controls-right';
-
-			controlsLeft.appendChild(displayModeControls.container);
-			controlsLeft.appendChild(densityControls.container);
-			controlsLeft.appendChild(sortControls.container);
-			controlsLeft.appendChild(groupControls.container);
-			controlsLeft.appendChild(cookingControls.container);
-			controlsLeft.appendChild(sortHelp);
-			controlsLeft.appendChild(cookingHelp);
-
-			controlsRight.appendChild(clearSearchBtn);
-			controlsRight.appendChild(clearIngredientsBtn);
-
-			controlsGroup.appendChild(controlsLeft);
-			controlsGroup.appendChild(controlsRight);
+			controlsGroup.append(
+				displayModeControls.container,
+				densityControls.container,
+				sortControls.container,
+				groupControls.container,
+				cookingControls.container,
+				sortHelp,
+				cookingHelp,
+			);
 			searchRow.appendChild(controlsGroup);
 
 			searchRow.parentNode!.insertBefore(dropdown, parent.parentElement!);

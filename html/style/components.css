@@ -102,9 +102,18 @@
 	background: var(--table-bg);
 }
 
+.selectionpanel-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 6px 12px;
+	margin-bottom: 10px;
+}
+
 .selectionpanel-title {
 	padding: 0;
-	margin: 0 0 10px;
+	margin: 0;
 	font-size: 0.95rem;
 	font-weight: 700;
 	letter-spacing: 0.02em;
@@ -174,8 +183,7 @@
 	line-height: 1.5;
 }
 
-.analysis-filter:focus-visible .icon,
-.clearingredients:focus-visible {
+.analysis-filter:focus-visible .icon {
 	opacity: 1;
 }
 
@@ -338,36 +346,6 @@ table.links .link.ingredient-action-error::after {
 	opacity: 1;
 	background: var(--table-hover);
 	border-color: var(--light);
-}
-
-.clearingredients {
-	color: var(--fg-primary);
-	display: inline-block;
-	cursor: pointer;
-	border: 1px solid var(--medium);
-	background: var(--bg-primary);
-	text-align: center;
-	vertical-align: middle;
-	font-size: 20px;
-	line-height: 1;
-	width: 24px;
-	height: 24px;
-	border-radius: 3px;
-	opacity: 0.5;
-	transition: all var(--transition-fast);
-	float: right;
-	margin-left: 8px;
-	padding: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.clearingredients:hover {
-	opacity: 1;
-	background: var(--excluded-bg);
-	border-color: var(--excluded-border);
-	color: var(--strike-text);
 }
 
 /* Dropdown styles for sort and display mode */
@@ -619,7 +597,7 @@ button.makablebutton:disabled:hover {
 
 .ingredient-search-input-group .ingredientpicker {
 	flex: 1;
-	border-radius: 0 4px 4px 0;
+	border-radius: 0;
 	border: 1px solid var(--border-color);
 	padding: 8px 12px;
 	font-size: 14px;
@@ -627,15 +605,6 @@ button.makablebutton:disabled:hover {
 }
 
 .ingredient-search-controls {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 8px;
-	flex-wrap: wrap;
-}
-
-.ingredient-search-controls-left,
-.ingredient-search-controls-right {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -673,27 +642,39 @@ button.makablebutton:disabled:hover {
 	border-color: var(--dark);
 }
 
-.ingredient-search-controls .clearingredients {
-	margin: 0;
-	padding: 0;
-	width: 32px;
-	height: 32px;
-	border-radius: 4px;
-	border: 1px solid var(--border-color);
-	background: var(--bg-secondary);
-	color: var(--fg-primary);
-	display: flex;
+.clearsearchbtn,
+.clearingredientsbtn {
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	gap: 6px;
+	min-height: 32px;
+	padding: 4px 8px;
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	background: var(--bg-secondary);
+	color: var(--fg-secondary);
+	font: inherit;
+	font-size: 13px;
 	cursor: pointer;
-	font-size: 18px;
-	transition: all var(--transition-fast);
 }
 
-.ingredient-search-controls .clearingredients:hover {
+.clearsearchbtn {
+	flex-shrink: 0;
+	min-width: 32px;
+	border-inline-start: 0;
+	border-radius: 0 4px 4px 0;
+}
+
+.clearsearchbtn:hover {
+	background: var(--table-hover);
+	color: var(--fg-primary);
+}
+
+.clearingredientsbtn:hover {
 	background: var(--excluded-bg);
 	border-color: var(--excluded-border);
-	color: var(--strike-text);
+	color: var(--fg-primary);
 }
 
 /* Ingredient result groups and their option layouts. */
@@ -820,10 +801,6 @@ button.makablebutton:disabled:hover {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-}
-.ingredient-search-controls-left,
-.ingredient-search-controls-right {
-	position: relative;
 }
 /* Density variations for ingredient dropdown */
 /* Compact */
@@ -1057,17 +1034,4 @@ button.makablebutton:disabled:hover {
 .ingredient-search-input-group .ui-dropdown-container .searchselector {
 	height: 100%;
 	width: 100%;
-}
-
-@media (max-width: 767px) {
-	/* Let the clear actions share the last row of picker controls. */
-	.ingredient-search-controls .ingredient-search-controls-left {
-		display: contents;
-	}
-	.ingredient-search-controls {
-		justify-content: flex-start;
-	}
-	.ingredient-search-controls-right {
-		margin-inline-start: auto;
-	}
 }

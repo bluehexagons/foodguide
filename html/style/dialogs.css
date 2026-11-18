@@ -15,7 +15,7 @@ html:has(.personal-dialog[open]) {
 	margin: auto;
 	padding: 0;
 	border: 1px solid var(--border-color);
-	border-radius: 14px;
+	border-radius: 6px;
 	background: var(--bg-secondary);
 	color: var(--fg-primary);
 	box-shadow: 0 24px 80px rgb(0 0 0 / 35%);
@@ -143,10 +143,8 @@ html:has(.personal-dialog[open]) {
 	display: flex;
 	align-items: flex-start;
 	gap: 12px;
-	padding: 14px;
-	border: 1px solid var(--border-color);
-	border-radius: 8px;
-	background: var(--bg-primary);
+	padding: 10px 4px;
+	border-top: 1px solid var(--border-color);
 	cursor: pointer;
 	font-weight: 400;
 }
@@ -260,16 +258,13 @@ html:has(.personal-dialog[open]) {
 .backup-cards {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 12px;
+	gap: 20px;
 }
 .backup-card {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	padding: 16px;
-	border: 1px solid var(--border-color);
-	border-radius: 9px;
-	background: var(--bg-primary);
+	gap: 8px;
+	min-width: 0;
 }
 .backup-card h4 {
 	margin: 0;
@@ -356,8 +351,7 @@ html:has(.personal-dialog[open]) {
 	font-weight: 600;
 }
 .share-includes .share-choice {
-	margin: 0 0 8px;
-	padding: 10px 12px;
+	margin: 0;
 	font-size: 13px;
 }
 .share-choice:has(input:disabled) {

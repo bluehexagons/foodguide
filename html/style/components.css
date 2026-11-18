@@ -86,20 +86,20 @@
 	}
 }
 
-.instructions h2 {
-	margin: 0 0 4px;
+.instructions h2,
+.tool-heading {
+	margin: 0 0 8px;
 	padding: 0;
-	font-size: inherit;
+	font-size: 1.25rem;
+	line-height: 1.35;
 }
 
 /* Ingredient list and slots */
 .selectionpanel {
 	margin-top: 16px;
 	padding: 12px 14px 14px;
-	border: 1px solid var(--border-light);
-	border-radius: 10px;
+	border-block: 1px solid var(--border-color);
 	background: var(--table-bg);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .selectionpanel-title {
@@ -116,6 +116,15 @@
 	gap: 8px;
 	flex-wrap: wrap;
 	margin-top: 0;
+}
+
+#ingredients {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 72px));
+}
+
+#ingredients .ingredient {
+	width: 100%;
 }
 
 .ingredient {
@@ -695,7 +704,6 @@ button.makablebutton:disabled:hover {
 	--ingredient-group-padding: 8px;
 	border: 1px solid var(--border-color);
 	border-radius: 6px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	padding: 8px;
 	margin-top: 4px;
 	background: var(--bg-primary);
@@ -724,9 +732,6 @@ button.makablebutton:disabled:hover {
 		break-inside: avoid-column;
 		margin: 0 0 var(--ingredient-group-gap);
 		padding: var(--ingredient-group-padding);
-		border: 1px solid var(--border-color);
-		border-radius: 6px;
-		background: var(--bg-secondary);
 	}
 }
 
@@ -823,7 +828,7 @@ button.makablebutton:disabled:hover {
 /* Density variations for ingredient dropdown */
 /* Compact */
 .ingredientdropdown.density-compact .ingredient-options {
-	grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
 	gap: 2px;
 }
 .ingredientdropdown.density-compact {
@@ -860,7 +865,7 @@ button.makablebutton:disabled:hover {
 	margin-right: 4px;
 }
 .ingredientdropdown.density-compact .item .text {
-	font-size: 11px;
+	font-size: 12px;
 }
 .ingredientdropdown.hidetext.density-compact .ingredient-options {
 	grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
@@ -1051,4 +1056,17 @@ button.makablebutton:disabled:hover {
 .ingredient-search-input-group .ui-dropdown-container .searchselector {
 	height: 100%;
 	width: 100%;
+}
+
+@media (max-width: 767px) {
+	/* Let the clear actions share the last row of picker controls. */
+	.ingredient-search-controls .ingredient-search-controls-left {
+		display: contents;
+	}
+	.ingredient-search-controls {
+		justify-content: flex-start;
+	}
+	.ingredient-search-controls-right {
+		margin-inline-start: auto;
+	}
 }

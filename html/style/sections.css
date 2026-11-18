@@ -2,10 +2,8 @@
 .tool-section {
 	min-width: 0;
 	margin-top: 20px;
-	padding: 14px;
-	border: 1px solid var(--border-color);
-	border-radius: 10px;
-	background: var(--table-bg);
+	padding-top: 14px;
+	border-top: 1px solid var(--border-color);
 }
 
 .tool-section > h2 {
@@ -36,9 +34,7 @@
 
 .section-empty {
 	margin: 16px 0 0;
-	padding: 16px;
-	border: 1px dashed var(--border-color);
-	border-radius: 8px;
+	padding-block: 4px;
 }
 
 .tool-section .section-empty {
@@ -48,8 +44,7 @@
 #inventory-controls {
 	margin-bottom: 14px;
 	padding: 12px 14px;
-	border: 1px solid var(--border-color);
-	border-radius: 10px;
+	border-block: 1px solid var(--border-color);
 	background: var(--table-bg);
 	font-size: 0.85rem;
 }
@@ -223,9 +218,7 @@
 
 .cookbook-list .cookbook-empty {
 	grid-column: 1 / -1;
-	padding: 12px;
-	border: 1px dashed var(--border-color);
-	border-radius: 6px;
+	padding-block: 4px;
 	font-size: 0.85rem;
 	color: var(--fg-secondary);
 }
@@ -238,11 +231,6 @@
 .analysis-introduction {
 	max-width: 760px;
 	margin-bottom: 16px;
-}
-
-.analysis-introduction h2 {
-	font-size: 1.15rem;
-	margin-bottom: 8px;
 }
 
 .analysis-introduction p {
@@ -273,10 +261,8 @@ button.makablebutton {
 
 .makableContainer {
 	margin: 12px 0 0;
-	padding: 14px;
-	border: 1px solid var(--border-color);
-	border-radius: 10px;
-	background: var(--table-bg);
+	padding-top: 12px;
+	border-top: 1px solid var(--border-color);
 }
 
 .makableSummary {
@@ -338,10 +324,6 @@ button.makablebutton {
 }
 
 @media (max-width: 767px) {
-	.tool-section,
-	.makableContainer {
-		padding: 10px;
-	}
 	#inventory-controls label {
 		flex-basis: 100%;
 	}

@@ -214,6 +214,9 @@ html[data-theme='light'] {
 }
 
 #content {
+	display: flex;
+	flex-direction: column;
+	min-height: 100dvh;
 	max-width: 100%;
 	margin-left: auto;
 	margin-right: auto;
@@ -231,6 +234,8 @@ a:hover {
 }
 
 #main {
+	flex: 1;
+	min-width: 0;
 	background: var(--bg-secondary);
 	position: relative;
 	padding: 16px;
@@ -270,7 +275,8 @@ strong {
 }
 
 .instructions {
-	margin-bottom: 12px;
+	margin-bottom: 16px;
+	font-size: 0.95rem;
 	line-height: 1.5;
 	color: var(--fg-primary);
 }
@@ -301,7 +307,7 @@ strong {
 	margin: 0 0 24px 0;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 4px 20px;
 }
 
 .wiki-links-list li {
@@ -310,22 +316,15 @@ strong {
 
 .wiki-links-list a {
 	display: inline-block;
-	padding: 6px 12px;
-	background: var(--bg-secondary);
-	border: 1px solid var(--border-color);
-	border-radius: 6px;
+	padding: 4px 0;
+	text-underline-offset: 0.18em;
 	color: var(--fg-primary);
-	text-decoration: none;
 	font-size: 14px;
 	font-weight: 500;
-	transition: all var(--transition-fast);
 }
 
 .wiki-links-list a:hover {
-	background: var(--table-hover);
-	border-color: var(--dark);
-	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	color: var(--focus-color);
 }
 
 .wiki-links-list a::after {

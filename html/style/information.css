@@ -31,13 +31,13 @@
 .info-hero {
 	display: flex;
 	align-items: flex-start;
-	gap: 22px;
+	gap: 14px;
 	padding: 20px 0 30px;
 	border-bottom: 1px solid var(--border-color);
 	margin-bottom: 28px;
 }
 .info-hero h2 {
-	font-size: clamp(24px, 3vw, 32px);
+	font-size: 1.5rem;
 	letter-spacing: -0.025em;
 }
 .info-hero p {
@@ -47,12 +47,9 @@
 .info-hero-icon {
 	display: grid;
 	place-items: center;
-	width: 68px;
-	height: 68px;
+	height: 2.1rem;
 	flex-shrink: 0;
-	border: 1px solid var(--picked-border);
-	border-radius: 18px;
-	background: var(--picked-bg);
+
 	color: var(--focus-color);
 }
 .info-hero-icon .ui-icon {
@@ -66,13 +63,11 @@
 .freshness-grid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 16px;
+	gap: 16px 28px;
 }
 .info-card {
-	padding: 22px;
-	border: 1px solid var(--border-color);
-	border-radius: 10px;
-	background: var(--bg-secondary);
+	padding: 14px 0;
+	border-top: 1px solid var(--border-color);
 	min-width: 0;
 }
 .info-card p {
@@ -111,10 +106,9 @@
 	gap: 12px;
 }
 .info-callout {
-	padding: 24px;
+	padding: 16px 20px;
 	margin-block: 28px;
-	border: 1px solid var(--picked-border);
-	border-radius: 10px;
+	border-inline-start: 3px solid var(--picked-border);
 	background: var(--picked-bg);
 }
 .info-actions {
@@ -123,40 +117,35 @@
 	gap: 10px;
 }
 .info-details {
-	border: 1px solid var(--border-color);
-	border-radius: 9px;
+	border-block: 1px solid var(--border-color);
 	background: var(--bg-secondary);
 }
 .info-details summary {
-	padding: 16px 20px;
+	padding: 12px 0;
 	cursor: pointer;
 	font-size: 14px;
 	font-weight: 600;
 }
 .info-details > div {
-	padding: 0 20px 20px;
+	padding: 0 0 16px;
 	font-size: 13px;
 }
 .info-resource-links ul {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 10px;
+	gap: 4px 20px;
 	padding: 0;
 	list-style: none;
 }
 .info-resource-links a {
-	display: block;
-	padding: 12px 16px;
-	border: 1px solid var(--border-color);
-	border-radius: 7px;
-	background: var(--bg-secondary);
-	text-decoration: none;
+	display: inline-block;
+	padding-block: 4px;
+	text-underline-offset: 0.18em;
 	font-size: 13px;
 }
 .info-resource-links a::after {
 	content: ' ↗';
 }
-.info-resource-links a:hover,
 .info-actions button:hover {
 	border-color: var(--focus-color);
 	background: var(--table-hover);
@@ -168,22 +157,22 @@
 .info-contents {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 4px 20px;
 	margin: 0 0 28px;
 }
 .info-contents button {
-	padding: 8px 12px;
-	border: 1px solid var(--border-color);
-	border-radius: 6px;
-	background: var(--bg-secondary);
+	padding: 4px 0;
+	border: 0;
+	background: transparent;
+	text-decoration: underline;
+	text-underline-offset: 0.18em;
 	color: var(--fg-primary);
 	font: inherit;
 	font-size: 12px;
 	cursor: pointer;
 }
 .info-contents button:hover {
-	border-color: var(--focus-color);
-	background: var(--table-hover);
+	color: var(--focus-color);
 }
 .freshness-grid,
 .character-cards {
@@ -210,7 +199,6 @@
 }
 .favorites-table {
 	border: 1px solid var(--border-color);
-	border-radius: 10px;
 	overflow: hidden;
 	background: var(--bg-secondary);
 }
@@ -228,7 +216,13 @@
 #help-favorite-foods thead {
 	background: var(--picked-bg);
 }
+#help-favorite-foods tbody :is(th, td) {
+	background: transparent;
+	color: var(--fg-primary);
+}
 #help-favorite-foods tbody th {
+	position: static;
+	white-space: normal;
 	font-weight: 500;
 }
 #help-favorite-foods tbody tr:nth-child(even) {
@@ -237,7 +231,7 @@
 #help-favorite-foods tbody tr:hover {
 	background: var(--table-hover);
 }
-#help-favorite-foods tr:last-child :is(th, td) {
+#help-favorite-foods tbody tr:last-child :is(th, td) {
 	border-bottom: 0;
 }
 @media (max-width: 767px) {
@@ -249,19 +243,10 @@
 	.info-resource-links ul {
 		grid-template-columns: minmax(0, 1fr);
 	}
-	.info-hero {
-		gap: 14px;
-	}
-	.info-hero-icon {
-		width: 46px;
-		height: 46px;
-		border-radius: 12px;
-	}
 	.info-hero-icon .ui-icon {
 		width: 25px;
 		height: 25px;
 	}
-	.info-card,
 	.info-callout {
 		padding: 18px;
 	}
@@ -284,7 +269,7 @@
 @media (max-width: 767px) {
 	.info-hero {
 		display: grid;
-		grid-template-columns: 46px minmax(0, 1fr);
+		grid-template-columns: auto minmax(0, 1fr);
 		gap: 8px 14px;
 	}
 	.info-hero > div:last-child {
@@ -295,6 +280,7 @@
 	}
 	.info-hero h2 {
 		grid-column: 2;
+		margin-bottom: 0;
 	}
 	.info-hero > div:last-child > p:last-child {
 		grid-column: 1 / -1;

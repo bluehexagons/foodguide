@@ -315,6 +315,7 @@ export const createSortableTableFactory = ({
 		const headerRow = head.insertRow();
 		const body = table.createTBody();
 		const rowItems = new WeakMap<HTMLTableRowElement, T>();
+		const rowGroups = new WeakMap<HTMLTableRowElement, T>();
 		const headerCells = headerKeys.map(header => {
 			const th = document.createElement('th');
 			th.scope = 'col';
@@ -503,10 +504,13 @@ export const createSortableTableFactory = ({
 			const focusedLink = focusedControl?.dataset.link;
 			const focusedAction = focusedControl?.dataset.tableAction;
 			const focusedRow = focusedControl?.closest('tr');
-			const originalItem = focusedRow ? rowItems.get(focusedRow) : undefined;
+			const groupAction =
+				focusedAction === 'expand-group' || focusedAction?.startsWith('page-');
+			const originalItem = focusedRow
+				? (groupAction ? rowGroups : rowItems).get(focusedRow)
+				: undefined;
 			const focusedItem =
-				originalItem &&
-				(focusedAction === 'expand-group' || focusedAction?.startsWith('page-'))
+				originalItem && groupAction
 					? (aliases.get(originalItem) ?? originalItem)
 					: originalItem;
 			const focusedIndex =
@@ -527,11 +531,14 @@ export const createSortableTableFactory = ({
 			const content = document.createDocumentFragment();
 			const highlightedRows: HTMLTableRowElement[] = [];
 			rows = 0;
-			const appendRow = (item: T, focusItem = item) => {
+			const appendRow = (item: T, groupItem?: T) => {
 				const row = rowGenerator(item);
 				row.children[nameColumn]?.classList.add('name-cell');
-				rowItems.set(row, focusItem);
-				if (focusItem === focusedItem) {
+				rowItems.set(row, item);
+				if (groupItem) {
+					rowGroups.set(row, groupItem);
+				}
+				if (focusedItem && (groupAction ? groupItem : item) === focusedItem) {
 					restoredRows.push(row);
 				}
 				iconColumns.forEach(column => row.children[column]?.classList.add('icon-cell'));
@@ -573,8 +580,8 @@ export const createSortableTableFactory = ({
 					pagerRow.className = 'table-group-pager';
 					pagerRow.id = `${tableId}-group-${index}-pager`;
 					pagerRow.hidden = !expanded;
-					rowItems.set(pagerRow, group.item);
-					if (group.item === focusedItem) {
+					rowGroups.set(pagerRow, group.item);
+					if (groupAction && group.item === focusedItem) {
 						restoredRows.push(pagerRow);
 					}
 					const pager = createTablePagination(translate, page => {

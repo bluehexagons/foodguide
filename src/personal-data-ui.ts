@@ -108,7 +108,11 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		onError: reason =>
 			announce(reason === 'limit' ? 'personalLimitError' : 'personalStorageError'),
 	});
-	const id = () => crypto.randomUUID();
+	const id = () =>
+		crypto.randomUUID?.() ??
+		Array.from(crypto.getRandomValues(new Uint8Array(16)), byte =>
+			byte.toString(16).padStart(2, '0'),
+		).join('');
 	const activeKey = 'foodGuideActiveInventory';
 	let activeId = '';
 	try {
@@ -154,6 +158,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	name.maxLength = 150;
 	name.required = true;
 	name.id = 'inventory-name';
+	let nameInventoryId = '';
 	button(inventoryControls, 'inventoryRename', () => inventoryControls.requestSubmit());
 	inventoryControls.addEventListener('submit', event => {
 		event.preventDefault();
@@ -368,8 +373,9 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			}),
 		);
 		select.value = activeId;
-		if (document.activeElement !== name) {
+		if (document.activeElement !== name || nameInventoryId !== activeId) {
 			name.value = inventory?.name ?? '';
+			nameInventoryId = activeId;
 		}
 		deleteInventory.disabled = data.inventories.length <= 1;
 		baseline = inventory?.ingredients ?? [];
@@ -746,7 +752,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	withIcon(
 		button(exportCard, 'personalExport', () => {
 			void store.settled().then(() => {
-				const blob = new Blob([JSON.stringify(store.get(), null, 2)], {
+				const blob = new Blob([JSON.stringify(store.get())], {
 					type: 'application/json',
 				});
 				const url = URL.createObjectURL(blob);

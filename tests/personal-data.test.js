@@ -199,6 +199,58 @@ test('concurrent additions cannot exceed backup limits or leave unsavable data i
 	assert.doesNotThrow(() => parsePersonalData(JSON.stringify(second.get()), valid));
 });
 
+test('a failed storage read keeps the last valid snapshot when a concurrent edit exhausts capacity', async () => {
+	const saved = emptyPersonalData();
+	saved.inventories = Array.from({ length: 199 }, (_, index) => ({
+		id: `inv${index}`,
+		name: `Inventory ${index}`,
+		ingredients: [],
+	}));
+	let readable = true;
+	const { promise: gate, resolve: release } = Promise.withResolvers();
+	const store = createPersonalDataStore({
+		getStorage: () => ({
+			getItem: () => {
+				if (!readable) {
+					throw new Error('Storage unavailable');
+				}
+				return JSON.stringify(saved);
+			},
+			setItem: () => assert.fail('The over-limit edit cannot be saved'),
+		}),
+		validIngredient: valid,
+		withLock: async commit => {
+			await gate;
+			await commit();
+		},
+	});
+	const pending = store.update(value => {
+		value.inventories.push({ id: 'local', name: 'Local', ingredients: [] });
+	});
+	saved.inventories.push({ id: 'remote', name: 'Remote', ingredients: [] });
+	store.refresh();
+	readable = false;
+	release();
+	assert.equal(await pending, false);
+	assert.deepEqual(store.get(), saved);
+});
+
+test('an unavailable Web Lock keeps validated local edits available for export', async () => {
+	const store = createPersonalDataStore({
+		getStorage: () => ({
+			getItem: () => JSON.stringify(data()),
+			setItem: () => assert.fail('The edit must acquire a lock before writing'),
+		}),
+		validIngredient: valid,
+		withLock: async () => {
+			throw new Error('Web Locks unavailable');
+		},
+	});
+	assert.equal(await store.update(value => editInventory(value, 'default', ['meat'], [])), true);
+	store.refresh();
+	assert.deepEqual(store.get().inventories[0].ingredients, ['carrot', 'meat']);
+});
+
 test('unavailable dish ingredients and malformed durable data never overwrite a backup', async () => {
 	assert.throws(() => parsePersonalData(JSON.stringify(data()), valid, () => false));
 	let writes = 0;

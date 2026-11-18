@@ -158,37 +158,39 @@ export function createPersonalDataStore({
 	withLock,
 	onError,
 }: StoreOptions) {
-	let memory = emptyPersonalData();
+	let committed = emptyPersonalData();
 	const listeners = new Set<() => void>();
 	const pending: Change[] = [];
 	let queue = Promise.resolve();
 	let storageFailed = false;
 	const read = () => {
-		if (storageFailed) {
-			return structuredClone(memory);
+		if (!storageFailed) {
+			try {
+				const text = getStorage().getItem(personalDataKey);
+				committed = text
+					? parsePersonalData(text, validIngredient, validDish)
+					: emptyPersonalData();
+			} catch {
+				storageFailed = true;
+				onError?.();
+			}
 		}
-		try {
-			const text = getStorage().getItem(personalDataKey);
-			return text ? parsePersonalData(text, validIngredient, validDish) : emptyPersonalData();
-		} catch {
-			storageFailed = true;
-			onError?.();
-			return structuredClone(memory);
-		}
+		return structuredClone(committed);
 	};
 	const notify = () => {
 		for (const listener of listeners) {
 			listener();
 		}
 	};
-	memory = read();
-	const refresh = () => {
-		memory = read();
+	let memory = read();
+	const showPending = (base: PersonalData) => {
+		memory = base;
 		for (const change of pending) {
 			change(memory);
 		}
 		notify();
 	};
+	const refresh = () => showPending(read());
 	const update = (change: Change) => {
 		const preview = structuredClone(memory);
 		change(preview);
@@ -213,12 +215,8 @@ export function createPersonalDataStore({
 				// Keep its valid data and reject our edit rather than retaining an invalid backup.
 				applied = false;
 				pending.shift();
-				memory = read();
-				for (const next of pending) {
-					next(memory);
-				}
 				onError?.('limit');
-				notify();
+				showPending(structuredClone(committed));
 				return;
 			}
 			try {
@@ -230,21 +228,37 @@ export function createPersonalDataStore({
 				storageFailed = true;
 				onError?.();
 			}
+			committed = latest;
 			pending.shift();
-			memory = latest;
-			for (const next of pending) {
-				next(memory);
-			}
-			notify();
+			showPending(structuredClone(committed));
 		};
 		queue = queue
-			.then(() => (withLock ? withLock(commit) : commit()))
+			.then(async () => {
+				if (!withLock || storageFailed) {
+					return commit();
+				}
+				let acquired = false;
+				try {
+					await withLock(() => {
+						acquired = true;
+						return commit();
+					});
+				} catch (error) {
+					if (acquired) {
+						throw error;
+					}
+					storageFailed = true;
+					await commit();
+				}
+			})
 			.catch(() => {
 				applied = false;
 				storageFailed = true;
-				pending.shift();
+				if (pending[0] === change) {
+					pending.shift();
+				}
 				onError?.();
-				notify();
+				refresh();
 			});
 		return queue.then(() => applied);
 	};

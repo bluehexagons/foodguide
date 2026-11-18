@@ -5014,6 +5014,13 @@ test('large recipe groups allow direct browsing without rendering the whole data
 				const row = cells('td', item.name, item.hunger);
 				row.dataset.recipe = item.recipe;
 				row.dataset.index = String(item.index);
+				if (item.recipe === 'stew') {
+					const simulate = document.createElement('button');
+					simulate.type = 'button';
+					simulate.dataset.tableAction = 'simulate';
+					simulate.textContent = 'Simulate';
+					row.cells[1].append(simulate);
+				}
 				return row;
 			},
 			groupRows: {
@@ -5224,6 +5231,22 @@ test('large recipe groups allow direct browsing without rendering the whole data
 		).includes(190),
 		'Refresh retains the previously displayed combination when new rows precede it',
 	);
+	await fixture
+		.locator('.column-toggle-bar button')
+		.filter({ hasText: /^Hunger/ })
+		.tap();
+	const firstCombination = fixture.locator('tr[data-recipe=stew]').first();
+	const combinationId = await firstCombination.getAttribute('data-index');
+	await firstCombination.locator('[data-table-action=simulate]').focus();
+	await page.evaluate(() => {
+		const { table, dataset } = window.paginationFixture;
+		dataset.push({ name: 'Meaty Stew', recipe: 'stew', hunger: 1002, index: -38 });
+		table.refresh();
+	});
+	const focused = fixture.locator(
+		`tr[data-index="${combinationId}"] [data-table-action=simulate]`,
+	);
+	assert.equal(await focused.evaluate(button => button === document.activeElement), true);
 	await overview.locator('[data-table-action=page-next]').tap();
 	assert.equal(await rows.first().getAttribute('data-recipe'), 'other-9');
 	await page.evaluate(() => {
@@ -5609,6 +5632,9 @@ test('personal inventories synchronize edits while tabs choose inventories indep
 	assert.match(await recipient.locator('#inventory-name').inputValue(), /Shared inventory/);
 	assert.doesNotMatch(recipient.url(), /inventory=/);
 	// Deleting one shared inventory falls back locally in tabs viewing it; other data stays intact.
+	await first.locator('#inventory-select').selectOption(otherId);
+	const draft = first.locator('#inventory-name');
+	await draft.fill('Unfinished rename');
 	await second
 		.locator('#inventory-controls')
 		.getByRole('button', { name: 'Delete', exact: true })
@@ -5618,12 +5644,20 @@ test('personal inventories synchronize edits while tabs choose inventories indep
 		() => document.querySelectorAll('#inventory-select option').length === 1,
 	);
 	assert.equal(await second.locator('#inventory-select').inputValue(), sharedId);
+	assert.equal(await first.locator('#inventory-select').inputValue(), sharedId);
+	assert.equal(await draft.inputValue(), 'My inventory');
+	await draft.press('Enter');
+	assert.equal(await second.locator('#inventory-name').inputValue(), 'My inventory');
 	assert.deepEqual(diagnostics, [[], []]);
 });
 
 test('personal cookbook and backups support loading, explicit sharing, import validation and keyboard dialogs', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
+	// Ordinary HTTP can provide random bytes even when randomUUID is unavailable.
+	await page.addInitScript(() =>
+		Object.defineProperty(crypto, 'randomUUID', { value: undefined }),
+	);
 	const diagnostics = trackDiagnostics(page);
 	await page.goto(
 		`${baseUrl}/#simulator?game=together&character=warly&ingredients=meat%40together,meat%40together,carrot%40together,honey%40together`,
@@ -5672,6 +5706,11 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 		content += chunk.toString();
 	}
 	const parsed = JSON.parse(content);
+	assert.equal(
+		content,
+		JSON.stringify(parsed),
+		'Export uses the compact format counted against the storage limit',
+	);
 	assert.equal(parsed.dishes[0].name, 'Camp dinner');
 	assert.equal(parsed.dishes[0].ingredients.length, 4);
 	await page.locator('#personal-import').setInputFiles({

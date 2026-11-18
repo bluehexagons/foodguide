@@ -140,6 +140,9 @@ const defaultStrings = {
 	cookbookSaveHelp:
 		'Choose four ingredients to save a dish, including its game and character settings.',
 	cookbookDishDefault: 'Crock pot dish',
+	cookbookSearch: 'Search cookbook',
+	cookbookSearchPlaceholder: 'Dish, recipe, or ingredient',
+	cookbookNoMatches: 'No saved dishes match this search.',
 	cookbookEmpty: 'No saved dishes yet.',
 	cookbookSaving: 'Saving dish…',
 	cookbookSaveRejected: 'Could not add this dish. Your draft name was kept.',

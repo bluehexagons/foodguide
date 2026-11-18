@@ -4,6 +4,7 @@ import type { GameSelection } from './preferences.js';
 import { characters, dlcOptions, gameVersions } from './constants.js';
 import { createHeaderActions } from './header-actions.js';
 import type { CookbookPreview } from './cookbook-preview.js';
+import { normalizeName } from './recipe-calculator.js';
 import { makeImage } from './utils.js';
 import {
 	createPersonalDataStore,
@@ -368,8 +369,59 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	const cookbookHelp = element('p', cookbook);
 	cookbookHelp.className = 'personal-help';
 	text(cookbookHelp, 'cookbookHelp');
+	const searchRow = element('div', cookbook);
+	searchRow.className = 'reference-filter';
+	const searchLabel = element('label', searchRow);
+	searchLabel.htmlFor = 'cookbook-search';
+	text(searchLabel, 'cookbookSearch');
+	const dishSearch = element('input', searchRow);
+	dishSearch.type = 'search';
+	dishSearch.id = searchLabel.htmlFor;
+	dishSearch.setAttribute('aria-controls', 'cookbook-dishes');
+	const searchStatus = element('span', searchRow);
+	searchStatus.setAttribute('role', 'status');
 	const dishList = element('ul', cookbook);
 	dishList.className = 'cookbook-list';
+	dishList.id = 'cookbook-dishes';
+	const dishEntries = new Map<string, { row: HTMLLIElement; names: string[] }>();
+	const updateDishSearch = () => {
+		searchRow.hidden = dishEntries.size === 0;
+		const query = normalizeName(dishSearch.value.trim());
+		let count = 0;
+		for (const { row, names } of dishEntries.values()) {
+			row.hidden = Boolean(query) && !names.some(name => name.includes(query));
+			if (!row.hidden) {
+				count++;
+			}
+		}
+		dishList.hidden = dishEntries.size > 0 && count === 0;
+		const message = query
+			? count > 0
+				? t('referenceMatchCount', { count })
+				: t('cookbookNoMatches')
+			: '';
+		if (searchStatus.textContent !== message) {
+			searchStatus.textContent = message;
+		}
+	};
+	const clearDishSearch = () => {
+		dishSearch.value = '';
+		updateDishSearch();
+	};
+	const cookbookFocusTarget = () =>
+		searchRow.hidden || !dishSearch.value.trim() ? summary : dishSearch;
+	const updateDishSearchPlaceholder = () => {
+		dishSearch.placeholder = t('cookbookSearchPlaceholder');
+	};
+	labels.push(updateDishSearchPlaceholder);
+	updateDishSearchPlaceholder();
+	dishSearch.addEventListener('input', updateDishSearch);
+	dishSearch.addEventListener('keydown', event => {
+		if (event.key === 'Escape' && !event.isComposing && dishSearch.value) {
+			event.preventDefault();
+			clearDishSearch();
+		}
+	});
 	let cookbookSignature = '';
 	let savingDish = false;
 	const updatePot = () => {
@@ -388,6 +440,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			return;
 		}
 		const draftName = dishName.value;
+		const searchAtSubmit = dishSearch.value;
 		const dish: CookbookDish = {
 			id: id(),
 			name: (draftName.trim() || options.getDishName() || t('cookbookDishDefault')).slice(
@@ -412,6 +465,9 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			}
 			if (dishName.value === draftName) {
 				dishName.value = '';
+			}
+			if (dishSearch.value === searchAtSubmit && dishEntries.get(dish.id)?.row.hidden) {
+				clearDishSearch();
 			}
 			cookbook.open = true;
 			if (statusKey === 'personalLimitError') {
@@ -465,7 +521,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 			const trigger = dishList.querySelector<HTMLButtonElement>(
 				`[data-dish-id="${CSS.escape(editingDishId)}"] .cookbook-rename`,
 			);
-			(trigger ?? summary).focus();
+			(trigger && !trigger.closest('[hidden]') ? trigger : cookbookFocusTarget()).focus();
 		}
 	});
 	const refresh = () => {
@@ -505,6 +561,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 					: null;
 			let nextFocus: HTMLElement = summary;
 			cookbookSignature = signature;
+			dishEntries.clear();
 			dishList.replaceChildren();
 			dishCount.textContent = `(${data.dishes.length})`;
 			if (!data.dishes.length) {
@@ -517,6 +574,11 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 				const row = element('li', dishList);
 				row.className = 'cookbook-card';
 				row.dataset.dishId = dish.id;
+				const names = [dish.name];
+				for (const item of [...preview.recipes, ...preview.ingredients]) {
+					names.push(item.name, itemName(item));
+				}
+				dishEntries.set(dish.id, { row, names: names.map(normalizeName) });
 				const load = element('button', row);
 				load.type = 'button';
 				load.className = 'cookbook-load';
@@ -600,13 +662,21 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 							: remove;
 				}
 			}
-			if (renameDialog.open && !data.dishes.some(dish => dish.id === editingDishId)) {
+			if (dishEntries.size === 0) {
+				dishSearch.value = '';
+			}
+			updateDishSearch();
+			if (renameDialog.open && !dishEntries.has(editingDishId)) {
 				renameDialog.close();
-				summary.focus();
+				cookbookFocusTarget().focus();
 			}
 			// Synchronized edits can replace the focused card without a local action.
 			if (focusedCard && document.activeElement === document.body) {
-				nextFocus.focus({ preventScroll: true });
+				const target =
+					nextFocus === summary || nextFocus.closest('[hidden]')
+						? cookbookFocusTarget()
+						: nextFocus;
+				target.focus({ preventScroll: true });
 			}
 		}
 		updatePot();

@@ -17,7 +17,7 @@ import { accumulateIngredients, numericTags } from './utils.js';
 import { itemName } from './strings.js';
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const normalizeName = (value: string) =>
+export const normalizeName = (value: string) =>
 	value.toLowerCase().replaceAll('_', ' ').normalize('NFD').replace(/\p{M}/gu, '');
 const searchNames = (item: GuideItem) => [item.name, itemName(item), item.id].map(normalizeName);
 export const matchesNameFragment = (item: GuideItem, query: string) => {

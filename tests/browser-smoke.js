@@ -5980,12 +5980,19 @@ test('a tied pot names both outcomes and its saved dish can be renamed across ta
 	);
 	await input.press('Escape');
 	assert.equal(await rename.evaluate(e => e === document.activeElement), true);
+	const search = page.getByRole('searchbox', { name: 'Search cookbook' });
+	await search.fill('breakfst');
 	await rename.press('Enter');
 	await input.fill('  Camp breakfast  ');
 	await input.press('Enter');
 	const updated = page.getByRole('button', { name: 'Rename Camp breakfast', exact: true });
+	await page.waitForFunction(
+		() => document.activeElement === document.querySelector('#cookbook-search'),
+	);
+	assert.equal(await updated.count(), 0);
+	assert.equal(await search.inputValue(), 'breakfst');
+	await search.press('Escape');
 	await updated.waitFor();
-	assert.equal(await updated.evaluate(e => e === document.activeElement), true);
 	await other.getByRole('button', { name: 'Rename Camp breakfast', exact: true }).waitFor();
 	assert.deepEqual(
 		await other.evaluate(() => JSON.parse(localStorage.foodGuidePersonalData).dishes),
@@ -6085,12 +6092,48 @@ test('cookbook cards predict saved recipes independently and supporting sections
 		data.dishes,
 		'Rendering does not store predicted recipes or replace saved variants',
 	);
-	await cards.first().locator('.cookbook-load').focus();
+	const cookbookSearch = page.getByRole('searchbox', { name: 'Search cookbook' });
+	const visibleCards = page.locator('.cookbook-card:visible .cookbook-dish-name');
+	for (const [query, matches] of [
+		['with friends', [renamed]],
+		['FIGATONI', [renamed]],
+		['honey', ['Surprise breakfast', 'Chef’s special']],
+		['Crêpes', ['Chef’s special']],
+	]) {
+		await cookbookSearch.fill(query);
+		assert.deepEqual(await visibleCards.allTextContents(), matches);
+		assert.equal(
+			await page.locator('#personal-cookbook [role=status]').textContent(),
+			`Matches: ${matches.length}`,
+		);
+	}
+	await page.locator('#language-picker').selectOption('es');
+	await page.getByRole('searchbox', { name: 'Buscar en el recetario' }).fill('miel');
+	assert.deepEqual(await visibleCards.allTextContents(), [
+		'Surprise breakfast',
+		'Chef’s special',
+	]);
+	await page.locator('#language-picker').selectOption('en');
+	assert.equal(await cookbookSearch.inputValue(), 'miel');
+	assert.equal(await visibleCards.count(), 0);
+	assert.match(
+		await page.locator('#personal-cookbook [role=status]').textContent(),
+		/No saved dishes match/,
+	);
+	await cookbookSearch.press('Escape');
+	assert.equal(await visibleCards.count(), 3);
+	await cookbookSearch.fill('Figatoni');
+	const firstLoad = cards.first().locator('.cookbook-load');
+	await firstLoad.focus();
+	assert.equal(await firstLoad.evaluate(node => node === document.activeElement), true);
 	const otherWindow = await page.context().newPage();
 	await otherWindow.goto(
 		`${baseUrl}/#simulator?game=together&ingredients=fig,asparagus,asparagus,asparagus`,
 		{ waitUntil: 'networkidle' },
 	);
+	await otherWindow.locator('#personal-cookbook summary').click();
+	const otherSearch = otherWindow.getByRole('searchbox', { name: 'Search cookbook' });
+	await otherSearch.fill('Crêpes');
 	await otherWindow.locator('#cookbook-dish-name').fill('Other window supper');
 	await otherWindow.getByRole('button', { name: 'Save dish', exact: true }).click();
 	await page.waitForFunction(() => document.querySelectorAll('.cookbook-card').length === 4);
@@ -6102,6 +6145,14 @@ test('cookbook cards predict saved recipes independently and supporting sections
 		true,
 		'A synchronized cookbook update preserves the focused dish',
 	);
+	await otherWindow.getByRole('button', { name: /^Other window supper Load dish/ }).waitFor();
+	assert.equal(
+		await otherSearch.inputValue(),
+		'',
+		'Saving clears a filter that would hide the new dish',
+	);
+	assert.deepEqual(await visibleCards.allTextContents(), [renamed, 'Other window supper']);
+	await cookbookSearch.fill('');
 	await cards.last().locator('.cookbook-load').focus();
 	await otherWindow
 		.getByRole('button', { name: 'Delete Other window supper', exact: true })

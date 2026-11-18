@@ -129,6 +129,9 @@ export const dict = {
 	cookbookSaveHelp:
 		'Elige cuatro ingredientes para guardar un plato con su configuración de juego y personaje.',
 	cookbookDishDefault: 'Plato de olla',
+	cookbookSearch: 'Buscar en el recetario',
+	cookbookSearchPlaceholder: 'Plato, receta o ingrediente',
+	cookbookNoMatches: 'Ningún plato guardado coincide con la búsqueda.',
 	cookbookEmpty: 'Aún no hay platos guardados.',
 	cookbookSaving: 'Guardando plato…',
 	cookbookSaveRejected: 'No se pudo añadir el plato. Se conservó el nombre que escribiste.',

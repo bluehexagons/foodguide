@@ -119,6 +119,9 @@ export const dict = {
 	cookbookSaveHelp:
 		'Выберите четыре ингредиента, чтобы сохранить блюдо вместе с настройками игры и персонажа.',
 	cookbookDishDefault: 'Блюдо из котелка',
+	cookbookSearch: 'Поиск в кулинарной книге',
+	cookbookSearchPlaceholder: 'Блюдо, рецепт или ингредиент',
+	cookbookNoMatches: 'Подходящих сохранённых блюд не найдено.',
 	cookbookEmpty: 'Сохранённых блюд пока нет.',
 	cookbookSaving: 'Сохраняем блюдо…',
 	cookbookSaveRejected: 'Не удалось добавить блюдо. Введённое название осталось в поле.',

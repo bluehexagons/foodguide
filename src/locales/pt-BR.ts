@@ -120,6 +120,9 @@ export const dict = {
 	cookbookSaveHelp:
 		'Escolha quatro ingredientes para salvar um prato, incluindo as configurações de jogo e personagem.',
 	cookbookDishDefault: 'Prato da Panela de barro',
+	cookbookSearch: 'Buscar no livro de receitas',
+	cookbookSearchPlaceholder: 'Prato, receita ou ingrediente',
+	cookbookNoMatches: 'Nenhum prato salvo corresponde à busca.',
 	cookbookEmpty: 'Ainda não há pratos salvos.',
 	cookbookSaving: 'Salvando prato…',
 	cookbookSaveRejected: 'Não foi possível adicionar o prato. O nome digitado foi mantido.',

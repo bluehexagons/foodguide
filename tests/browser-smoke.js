@@ -1335,16 +1335,29 @@ test('picker errors occupy reserved space above the selection without moving slo
 				const option = panel.locator(
 					`[role=option][data-id="${id}"], [role=option][data-id^="${id}@"]`,
 				);
-				const position = () =>
-					page
-						.locator('#ingredients')
-						.evaluate(e => e.getBoundingClientRect().top + scrollY);
-				const before = await position();
+				const layout = () =>
+					panel.evaluate(element => {
+						const bounds = selector =>
+							element.querySelector(selector).getBoundingClientRect();
+						return {
+							slotTop: bounds('#ingredients').top + window.scrollY,
+							headerHeight: document.querySelector('header').getBoundingClientRect()
+								.height,
+							pickerHeight: bounds('.ingredientdropdown').height,
+							feedbackHeight: bounds('.ingredient-feedback-space').height,
+							scrollY: window.scrollY,
+						};
+					});
+				const before = await layout();
+				const assertSlotsStayedPut = async action => {
+					const after = await layout();
+					assert.ok(
+						Math.abs(after.slotTop - before.slotTop) <= 1,
+						`${locale} at ${width}px, ${id}, ${action}: ${JSON.stringify({ before, after })}`,
+					);
+				};
 				await option.click();
-				assert.ok(
-					Math.abs((await position()) - before) <= 1,
-					`${locale} at ${width}: full-pot error moved the slots`,
-				);
+				await assertSlotsStayedPut('full pot');
 				assert.equal(
 					await status.evaluate(e => {
 						const picker = e
@@ -1378,10 +1391,7 @@ test('picker errors occupy reserved space above the selection without moving slo
 					'Count and error must not overlap',
 				);
 				await option.click({ button: 'right' });
-				assert.ok(
-					Math.abs((await position()) - before) <= 1,
-					'Switching error types must preserve position',
-				);
+				await assertSlotsStayedPut('ingredient not selected');
 				await search.focus();
 				await search.press('Escape');
 				await search.press('ArrowDown');

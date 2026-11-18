@@ -57,25 +57,29 @@ if (location.protocol === 'https:' || location.protocol === 'http:') {
 			const request = ++statusRequest;
 			const active = registration?.active;
 			const waiting = registration?.waiting;
+			// A first installation can enter waiting before it becomes the active worker.
 			const [available, updateAvailable] = await Promise.all([
 				active ? send(active, 'STATUS').then(status => status === 'READY') : false,
-				waiting ? send(waiting, 'STATUS').then(status => status === 'READY') : false,
+				active && waiting
+					? send(waiting, 'STATUS').then(status => status === 'READY')
+					: false,
 			]);
 			if (request !== statusRequest) {
 				return;
 			}
+			notice.hidden = !updateAvailable;
 			update.hidden = !updateAvailable;
 			retry.hidden = true;
 			if (updateAvailable) {
 				setStatus('offlineUpdateReady');
 				notice.append(update, updateStatus);
 				document.querySelector('header')?.append(notice);
-			} else if (waiting) {
+			} else if (active && waiting) {
 				setStatus(available ? 'offlineUpdateFailed' : 'offlineFailed');
 				retry.hidden = false;
 			} else if (available) {
 				setStatus('offlineReady');
-			} else if (active || !registration?.installing) {
+			} else if (active || (!registration?.installing && !waiting)) {
 				setStatus('offlineFailed');
 				retry.hidden = false;
 			}

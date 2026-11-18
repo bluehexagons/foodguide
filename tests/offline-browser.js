@@ -249,6 +249,19 @@ for (const scope of ['/', '/foodguide/']) {
 			}),
 			'MISSING',
 		);
+		// Rechecking an evicted update must also remove the banner's space from the header.
+		await page.locator('#offline-update').click();
+		await page.waitForFunction(() => document.querySelector('#offline-update').hidden);
+		assert.equal(
+			await page
+				.locator('#offline-update')
+				.evaluate(
+					button =>
+						button.closest('header .personal-status')?.getBoundingClientRect().height ??
+						0,
+				),
+			0,
+		);
 		await page.reload();
 		await page.waitForFunction(
 			async () =>

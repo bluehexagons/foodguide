@@ -393,6 +393,48 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 		cookbook.open = true;
 		announce('cookbookSaved');
 	});
+	const { node: renameDialog, body: renameBody } = dialog('cookbookRenameTitle', 'book');
+	const renameForm = element('form', renameBody);
+	const renameInput = element('input', renameForm);
+	renameInput.type = 'text';
+	renameInput.required = true;
+	renameInput.maxLength = dishName.maxLength;
+	renameInput.setAttribute('aria-labelledby', renameDialog.getAttribute('aria-labelledby')!);
+	const renameActions = element('div', renameForm);
+	renameActions.className = 'dialog-actions';
+	button(renameActions, 'personalCancel', () => renameDialog.close());
+	const submitRename = element('button', renameActions);
+	submitRename.type = 'submit';
+	submitRename.className = 'button-primary';
+	text(submitRename, 'inventoryRename');
+	let editingDishId = '';
+	renameInput.addEventListener('input', () => {
+		submitRename.disabled = !renameInput.value.trim();
+	});
+	renameForm.addEventListener('submit', event => {
+		event.preventDefault();
+		const dishId = editingDishId;
+		const nextName = renameInput.value.trim();
+		if (!nextName) {
+			return;
+		}
+		renameDialog.close();
+		void store.update(data => {
+			const dish = data.dishes.find(item => item.id === dishId);
+			if (!dish) {
+				return false;
+			}
+			dish.name = nextName;
+		});
+	});
+	renameDialog.addEventListener('close', () => {
+		if (document.activeElement === document.body) {
+			const trigger = dishList.querySelector<HTMLButtonElement>(
+				`[data-dish-id="${CSS.escape(editingDishId)}"] .cookbook-rename`,
+			);
+			(trigger ?? summary).focus();
+		}
+	});
 	const refresh = () => {
 		const data = store.get();
 		if (!data.inventories.some(item => item.id === activeId)) {
@@ -495,6 +537,16 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 				context.id = `cookbook-context-${index}`;
 				context.textContent = gameName(dish.selection);
 				load.setAttribute('aria-describedby', `${description.id} ${context.id}`);
+				const rename = button(footer, 'inventoryRename', () => {
+					editingDishId = dish.id;
+					renameInput.value = dish.name;
+					submitRename.disabled = !dish.name.trim();
+					renameDialog.showModal();
+					renameInput.focus();
+					renameInput.select();
+				});
+				rename.className = 'cookbook-rename';
+				rename.setAttribute('aria-label', t('cookbookRenameNamed', { name: dish.name }));
 				const remove = button(footer, 'personalDelete', () =>
 					confirmDelete(
 						dish.name,
@@ -508,8 +560,16 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 				);
 				remove.setAttribute('aria-label', t('personalDeleteNamed', { name: dish.name }));
 				if (dish.id === focusedCard?.dataset.dishId) {
-					nextFocus = focused?.classList.contains('cookbook-load') ? load : remove;
+					nextFocus = focused?.classList.contains('cookbook-load')
+						? load
+						: focused?.classList.contains('cookbook-rename')
+							? rename
+							: remove;
 				}
+			}
+			if (renameDialog.open && !data.dishes.some(dish => dish.id === editingDishId)) {
+				renameDialog.close();
+				summary.focus();
 			}
 			// Synchronized edits can replace the focused card without a local action.
 			if (focusedCard && document.activeElement === document.body) {

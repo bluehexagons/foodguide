@@ -196,6 +196,7 @@
 
 .cookbook-card-footer {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
@@ -207,6 +208,7 @@
 }
 
 .cookbook-card-footer > span {
+	flex: 1 1 6rem;
 	min-width: 0;
 	overflow-wrap: anywhere;
 }

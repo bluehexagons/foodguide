@@ -114,6 +114,8 @@ export const dict = {
 	cookbookDishDescription: 'Resultados: {recipes}. Ingredientes: {ingredients}.',
 	cookbookTitle: 'Meu livro de receitas',
 	cookbookDishName: 'Nome do prato (opcional)',
+	cookbookRenameTitle: 'Renomear prato',
+	cookbookRenameNamed: 'Renomear {name}',
 	cookbookSave: 'Salvar prato',
 	cookbookSaveHelp:
 		'Escolha quatro ingredientes para salvar um prato, incluindo as configurações de jogo e personagem.',
@@ -189,8 +191,9 @@ export const dict = {
 	discoveryFoodStatsHeading: 'Estatísticas dos ingredientes',
 	discoveryRecipesHeading: 'Receitas disponíveis',
 	discoveryEfficientHeading: 'Eficiência das receitas',
+	simulatorMakes: 'Com estes ingredientes, o resultado será {recipes}.',
 	discoveryHighlightsNote:
-		'Quando os quatro espaços estiverem preenchidos, a panela escolhe uma das receitas destacadas com a maior prioridade.',
+		'O resultado pode mudar até que os quatro espaços estejam preenchidos.',
 	discoveryMoreSuggestions:
 		'Explore receitas que usam os ingredientes selecionados. Selecione um requisito para encontrar ingredientes que o atendam.',
 	discoveryEmpty:

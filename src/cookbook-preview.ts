@@ -9,7 +9,7 @@ import {
 } from './mode-utils.js';
 import type { Food, Recipe } from './models.js';
 import type { CookbookDish } from './personal-data.js';
-import { createRecipeCalculator } from './recipe-calculator.js';
+import { createRecipeCalculator, winningRecipes } from './recipe-calculator.js';
 
 export interface CookbookPreview {
 	ingredients: Food[];
@@ -57,11 +57,5 @@ export function previewCookbookDish(
 		getItemModifiers: () =>
 			getCharacterFoodModifiers(selection.character, characters).modifyItem,
 	});
-	const matches = calculator
-		.getRecipes(ingredients)
-		.filter((row): row is Recipe => 'requirements' in row);
-	return {
-		ingredients,
-		recipes: matches.filter(recipe => recipe.priority === matches[0]?.priority),
-	};
+	return { ingredients, recipes: winningRecipes(calculator.getRecipes(ingredients)) };
 }

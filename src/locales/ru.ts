@@ -113,6 +113,8 @@ export const dict = {
 	cookbookDishDescription: 'Результаты: {recipes}. Ингредиенты: {ingredients}.',
 	cookbookTitle: 'Моя кулинарная книга',
 	cookbookDishName: 'Название блюда (необязательно)',
+	cookbookRenameTitle: 'Переименовать блюдо',
+	cookbookRenameNamed: 'Переименовать «{name}»',
 	cookbookSave: 'Сохранить блюдо',
 	cookbookSaveHelp:
 		'Выберите четыре ингредиента, чтобы сохранить блюдо вместе с настройками игры и персонажа.',
@@ -187,8 +189,8 @@ export const dict = {
 	discoveryFoodStatsHeading: 'Характеристики ингредиентов',
 	discoveryRecipesHeading: 'Доступные рецепты',
 	discoveryEfficientHeading: 'Эффективность рецептов',
-	discoveryHighlightsNote:
-		'Когда все четыре слота заполнены, котелок приготовит один из выделенных рецептов с наивысшим приоритетом.',
+	simulatorMakes: 'Из этих ингредиентов получится {recipes}.',
+	discoveryHighlightsNote: 'Результат может измениться, пока не заполнены все четыре ячейки.',
 	discoveryMoreSuggestions:
 		'Ищите рецепты с выбранными ингредиентами. Выберите требование, чтобы найти подходящие ингредиенты.',
 	discoveryEmpty:

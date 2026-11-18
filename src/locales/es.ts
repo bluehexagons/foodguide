@@ -123,6 +123,8 @@ export const dict = {
 	cookbookDishDescription: 'Resultados: {recipes}. Ingredientes: {ingredients}.',
 	cookbookTitle: 'Mi recetario',
 	cookbookDishName: 'Nombre del plato (opcional)',
+	cookbookRenameTitle: 'Renombrar plato',
+	cookbookRenameNamed: 'Renombrar {name}',
 	cookbookSave: 'Guardar plato',
 	cookbookSaveHelp:
 		'Elige cuatro ingredientes para guardar un plato con su configuración de juego y personaje.',
@@ -255,8 +257,8 @@ export const dict = {
 	discoveryFoodStatsHeading: 'Estadísticas de los ingredientes',
 	discoveryRecipesHeading: 'Recetas disponibles',
 	discoveryEfficientHeading: 'Eficiencia de las recetas',
-	discoveryHighlightsNote:
-		'Cuando las cuatro ranuras estén llenas, la olla elegirá una de las recetas resaltadas con la prioridad más alta.',
+	simulatorMakes: 'Con estos ingredientes se prepara {recipes}.',
+	discoveryHighlightsNote: 'El resultado puede cambiar hasta que se llenen los cuatro espacios.',
 	discoveryMoreSuggestions:
 		'Explora recetas que usan tus ingredientes seleccionados. Selecciona un requisito para buscar ingredientes que lo cumplan.',
 	discoveryEmpty:

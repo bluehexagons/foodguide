@@ -134,6 +134,8 @@ const defaultStrings = {
 	cookbookDishDescription: 'Results: {recipes}. Ingredients: {ingredients}.',
 	cookbookTitle: 'My cookbook',
 	cookbookDishName: 'Dish name (optional)',
+	cookbookRenameTitle: 'Rename dish',
+	cookbookRenameNamed: 'Rename {name}',
 	cookbookSave: 'Save dish',
 	cookbookSaveHelp:
 		'Choose four ingredients to save a dish, including its game and character settings.',
@@ -220,8 +222,8 @@ const defaultStrings = {
 	discoveryFoodStatsHeading: 'Ingredient stats',
 	discoveryRecipesHeading: 'Available recipes',
 	discoveryEfficientHeading: 'Recipe efficiency',
-	discoveryHighlightsNote:
-		'When all four slots are filled, cooking chooses one of the highlighted recipes with the highest priority.',
+	simulatorMakes: 'This pot makes {recipes}.',
+	discoveryHighlightsNote: 'The result can change until all four slots are filled.',
 	discoveryMoreSuggestions:
 		'Explore recipes that use your selected ingredients. Select a requirement to find ingredients for it.',
 	discoveryEmpty: 'Add ingredients to your inventory to compare their stats and find recipes.',

@@ -88,7 +88,11 @@ import {
 import { food } from './food.js';
 import { createDropdownFactory } from './dropdown.js';
 import { createFilterControls } from './filter-controls.js';
-import { createRecipeCalculator, matchesNameFragment } from './recipe-calculator.js';
+import {
+	createRecipeCalculator,
+	matchesNameFragment,
+	winningRecipes,
+} from './recipe-calculator.js';
 import { previewCookbookDish } from './cookbook-preview.js';
 import { createRecipeAnalyzer } from './recipe-analyzer.js';
 import { sortIngredients } from './ingredient-sort.js';
@@ -1529,14 +1533,6 @@ import './locales/index.js';
 		statisticsEl.appendChild(statisticsGrinder.element);
 	}
 
-	const highestPriority = (array: CalculatorRow[]) => {
-		return array.reduce(
-			(highest, { priority }) =>
-				typeof priority === 'number' ? Math.max(highest, priority) : highest,
-			Number.NEGATIVE_INFINITY,
-		);
-	};
-
 	window.foodGuide = {
 		food,
 		recipes,
@@ -2301,6 +2297,7 @@ import './locales/index.js';
 					const health = cooking[0].health;
 					const hunger = cooking[0].hunger;
 					const sanity = cooking[0].sanity;
+					const winners = winningRecipes(cooking);
 
 					let table = makeSortableTable({
 						captionKey: 'tableCookingResults',
@@ -2326,9 +2323,7 @@ import './locales/index.js';
 						defaultSort: 'priority',
 						summaryRows: 2,
 						linkCallback: searchFor,
-						highlightCallback: (item, array) => {
-							return array.length > 0 && item.priority === highestPriority(array);
-						},
+						highlightCallback: item => item.priority === winners[0]?.priority,
 						columnConfig: {
 							toggleable: true,
 							columns: [
@@ -2349,6 +2344,15 @@ import './locales/index.js';
 					outcomeSection.className = 'tool-section';
 					outcomeSection.append(makeElement('h2', t('tableCookingResults')));
 					const outcomeNote = makeElement('p', t('discoveryHighlightsNote'));
+					if (ingredients.every(item => item !== null)) {
+						outcomeNote.textContent = winners.length
+							? t('simulatorMakes', {
+									recipes: new Intl.ListFormat(getLocale(), {
+										type: 'disjunction',
+									}).format(winners.map(itemName)),
+								})
+							: t('cookbookUnavailable');
+					}
 					outcomeNote.className = 'section-note outcome-note';
 					outcomeSection.append(outcomeNote, table);
 					results.append(outcomeSection);
@@ -3406,12 +3410,7 @@ import './locales/index.js';
 			if (items.length !== 4) {
 				return t('cookbookDishDefault');
 			}
-			const results = getRecipes(items);
-			const priority = highestPriority(results);
-			return results
-				.filter(row => row.priority === priority)
-				.map(row => itemName(row))
-				.join(' / ');
+			return winningRecipes(getRecipes(items)).map(itemName).join(' / ');
 		},
 		loadDish: dish => {
 			currentVersion = dish.selection.version;

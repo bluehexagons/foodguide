@@ -5943,6 +5943,68 @@ test('personal cookbook and backups support loading, explicit sharing, import va
 	assert.deepEqual(diagnostics, []);
 });
 
+test('a tied pot names both outcomes and its saved dish can be renamed across tabs', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const context = await browser.newContext({ viewport: { width: 375, height: 667 } });
+	const page = await context.newPage();
+	const diagnostics = trackDiagnostics(page);
+	await page.goto(
+		`${baseUrl}/#simulator?game=together&ingredients=butterflywings,bird_egg,carrot,honey`,
+		{ waitUntil: 'networkidle' },
+	);
+	const outcome = page.locator('#results .outcome-note');
+	assert.equal(await outcome.textContent(), 'This pot makes Butter Muffin or Breakfast Skillet.');
+	await page.locator('#cookbook-dish-name').fill('Camp breakfst');
+	await page.getByRole('button', { name: 'Save dish', exact: true }).click();
+	const other = await context.newPage();
+	await other.goto(`${baseUrl}/#simulator`, { waitUntil: 'networkidle' });
+	await other.locator('#personal-cookbook summary').click();
+	const load = other.locator('.cookbook-load');
+	await load.waitFor();
+	const original = await other.evaluate(
+		() => JSON.parse(localStorage.foodGuidePersonalData).dishes[0],
+	);
+	await page.locator('#ingredients button').first().click();
+	assert.match(await outcome.textContent(), /until all four slots are filled/);
+	const rename = page.getByRole('button', { name: 'Rename Camp breakfst', exact: true });
+	await rename.focus();
+	await rename.press('Enter');
+	const dialog = page.getByRole('dialog', { name: 'Rename dish' });
+	const input = dialog.getByRole('textbox', { name: 'Rename dish' });
+	assert.equal(await input.inputValue(), 'Camp breakfst');
+	assert.equal(await input.evaluate(e => e === document.activeElement), true);
+	await input.fill('  ');
+	assert.equal(
+		await dialog.getByRole('button', { name: 'Rename', exact: true }).isDisabled(),
+		true,
+	);
+	await input.press('Escape');
+	assert.equal(await rename.evaluate(e => e === document.activeElement), true);
+	await rename.press('Enter');
+	await input.fill('  Camp breakfast  ');
+	await input.press('Enter');
+	const updated = page.getByRole('button', { name: 'Rename Camp breakfast', exact: true });
+	await updated.waitFor();
+	assert.equal(await updated.evaluate(e => e === document.activeElement), true);
+	await other.getByRole('button', { name: 'Rename Camp breakfast', exact: true }).waitFor();
+	assert.deepEqual(
+		await other.evaluate(() => JSON.parse(localStorage.foodGuidePersonalData).dishes),
+		[{ ...original, name: 'Camp breakfast' }],
+	);
+	assert.equal(await page.locator('#ingredients button[data-id]').count(), 3);
+	await updated.press('Enter');
+	await dialog.waitFor();
+	await other.getByRole('button', { name: 'Delete Camp breakfast', exact: true }).click();
+	await other.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+	await dialog.waitFor({ state: 'hidden' });
+	await page.waitForFunction(
+		() => document.activeElement === document.querySelector('#personal-cookbook summary'),
+	);
+	assert.equal(await page.locator('.cookbook-card').count(), 0);
+	assert.deepEqual(diagnostics, []);
+	await context.close();
+});
+
 test('cookbook cards predict saved recipes independently and supporting sections explain empty states', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const selection = {
@@ -6168,6 +6230,9 @@ test('personal inventory, cookbook and sharing dialogs remain accessible on touc
 				);
 			};
 			await audit('cookbook');
+			await page.locator('.cookbook-rename').tap();
+			await audit('rename dish');
+			await page.keyboard.press('Escape');
 			await page.locator('#personal-share-button').tap();
 			await audit('sharing');
 			await page.keyboard.press('Escape');

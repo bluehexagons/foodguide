@@ -285,6 +285,15 @@ export const createRecipeCalculator = ({
 	return { matchingNames, getSuggestions, getRecipes };
 };
 
+/** Keep every highest-priority dish, including ties, and skip the two stat summary rows. */
+export const winningRecipes = (rows: CalculatorRow[]): Recipe[] => {
+	const highest = rows.reduce(
+		(max, row) => (typeof row.priority === 'number' ? Math.max(max, row.priority) : max),
+		Number.NEGATIVE_INFINITY,
+	);
+	return rows.filter((row): row is Recipe => row.priority === highest);
+};
+
 /** Unordered four-slot combinations, including repeated ingredients: C(n + 3, 4). */
 export const countCombinations = (length: number): number =>
 	(length * (length + 1) * (length + 2) * (length + 3)) / 24;

@@ -1801,8 +1801,8 @@ test('paused analysis exposes its current results and explains empty filters', a
 		await progress.getAttribute('aria-valuetext'),
 		/^Checked \d+ of \d+ combinations \(\d+%\)\.$/,
 	);
-	assert.match(await summary.textContent(), /Found [1-9]\d* valid combinations \(paused\)/);
-	const found = Number((await summary.textContent()).match(/Found (\d+)/)[1]);
+	assert.match(await summary.textContent(), /Paused · Valid combinations: [1-9]\d*/);
+	const found = Number((await summary.textContent()).match(/Valid combinations: (\d+)/)[1]);
 	const rows = page.locator('#makable tbody tr[data-recipe]');
 	const originalCount = await rows.count();
 	assert.ok(
@@ -1911,10 +1911,10 @@ test('analysis that finishes during resume retains its completion message', asyn
 	const summary = await page
 		.locator('#makable .makableSummary')
 		.evaluate(e => e.firstChild.textContent);
-	assert.match(summary, /^Found \d+ valid combinations\.$/);
+	assert.match(summary, /^Complete · Valid combinations: \d+$/);
 	assert.equal(await page.locator('#makable [role=status]').first().textContent(), summary);
 	assert.equal(
-		await page.locator('#makable .deleteButton').evaluate(e => e === document.activeElement),
+		await page.locator('#makable .makablebutton').evaluate(e => e === document.activeElement),
 		true,
 	);
 	const ingredientFilters = page.locator('#makable .foodFilter .analysis-filter');
@@ -3840,8 +3840,14 @@ test('statistics default exclusions keep visible sprites and recalculation follo
 		['together', 'meat@together'],
 	]) {
 		await page.locator(`.version-btn[data-version="${version}"]`).click();
-		await page.locator('#statistics .makablebutton').click();
-		await page.locator('#statistics .pauseButton').click();
+		const calculate = page.locator('#statistics .makablebutton');
+		await calculate.focus();
+		await calculate.press('Enter');
+		const pause = page.locator('#statistics .pauseButton');
+		assert.equal(await pause.evaluate(e => e === document.activeElement), true);
+		await pause.press('Enter');
+		assert.equal(await calculate.isVisible(), false);
+		assert.equal(await pause.textContent(), 'Resume');
 		assert.equal(
 			await page.locator(`#statistics .foodFilter [data-id="${meatKey}"]`).count(),
 			1,
@@ -3866,10 +3872,42 @@ test('statistics default exclusions keep visible sprites and recalculation follo
 				})),
 			);
 		const original = await filterStates();
-		await page.locator('#statistics .foodFilter button').first().click();
+		const search = page.getByRole('searchbox', { name: 'Find an ingredient filter' });
+		const ingredients = page.locator('#statistics .foodFilter');
+		const results = page.locator('#statistics .analysis-result-count');
+		const originalCount = await results.textContent();
+		await search.fill('carrot');
+		const carrot = ingredients.getByRole('button', { name: 'Carrot: Normal', exact: true });
+		assert.equal(await carrot.locator('.analysis-filter-name').isVisible(), true);
+		await search.press('Tab');
+		assert.equal(await carrot.evaluate(e => e === document.activeElement), true);
+		await carrot.press('ArrowRight');
+		assert.equal(await carrot.evaluate(e => e === document.activeElement), true);
+		assert.equal(await results.textContent(), originalCount);
+		await carrot.press('Space');
+		assert.equal(await carrot.count(), 0);
+		const selectedCount = await results.textContent();
+		await search.fill('no such filter');
+		assert.equal(await ingredients.isVisible(), false);
+		assert.equal(await search.locator('..').getByRole('status').textContent(), 'Matches: 0');
+		assert.equal(await results.textContent(), selectedCount);
+		await search.press('Escape');
+		assert.equal(
+			await ingredients.getByRole('button', { name: 'Carrot: Required' }).count(),
+			1,
+		);
+		await page.locator('#language-picker').selectOption('es');
+		const translated = page.getByRole('searchbox', { name: 'Buscar un filtro de ingrediente' });
+		await translated.fill('zanahoria');
+		assert.equal(await ingredients.getByRole('button').count(), 1);
+		assert.match(await ingredients.getByRole('button').textContent(), /Zanahoria/);
+		await page.locator('#language-picker').selectOption('en');
+		assert.equal(await search.inputValue(), 'zanahoria');
+		assert.equal(await ingredients.isVisible(), false);
 		await page.locator('#statistics .recipeFilter button').first().click();
 		assert.notDeepEqual(await filterStates(), original);
 		await page.locator('#statistics .resetAnalysisFiltersButton').click();
+		assert.equal(await search.inputValue(), '');
 		assert.deepEqual(
 			await filterStates(),
 			original,
@@ -5408,7 +5446,9 @@ test('running analysis refreshes without pausing and reloads its final results w
 		/Results refreshed/,
 	);
 	const found = Number(
-		(await page.locator('#makable .makableSummary').textContent()).match(/Found (\d+)/)[1],
+		(await page.locator('#makable .makableSummary').textContent()).match(
+			/Valid combinations so far: (\d+)/,
+		)[1],
 	);
 	assert.match(await count.textContent(), new RegExp(`; ${found} matching combinations`));
 	const currentPage = await overview.locator('[data-table-action=page-number]').inputValue();

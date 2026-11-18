@@ -172,6 +172,21 @@
 	display: none;
 }
 
+/* Identify search matches by name on devices that normally show icons alone. */
+@media (hover: hover) and (pointer: fine) {
+	.searching-filters .analysis-filter {
+		align-items: center;
+		max-width: 100%;
+		padding-inline-end: 8px;
+	}
+
+	.searching-filters .analysis-filter-name {
+		display: inline;
+		font-size: 0.8rem;
+		overflow-wrap: anywhere;
+	}
+}
+
 .ingredient-name {
 	display: none;
 }

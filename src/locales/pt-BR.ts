@@ -313,7 +313,7 @@ export const dict = {
 	computingCombinations: 'Calculando combinações…',
 	multipleResultsNote: '* a combinação tem vários resultados possíveis',
 	analysisGroupingHelp:
-		'Combinações consecutivas da mesma receita são agrupadas em todos os resultados filtrados. Navegue pelas páginas de grupos e expanda um grupo para percorrer suas combinações. A ordenação é preservada; cada linha mostra os valores da combinação exata. Clique nos ingredientes para testá-la no Simulador.',
+		'Combinações consecutivas da mesma receita aparecem na mesma linha. Expanda a linha para compará-las. Selecione os ingredientes para testar uma combinação no Simulador.',
 	analysisShowCombinations: 'Mostrar combinações consecutivas de {name}: {count}',
 	analysisHideCombinations: 'Ocultar combinações consecutivas de {name}: {count}',
 	analysisTryCombination: 'Testar {name} no Simulador com {ingredients}',
@@ -322,6 +322,7 @@ export const dict = {
 	analysisResetFiltersHelp:
 		'Restaurar os filtros originais de ingredientes e receitas desta análise.',
 	analysisFiltersReset: 'Filtros da análise redefinidos.',
+	analysisSingleResult: '1 combinação correspondente.',
 	analysisResultCount:
 		'Grupos de receitas {first}–{last} de {groups}; combinações correspondentes: {total}.',
 	analysisRefresh: 'Atualizar resultados',
@@ -350,6 +351,8 @@ export const dict = {
 	filterCycleHelp:
 		'Use as setas para percorrer cada grupo de filtros. Clique, toque, Enter ou Espaço alterna entre normal → obrigatório (✓) → excluído (✕). Shift+Enter, Shift+Espaço ou clique com o botão direito inverte os filtros de ingredientes ou alterna a exclusão de receitas.',
 	filterIngredients: 'Filtros de ingredientes',
+	findRecipeFilter: 'Buscar filtro de receita',
+	findIngredientFilter: 'Buscar filtro de ingrediente',
 	filterRecipes: 'Filtros de receitas',
 	filterNormal: 'Normal',
 	filterRequired: 'Obrigatório',

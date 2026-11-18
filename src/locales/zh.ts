@@ -182,6 +182,8 @@ export const dict = {
 	ingredientSearchHelp:
 		'用上、下方向键浏览结果，按回车添加，Shift+回车移除一个，Ctrl 或 Command+回车移除所有同类食材，按 Escape 隐藏结果。按 Tab 移至已选食材以移除。',
 	filterIngredients: '食材筛选',
+	findRecipeFilter: '查找配方筛选项',
+	findIngredientFilter: '查找食材筛选项',
 	filterRecipes: '配方筛选',
 	filterNormal: '普通',
 	filterRequired: '必需',
@@ -302,7 +304,7 @@ export const dict = {
 	computingCombinations: '正在计算组合……',
 	multipleResultsNote: '* 该组合有多个可能结果',
 	analysisGroupingHelp:
-		'全部筛选结果中，同一配方的连续组合会归为一组。浏览配方分组页面，展开分组后可翻页查看其中的组合。排序保持不变，每行显示该组合的准确数值。点击食材可在模拟器中尝试该组合。',
+		'相邻的同一配方组合会合并为一行。展开该行即可比较各组合。选择食材可在模拟器中试做该组合。',
 	analysisShowCombinations: '显示 {name} 的 {count} 个连续组合',
 	analysisHideCombinations: '隐藏 {name} 的 {count} 个连续组合',
 	analysisTryCombination: '在模拟器中用 {ingredients} 尝试制作 {name}',
@@ -310,6 +312,7 @@ export const dict = {
 	analysisResetFilters: '重置筛选',
 	analysisResetFiltersHelp: '恢复本次分析原来的食材和配方筛选条件。',
 	analysisFiltersReset: '分析筛选条件已重置。',
+	analysisSingleResult: '找到 1 个匹配组合。',
 	analysisResultCount: '配方分组 {first}–{last}，共 {groups} 组；{total} 个匹配组合。',
 	analysisRefresh: '刷新结果',
 	analysisRefreshHelp: '更新表格以显示目前找到的组合，不中断计算。',

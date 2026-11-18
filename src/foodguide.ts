@@ -1143,6 +1143,8 @@ import './locales/index.js';
 				resetFiltersButton.title = t('analysisResetFiltersHelp');
 				resetFiltersButton.addEventListener('click', () => {
 					filters.reset();
+					recipeFilterControls.clearSearch();
+					ingredientFilterControls.clearSearch();
 					for (const [id, button] of ingredientControls) {
 						ingredientFilterControls.update(button, filters.ingredientState(id));
 					}
@@ -1159,12 +1161,15 @@ import './locales/index.js';
 						},
 					},
 					onRender: ({ total, groups }) => {
-						resultCount.textContent = t('analysisResultCount', {
-							first: groups!.first,
-							last: groups!.last,
-							groups: groups!.total,
-							total,
-						});
+						resultCount.textContent =
+							total === 1
+								? t('analysisSingleResult')
+								: t('analysisResultCount', {
+										first: groups!.first,
+										last: groups!.last,
+										groups: groups!.total,
+										total,
+									});
 					},
 					emptyMessage: () =>
 						t(isCalculating ? 'analysisNoResultsYet' : 'analysisNoMatchingResults'),
@@ -1252,10 +1257,6 @@ import './locales/index.js';
 					updateProgress();
 					ingredientFilterControls.updateLocale();
 					recipeFilterControls.updateLocale();
-					makableFilter.setAttribute('aria-label', t('filterIngredients'));
-					makableRecipe.setAttribute('aria-label', t('filterRecipes'));
-					ingredientHeading.textContent = t('filterIngredients');
-					recipeHeading.textContent = t('filterRecipes');
 					pauseButton.textContent =
 						calculationControl && calculationControl.isPaused()
 							? t('resume')
@@ -1308,21 +1309,29 @@ import './locales/index.js';
 
 				const makableRecipe = document.createElement('div');
 				makableRecipe.className = 'recipeFilter';
-				makableRecipe.setAttribute('aria-label', t('filterRecipes'));
-				const recipeFilterControls = createFilterControls(makableRecipe, filterHelp.id);
-				const recipeHeading = makeElement('h3', t('filterRecipes'));
-				recipeHeading.className = 'section-subheading';
-				makableDiv.append(recipeHeading, makableRecipe);
+				const recipeFilterControls = createFilterControls(
+					makableRecipe,
+					filterHelp.id,
+					'recipe',
+				);
+				makableDiv.append(
+					recipeFilterControls.heading,
+					recipeFilterControls.searchRow,
+					makableRecipe,
+				);
 
 				const makableFilter = document.createElement('div');
 				makableFilter.className = 'foodFilter';
-				makableFilter.setAttribute('aria-label', t('filterIngredients'));
-				const ingredientFilterControls = createFilterControls(makableFilter, filterHelp.id);
+				const ingredientFilterControls = createFilterControls(
+					makableFilter,
+					filterHelp.id,
+					'ingredient',
+				);
 
 				idealIngredients.forEach(item => {
 					const img = makeImage(item.img);
 					img.dataset.id = item.key;
-					const button = ingredientFilterControls.add(img, item.name, reverse => {
+					const button = ingredientFilterControls.add(img, item, reverse => {
 						filters.cycleIngredient(item.key, reverse);
 						ingredientFilterControls.update(button, filters.ingredientState(item.key));
 						makableTable.update();
@@ -1330,13 +1339,13 @@ import './locales/index.js';
 					});
 					ingredientFilterControls.update(button, filters.ingredientState(item.key));
 					ingredientControls.set(item.key, button);
-					img.title = itemName(item);
-					makableFilter.appendChild(button);
 				});
 
-				const ingredientHeading = makeElement('h3', t('filterIngredients'));
-				ingredientHeading.className = 'section-subheading';
-				makableDiv.append(ingredientHeading, makableFilter);
+				makableDiv.append(
+					ingredientFilterControls.heading,
+					ingredientFilterControls.searchRow,
+					makableFilter,
+				);
 
 				makableDiv.append(snapshotNotice, resultCount, groupingHelp, makableTable);
 				makableButton.after(makableDiv);
@@ -1355,10 +1364,11 @@ import './locales/index.js';
 				// Set button state BEFORE starting calculation
 				const calculationFocused = document.activeElement === makableButton;
 				updateMakableButtonLabel();
+				makableButton.hidden = true;
 				makableButton.disabled = true;
-				makableSummary.append(resetFiltersButton, deleteButton);
+				makableSummary.append(pauseButton, resetFiltersButton, deleteButton);
 				if (calculationFocused) {
-					deleteButton.focus();
+					pauseButton.focus();
 				}
 
 				const calculationControl = getRealRecipesFromCollection(
@@ -1382,7 +1392,7 @@ import './locales/index.js';
 							img.dataset.recipe = recipeId;
 							const button = recipeFilterControls.add(
 								img,
-								data.recipe.name,
+								data.recipe,
 								reverse => {
 									if (reverse) {
 										filters.toggleRecipeExclusion(recipeId);
@@ -1392,16 +1402,10 @@ import './locales/index.js';
 									updateRecipeFilters();
 									analysisStatus.textContent = `${button.getAttribute('aria-label')} ${resultCount.textContent}`;
 								},
+								i,
 							);
 							recipeControls.set(recipeId, button);
 							recipeFilterControls.update(button, filters.recipeState(recipeId));
-							img.title = itemName(data.recipe);
-
-							if (i < makableRecipe.childNodes.length) {
-								makableRecipe.insertBefore(button, makableRecipe.childNodes[i]);
-							} else {
-								makableRecipe.appendChild(button);
-							}
 						}
 
 						const mods = modifyRecipe(data.recipe, analysisMode);
@@ -1425,13 +1429,9 @@ import './locales/index.js';
 						made.push(row);
 					},
 					currentProgress => {
-						// Chunk callback - show pause button if this is called (meaning async operation)
 						progress = currentProgress;
 						inspection.update(progress);
 						updateProgress();
-						if (isCalculating && !pauseButton.parentNode) {
-							makableSummary.appendChild(pauseButton);
-						}
 						makableSummaryText.textContent = t('foundValidRecipesInProgress', {
 							count: made.length,
 						});
@@ -1443,13 +1443,8 @@ import './locales/index.js';
 						paused = false;
 						snapshotNotice.hidden = true;
 
-						// Remove pause button if it exists
-						if (pauseButton.parentNode) {
-							if (document.activeElement === pauseButton) {
-								deleteButton.focus();
-							}
-							pauseButton.parentNode.removeChild(pauseButton);
-						}
+						const pauseFocused = document.activeElement === pauseButton;
+						pauseButton.remove();
 
 						window.analysis = {
 							made,
@@ -1461,9 +1456,12 @@ import './locales/index.js';
 						makableSummaryText.textContent = summaryText;
 						analysisStatus.textContent = summaryText;
 
-						isCalculating = false;
 						updateMakableButtonLabel();
+						makableButton.hidden = false;
 						makableButton.disabled = false;
+						if (pauseFocused) {
+							makableButton.focus();
+						}
 					},
 				);
 				if (isCalculating) {
@@ -1484,6 +1482,7 @@ import './locales/index.js';
 					isCalculating = false;
 					updateMakableButtonLabel();
 					makableButton.disabled = false;
+					makableButton.hidden = false;
 					if (restoreFocus) {
 						makableButton.focus();
 					}

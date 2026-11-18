@@ -342,7 +342,7 @@ const defaultStrings = {
 	computingCombinations: 'Computing combinations…',
 	multipleResultsNote: '* combination has multiple possible results',
 	analysisGroupingHelp:
-		'Consecutive combinations for the same recipe are grouped across the full filtered results. Browse recipe group pages, then expand a group to page through its combinations. Sorting is preserved; each row shows the exact combination’s values. Click the ingredients to try that combination in the Simulator.',
+		'Neighboring combinations for the same recipe share a row. Expand it to compare them. Select the ingredients to try a combination in the Simulator.',
 	analysisShowCombinations: 'Show {count} consecutive combinations for {name}',
 	analysisHideCombinations: 'Hide {count} consecutive combinations for {name}',
 	analysisTryCombination: 'Try {name} in the Simulator with {ingredients}',
@@ -351,6 +351,7 @@ const defaultStrings = {
 	analysisResetFiltersHelp:
 		'Restore the original ingredient and recipe filters for this analysis.',
 	analysisFiltersReset: 'Analysis filters reset.',
+	analysisSingleResult: '1 matching combination.',
 	analysisResultCount: 'Recipe groups {first}–{last} of {groups}; {total} matching combinations.',
 	analysisRefresh: 'Refresh results',
 	analysisRefreshHelp:
@@ -378,16 +379,18 @@ const defaultStrings = {
 	filterCycleHelp:
 		'Use arrow keys to browse each filter group. Click, tap, Enter, or Space cycles normal → required (✓) → excluded (✕). Shift+Enter, Shift+Space, or right-click reverses ingredient filters or toggles recipe exclusions.',
 	filterIngredients: 'Ingredient filters',
+	findRecipeFilter: 'Find a recipe filter',
+	findIngredientFilter: 'Find an ingredient filter',
 	filterRecipes: 'Recipe filters',
 	filterNormal: 'Normal',
 	filterRequired: 'Required',
 	filterExcluded: 'Excluded',
 	filterLabel: '{name}: {state}',
 	customFilterPlaceholder: 'use custom filter',
-	foundValidRecipes: 'Found {count} valid combinations.',
+	foundValidRecipes: 'Complete · Valid combinations: {count}',
 	foundValidRecipesInProgress:
-		'Found {count} valid combinations… (you can change Food Guide tabs during this process)',
-	foundValidRecipesPaused: 'Found {count} valid combinations (paused)',
+		'Valid combinations so far: {count}. You can use other Food Guide tabs while this runs.',
+	foundValidRecipesPaused: 'Paused · Valid combinations: {count}',
 	durationNever: 'Never',
 	durationDays: '{count} {unit}',
 	durationSeconds: '{count} {unit}',

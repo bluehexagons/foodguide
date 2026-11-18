@@ -206,6 +206,8 @@ export const dict = {
 	ingredientSearchHelp:
 		'Usa Arriba y Abajo para explorar los resultados, Intro para añadir, Mayús+Intro para quitar una unidad, Ctrl o Comando+Intro para quitar todas y Escape para ocultarlos. Usa Tab para ir a los ingredientes seleccionados y quitarlos.',
 	filterIngredients: 'Filtros de ingredientes',
+	findRecipeFilter: 'Buscar un filtro de receta',
+	findIngredientFilter: 'Buscar un filtro de ingrediente',
 	filterRecipes: 'Filtros de recetas',
 	filterNormal: 'Normal',
 	filterRequired: 'Obligatorio',
@@ -340,7 +342,7 @@ export const dict = {
 	computingCombinations: 'Calculando combinaciones…',
 	multipleResultsNote: '* la combinación tiene varios resultados posibles',
 	analysisGroupingHelp:
-		'Las combinaciones consecutivas de la misma receta se agrupan en todos los resultados filtrados. Recorre las páginas de grupos y expande un grupo para recorrer sus combinaciones. Se conserva el orden; cada fila muestra los valores de su combinación exacta. Pulsa los ingredientes para probarla en el Simulador.',
+		'Las combinaciones contiguas de la misma receta comparten una fila. Despliégala para compararlas. Selecciona los ingredientes para probar una combinación en el Simulador.',
 	analysisShowCombinations: 'Mostrar {count} combinaciones consecutivas de {name}',
 	analysisHideCombinations: 'Ocultar {count} combinaciones consecutivas de {name}',
 	analysisTryCombination: 'Probar {name} en el Simulador con {ingredients}',
@@ -349,6 +351,7 @@ export const dict = {
 	analysisResetFiltersHelp:
 		'Restaurar los filtros originales de ingredientes y recetas de este análisis.',
 	analysisFiltersReset: 'Filtros del análisis restablecidos.',
+	analysisSingleResult: '1 combinación coincidente.',
 	analysisResultCount:
 		'Grupos de recetas {first}–{last} de {groups}; {total} combinaciones coincidentes.',
 	analysisRefresh: 'Actualizar resultados',
@@ -377,10 +380,10 @@ export const dict = {
 	filterCycleHelp:
 		'Usa las flechas para explorar cada grupo de filtros. Clic, toque, Intro o Espacio alternan normal → obligatorio (✓) → excluido (✕). Mayús+Intro, Mayús+Espacio o clic derecho invierten los filtros de ingredientes o alternan la exclusión de recetas.',
 	customFilterPlaceholder: 'usar filtro personalizado',
-	foundValidRecipes: 'Se encontraron {count} combinaciones válidas.',
+	foundValidRecipes: 'Cálculo finalizado · Combinaciones válidas: {count}',
 	foundValidRecipesInProgress:
-		'Se encontraron {count} combinaciones válidas… (puedes cambiar de pestaña durante este proceso)',
-	foundValidRecipesPaused: 'Se encontraron {count} combinaciones válidas (en pausa)',
+		'Combinaciones válidas hasta ahora: {count}. Puedes usar otras pestañas de la guía durante el cálculo.',
+	foundValidRecipesPaused: 'En pausa · Combinaciones válidas: {count}',
 	durationNever: 'Nunca',
 	durationDays: '{count} {unit}',
 	durationSeconds: '{count} {unit}',

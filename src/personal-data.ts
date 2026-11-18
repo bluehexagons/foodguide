@@ -272,6 +272,7 @@ export function createPersonalDataStore({
 	};
 	return {
 		get: () => structuredClone(memory),
+		hasPersistentStorage: () => !storageFailed,
 		refresh,
 		update,
 		subscribe(listener: () => void) {

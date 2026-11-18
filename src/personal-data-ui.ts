@@ -100,6 +100,7 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	let storageUnavailable = false;
 	const renderStatus = () => {
 		if (!statusKey) {
+			status.textContent = '';
 			return;
 		}
 		status.classList.toggle(
@@ -345,9 +346,19 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	text(saveDish, 'cookbookSave');
 	const saveHelp = element('span', saveForm);
 	saveHelp.className = 'personal-help';
-	text(saveHelp, 'cookbookSaveHelp');
 	saveHelp.id = 'cookbook-save-help';
+	saveHelp.setAttribute('role', 'status');
 	saveDish.setAttribute('aria-describedby', saveHelp.id);
+	let saveFeedback: StringKey = 'cookbookSaveHelp';
+	const showSaveFeedback = (key = saveFeedback) => {
+		saveFeedback = key;
+		const message = t(key);
+		if (saveHelp.textContent !== message) {
+			saveHelp.textContent = message;
+		}
+	};
+	showSaveFeedback();
+	labels.push(() => showSaveFeedback());
 	const cookbook = element('details', potPanel);
 	cookbook.id = 'personal-cookbook';
 	const summary = element('summary', cookbook);
@@ -360,38 +371,60 @@ export function createPersonalDataUI(options: PersonalUIOptions) {
 	const dishList = element('ul', cookbook);
 	dishList.className = 'cookbook-list';
 	let cookbookSignature = '';
+	let savingDish = false;
 	const updatePot = () => {
 		saveDish.disabled = options.getPot().length !== 4;
 		dishName.placeholder = options.getDishName();
 	};
-	saveForm.addEventListener('submit', event => {
+	dishName.addEventListener('input', () => {
+		if (!savingDish) {
+			showSaveFeedback('cookbookSaveHelp');
+		}
+	});
+	saveForm.addEventListener('submit', async event => {
 		event.preventDefault();
 		const ingredients = options.getPot();
-		if (ingredients.length !== 4) {
+		if (savingDish || ingredients.length !== 4) {
 			return;
 		}
-		if (store.get().dishes.length >= 2000) {
-			announce('personalLimitError');
-			return;
-		}
+		const draftName = dishName.value;
 		const dish: CookbookDish = {
 			id: id(),
-			name: (
-				dishName.value.trim() ||
-				options.getDishName() ||
-				t('cookbookDishDefault')
-			).slice(0, 150),
+			name: (draftName.trim() || options.getDishName() || t('cookbookDishDefault')).slice(
+				0,
+				150,
+			),
 			ingredients,
 			selection: options.getSelection(),
 		};
-		void store.update(data => {
-			if (!data.dishes.some(item => item.id === dish.id)) {
-				data.dishes.push(dish);
+		savingDish = true;
+		saveDish.setAttribute('aria-disabled', 'true');
+		showSaveFeedback('cookbookSaving');
+		try {
+			const applied = await store.update(data => {
+				if (!data.dishes.some(item => item.id === dish.id)) {
+					data.dishes.push(dish);
+				}
+			});
+			if (!applied) {
+				showSaveFeedback('cookbookSaveRejected');
+				return;
 			}
-		});
-		dishName.value = '';
-		cookbook.open = true;
-		announce('cookbookSaved');
+			if (dishName.value === draftName) {
+				dishName.value = '';
+			}
+			cookbook.open = true;
+			if (statusKey === 'personalLimitError') {
+				statusKey = storageUnavailable ? 'personalStorageError' : undefined;
+				renderStatus();
+			}
+			showSaveFeedback(
+				store.hasPersistentStorage() ? 'cookbookSaved' : 'cookbookSessionOnly',
+			);
+		} finally {
+			savingDish = false;
+			saveDish.removeAttribute('aria-disabled');
+		}
 	});
 	const { node: renameDialog, body: renameBody } = dialog('cookbookRenameTitle', 'book');
 	const renameForm = element('form', renameBody);

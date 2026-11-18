@@ -58,7 +58,7 @@
 	min-height: 44px;
 	max-width: 100%;
 }
-.personal-controls button:disabled,
+.personal-controls button:is(:disabled, [aria-disabled='true']),
 .offline-button:disabled {
 	opacity: 0.6;
 	cursor: default;

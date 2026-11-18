@@ -6299,6 +6299,93 @@ test('header actions fit existing bars and retain keyboard focus when changing s
 	assert.equal(await share.evaluate(node => node === document.activeElement), true);
 });
 
+test('cookbook saves wait for storage and retain the draft after a concurrent limit rejection', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(`${baseUrl}/#simulator?game=together&ingredients=meat,meat,carrot,honey`, {
+		waitUntil: 'networkidle',
+	});
+	const form = page.locator('#cookbook-save');
+	const name = form.getByRole('textbox');
+	const save = form.getByRole('button', { name: 'Save dish', exact: true });
+	const feedback = page.locator('#cookbook-save-help');
+	const holdSaveLock = () =>
+		page.evaluate(() => {
+			// Hold the same lock another tab uses to commit its changes.
+			const { promise, resolve } = Promise.withResolvers();
+			window.releaseCookbookLock = resolve;
+			return new Promise(locked => {
+				void navigator.locks.request('foodGuidePersonalData', async () => {
+					locked();
+					await promise;
+				});
+			});
+		});
+	await holdSaveLock();
+	await name.fill('First draft');
+	await save.focus();
+	await save.press('Enter');
+	assert.equal(await save.isDisabled(), true);
+	assert.equal(await save.evaluate(button => button === document.activeElement), true);
+	assert.equal(await name.inputValue(), 'First draft');
+	assert.equal(await feedback.textContent(), 'Saving dish…');
+	await form.evaluate(node => node.requestSubmit());
+	// The pending card is rendered inside the collapsed cookbook.
+	assert.equal(await page.locator('.cookbook-card').count(), 1);
+	assert.equal(await page.locator('#personal-cookbook').evaluate(node => node.open), false);
+	await page.evaluate(() => {
+		const data = JSON.parse(localStorage.foodGuidePersonalData);
+		window.previousCookbookData = data;
+		const dish = {
+			name: 'Other tab dish',
+			ingredients: ['meat@together', 'meat@together', 'carrot@together', 'honey@together'],
+			selection: {
+				version: 'together',
+				dlc: { giants: false, shipwrecked: false },
+				character: null,
+			},
+		};
+		localStorage.foodGuidePersonalData = JSON.stringify({
+			...data,
+			dishes: Array.from({ length: 2000 }, (_, index) => ({ ...dish, id: `other-${index}` })),
+		});
+		window.releaseCookbookLock();
+	});
+	await page.waitForFunction(
+		() => !document.querySelector('#cookbook-save button').hasAttribute('aria-disabled'),
+	);
+	assert.equal(await name.inputValue(), 'First draft');
+	assert.match(await feedback.textContent(), /Could not add this dish/);
+	assert.match(await page.locator('#personal-data-status').textContent(), /saved-data limit/);
+	assert.equal(await page.locator('#personal-cookbook').evaluate(node => node.open), false);
+	assert.deepEqual(
+		await page.evaluate(() => {
+			const { dishes } = JSON.parse(localStorage.foodGuidePersonalData);
+			return [dishes.length, dishes.at(-1).id];
+		}),
+		[2000, 'other-1999'],
+	);
+
+	await page.evaluate(() => {
+		localStorage.foodGuidePersonalData = JSON.stringify(window.previousCookbookData);
+		window.dispatchEvent(
+			new StorageEvent('storage', {
+				storageArea: localStorage,
+				key: 'foodGuidePersonalData',
+			}),
+		);
+	});
+	await holdSaveLock();
+	await save.press('Enter');
+	await name.fill('Next draft');
+	await page.evaluate(() => window.releaseCookbookLock());
+	await page.getByRole('button', { name: /^First draft Load dish/ }).waitFor();
+	assert.equal(await name.inputValue(), 'Next draft');
+	assert.equal(await feedback.textContent(), 'Dish saved to your cookbook.');
+	assert.equal(await page.locator('#personal-data-status').textContent(), '');
+	assert.equal(await page.locator('.cookbook-card').count(), 1);
+});
+
 test('personal storage failures remain visible while using the cookbook and allow exporting unsaved data', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await browser.newPage();
@@ -6321,6 +6408,10 @@ test('personal storage failures remain visible while using the cookbook and allo
 	const status = page.locator('#personal-data-status');
 	await page.waitForFunction(() =>
 		document.querySelector('#personal-data-status').textContent.includes('Export'),
+	);
+	assert.equal(
+		await page.locator('#cookbook-save-help').textContent(),
+		'Dish added for this session.',
 	);
 	const warning = await status.textContent();
 	await page.getByRole('button', { name: /^Unsaved dinner Load dish/ }).click();

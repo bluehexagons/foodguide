@@ -1957,6 +1957,12 @@ import './locales/index.js';
 				}
 			};
 
+			const actionAt = (target: EventTarget | null) =>
+				target instanceof Element
+					? target.closest('.ingredient-subtract, .ingredient-toggle')
+					: null;
+			let pressedAction: Element | null | undefined;
+			let releasedAction: Element | null | undefined;
 			const liIntoPicker = function (this: HTMLElement, item: GuideItem) {
 				const img = makeImage(item.img);
 				img.setAttribute('aria-hidden', 'true');
@@ -2005,15 +2011,23 @@ import './locales/index.js';
 				bindActivation(
 					li,
 					event => {
-						const target = event.target instanceof Element ? event.target : null;
-						if (target?.closest('.ingredient-subtract')) {
+						const press = pressedAction;
+						const release = releasedAction;
+						pressedAction = undefined;
+						releasedAction = undefined;
+						// The browser can retarget a drag between badges and the tile to their
+						// common ancestor, where it would otherwise be treated as an add.
+						const pointerClick =
+							event.detail > 0 && press !== undefined && release !== undefined;
+						if (pointerClick && press !== release) {
+							return;
+						}
+						const action = pointerClick ? release : actionAt(event.target);
+						if (action === subtract) {
 							if (li.classList.contains('faded')) {
 								pickItem(item.key, li, true);
 							}
-						} else if (
-							target?.closest('.ingredient-toggle') &&
-							li.classList.contains('faded')
-						) {
+						} else if (action === toggle && li.classList.contains('faded')) {
 							removeAllCopies(item.key, li);
 						} else {
 							pickItem(item.key, li);
@@ -2686,9 +2700,18 @@ import './locales/index.js';
 			dropdown.appendChild(ul);
 			// Keep mouse selections in the combobox without intercepting touch scrolling or focus.
 			dropdown.addEventListener('pointerdown', event => {
+				pressedAction = event.button === 0 ? actionAt(event.target) : undefined;
+				releasedAction = undefined;
 				if (event.pointerType === 'mouse') {
 					event.preventDefault();
 				}
+			});
+			dropdown.addEventListener('pointerup', event => {
+				releasedAction = actionAt(event.target);
+			});
+			dropdown.addEventListener('pointercancel', () => {
+				pressedAction = undefined;
+				releasedAction = undefined;
 			});
 
 			refreshPicker();

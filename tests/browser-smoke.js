@@ -1159,6 +1159,38 @@ test('picked markers and quantities survive picker rebuilds and remain distinct 
 	assert.deepEqual(diagnostics, []);
 });
 
+test('dragging between a picker action and the tile body leaves the pot unchanged', async t => {
+	const { baseUrl, browser } = await createBrowserFixture(t);
+	const page = await browser.newPage();
+	await page.goto(`${baseUrl}/#simulator?game=together&ingredients=meat,carrot,meat`, {
+		waitUntil: 'networkidle',
+	});
+	const panel = page.locator('#simulator');
+	await panel.locator('.ingredientpicker').fill('Meat');
+	const meat = panel.getByRole('option', { name: /^Meat(?: \d)?$/ });
+	const minus = meat.locator('.ingredient-subtract');
+	const label = meat.locator('.text');
+	const getPot = () =>
+		page
+			.locator('#ingredients [data-id]')
+			.evaluateAll(slots => slots.map(slot => slot.dataset.id));
+	const original = await getPot();
+	for (const [start, end] of [
+		[minus, label],
+		[label, minus],
+	]) {
+		const from = await start.boundingBox();
+		const to = await end.boundingBox();
+		await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+		await page.mouse.down();
+		await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2);
+		await page.mouse.up();
+		assert.deepEqual(await getPot(), original);
+	}
+	await minus.click();
+	assert.deepEqual(await getPot(), ['meat@together', 'carrot@together']);
+});
+
 test('picker shortcuts remove one or all copies without changing input focus or other ingredients', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
 	const page = await createSavedPage(browser, baseUrl, {

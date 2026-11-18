@@ -7,18 +7,61 @@ const absolute = (path: string) => new URL(path, worker.registration.scope).href
 const assetURLs = new Set(config.assets.map(asset => absolute(asset.path)));
 
 const completeURL = absolute('__offline_complete__');
+const fallbackURL = absolute('__offline_fallback__');
+const clientURL = (id: string) => absolute(`__offline_fallback_client__/${id}`);
 let downloading: Promise<void> | undefined;
+let fallbackCache: Promise<Cache | undefined> | undefined;
 
-async function isReady() {
-	if (!(await caches.has(cacheName))) {
-		return false;
+async function hasAssets(cache: Cache, urls: Iterable<string>) {
+	const stored = new Set((await cache.keys()).map(request => request.url));
+	return Array.from(urls).every(url => stored.has(url));
+}
+
+async function isReady(cache?: Cache) {
+	if (!cache) {
+		if (!(await caches.has(cacheName))) {
+			return false;
+		}
+		cache = await caches.open(cacheName);
 	}
-	const cache = await caches.open(cacheName);
 	if ((await cache.match(completeURL)) === undefined) {
 		return false;
 	}
-	const stored = new Set((await cache.keys()).map(request => request.url));
-	return [...assetURLs].every(url => stored.has(url));
+	return hasAssets(cache, assetURLs);
+}
+
+async function olderCaches() {
+	return (await caches.keys()).filter(key => key.startsWith(prefix) && key !== cacheName);
+}
+
+async function findFallback(mark = false) {
+	for (const name of (await olderCaches()).reverse()) {
+		const cache = await caches.open(name);
+		if (!mark) {
+			if ((await (await cache.match(fallbackURL))?.text()) === config.id) {
+				return cache;
+			}
+			continue;
+		}
+		const marker = await (await cache.match(completeURL))?.text();
+		// Older workers stored only the build ID. Those caches still need an entry page.
+		if (
+			marker &&
+			(await cache.match(absolute('index.html'))) &&
+			(marker === name.slice(prefix.length) ||
+				(marker.startsWith('[') && (await hasAssets(cache, JSON.parse(marker)))))
+		) {
+			await cache.put(fallbackURL, new Response(config.id));
+			return cache;
+		}
+	}
+}
+
+function getFallback() {
+	return (fallbackCache ??= findFallback().catch(() => {
+		fallbackCache = undefined;
+		return undefined;
+	}));
 }
 
 function download() {
@@ -77,7 +120,7 @@ function download() {
 			if (controller.signal.aborted || pending.length) {
 				throw new Error('Offline download aborted before completion');
 			}
-			await cache.put(completeURL, new Response(config.id));
+			await cache.put(completeURL, new Response(JSON.stringify([...assetURLs])));
 		} catch (error) {
 			// All writers have settled; a failed build must never become usable.
 			await caches.delete(cacheName);
@@ -96,11 +139,19 @@ worker.addEventListener('install', event => {
 worker.addEventListener('activate', event => {
 	event.waitUntil(
 		(async () => {
-			await Promise.all(
-				(await caches.keys())
-					.filter(key => key.startsWith(prefix) && key !== cacheName)
-					.map(key => caches.delete(key)),
-			);
+			try {
+				if (await isReady()) {
+					await Promise.all((await olderCaches()).map(key => caches.delete(key)));
+				} else {
+					// The browser can activate a waiting worker after the last tab closes,
+					// even if its verified cache was evicted in the meantime.
+					fallbackCache = findFallback(true);
+					await fallbackCache;
+				}
+			} catch {
+				fallbackCache = undefined;
+				// Claim clients even when cache storage is unavailable so they can use the network.
+			}
 			await worker.clients.claim();
 		})(),
 	);
@@ -156,24 +207,42 @@ worker.addEventListener('fetch', event => {
 		event.request.mode === 'navigate' && (path === '' || path === 'index.html')
 			? 'index.html'
 			: path;
-	if (!assetURLs.has(absolute(key))) {
-		return;
-	}
+	const cacheKey = absolute(key);
 	event.respondWith(
 		(async () => {
 			try {
-				const cache = await caches.open(cacheName);
-				// An evicted cache must not trap the site behind a permanently broken worker.
-				const complete =
-					event.request.mode === 'navigate'
-						? await isReady()
-						: !!(await cache.match(completeURL));
-				if (complete) {
-					const response = await cache.match(absolute(key));
-					// A missing member of a complete build must not mix in a newer server asset.
-					return response ?? Response.error();
+				const navigate = event.request.mode === 'navigate';
+				const fallback = await getFallback();
+				if (
+					!navigate &&
+					fallback &&
+					event.clientId &&
+					(await fallback.match(clientURL(event.clientId)))
+				) {
+					// A tab that opened the previous build keeps using it after a retry
+					// restores the current cache. Store the association across worker restarts.
+					return (await fallback.match(cacheKey)) ?? Response.error();
 				}
-				await cache.delete(completeURL);
+				if (assetURLs.has(cacheKey) && (await caches.has(cacheName))) {
+					const cache = await caches.open(cacheName);
+					const complete = navigate
+						? await isReady(cache)
+						: !!(await cache.match(completeURL));
+					if (complete) {
+						// Never mix a newer response into a cached build.
+						return (await cache.match(cacheKey)) ?? Response.error();
+					}
+					if (navigate) {
+						await cache.delete(completeURL);
+					}
+				}
+				if (navigate && fallback && event.resultingClientId) {
+					const response = await fallback.match(cacheKey);
+					if (response) {
+						await fallback.put(clientURL(event.resultingClientId), new Response());
+						return response;
+					}
+				}
 			} catch {
 				// Cache Storage can become unavailable independently of the network.
 			}

@@ -294,6 +294,98 @@ for (const scope of ['/', '/foodguide/']) {
 	});
 }
 
+test(
+	'an evicted waiting update preserves offline relaunch and can be repaired',
+	{ timeout: 60000 },
+	async t => {
+		const originalVersion = await readFile(new URL('version.js', root), 'utf8');
+		const nextVersion =
+			"document.getElementById('build-version').textContent = 'Repaired build';\n";
+		const config = structuredClone(originalConfig);
+		config.id = 'test-repair';
+		config.assets.find(asset => asset.path === 'version.js').hash = digest(nextVersion);
+		let deployed = false;
+		const server = httpServer.createServer({
+			root: fileURLToPath(root),
+			cache: -1,
+			before: [
+				(request, response, next) => {
+					if (!request.url.startsWith('/guide/')) {
+						response.writeHead(200, { 'Content-Type': 'text/html' });
+						response.end('<p>Test observer</p>');
+						return;
+					}
+					request.url = request.url.slice('/guide'.length);
+					if (deployed && (request.url === '/sw.js' || request.url === '/version.js')) {
+						const body =
+							request.url === '/sw.js'
+								? `const config = ${JSON.stringify(config)};\n${originalWorker.slice(newline + 1)}`
+								: nextVersion;
+						response.writeHead(200, {
+							'Content-Type': 'text/javascript',
+							'Cache-Control': 'no-store',
+						});
+						response.end(body);
+						return;
+					}
+					next();
+				},
+			],
+		});
+		const browser = await browserType.launch({ headless: true });
+		t.after(async () => {
+			await browser.close();
+			await new Promise(resolve => server.server.close(resolve));
+		});
+		await new Promise((resolve, reject) => {
+			server.server.once('error', reject);
+			server.listen(0, '127.0.0.1', resolve);
+		});
+		const context = await browser.newContext();
+		const origin = `http://127.0.0.1:${server.server.address().port}`;
+		const guideUrl = origin + '/guide/';
+		const observer = await context.newPage();
+		await observer.goto(origin);
+		let page = await context.newPage();
+		await page.goto(guideUrl + '#about');
+		await page.waitForFunction(
+			() => document.querySelector('#offline-status').textContent === 'Ready to use offline.',
+		);
+		deployed = true;
+		await page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).update());
+		await page.locator('#offline-update').waitFor();
+		await page.evaluate(url => caches.delete(`foodguide:${url}:test-repair`), guideUrl);
+		await context.setOffline(true);
+		await page.close();
+		await observer.waitForFunction(async url => {
+			const registration = await navigator.serviceWorker.getRegistration(url);
+			return registration?.active?.state === 'activated' && !registration.waiting;
+		}, guideUrl);
+
+		page = await context.newPage();
+		await page.goto(guideUrl + '#about');
+		const version = page => page.evaluate(async () => (await fetch('version.js')).text());
+		assert.equal(await version(page), originalVersion);
+		assert.equal(await page.locator('#tab-about').getAttribute('aria-selected'), 'true');
+		const second = await context.newPage();
+		await second.goto(guideUrl + '#about');
+		await context.setOffline(false);
+		await page.locator('#offline-retry').click();
+		await page.waitForFunction(
+			() => document.querySelector('#build-version').textContent === 'Repaired build',
+		);
+		await context.setOffline(true);
+		assert.equal(await version(page), nextVersion);
+		assert.equal(
+			await version(second),
+			originalVersion,
+			'An open fallback tab keeps its build',
+		);
+		await second.reload();
+		assert.equal(await version(second), nextVersion);
+	},
+);
+
 test('offline data and assets survive a full browser restart', { timeout: 60000 }, async t => {
 	const profile = await mkdtemp(join(tmpdir(), 'foodguide-offline-profile-'));
 	const server = httpServer.createServer({ root: fileURLToPath(root), cache: -1 });

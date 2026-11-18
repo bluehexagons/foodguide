@@ -12,9 +12,8 @@ const scope = 'https://guide.example/foodguide/';
 const cacheName = `foodguide:${scope}:test`;
 const completeURL = scope + '__offline_complete__';
 
-function createWorker({ assetCount = 1 } = {}) {
+function createWorker({ assetCount = 1, stores = new Map([['unrelated-cache', new Map()]]) } = {}) {
 	const listeners = new Map();
-	const stores = new Map([['unrelated-cache', new Map()]]);
 	const timers = new Map();
 	const state = { stalled: false, storageFails: false, beforePut: async () => {} };
 	const network = [];
@@ -50,6 +49,7 @@ function createWorker({ assetCount = 1 } = {}) {
 		self: {
 			registration: { scope },
 			addEventListener: (name, listener) => listeners.set(name, listener),
+			clients: { claim: async () => {} },
 		},
 		caches,
 		crypto: webcrypto,
@@ -74,9 +74,9 @@ function createWorker({ assetCount = 1 } = {}) {
 				: Promise.resolve(new Response('guide'));
 		},
 	});
-	const install = () => {
+	const lifetimeEvent = name => {
 		let result;
-		listeners.get('install')({
+		listeners.get(name)({
 			waitUntil: promise => {
 				result = promise;
 			},
@@ -102,17 +102,27 @@ function createWorker({ assetCount = 1 } = {}) {
 		await result;
 		return reply;
 	};
-	const request = (url = scope, mode = 'navigate') => {
+	const request = (url = scope, mode = 'navigate', client = {}) => {
 		let result;
 		listeners.get('fetch')({
 			request: { method: 'GET', url, mode },
+			...client,
 			respondWith: promise => {
 				result = promise;
 			},
 		});
 		return result;
 	};
-	return { stores, timers, state, network, install, message, request };
+	return {
+		stores,
+		timers,
+		state,
+		network,
+		install: () => lifetimeEvent('install'),
+		activate: () => lifetimeEvent('activate'),
+		message,
+		request,
+	};
 }
 
 test('a stalled offline download aborts, removes its cache, and can be retried', async () => {
@@ -194,7 +204,8 @@ test('cache hits normalize query and fragment URLs without using the network', a
 	assert.equal(await (await fixture.request(scope + '?installed=1#about')).text(), 'guide');
 	assert.deepEqual(fixture.network, []);
 	assert.equal(fixture.request('https://elsewhere.example/'), undefined);
-	assert.equal(fixture.request(scope + 'not-an-asset'), undefined);
+	await fixture.request(scope + 'not-an-asset');
+	assert.deepEqual(fixture.network, [scope + 'not-an-asset']);
 });
 
 test('a missing cached member never mixes a newer asset into a complete build', async () => {
@@ -232,4 +243,39 @@ test('simultaneous restore requests share one verified download', async () => {
 	release();
 	assert.deepEqual(await Promise.all([first, second]), ['READY', 'READY']);
 	assert.deepEqual(fixture.network, [scope + 'index.html']);
+});
+
+test('automatic activation with a missing cache keeps the previous guide available through recovery', async () => {
+	const previous = `foodguide:${scope}:previous`;
+	const fixture = createWorker({ assetCount: 2 });
+	fixture.stores.set(
+		previous,
+		new Map([
+			[completeURL, new Response('previous')],
+			[scope + 'index.html', new Response('previous guide')],
+			[scope + 'asset-1.js', new Response('previous asset')],
+			[scope + 'removed.js', new Response('previous-only asset')],
+		]),
+	);
+	await fixture.activate();
+	assert.equal(await fixture.message('STATUS'), 'MISSING');
+	const opened = await fixture.request(scope, 'navigate', { resultingClientId: 'fallback-tab' });
+	assert.equal(await opened.text(), 'previous guide');
+	assert.deepEqual(fixture.network, []);
+
+	assert.equal(await fixture.message('RESTORE'), 'READY');
+	const restarted = createWorker({ stores: fixture.stores, assetCount: 2 });
+	const oldTab = { clientId: 'fallback-tab' };
+	assert.equal(
+		await (await restarted.request(scope + 'asset-1.js', 'cors', oldTab)).text(),
+		'previous asset',
+	);
+	assert.equal(
+		await (await restarted.request(scope + 'removed.js', 'cors', oldTab)).text(),
+		'previous-only asset',
+	);
+	assert.equal((await restarted.request(scope + 'missing.js', 'cors', oldTab)).type, 'error');
+	assert.equal(await (await restarted.request(scope)).text(), 'guide');
+	assert.equal(await (await restarted.request(scope + 'asset-1.js', 'cors')).text(), 'guide');
+	assert.deepEqual(restarted.network, []);
 });

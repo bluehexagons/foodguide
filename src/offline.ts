@@ -153,7 +153,11 @@ if (location.protocol === 'https:' || location.protocol === 'http:') {
 						registration.waiting ??
 						(!registration.installing ? registration.active : null);
 					if (target) {
-						await send(target, 'RESTORE');
+						const restored = await send(target, 'RESTORE');
+						if (restored === 'READY' && target === registration.active) {
+							location.reload();
+							return;
+						}
 					}
 					await ready();
 				}

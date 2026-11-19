@@ -2171,12 +2171,9 @@ import './locales/index.js';
 				picker.setAttribute('aria-expanded', 'true');
 				selectedResult = -1;
 				picker.removeAttribute('aria-activedescendant');
-				searchSelectorControls.splitTag();
-				let names = matchingNames(
-					from,
-					searchSelectorControls.getSearch(),
-					allowUncookable,
-				);
+				splitTag();
+				const search = getSearch();
+				let names = matchingNames(from, search, allowUncookable);
 				const matchingCount = names.length;
 				names = filterCookingIngredients(names, cookingControls.getValue(), {
 					ingredients: food.filter(() => true),
@@ -2191,7 +2188,7 @@ import './locales/index.js';
 					statMultipliers,
 					modifyItem: characterFoodModifiers.modifyItem,
 					modeMask,
-					search: searchSelectorControls.getSearch(),
+					search,
 				});
 
 				dropdown.removeChild(ul);
@@ -2253,8 +2250,7 @@ import './locales/index.js';
 					for (const [slotIndex, slot] of fixedSlots.entries()) {
 						setSlot(slot, items[slotIndex] ?? null);
 					}
-					picker.value = '';
-					refreshPicker(false);
+					setPickerSearch('', false);
 					updateRecipes();
 					setTab('simulator');
 					fixedSlots[0].focus();
@@ -2272,11 +2268,12 @@ import './locales/index.js';
 								name: matches[0].name,
 							});
 						} else {
+							fixedSlots[result].focus();
 							announceIngredient('ingredientAdded', matches[0].key);
 						}
 					} else {
-						picker.value = name;
-						refreshPicker();
+						picker.focus();
+						setPickerSearch(name);
 					}
 				};
 
@@ -2726,16 +2723,12 @@ import './locales/index.js';
 					}
 				}
 			};
-			const setSearchType = (idx: number) => {
-				baseSearchControls.setValue(searchTypeKeys[idx].value);
-				setSearchPlaceholder(searchTypeKeys[idx].placeholderKey);
+			const setPickerSearch = (value: string, announce = true) => {
+				baseSearchControls.setValue('name');
+				setSearchPlaceholder('searchPlaceholderName');
+				picker.value = value;
+				refreshPicker(announce);
 			};
-
-			const searchSelectorControls = Object.assign(baseSearchControls, {
-				getSearch,
-				splitTag,
-				setSearchType,
-			});
 			dropdown.className = 'ingredientdropdown';
 			dropdown.id = `ingredient-results-${index}`;
 			showAllIngredients.setAttribute('aria-controls', dropdown.id);
@@ -2775,10 +2768,8 @@ import './locales/index.js';
 			searchInputGroup.append(clearSearchBtn);
 
 			clearSearchBtn.addEventListener('click', () => {
-				picker.value = '';
-				searchSelectorControls.setSearchType(0);
-				refreshPicker();
 				picker.focus();
+				setPickerSearch('');
 			});
 
 			clearIngredientsBtn.className = 'clearingredientsbtn';

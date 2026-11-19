@@ -1,9 +1,12 @@
 # Using the guide
 
 In the Simulator, choose a game version and character, filter ingredients, and add
-up to four items to the pot. Discovery accepts an inventory of ingredients and shows
-possible recipes. Food List and Recipe List provide sortable reference tables.
-The Statistics Analyzer evaluates ingredient combinations in batches and can be paused.
+up to four items to the pot. A full pot shows the possible dishes, including ties.
+Select a recipe requirement to find matching ingredients or add a specific
+ingredient to an available slot. Discovery accepts an inventory of ingredients and
+shows possible recipes. Use **Filter by name** to find entries in the sortable
+Food List and Recipe List. The Statistics Analyzer evaluates ingredient
+combinations in batches and can be paused.
 
 Use Tab to reach controls and page tabs. In an ingredient search, use Up/Down to
 highlight results and Enter to select. Shift+Enter removes one copy; Ctrl+Enter
@@ -53,6 +56,7 @@ Completion automatically refreshes the table, preserving your browsing position
 where possible. You can also pause to inspect a stable snapshot. Its progress bar
 reports combinations checked out of the full search, including combinations that produce
 no valid recipe. The table reports the group range and total matching combinations.
+Use the search boxes above long filter lists to find a specific filter.
 **Reset filters** restores the analysis's original filters, including the Statistics
 Analyzer's default exclusions, and returns to the first overview page.
 Stat gains show absolute changes; percentages appear when the ingredient baseline
@@ -87,8 +91,9 @@ with the last saved defaults. Theme and language synchronize across tabs.
 
 Choose four pot ingredients and select **Save dish** to keep the combination in
 **My cookbook**, with its game and character settings. Loading a dish restores those
-settings and its ingredients. Cookbook cards show ingredient icons and recalculate
-the possible recipes using the saved settings, even when a dish has a custom name.
+settings and its ingredients. Search the Cookbook by saved name, recipe name, or
+ingredient. Use **Rename** to edit a saved name. Cookbook cards show ingredient
+icons and the possible recipes using the saved settings.
 **Options** includes language and Light/Dark/Device theme settings as well as
 backup controls. The header language picker and quick theme toggle remain available.
 Export all inventories and dishes as a JSON backup. Importing into a profile

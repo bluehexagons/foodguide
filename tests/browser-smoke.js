@@ -22,6 +22,7 @@ if (!browserType) {
 }
 const chromiumOnly =
 	browserType === chromium ? false : 'Trusted gesture injection requires Chromium CDP';
+const ingredientStatusSelector = '.ingredient-feedback-space [role="status"]';
 
 test('Simulator removes consecutive unavailable pot ingredients on a game change', async t => {
 	const { baseUrl, browser } = await createBrowserFixture(t);
@@ -499,13 +500,14 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	);
 	await simulator.click();
 	const input = page.locator('#simulator .ingredientpicker');
+	const status = page.locator(`#simulator ${ingredientStatusSelector}`);
 	await input.fill('Meat');
 	await input.press('ArrowDown');
 	const descendant = await input.getAttribute('aria-activedescendant');
 	assert.equal(await page.locator(`#${descendant}`).getAttribute('aria-selected'), 'true');
 	await input.press('Enter');
 	assert.match(
-		await page.locator('#simulator [role="status"]').textContent(),
+		await status.textContent(),
 		/The pot is full\. Remove an ingredient before adding Meat\./,
 	);
 	await input.press('Escape');
@@ -521,7 +523,7 @@ test('keyboard navigation covers tabs, picker dismissal, removal, and filter gro
 	await slot.press('Space');
 	assert.equal(await slot.evaluate(e => e === document.activeElement), true);
 	assert.equal(await slot.getAttribute('aria-label'), 'Remove Berries');
-	assert.match(await page.locator('#simulator [role="status"]').textContent(), /Removed Meat/);
+	assert.match(await status.textContent(), /Removed Meat/);
 	await page.getByRole('tab', { name: 'Discovery', exact: true }).click();
 	const meat = page.locator('#inventory [data-id="meat@together"]');
 	await meat.focus();
@@ -928,7 +930,7 @@ test('full-pot errors remain readable with reduced motion and release temporary 
 	await page.clock.pauseAt(new Date('2026-01-01T01:00:00Z'));
 	const panel = page.locator('#simulator');
 	const search = panel.locator('.ingredientpicker');
-	const status = panel.getByRole('status');
+	const status = panel.locator(ingredientStatusSelector);
 	const readableStatus = () =>
 		status.evaluate(
 			e =>
@@ -1002,7 +1004,7 @@ test('ingredient errors explain recovery in every language and clear on a new se
 		await page.locator('#tab-simulator').click();
 		const panel = page.locator('#simulator');
 		const search = panel.locator('.ingredientpicker');
-		const status = panel.getByRole('status');
+		const status = panel.locator(ingredientStatusSelector);
 		await search.fill('Carrot');
 		await panel
 			.locator('[role=option][data-id=carrot], [role=option][data-id^="carrot@"]')
@@ -1021,17 +1023,15 @@ test('ingredient errors explain recovery in every language and clear on a new se
 		assert.equal(await status.textContent(), missing);
 		await page.locator('#tab-discovery').click();
 		const inventory = page.locator('#discovery');
+		const inventoryStatus = inventory.locator(ingredientStatusSelector);
 		await inventory.locator('.ingredient:not([data-id])').click({ button: 'right' });
-		assert.equal(await inventory.getByRole('status').textContent(), empty);
-		assert.equal(
-			await inventory.getByRole('status').evaluate(e => getComputedStyle(e).clipPath),
-			'none',
-		);
+		assert.equal(await inventoryStatus.textContent(), empty);
+		assert.equal(await inventoryStatus.evaluate(e => getComputedStyle(e).clipPath), 'none');
 		await inventory.locator('.ingredientpicker').fill('Carrot');
 		await inventory
 			.locator('[role=option][data-id=carrot], [role=option][data-id^="carrot@"]')
 			.click({ button: 'right' });
-		assert.equal(await inventory.getByRole('status').textContent(), missing);
+		assert.equal(await inventoryStatus.textContent(), missing);
 	}
 	assert.deepEqual(diagnostics, []);
 });
@@ -1295,7 +1295,7 @@ test('picker shortcuts remove one or all copies without changing input focus or 
 		assert.equal(await meat.locator('.ingredient-subtract').isVisible(), false);
 		assert.equal(
 			await panel
-				.getByRole('status')
+				.locator(ingredientStatusSelector)
 				.evaluate(e => e.classList.contains('ingredient-feedback')),
 			false,
 		);
@@ -1325,7 +1325,7 @@ test('picker errors occupy reserved space above the selection without moving slo
 			await page.locator('#tab-simulator').click();
 			const panel = page.locator('#simulator');
 			const search = panel.locator('.ingredientpicker');
-			const status = panel.getByRole('status');
+			const status = panel.locator(ingredientStatusSelector);
 			for (const [name, id] of [
 				['Carrot', 'carrot'],
 				['Winter Koalefant Trunk', 'trunk_winter'],
@@ -1453,7 +1453,7 @@ test('search feedback covers empty results, localization, composition, and actio
 			const panel = page.locator(`#${tab}`);
 			const search = panel.locator('.ingredientpicker');
 			const summary = panel.locator('.ingredient-search-summary');
-			const status = panel.getByRole('status');
+			const status = panel.locator(ingredientStatusSelector);
 			await search.fill('zzzznomatches');
 			assert.equal(await panel.locator('.ingredientdropdown').getByRole('option').count(), 0);
 			const emptyMessage = await summary.textContent();
@@ -2804,10 +2804,9 @@ test('hidden search matches offer localized keyboard and touch recovery without 
 				'Recovery only changes the current picker',
 			);
 			await page.waitForFunction(
-				id =>
-					document.querySelector(`#${id} [role=status]`).textContent ===
-					'3 matching ingredients.',
-				tab,
+				selector =>
+					document.querySelector(selector).textContent === '3 matching ingredients.',
+				`#${tab} ${ingredientStatusSelector}`,
 			);
 			await page.reload({ waitUntil: 'networkidle' });
 			assert.equal(await panel.locator('.cookingingredients').textContent(), 'Cooking: All');
@@ -3447,6 +3446,21 @@ test('nested control contents preserve mode changes, slot removal, table sorting
 		'true',
 	);
 
+	assert.equal(await search.evaluate(node => node === document.activeElement), true);
+	assert.ok((await page.getByRole('listbox').getByRole('option').count()) > 0);
+
+	await page.locator('#ingredients [data-id="carrot@together"]').click();
+	const honey = page.locator('#results [data-link="*Honey"]').first();
+	await honey.press('Enter');
+	assert.equal(
+		await page
+			.locator('#ingredients [data-id="honey@together"]')
+			.last()
+			.evaluate(node => node === document.activeElement),
+		true,
+		'Adding a specific ingredient keeps focus on the newly filled pot slot',
+	);
+
 	await page.locator('#navbar [data-tab="foodlist"]').click();
 	const health = page.locator('#food th[data-sort="health"]');
 	await nestControlContents(health.locator('button'));
@@ -3549,6 +3563,11 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 		);
 		const diagnostics = trackDiagnostics(page);
 		await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' });
+		await page.locator('#tab-simulator').click();
+		const simulatorSearch = page.locator('#simulator .ingredientpicker');
+		await simulatorSearch.fill('tag:meat');
+		assert.equal(await simulatorSearch.inputValue(), 'meat');
+		await page.locator('#tab-discovery').click();
 		await page.locator('#makable .makablebutton').click();
 		await page.waitForFunction(
 			() => !document.querySelector('#makable .makablebutton').disabled,
@@ -3657,6 +3676,14 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 		await combination.focus();
 		await combination.press('Space');
 		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.equal(await simulatorSearch.inputValue(), '');
+		assert.equal(
+			await page
+				.locator('#simulator .ingredient-search-input-group [data-value="name"]')
+				.getAttribute('aria-checked'),
+			'true',
+		);
+		assert.ok((await page.locator('#simulator').getByRole('option').count()) > 0);
 		assert.deepEqual(
 			await page
 				.locator('#ingredients .ingredient')
@@ -3671,7 +3698,7 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 			true,
 		);
 		assert.match(
-			await page.locator('#simulator [role=status]').textContent(),
+			await page.locator(`#simulator ${ingredientStatusSelector}`).textContent(),
 			/4 ingredientes/,
 		);
 		await page.goBack();
@@ -3707,6 +3734,8 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 			selected,
 		);
 		await page.locator('#language-picker').selectOption('en');
+		await simulatorSearch.fill('recipe:Meatballs');
+		assert.equal(await simulatorSearch.inputValue(), 'Meatballs');
 		await page.locator('#tab-statistics').click();
 		await page.locator('#statistics .makablebutton').click();
 		await page.locator('#statistics .pauseButton').click();
@@ -3727,6 +3756,8 @@ test('analysis groups consecutive sorted recipes and loads combinations into the
 			.evaluateAll(icons => icons.map(i => i.dataset.id));
 		await statsCombination.click();
 		assert.equal(await page.locator('#tab-simulator').getAttribute('aria-selected'), 'true');
+		assert.equal(await simulatorSearch.inputValue(), '');
+		assert.ok((await page.locator('#simulator').getByRole('option').count()) > 0);
 		assert.deepEqual(
 			await page
 				.locator('#ingredients .ingredient')

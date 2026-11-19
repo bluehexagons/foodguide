@@ -2025,14 +2025,13 @@ test('accessibility audit covers visible panels, menus, and analyzer results', a
 				]) {
 					await page.locator(`#navbar [data-tab="${tab}"]`).click();
 					if (tab === 'discovery') {
-						await page.locator('#makable .makablebutton').click();
+						const calculate = page.locator('#makable .makablebutton');
+						await calculate.press('Enter');
 						await page.waitForFunction(
 							() => !document.querySelector('#makable .makablebutton').disabled,
 						);
 						assert.equal(
-							await page
-								.locator('#makable .deleteButton')
-								.evaluate(e => e === document.activeElement),
+							await calculate.evaluate(e => e === document.activeElement),
 							true,
 						);
 					}

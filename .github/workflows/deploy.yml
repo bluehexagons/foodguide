@@ -28,6 +28,9 @@ jobs:
         environment:
             name: github-pages
             url: ${{ steps.deployment.outputs.page_url }}
+        env:
+            # Retried jobs share a run ID and can still see earlier uploads.
+            PAGES_ARTIFACT_NAME: github-pages-${{ github.run_attempt }}
         permissions:
             contents: read
             pages: write
@@ -57,11 +60,14 @@ jobs:
             - name: Upload Pages artifact
               uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
               with:
+                  name: ${{ env.PAGES_ARTIFACT_NAME }}
                   path: html
 
             - name: Deploy to GitHub Pages
               id: deployment
               uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+              with:
+                  artifact_name: ${{ env.PAGES_ARTIFACT_NAME }}
 
     notify-server:
         name: Trigger server deployment
